@@ -1,7 +1,7 @@
-rOCCI - A Ruby OCCI Framework
+rOCCI Server - A Ruby OCCI Server
 =============================
 
-[![Build Status](https://secure.travis-ci.org/gwdg/rOCCI.png)](http://travis-ci.org/gwdg/rOCCI)
+[![Build Status](https://secure.travis-ci.org/gwdg/rOCCI-server.png)](http://travis-ci.org/gwdg/rOCCI-server)
 
 Requirements
 ------------
@@ -32,11 +32,11 @@ Install dependencies
 
 Checkout latest version from GIT:
 
-    git clone git://github.com/gwdg/rOCCI.git
+    git clone git://github.com/gwdg/rOCCI-server.git
 
 Change to rOCCI folder
 
-    cd rOCCI
+    cd rOCCI-server
 
 Install dependencies for deployment
 
@@ -47,9 +47,9 @@ Configure
 
 Edit etc/occi-server.conf and adapt to your setting.
 
-The default templates for the OpenNebula template are located at etc/one_templates .
+To configure the behaviour of compute, network and storage resource creation, edit the OpenNebula specific extensions of the OCCI model at etc/backend/opennebula/model . If you want to change the actual deployment templates, change the files in etc/backend/opennebula/one_templates .
 
-The default templates for EC2 are located at etc/ec2_templates .
+To configure OpenNebula resource templates (e.g. small, medium, large, ...) change the files in etc/backend/opennebula/templates .
 
 Usage
 -----
@@ -70,11 +70,11 @@ Development
 
 ### Code Documentation
 
-[Code Documentation for rOCCI by YARD](http://rubydoc.info/github/gwdg/rOCCI/)
+[Code Documentation for rOCCI by YARD](http://rubydoc.info/github/gwdg/rOCCI-server/)
 
 ### Continuous integration
 
-[Continuous integration for rOCCI by Travis-CI](http://travis-ci.org/gwdg/rOCCI/)
+[Continuous integration for rOCCI by Travis-CI](http://travis-ci.org/gwdg/rOCCI-server/)
 
 ### Contribute
 
