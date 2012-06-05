@@ -10,6 +10,8 @@ gem "nokogiri", "<=1.5.0"
 gem "builder"
 gem "haml"
 gem "erubis"
+gem "occi"
+gem "oca"
 
 # sinatra and related
 gem "sinatra"

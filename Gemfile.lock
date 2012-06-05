@@ -27,6 +27,8 @@ GEM
     multi_json (1.2.0)
     multi_xml (0.4.2)
     nokogiri (1.5.0)
+    oca (3.4)
+    occi (2.0.3)
     passenger (3.0.11)
       daemon_controller (>= 0.2.5)
       fastthread (>= 1.0.1)
@@ -84,6 +86,8 @@ DEPENDENCIES
   hashie
   json
   nokogiri (<= 1.5.0)
+  oca
+  occi
   passenger
   rspec
   rspec-http
