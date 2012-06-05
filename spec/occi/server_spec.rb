@@ -100,6 +100,7 @@ describe OCCI::Server do
 
   describe "GET /compute/" do
     it "gets all compute resources" do
+      sleep 40
       header "Accept", "text/uri-list"
       get '/compute/'
       last_response.should be_http_ok
@@ -136,6 +137,7 @@ describe OCCI::Server do
 
   describe "POST /compute/$uuid?action=X" do
     it "triggers applicable action on a previously created compute resource" do
+      sleep 2
       header "Content-type", ''
       header "Accept", "text/uri-list"
       get '/compute/'
@@ -154,18 +156,21 @@ describe OCCI::Server do
 
   describe "POST /storage/" do
     it "creates a new storage resource with a request in plain text format" do
+      sleep 2
       header "Accept", "text/uri-list"
       header "Content-type", "text/plain"
       body = %Q{Category: storage; scheme="http://schemas.ogf.org/occi/infrastructure#"; class="kind"}
       body += %Q{\nX-OCCI-Attribute: occi.storage.size=2}
+      body += %Q{\nX-OCCI-Attribute: occi.core.title="My Image created in plain text format"}
       post '/storage/', body
       last_response.should be_http_created
     end
 
     it "creates a new storage resource with a request in plain text format" do
+      sleep 2
       header "Accept", "text/uri-list"
       header "Content-type", "application/occi+json"
-      body = %Q|{"resources":[{"attributes":{"occi":{"storage":{"size":2}}},"kind":"http://schemas.ogf.org/occi/infrastructure#storage"}]}|
+      body = %Q|{"resources":[{"attributes":{"occi":{"storage":{"size":2},"core":{"title":"My Image created in json format"}}},"kind":"http://schemas.ogf.org/occi/infrastructure#storage"}]}|
       post '/storage/', body
       last_response.should be_http_created
     end
@@ -173,25 +178,30 @@ describe OCCI::Server do
 
   describe "DELETE /compute/" do
     it "deletes all compute resources" do
+      sleep 5
       header "Content-type", ''
       delete '/compute/'
       last_response.should be_http_ok
       header "Accept", "text/uri-list"
+      sleep 5
       get '/compute/'
       last_response.should be_http_ok
-      last_response.body.should be_empty
+      last_response.body.strip.should be_empty
     end
   end
 
   describe "DELETE /" do
     it "deletes all resources" do
+      sleep 5
       header "Content-type", ''
       delete '/'
       last_response.should be_http_ok
       header "Accept", "text/uri-list"
+      sleep 5
       get '/storage/'
       last_response.should be_http_ok
-      last_response.body.should be_empty
+      puts "Body: #{last_response.body}"
+      last_response.body.strip.should be_empty
     end
   end
 
