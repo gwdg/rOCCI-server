@@ -29,6 +29,9 @@ module OCCI
       # ---------------------------------------------------------------------------------------------------------------------
       module Compute
 
+        # location cache mapping OCCI locations to OpenNebula VM IDs
+        @@location_cache = {}
+
         TEMPLATECOMPUTERAWFILE = 'compute.erb'
 
         # ---------------------------------------------------------------------------------------------------------------------       
@@ -44,11 +47,14 @@ module OCCI
 
           compute_kind = OCCI::Registry.get_by_id("http://schemas.ogf.org/occi/infrastructure#compute")
 
+          id = self.generate_occi_id(compute_kind, backend_object.id.to_s)
+          @@location_cache[id] = backend_object.id.to_s
+
           compute = Hashie::Mash.new
 
           compute.kind = compute_kind.type_identifier
           compute.mixins = %w|http://opennebula.org/occi/infrastructure#compute|
-          compute.id = self.generate_occi_id(compute_kind, backend_object.id.to_s)
+          compute.id = id
           compute.title = backend_object['NAME']
           compute.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
 
@@ -246,9 +252,8 @@ module OCCI
               compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=stop',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#stop')
               compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=restart',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#restart')
               compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=suspend',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#suspend')
-            when "PROLOG", "BOOT", "SAVE_STOP", "SAVE_SUSPEND", "SAVE_MIGRATE", "MIGRATE", "PROLOG_MIGRATE", "PROLOG_RESUME" then
+            when "PROLOG", "BOOT", "SAVE_STOP", "SAVE_SUSPEND", "SAVE_MIGRATE", "MIGRATE", "PROLOG_MIGRATE", "PROLOG_RESUME", "LCM_INIT" then
               compute.attributes!.occi!.compute!.state = "inactive"
-              compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=stop',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#stop')
               compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=restart',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#restart')
             when "SUSPENDED" then
               compute.attributes!.occi!.compute!.state = "suspended"
@@ -264,7 +269,7 @@ module OCCI
 
         # ---------------------------------------------------------------------------------------------------------------------
         def compute_delete(compute)
-          backend_object=VirtualMachine.new(VirtualMachine.build_xml(compute.backend[:id]), @one_client)
+          backend_object=VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), @one_client)
 
           rc = backend_object.finalize
           check_rc(rc)
@@ -278,7 +283,7 @@ module OCCI
         def compute_register_all_instances
           backend_object_pool = VirtualMachinePool.new(@one_client)
           backend_object_pool.info(OCCI::Backend::OpenNebula::OpenNebula::INFO_ACL, -1, -1, OpenNebula::VirtualMachinePool::INFO_NOT_DONE)
-          compute_register_all_objects(backend_object_pool)
+          backend_object_pool.each { |backend_object| compute_parse_backend_object(backend_object) }
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
@@ -287,12 +292,6 @@ module OCCI
           backend_object_pool = TemplatePool.new(@one_client, INFO_ACL)
           backend_object_pool.info
           compute_register_all_objects(backend_object_pool, template = true)
-        end
-
-        # ---------------------------------------------------------------------------------------------------------------------
-        # GET ALL COMPUTE OBJECTS
-        def compute_register_all_objects(backend_object_pool, template = false)
-          backend_object_pool.each { |backend_object| compute_parse_backend_object(backend_object) }
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
@@ -306,7 +305,7 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------
         # COMPUTE Action start
         def compute_start(compute, parameters)
-          backend_object = VirtualMachine.new(VirtualMachine.build_xml(compute.backend[:id]), @one_client)
+          backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), @one_client)
           rc = backend_object.resume
           check_rc(rc)
         end
@@ -314,7 +313,7 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------
         # Action stop
         def compute_stop(compute, parameters)
-          backend_object = VirtualMachine.new(VirtualMachine.build_xml(compute.backend[:id]), @one_client)
+          backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), @one_client)
           # TODO: implement parameters when available in OpenNebula
           case parameters
             when 'method="graceful"'
@@ -333,7 +332,7 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------
         # Action restart
         def compute_restart(compute, parameters)
-          backend_object = VirtualMachine.new(VirtualMachine.build_xml(compute.backend[:id]), @one_client)
+          backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), @one_client)
           # TODO: implement parameters when available in OpenNebula
           case parameters
             when "graceful"
@@ -349,7 +348,7 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------
         # Action suspend
         def compute_suspend(compute, parameters)
-          backend_object = VirtualMachine.new(VirtualMachine.build_xml(compute.backend[:id]), @one_client)
+          backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), @one_client)
           rc = vm.suspend
           check_rc(rc)
         end

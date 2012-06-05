@@ -31,7 +31,7 @@ DISK = [
     BUS     = <%= link.attributes!.org!.opennebula!.storagelink!.bus %>,
     DRIVER  = <%= link.attributes!.org!.opennebula!.storagelink!.driver %>
 ]
-<%end%>
+<%end if @compute.links%>
 
 <%# Links to networks %>
 <% @compute.links.select {|link| link.kind == "http://schemas.ogf.org/occi/infrastructure#networkinterface"}.each do |networkinterface| %>
@@ -48,7 +48,7 @@ NIC = [
     BLACK_PORTS_UDP = <%= link.attributes!.org!.opennebula!.networkinterface!.black_ports_udp %>,
     ICMP     = <%= link.attributes!.org!.opennebula!.networkinterface!.icmp %>
 ]
-<%end%>
+<%end if @compute.links%>
 
 <%# Custom settings %>
 GRAPHICS   	= [

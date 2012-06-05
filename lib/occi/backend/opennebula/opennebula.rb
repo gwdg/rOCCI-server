@@ -21,7 +21,7 @@
 
 require 'rubygems'
 require 'uuidtools'
-require 'OpenNebula/OpenNebula'
+require 'OpenNebula'
 require 'occi/registry'
 
 # OpenNebula backend

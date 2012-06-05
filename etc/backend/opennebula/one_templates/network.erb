@@ -1,5 +1,5 @@
 OCCI_ID         = <%= @network.id %>
-NAME            = <%= @network.title.inspect %>
+NAME            = <%= @network.title.inspect if @network.title %>
 DESCRIPTION     = <%= @network.summary.inspect if @network.summary %>
 VLAN            = <%= @network.attributes!.org!.opennebula!.network!.vlan %>
 VLAN_ID         = <%= @network.attributes!.occi!.network!.vlan %>

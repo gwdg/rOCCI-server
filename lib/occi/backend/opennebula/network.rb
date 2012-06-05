@@ -30,6 +30,9 @@ module OCCI
       # ---------------------------------------------------------------------------------------------------------------------
       module Network
 
+        # location cache mapping OCCI locations to OpenNebula VM IDs
+        @@location_cache = {}
+
         TEMPLATENETWORKRAWFILE = 'network.erb'
 
         # ---------------------------------------------------------------------------------------------------------------------       
@@ -44,11 +47,14 @@ module OCCI
 
           network_kind = OCCI::Registry.get_by_id("http://schemas.ogf.org/occi/infrastructure#network")
 
+          id = self.generate_occi_id(network_kind, backend_object.id.to_s)
+          @@location_cache[id] = backend_object.id.to_s
+
           network = Hashie::Mash.new
 
           network.kind = storage_kind.type_identifier
           network.mixins = %w|http://opennebula.org/occi/infrastructure#network http://schemas.ogf.org/occi/infrastructure#ipnetwork|
-          network.id = self.generate_occi_id(network_kind, backend_object.id.to_s)
+          network.id = id
           network.title = backend_object['NAME']
           network.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
 
@@ -82,7 +88,7 @@ module OCCI
           backend_object = VirtualNetwork.new(VirtualNetwork.build_xml(), @one_client)
 
           template_location = OCCI::Server.config["TEMPLATE_LOCATION"] + TEMPLATENETWORKRAWFILE
-          template = Erubis::Eruby.new(File.read(template_raw)).evaluate(network)
+          template = Erubis::Eruby.new(File.read(template_location)).evaluate(:network => network)
 
           OCCI::Log.debug("Parsed template #{template}")
           rc = backend_object.allocate(template)
@@ -93,7 +99,7 @@ module OCCI
 
           network_set_state(backend_object, network)
 
-          OCCI::Log.debug("OpenNebula ID of virtual network: #{network.backend[:id]}")
+          OCCI::Log.debug("OpenNebula ID of virtual network: #{@@location_cache[network.id]}")
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
@@ -103,7 +109,7 @@ module OCCI
 
         # ---------------------------------------------------------------------------------------------------------------------     
         def network_delete(network)
-          backend_object = VirtualNetwork.new(VirtualNetwork.build_xml(network.backend[:id]), @one_client)
+          backend_object = VirtualNetwork.new(VirtualNetwork.build_xml(@@location_cache[network.id]), @one_client)
           rc = backend_object.delete
           check_rc(rc)
         end
@@ -126,13 +132,13 @@ module OCCI
 
         # ---------------------------------------------------------------------------------------------------------------------
         def network_up(network, parameters)
-          backend_object = VirtualNetwork.new(VirtualNetwork.build_xml(network.backend[:id]), @one_client)
+          backend_object = VirtualNetwork.new(VirtualNetwork.build_xml(@@location_cache[network.id]), @one_client)
           # not implemented in OpenNebula
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
         def network_down(network, parameters)
-          backend_object = VirtualNetwork.new(VirtualNetwork.build_xml(network.backend[:id]), @one_client)
+          backend_object = VirtualNetwork.new(VirtualNetwork.build_xml(@@location_cache[network.id]), @one_client)
           # not implemented in OpenNebula
         end
 
