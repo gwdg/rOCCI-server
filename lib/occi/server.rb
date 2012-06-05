@@ -72,7 +72,10 @@ require 'occi/backend/manager'
 # Sinatra methods for handling HTTP requests
 
 module OCCI
+
   class Server < Sinatra::Application
+
+    VERSION = "0.5.0-beta1"
 
     register Sinatra::MultiRoute
     register Sinatra::CrossOrigin
@@ -176,6 +179,7 @@ module OCCI
 
       @backend = case OCCI::Server.config["backend"]
                    when "opennebula"
+                     require 'oca'
                      require 'occi/backend/opennebula/opennebula'
                      OCCI::Server.initialize_model('etc/backend/opennebula')
                      OCCI::Backend::Manager.register_backend(OCCI::Backend::OpenNebula::OpenNebula, OCCI::Backend::OpenNebula::OpenNebula::OPERATIONS)
@@ -255,7 +259,7 @@ module OCCI
 
       OCCI::Log.debug('### Prepare response ###')
       response['Accept'] = "application/occi+json,application/json,text/plain,text/uri-list,application/xml,text/xml,application/occi+xml"
-      response['Server'] = "rOCCI/#{VERSION_NUMBER} OCCI/1.1"
+      response['Server'] = "rOCCI/#{OCCI::Server::VERSION} OCCI/1.1"
       OCCI::Log.debug('### Initialize response OCCI collection ###')
       @collection = Hashie::Mash.new(:kinds => [], :mixins => [], :actions => [], :resources => [], :links => [])
       @locations = Array.new
