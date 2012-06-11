@@ -21,8 +21,8 @@
 
 require 'rubygems'
 require 'uuidtools'
-require 'OpenNebula'
-require 'occi/registry'
+require 'oca'
+require 'occi/model'
 
 # OpenNebula backend
 require 'occi/backend/opennebula/compute'
@@ -61,57 +61,48 @@ module OCCI
 
         # Operation mappings
 
-        OPERATIONS = {}
+        OPERATIONS = { }
 
         OPERATIONS["http://schemas.ogf.org/occi/infrastructure#compute"] = {
 
             # Generic resource operations
-            :deploy => :compute_deploy,
+            :deploy       => :compute_deploy,
             :update_state => :compute_update_state,
-            :delete => :compute_delete,
+            :delete       => :compute_delete,
 
             # Compute specific resource operations
-            :start => :compute_start,
-            :stop => :compute_stop,
-            :restart => :compute_restart,
-            :suspend => :compute_suspend
+            :start        => :compute_start,
+            :stop         => :compute_stop,
+            :restart      => :compute_restart,
+            :suspend      => :compute_suspend
         }
 
         OPERATIONS["http://schemas.ogf.org/occi/infrastructure#network"] = {
 
             # Generic resource operations
-            :deploy => :network_deploy,
+            :deploy       => :network_deploy,
             :update_state => :network_update_state,
-            :delete => :network_delete,
+            :delete       => :network_delete,
 
             # Network specific resource operations
-            :up => :network_up,
-            :down => :network_down
+            :up           => :network_up,
+            :down         => :network_down
         }
 
         OPERATIONS["http://schemas.ogf.org/occi/infrastructure#storage"] = {
 
             # Generic resource operations
-            :deploy => :storage_deploy,
+            :deploy       => :storage_deploy,
             :update_state => :storage_update_state,
-            :delete => :storage_delete,
+            :delete       => :storage_delete,
 
             # Network specific resource operations
-            :online => :storage_online,
-            :offline => :storage_offline,
-            :backup => :storage_backup,
-            :snapshot => :storage_snapshot,
-            :resize => :storage_resize
+            :online       => :storage_online,
+            :offline      => :storage_offline,
+            :backup       => :storage_backup,
+            :snapshot     => :storage_snapshot,
+            :resize       => :storage_resize
         }
-
-        # ---------------------------------------------------------------------------------------------------------------------       
-        # Register backend specific mixins
-        begin
-          #OCCI::CategoryRegistry.register(OCCI::Backend::ONE::Image::MIXIN)
-          #OCCI::CategoryRegistry.register(OCCI::Backend::ONE::Network::MIXIN)
-          #OCCI::CategoryRegistry.register(OCCI::Backend::ONE::VirtualMachine::MIXIN)
-          #OCCI::CategoryRegistry.register(OCCI::Mixins::Reservation::MIXIN)
-        end
 
         # ---------------------------------------------------------------------------------------------------------------------       
         #        private
@@ -171,13 +162,14 @@ module OCCI
           backend_object_pool=TemplatePool.new(@one_client, INFO_ACL)
           backend_object_pool.info
           backend_object_pool.each do |backend_object|
-            related = OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#os_tpl')
-            term = backend_object['NAME'].downcase.chomp.gsub(/\W/, '_')
+            related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
+            term    = backend_object['NAME'].downcase.chomp.gsub(/\W/, '_')
             # TODO: implement correct schema for service provider
-            scheme = "http://schemas.opennebula.org/occi/infrastructure/os_tpl#"
-            title = backend_object['NAME']
-            mixin = OCCI::Core::Mixin.new(:related => related, :term=>term, :scheme=>scheme,:title=>title)
-            OCCI::CategoryRegistry.register(mixin)
+            scheme  = OCCI::Server.location + "/occi/infrastructure/os_tpl#"
+            title   = backend_object['NAME']
+            mixin   = Hashie::Mash.new(:related => related, :term => term, :scheme => scheme, :title => title)
+            mixin   = OCCI::Core::Mixin.new(mixin)
+            OCCI::Model.register(mixin)
           end
         end
 
