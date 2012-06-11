@@ -27,7 +27,7 @@ require 'occi/backend/dummy'
 
 #require 'uuidtools'
 #require 'OpenNebula/OpenNebula'
-#require 'occi/CategoryRegistry'
+#require 'occi/model'
 #require 'occi/rendering/http/LocationRegistry'
 
 # OpenNebula backend
@@ -49,9 +49,9 @@ module OCCI
   module Backend
 
     # ---------------------------------------------------------------------------------------------------------------------
-    RESOURCE_DEPLOY = :deploy
+    RESOURCE_DEPLOY       = :deploy
     RESOURCE_UPDATE_STATE = :update_state
-    RESOURCE_DELETE = :delete
+    RESOURCE_DELETE       = :delete
 
     # ---------------------------------------------------------------------------------------------------------------------
     class Manager
@@ -60,8 +60,8 @@ module OCCI
       private
       # ---------------------------------------------------------------------------------------------------------------------
 
-      @@backends_classes = {}
-      @@backends_operations = {}
+      @@backends_classes    = { }
+      @@backends_operations = { }
 
       # ---------------------------------------------------------------------------------------------------------------------
       public
@@ -75,7 +75,7 @@ module OCCI
 
         backend_ident = backend_class.name.downcase
 
-        @@backends_classes[backend_ident] = backend_class
+        @@backends_classes[backend_ident]    = backend_class
         @@backends_operations[backend_ident] = operations
       end
 
@@ -117,14 +117,9 @@ module OCCI
         # Use action term as ident
         operation = action.term
 
-        begin
-          # TODO: define some convention for result handling!
-          signal_resource(backend, operation, resource, parameters)
+        # TODO: define some convention for result handling!
+        signal_resource(backend, operation, resource, parameters)
 
-        rescue OCCI::BackendError
-          OCCI::Log.error("Action invocation failed!")
-          raise
-        end
       end
     end
   end
