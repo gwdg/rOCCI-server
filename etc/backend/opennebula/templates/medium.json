@@ -2,8 +2,11 @@
     "mixins":[
         {
             "term":"medium",
-            "scheme":"/occi/templates#",
+            "scheme":"/occi/infrastructure/resource_tpl#",
             "title":"Medium Instance",
+            "related":[
+                "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+            ],
             "attributes":{
                 "occi":{
                     "compute":{

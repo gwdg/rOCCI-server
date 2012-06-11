@@ -4,6 +4,9 @@
             "term":"small",
             "scheme":"http://aws.amazon.com/ec2/instance-types#",
             "title":"Small Instance",
+            "related":[
+                "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+            ],
             "attributes":{
                 "occi":{
                     "compute":{

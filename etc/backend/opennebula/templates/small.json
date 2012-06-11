@@ -2,8 +2,11 @@
     "mixins":[
         {
             "term":"small",
-            "scheme":"/occi/templates#",
+            "scheme":"/occi/infrastructure/resource_tpl#",
             "title":"Small Instance",
+            "related":[
+                "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+            ],
             "attributes":{
                 "occi":{
                     "compute":{

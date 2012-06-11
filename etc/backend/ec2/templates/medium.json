@@ -4,6 +4,9 @@
             "term":"medium",
             "scheme":"http://aws.amazon.com/ec2/instance-types#",
             "title":"Medium Instance",
+            "related":[
+                "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+            ],
             "attributes":{
                 "occi":{
                     "compute":{

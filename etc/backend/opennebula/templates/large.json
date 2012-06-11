@@ -2,8 +2,11 @@
     "mixins":[
         {
             "term":"large",
-            "scheme":"/occi/templates#",
+            "scheme":"/occi/infrastructure/resource_tpl#",
             "title":"Large Instance",
+            "related":[
+                "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+            ],
             "attributes":{
                 "occi":{
                     "compute":{
