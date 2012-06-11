@@ -25,6 +25,8 @@
 # gems
 require 'rubygems'
 
+require 'oca'
+
 # sinatra
 require 'sinatra'
 require 'sinatra/multi_route'
@@ -34,6 +36,8 @@ require 'sinatra/respond_with'
 # Ruby standard library
 require 'uri'
 require 'fileutils'
+
+require 'occi/log'
 
 # Server configuration
 require 'occi/configuration'
@@ -47,11 +51,8 @@ require 'active_support/core_ext'
 ##############################################################################
 # Require OCCI classes
 
-# Exceptions
-require 'occi/exceptions'
-
 # Category registry
-require 'occi/registry'
+require 'occi/model'
 
 # OCCI Core classes
 require 'occi/core/action'
@@ -63,7 +64,7 @@ require 'occi/core/mixin'
 require 'occi/core/resource'
 
 # OCCI parser
-require 'occi/parse'
+require 'occi/parser'
 
 # Backend support
 require 'occi/backend/manager'
@@ -100,9 +101,9 @@ module OCCI
       self.port.nil? ? self.location : self.location + ':' + self.port
     end
 
-    def initialize(config = {})
+    def initialize(config = { })
       # create logger
-      config[:log_dest] ||= STDOUT
+      config[:log_dest]  ||= STDOUT
       config[:log_level] ||= Logger::INFO
       config[:log_level] = case OCCI::Server.config[:log_level]
                              when "debug"
@@ -119,13 +120,7 @@ module OCCI
                                Logger::INFO
                            end
 
-      @logger = Logger.new(config[:log_dest])
-      @logger.level = config[:log_level]
-
-      # subscribe to log messages and send to logger
-      @log_subscriber = ActiveSupport::Notifications.subscribe("log") do |name, start, finish, id, payload|
-        @logger.log(payload[:level], payload[:message])
-      end
+      OCCI::Log.new(config[:log_dest], config[:log_level])
 
       # Configuration of HTTP Authentication
       if OCCI::Server.config['username'] != nil and OCCI::Server.config['password'] != nil
@@ -134,37 +129,14 @@ module OCCI
         end
       end
 
-      OCCI::Server.initialize_core_model
-      OCCI::Server.initialize_model(OCCI::Server.config['occi_model_path'])
+      OCCI::Model.register_core
+      OCCI::Model.register_infrastructure
+      OCCI::Model.register_files(OCCI::Server.config['occi_model_path'], OCCI::Server.location)
 
       # set views explicitly
       set :views, File.dirname(__FILE__) + "/../../views"
 
       super
-    end
-
-# ---------------------------------------------------------------------------------------------------------------------
-
-    def self.initialize_core_model
-      OCCI::Log.info("### Initializing OCCI Core Model ###")
-      OCCI::Core::Entity.register
-      OCCI::Core::Resource.register
-      OCCI::Core::Link.register
-    end
-
-    def self.initialize_model(path)
-      OCCI::Log.info("### Initializing OCCI Model from #{path} ###")
-      Dir.glob(path + '/**/*.json').each do |file|
-        collection = Hashie::Mash.new(JSON.parse(File.read(file)))
-        # add location of service provider to scheme if it has a relative location
-        collection.kinds.collect { |kind| kind.scheme = self.location + kind.scheme if kind.scheme.start_with? '/' } if collection.kinds
-        collection.mixins.collect { |mixin| mixin.scheme = self.location + mixin.scheme if mixin.scheme.start_with? '/' } if collection.mixins
-        collection.actions.collect { |action| action.scheme = self.location + action.scheme if action.scheme.start_with? '/' } if collection.actions
-        # register categories
-        collection.kinds.each { |kind| OCCI::Registry.register(OCCI::Core::Kind.new(kind)) } if collection.kinds
-        collection.mixins.each { |mixin| OCCI::Registry.register(OCCI::Core::Mixin.new(mixin)) } if collection.mixins
-        collection.actions.each { |action| OCCI::Registry.register(OCCI::Core::Action.new(action)) } if collection.actions
-      end
     end
 
     # ---------------------------------------------------------------------------------------------------------------------
@@ -181,13 +153,13 @@ module OCCI
                    when "opennebula"
                      require 'oca'
                      require 'occi/backend/opennebula/opennebula'
-                     OCCI::Server.initialize_model('etc/backend/opennebula')
+                     OCCI::Model.register_files('etc/backend/opennebula', OCCI::Server.location)
                      OCCI::Backend::Manager.register_backend(OCCI::Backend::OpenNebula::OpenNebula, OCCI::Backend::OpenNebula::OpenNebula::OPERATIONS)
                      OCCI::Backend::OpenNebula::OpenNebula.new(user, password)
                    when "ec2"
                      require 'occi/backend/ec2/ec2'
                      Bundler.require(:ec2)
-                     OCCI::Server.initialize_model('etc/backend/ec2')
+                     OCCI::Model.register_files('etc/backend/ec2', OCCI::Server.location)
                      OCCI::Backend::Manager.register_backend(OCCI::Backend::EC2::EC2, OCCI::Backend::EC2::EC2::OPERATIONS)
                      OCCI::Backend::EC2::EC2.new(user, password)
                    when "dummy" then
@@ -199,47 +171,6 @@ module OCCI
                  end
 
 
-    end
-
-    # Parses a Rack/Sinatra Request and extract OCCI relevant information
-    def parse(request)
-      OCCI::Log.debug('### Parsing request data to OCCI data structure ###')
-      body = request.body.read
-      header = request.env
-      collection = OCCI::Core::Collection.new
-      locations = []
-      # always check headers
-      locations = OCCI::Parse.header_locations(header)
-      if locations.empty?
-        if request.path_info.include?('/-/')
-          collection = OCCI::Parse.header_categories(header)
-        else
-          collection = OCCI::Parse.header_entity(header)
-        end
-      end
-
-      case request.media_type
-        when 'text/uri-list'
-          body.each_line do |line|
-            locations << URI.parse(line)
-          end
-        when 'text/plain', nil
-          locations = OCCI::Parse.text_locations(body)
-          if locations.empty?
-            if request.path_info.include?('/-/')
-              collection = OCCI::Parse.text_categories(body)
-            else
-              collection = OCCI::Parse.text_entity(body)
-            end
-          end
-        when 'application/occi+json', 'application/json'
-          collection = OCCI::Parse.json(body)
-        when 'application/occi+xml', 'application/xml'
-          collection = OCCI::Parse.xml(body)
-        else
-          raise OCCI::ContentTypeNotSupported
-      end
-      return locations, collection
     end
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -255,21 +186,22 @@ module OCCI
       OCCI::Log.debug("### Client Request URL: #{request.url}")
       OCCI::Log.debug("### Client Request method: #{request.request_method}")
       OCCI::Log.debug("### Client Request Media Type: #{request.media_type}")
+      OCCI::Log.debug("### Client Request body: \n #{request.body.read}")
       OCCI::Log.debug('--------------------------------------------------------------------')
-
+      request.body.rewind
       OCCI::Log.debug('### Prepare response ###')
       response['Accept'] = "application/occi+json,application/json,text/plain,text/uri-list,application/xml,text/xml,application/occi+xml"
       response['Server'] = "rOCCI/#{OCCI::Server::VERSION} OCCI/1.1"
       OCCI::Log.debug('### Initialize response OCCI collection ###')
       @collection = Hashie::Mash.new(:kinds => [], :mixins => [], :actions => [], :resources => [], :links => [])
-      @locations = Array.new
+      @locations  = Array.new
       OCCI::Log.debug('### Preparing authentication handling ###')
       authentication = Rack::Auth::Basic::Request.new(request.env)
       OCCI::Log.debug('### Initializing backend ###')
       initialize_backend(authentication)
       OCCI::Log.debug('### Reset OCCI model ###')
-      OCCI::Registry.reset
-      @request_locations, @request_collection = parse(request)
+      OCCI::Model.reset
+      @request_locations, @request_collection = OCCI::Parser.parse(request.media_type, request.body.read, request.path_info.include?('/-/'), request.env)
       OCCI::Log.debug('### Fill OCCI model with entities from backend ###')
       @backend.register_existing_resources
     end
@@ -279,8 +211,8 @@ module OCCI
       OCCI::Log.debug('### Rendering response ###')
       @collection.delete_if { |k, v| v.empty? } # remove empty entries
       respond_to do |f|
-        f.txt { erb :collection, :locals => {:collection => @collection, :locations => @locations} }
-        f.on('*/*') { erb :collection, :locals => {:collection => @collection, :locations => @locations} }
+        f.txt { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
+        f.on('*/*') { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
         # f.html { haml :collection, :locals => {:collection => @collection} }
         f.json { @collection.to_json }
         f.on('application/occi+json') { @collection.to_json }
@@ -295,7 +227,7 @@ module OCCI
 # returns all kinds, mixins and actions registered for the server
     get '/-/', '/.well-known/org/ogf/occi/-/' do
       OCCI::Log.info("### Listing all kinds, mixins and actions ###")
-      @collection = OCCI::Registry.get(@request_collection.categories)
+      @collection = OCCI::Model.get(@request_collection.categories)
       status 200
     end
 
@@ -304,9 +236,9 @@ module OCCI
     get '*' do
       if request.path_info.end_with?('/')
         if request.path_info == '/'
-          kinds = OCCI::Registry.get.kinds
+          kinds = OCCI::Model.get.kinds
         else
-          kinds = [OCCI::Registry.get_by_location(request.path_info)]
+          kinds = [OCCI::Model.get_by_location(request.path_info)]
         end
 
         kinds.each do |kind|
@@ -316,7 +248,7 @@ module OCCI
           @locations.concat kind.entities.collect { |entity| OCCI::Server.uri + entity.location }
         end
       else
-        kind = OCCI::Registry.get_by_location(request.path_info.rpartition('/').first + '/')
+        kind = OCCI::Model.get_by_location(request.path_info.rpartition('/').first + '/')
         uuid = request.path_info.rpartition('/').last
         error 404 if kind.nil? or uuid.nil?
         OCCI::Log.info("### Listing entity with uuid #{uuid} ###")
@@ -330,9 +262,9 @@ module OCCI
 # POST request
     post '/-/', '/.well-known/org/ogf/occi/-/' do
       logger.info("## Creating user defined mixin ###")
-      raise OCCI::MixinAlreadyExistsError, "Mixin already exists!" if OCCI::Registry.get(@request_collection.mixins)
+      raise "Mixin already exists!" if OCCI::Model.get(@request_collection.mixins)
       @request_collection.mixins.each do |mixin|
-        OCCI::CategoryRegistry.register(mixin)
+        OCCI::Model.register(mixin)
         # TODO: inform backend about new mixin
       end
     end
@@ -340,7 +272,7 @@ module OCCI
 # Create an instance appropriate to category field and optionally link an instance to another one
     post '*' do
 
-      category = OCCI::Registry.get_by_location(request.path_info.rpartition('/').first + '/')
+      category = OCCI::Model.get_by_location(request.path_info.rpartition('/').first + '/')
 
       if category.nil?
         OCCI::Log.debug("### No category found for request location #{request.path_info} ###")
@@ -353,10 +285,15 @@ module OCCI
           action = @request_collection.actions.first
           params[:method] ||= action.attributes!.method if action
         else
-          action = OCCI::Registry.get_by_id(category.actions.select { |action| action.split('#').last == params[:action] }.first)
+          action = OCCI::Model.get_by_id(category.actions.select { |action| action.split('#').last == params[:action] }.first)
         end
-
-        category.entities.each do |entity|
+        if request.path_info.ends_with?('/')
+          category.entities.each do |entity|
+            OCCI::Backend::Manager.delegate_action(@backend, action, params, entity)
+            status 200
+          end
+        else
+          entity = category.entities.select { |entity| entity.id == request.path_info.rpartition('/').last }.first
           OCCI::Backend::Manager.delegate_action(@backend, action, params, entity)
           status 200
         end
@@ -384,109 +321,110 @@ module OCCI
 # PUT request
 
     put '*' do
-
-      # Add an resource instance to a mixin
-      unless @occi_request.mixins.empty?
-        mixin = OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info)
-
-        @occi_request.locations.each do |location|
-          entity = OCCI::Rendering::HTTP::LocationRegistry.get_object(URI.parse(location).path)
-
-          raise "No entity found at location: #{entity_location}" if entity == nil
-          raise "Object referenced by uri [#{entity_location}] is not a OCCI::Core::Resource instance!" if !entity.kind_of?(OCCI::Core::Resource)
-
-          logger.debug("Associating entity [#{entity}] at location #{entity_location} with mixin #{mixin}")
-
-          entity.mixins << mixin
-        end
-        break
-      end
-
-      # Update resource instance(s) at the given location
-      unless OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).nil?
-        entities = []
-        # Determine set of resources to be updated
-        if OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).kind_of?(OCCI::Core::Resource)
-          entities = [OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info)]
-        elsif not OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).kind_of?(OCCI::Core::Category)
-          entities = OCCI::Rendering::HTTP::LocationRegistry.get_resources_below_location(request.path_info, OCCI::CategoryRegistry.get_all)
-        elsif OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).kind_of?(OCCI::Core::Category)
-          object = OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info)
-          @occi_request.locations.each do |loc|
-            entities << OCCI::Rendering::HTTP::LocationRegistry.get_object(URI.parse(loc.chomp('"').reverse.chomp('"').reverse).path)
-          end
-        end
-        logger.info("Full update for [#{entities.size}] entities...")
-
-        # full update of mixins
-        object.entities.each do |entity|
-          entity.mixins.delete(object)
-          object.entities.delete(entity)
-        end if object.kind_of?(OCCI::Core::Mixin)
-
-        entities.each do |entity|
-          logger.debug("Adding entity: #{entity.get_location} to mixin #{object.type_identifier}")
-          entity.mixins.push(object).uniq!
-          object.entities.push(entity).uniq!
-        end if object.kind_of?(OCCI::Core::Mixin)
-
-        # full update of attributes
-        entities.each do |entity|
-          # Refresh information from backend for entities of type resource
-          # TODO: full update
-          entity.attributes.merge!(@occi_request.attributes)
-          # TODO: update entity in backend
-        end unless @occi_request.attributes.empty?
-
-        # full update of links
-        # TODO: full update e.g. delete old links first
-        @occi_request.links.each do |link_data|
-          logger.debug("Extracted link data: #{link_data}")
-          raise "Mandatory information missing (related | target | category)!" unless link_data.related != nil && link_data.target != nil && link_data.category != nil
-
-          link_mixins = []
-          link_kind = nil
-          link_data.category.split(' ').each do |link_category|
-            begin
-              cat = OCCI::CategoryRegistry.get_by_id(link_category)
-            rescue OCCI::CategoryNotFoundException => e
-              logger.info("Category #{link_category} not found")
-              next
-            end
-            link_kind = cat if cat.kind_of?(OCCI::Core::Kind)
-            link_mixins << cat if cat.kind_of?(OCCI::Core::Mixin)
-          end
-
-          raise "No kind for link category #{link_data.category} found" if link_kind.nil?
-
-          target_location = link_data.target_attr
-          target = OCCI::Rendering::HTTP::LocationRegistry.get_object(target_location)
-
-          entities.each do |entity|
-
-            source_location = OCCI::Rendering::HTTP::LocationRegistry.get_location_of_object(entity)
-
-            link_attributes = link_data.attributes.clone
-            link_attributes["occi.core.target"] = target_location.chomp('"').reverse.chomp('"').reverse
-            link_attributes["occi.core.source"] = source_location
-
-            link = link_kind.entity_type.new(link_attributes, link_mixins)
-            OCCI::Rendering::HTTP::LocationRegistry.register_location(link.get_location(), link)
-
-            target.links << link
-            entity.links << link
-          end
-        end
-        break
-      end
-
-      response.status = OCCI::Rendering::HTTP::Response::HTTP_NOT_FOUND
-      # Create resource instance at the given location
-      raise "Creating resources with method 'put' is currently not possible!"
-
-      # This must be the last statement in this block, so that sinatra does not try to respond with random body content
-      # (or fail utterly while trying to do that!)
-      nil
+      status 501
+      break
+      ## Add an resource instance to a mixin
+      #unless @occi_request.mixins.empty?
+      #  mixin = OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info)
+      #
+      #  @occi_request.locations.each do |location|
+      #    entity = OCCI::Rendering::HTTP::LocationRegistry.get_object(URI.parse(location).path)
+      #
+      #    raise "No entity found at location: #{entity_location}" if entity == nil
+      #    raise "Object referenced by uri [#{entity_location}] is not a OCCI::Core::Resource instance!" if !entity.kind_of?(OCCI::Core::Resource)
+      #
+      #    logger.debug("Associating entity [#{entity}] at location #{entity_location} with mixin #{mixin}")
+      #
+      #    entity.mixins << mixin
+      #  end
+      #  break
+      #end
+      #
+      ## Update resource instance(s) at the given location
+      #unless OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).nil?
+      #  entities = []
+      #  # Determine set of resources to be updated
+      #  if OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).kind_of?(OCCI::Core::Resource)
+      #    entities = [OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info)]
+      #  elsif not OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).kind_of?(OCCI::Core::Category)
+      #    entities = OCCI::Rendering::HTTP::LocationRegistry.get_resources_below_location(request.path_info, OCCI::Model.get_all)
+      #  elsif OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).kind_of?(OCCI::Core::Category)
+      #    object = OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info)
+      #    @occi_request.locations.each do |loc|
+      #      entities << OCCI::Rendering::HTTP::LocationRegistry.get_object(URI.parse(loc.chomp('"').reverse.chomp('"').reverse).path)
+      #    end
+      #  end
+      #  logger.info("Full update for [#{entities.size}] entities...")
+      #
+      #  # full update of mixins
+      #  object.entities.each do |entity|
+      #    entity.mixins.delete(object)
+      #    object.entities.delete(entity)
+      #  end if object.kind_of?(OCCI::Core::Mixin)
+      #
+      #  entities.each do |entity|
+      #    logger.debug("Adding entity: #{entity.get_location} to mixin #{object.type_identifier}")
+      #    entity.mixins.push(object).uniq!
+      #    object.entities.push(entity).uniq!
+      #  end if object.kind_of?(OCCI::Core::Mixin)
+      #
+      #  # full update of attributes
+      #  entities.each do |entity|
+      #    # Refresh information from backend for entities of type resource
+      #    # TODO: full update
+      #    entity.attributes.merge!(@occi_request.attributes)
+      #    # TODO: update entity in backend
+      #  end unless @occi_request.attributes.empty?
+      #
+      #  # full update of links
+      #  # TODO: full update e.g. delete old links first
+      #  @occi_request.links.each do |link_data|
+      #    logger.debug("Extracted link data: #{link_data}")
+      #    raise "Mandatory information missing (related | target | category)!" unless link_data.related != nil && link_data.target != nil && link_data.category != nil
+      #
+      #    link_mixins = []
+      #    link_kind = nil
+      #    link_data.category.split(' ').each do |link_category|
+      #      begin
+      #        cat = OCCI::Model.get_by_id(link_category)
+      #      rescue OCCI::CategoryNotFoundException => e
+      #        logger.info("Category #{link_category} not found")
+      #        next
+      #      end
+      #      link_kind = cat if cat.kind_of?(OCCI::Core::Kind)
+      #      link_mixins << cat if cat.kind_of?(OCCI::Core::Mixin)
+      #    end
+      #
+      #    raise "No kind for link category #{link_data.category} found" if link_kind.nil?
+      #
+      #    target_location = link_data.target_attr
+      #    target = OCCI::Rendering::HTTP::LocationRegistry.get_object(target_location)
+      #
+      #    entities.each do |entity|
+      #
+      #      source_location = OCCI::Rendering::HTTP::LocationRegistry.get_location_of_object(entity)
+      #
+      #      link_attributes = link_data.attributes.clone
+      #      link_attributes["occi.core.target"] = target_location.chomp('"').reverse.chomp('"').reverse
+      #      link_attributes["occi.core.source"] = source_location
+      #
+      #      link = link_kind.entity_type.new(link_attributes, link_mixins)
+      #      OCCI::Rendering::HTTP::LocationRegistry.register_location(link.get_location(), link)
+      #
+      #      target.links << link
+      #      entity.links << link
+      #    end
+      #  end
+      #  break
+      #end
+      #
+      #response.status = OCCI::Rendering::HTTP::Response::HTTP_NOT_FOUND
+      ## Create resource instance at the given location
+      #raise "Creating resources with method 'put' is currently not possible!"
+      #
+      ## This must be the last statement in this block, so that sinatra does not try to respond with random body content
+      ## (or fail utterly while trying to do that!)
+      #nil
 
     end
 
@@ -496,7 +434,7 @@ module OCCI
     delete '/-/', '/.well-known/org/ogf/occi/-/' do
       # Location references query interface => delete provided mixin
       raise OCCI::CategoryMissingException if @request_collection.mixins.nil?
-      mixins = OCCI::Registry.get(@request_collection.mixins)
+      mixins = OCCI::Model.get(@request_collection.mixins)
       raise OCCI::MixinNotFoundException if mixins.nil?
       mixins.each do |mixin|
         OCCI::Log.debug("### Deleting mixin #{mixin.type_identifier} ###")
@@ -504,7 +442,7 @@ module OCCI
           entity.mixins.delete(mixin)
         end
         # TODO: Notify backend to delete mixin and unassociate entities
-        OCCI::Registry.unregister(mixin)
+        OCCI::Model.unregister(mixin)
       end
       status 200
     end
@@ -513,9 +451,9 @@ module OCCI
 
       # unassociate resources specified by URI in payload from mixin specified by request location
       if request.path_info == '/'
-        categories = OCCI::Registry.get.kinds
+        categories = OCCI::Model.get.kinds
       else
-        categories = [OCCI::Registry.get_by_location(request.path_info.rpartition('/').first + '/')]
+        categories = [OCCI::Model.get_by_location(request.path_info.rpartition('/').first + '/')]
       end
 
       categories.each do |category|
