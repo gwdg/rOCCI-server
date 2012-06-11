@@ -30,7 +30,7 @@ module OCCI
       module Compute
 
         # location cache mapping OCCI locations to OpenNebula VM IDs
-        @@location_cache = {}
+        @@location_cache = { }
 
         TEMPLATECOMPUTERAWFILE = 'compute.erb'
 
@@ -45,17 +45,17 @@ module OCCI
           # get information on compute object from OpenNebula backend
           backend_object.info
 
-          compute_kind = OCCI::Registry.get_by_id("http://schemas.ogf.org/occi/infrastructure#compute")
+          compute_kind = OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure#compute")
 
-          id = self.generate_occi_id(compute_kind, backend_object.id.to_s)
+          id                   = self.generate_occi_id(compute_kind, backend_object.id.to_s)
           @@location_cache[id] = backend_object.id.to_s
 
           compute = Hashie::Mash.new
 
-          compute.kind = compute_kind.type_identifier
+          compute.kind   = compute_kind.type_identifier
           compute.mixins = %w|http://opennebula.org/occi/infrastructure#compute|
-          compute.id = id
-          compute.title = backend_object['NAME']
+          compute.id     = id
+          compute.title  = backend_object['NAME']
           compute.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
 
           compute.attributes!.occi!.compute!.cores = backend_object['TEMPLATE/VCPU'].to_i if backend_object['TEMPLATE/VCPU']
@@ -95,7 +95,7 @@ module OCCI
           #  OCCI::Log.debug("VNC port: #{vnc_port}")
           #  OCCI::Log.debug("VNC host: #{vnc_host}")
           #
-          #  compute.mixins << OCCI::Registry.get_by_id("http://schemas.ogf.org/occi/infrastructure/compute#console")
+          #  compute.mixins << OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure/compute#console")
           #
           #  if occi_object.attributes['opennebula.vm.vnc'].nil? or occi_object.backend[:novnc_pipe].nil?
           #
@@ -115,7 +115,7 @@ module OCCI
           #      OCCI::Log.error("Error in creating VNC proxy: #{e.message}")
           #    end
           #  end
-          #  OCCI::Registry.get_by_id(kind).entities << compute
+          #  OCCI::Model.get_by_id(kind).entities << compute
           #end
 
           compute_parse_links(compute, backend_object)
@@ -129,26 +129,44 @@ module OCCI
         def compute_parse_links(compute, backend_object)
           # create links for all storage instances
           backend_object.each('TEMPLATE/DISK') do |disk|
-            OCCI::Log.debug("Storage Backend ID: #{disk['IMAGE_ID']}")
-
-            link = OCCI::Core::Link.new
-            storagelink_kind = OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#storagelink')
-            link.kind = storagelink_kind.type_identifier
-            link.id = self.generate_occi_id(storagelink_kind, disk['IMAGE_ID'].to_s)
-            storage_kind = OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#storage')
-            storage_id = self.generate_occi_id(storage_kind, disk['IMAGE_ID'].to_s)
-            target = storage_kind.entities.select { |entity| entity.id == storage_id }.first
+            id = offset = 0
+            if disk['DISK_ID']
+              id             = disk['DISK_ID'].to_i
+              offset         = 100000 # set an offset for OCCI ID generation to distinguish from Images
+              storage        = OCCI::Core::Resource.new
+              storage.kind   = 'http://schemas.ogf.org/occi/infrastructure#storage'
+              storage.mixins = ['http://opennebula.org/occi/infrastructure#storagelink']
+              puts self.generate_occi_id(OCCI::Model.get_by_id(storage.kind), (id + offset).to_s)
+              storage.id = self.generate_occi_id(OCCI::Model.get_by_id(storage.kind), (id + offset).to_s)
+              puts "test"
+              storage.attributes!.occi!.storage!.size              = disk['SIZE']
+              storage.attributes!.org!.opennebula!.storage!.fstype = disk['FORMAT']
+              OCCI::Model.get_by_id(storage.kind).entities << storage
+            elsif disk['IMAGE_ID']
+              id = disk['IMAGE_ID'].to_i
+            else
+              next
+            end
+            puts "test"
+            OCCI::Log.debug("Storage Backend ID: #{id}")
+            storage_kind     = OCCI::Model.get_by_id('http://schemas.ogf.org/occi/infrastructure#storage')
+            storage_id       = self.generate_occi_id(storage_kind, (id + offset).to_s)
+            link             = OCCI::Core::Link.new
+            storagelink_kind = OCCI::Model.get_by_id('http://schemas.ogf.org/occi/infrastructure#storagelink')
+            link.kind        = storagelink_kind.type_identifier
+            link.id          = self.generate_occi_id(storagelink_kind, (id + offset).to_s)
+            target           = storage_kind.entities.select { |entity| entity.id == storage_id }.first
             if target.nil?
               one_storage = Image.new(Image.build_xml(disk['IMAGE_ID']), @one_client)
               self.storage_parse_backend_object(one_storage)
               target = storage_kind.entities.select { |entity| entity.id == storage_id }.first
             end
-            link.target = target.location
-            link.title = target.title
+            link.target  = target.location
+            link.title   = target.title
             link.summary = target.summary
-            link.rel = storage_kind.type_identifier
-            link.source = compute.location
-            link.mixins << OCCI::Registry.get_by_id('http://opennebula.org/occi/infrastructure#storagelink')
+            link.rel     = storage_kind.type_identifier
+            link.source  = compute.location
+            link.mixins  = ['http://opennebula.org/occi/infrastructure#storagelink']
             link.attributes!.occi!.storagelink!.deviceid = disk['TARGET'] if disk['TARGET']
             link.attributes!.org!.opennebula!.storagelink!.bus = disk['BUS'] if disk['BUS']
             link.attributes!.org!.opennebula!.storagelink!.driver = disk['DRIVER'] if disk['TARGET']
@@ -163,25 +181,25 @@ module OCCI
           backend_object.each('TEMPLATE/NIC') do |nic|
             OCCI::Log.debug("Network Backend ID: #{nic['NETWORK_ID']}")
 
-            link = OCCI::Core::Link.new
-            networkinterface_kind = OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#networkinterface')
-            link.kind = networkinterface_kind.type_identifier
-            link.id = self.generate_occi_id(networkinterface_kind, nic['NETWORK_ID'].to_s)
-            network_kind = OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#network')
-            network_id = self.generate_occi_id(network_kind, nic['NETWORK_ID'].to_s)
-            target = network_kind.entitis.select { |entity| entity.id == network_id }.first
+            link                  = OCCI::Core::Link.new
+            networkinterface_kind = OCCI::Model.get_by_id('http://schemas.ogf.org/occi/infrastructure#networkinterface')
+            link.kind             = networkinterface_kind.type_identifier
+            link.id               = self.generate_occi_id(networkinterface_kind, nic['NETWORK_ID'].to_s)
+            network_kind          = OCCI::Model.get_by_id('http://schemas.ogf.org/occi/infrastructure#network')
+            network_id            = self.generate_occi_id(network_kind, nic['NETWORK_ID'].to_s)
+            target                = network_kind.entitis.select { |entity| entity.id == network_id }.first
             if target.nil?
               one_network = VirtualNetwork.new(VirtualNetwork.build_xml(nic['NETWORK_ID']), @one_client)
               self.network_parse_backend_object(one_network)
               target = network_kind.entities.select { |entity| entity.id == network_id }.first
             end
-            link.target = target.location
-            link.title = target.title
+            link.target  = target.location
+            link.title   = target.title
             link.summary = target.summary
-            link.rel = network_kind.type_identifier
-            link.source = compute.location
-            link.mixins << OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface')
-            link.mixins << OCCI::Registry.get_by_id('http://opennebula.org/occi/infrastructure#networkinterface')
+            link.rel     = network_kind.type_identifier
+            link.source  = compute.location
+            link.mixins << OCCI::Model.get_by_id('http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface')
+            link.mixins << OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#networkinterface')
             link.attributes!.occi!.networkinterface!.address = nic['IP'] if nic['IP']
             link.attributes!.occi!.networkinterface!.mac = nic['MAC'] if nic['MAC']
             link.attributes!.occi!.networkinterface!.interface = nic['TARGET'] if nic['TARGET']
@@ -206,26 +224,48 @@ module OCCI
 
         # ---------------------------------------------------------------------------------------------------------------------
         def compute_deploy(compute)
-          os_tpl = compute.mixins!.select { |mixin| mixin.related_to?("http://schemas.ogf.org/occi/infrastructure#os_tpl") }.first
+          os_tpl = compute.mixins!.select { |mixin| OCCI::Model.get_by_id(mixin).related_to?("http://schemas.ogf.org/occi/infrastructure#os_tpl") }.first
 
           backend_object = nil
 
           templates = TemplatePool.new(@one_client, OpenNebula::INFO_ACL)
           templates.info
-          template = templates.select { |template| template['NAME'] == os_tpl.title }.first
+          template = templates.select { |template| template['NAME'] == OCCI::Model.get_by_id(os_tpl).title if OCCI::Model.get_by_id(os_tpl) }.first
           if template
-            template.info
-            template['TEMPLATE/VCPU'] = compute.attributes.occi.compute.cores if compute.attributes!.occi!.compute!.cores
-            template['TEMPLATE/MEMORY'] = (compute.attributes.occi.compute.memory.to_f * 1000).to_s if compute.attributes!.occi!.compute!.memory
-            template['TEMPLATE/ARCHITECTURE'] = compute.attributes.occi.compute.architecture if compute.attributes!.occi!.compute!.architecture
-            template['TEMPLATE/CPU'] = compute.attributes.occi.compute.speed if compute.attributes!.occi!.compute!.speed
-            backend_object = template.instantiate
+            vcpu_old = template['TEMPLATE/VCPU']
+            vcpu = compute.attributes.occi.compute.cores if compute.attributes!.occi!.compute!.cores
+            memory_old = template['TEMPLATE/MEMORY']
+            memory = (compute.attributes.occi.compute.memory.to_f * 1000).to_s if compute.attributes!.occi!.compute!.memory
+            architecture_old = template['TEMPLATE/ARCHITECTURE']
+            architecture = compute.attributes.occi.compute.architecture if compute.attributes!.occi!.compute!.architecture
+            cpu_old = template['TEMPLATE/CPU']
+            cpu = compute.attributes.occi.compute.speed if compute.attributes!.occi!.compute!.speed
+            template.delete_element('TEMPLATE/VCPU')
+            template.add_element('TEMPLATE', { "VCPU" => vcpu })
+            template.delete_element('TEMPLATE/MEMORY')
+            template.add_element('TEMPLATE', { "MEMORY" => memory })
+            template.delete_element('TEMPLATE/ARCHITECTURE')
+            template.add_element('TEMPLATE', { "ARCHITECTURE" => architecture })
+            template.delete_element('TEMPLATE/CPU')
+            template.add_element('TEMPLATE', { "CPU" => cpu })
+            template.update(template.template_str)
+            backend_id = template.instantiate
             check_rc(backend_object)
+            template.delete_element('TEMPLATE/VCPU')
+            template.add_element('TEMPLATE', { "VCPU" => vcpu_old })
+            template.delete_element('TEMPLATE/MEMORY')
+            template.add_element('TEMPLATE', { "MEMORY" => memory_old })
+            template.delete_element('TEMPLATE/ARCHITECTURE')
+            template.add_element('TEMPLATE', { "ARCHITECTURE" => architecture_old })
+            template.delete_element('TEMPLATE/CPU')
+            template.add_element('TEMPLATE', { "CPU" => cpu_old })
+            template.update(template.template_str)
+            backend_object = VirtualMachine.new(VirtualMachine.build_xml(backend_id), @one_client)
           else
             backend_object = VirtualMachine.new(VirtualMachine.build_xml, @one_client)
 
             template_location = OCCI::Server.config["TEMPLATE_LOCATION"] + TEMPLATECOMPUTERAWFILE
-            template = Erubis::Eruby.new(File.read(template_location)).evaluate(:compute => compute)
+            template          = Erubis::Eruby.new(File.read(template_location)).evaluate(:compute => compute)
 
             OCCI::Log.debug("Parsed template #{template}")
             rc = backend_object.allocate(template)
@@ -234,7 +274,7 @@ module OCCI
           end
 
           backend_object.info
-          compute.id = self.generate_occi_id(OCCI::Registry.get_by_id(compute.kind), backend_object['ID'].to_s)
+          compute.id = self.generate_occi_id(OCCI::Model.get_by_id(compute.kind), backend_object['ID'].to_s)
 
           compute_set_state(backend_object, compute)
 
@@ -249,21 +289,21 @@ module OCCI
           case backend_object.lcm_state_str
             when "RUNNING" then
               compute.attributes!.occi!.compute!.state = "active"
-              compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=stop',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#stop')
-              compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=restart',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#restart')
-              compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=suspend',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#suspend')
+              compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=stop', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop')
+              compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=restart', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#restart')
+              compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=suspend', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#suspend')
             when "PROLOG", "BOOT", "SAVE_STOP", "SAVE_SUSPEND", "SAVE_MIGRATE", "MIGRATE", "PROLOG_MIGRATE", "PROLOG_RESUME", "LCM_INIT" then
               compute.attributes!.occi!.compute!.state = "inactive"
-              compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=restart',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#restart')
+              compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=restart', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#restart')
             when "SUSPENDED" then
               compute.attributes!.occi!.compute!.state = "suspended"
-              compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=start',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#start')
+              compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=start', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#start')
             when "FAIL" then
               compute.attributes!.occi!.compute!.state = "error"
-              compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=start',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#start')
+              compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=start', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#start')
             else
               compute.attributes!.occi!.compute!.state = "inactive"
-              compute.links << OCCI::Core::Link.new(:target=>compute.location + '?action=start',:rel=>'http://schemas.ogf.org/occi/infrastructure/compute/action#start')
+              compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=start', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#start')
           end
         end
 
@@ -306,7 +346,7 @@ module OCCI
         # COMPUTE Action start
         def compute_start(compute, parameters)
           backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), @one_client)
-          rc = backend_object.resume
+          rc             = backend_object.resume
           check_rc(rc)
         end
 
@@ -349,7 +389,7 @@ module OCCI
         # Action suspend
         def compute_suspend(compute, parameters)
           backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), @one_client)
-          rc = vm.suspend
+          rc             = vm.suspend
           check_rc(rc)
         end
 
