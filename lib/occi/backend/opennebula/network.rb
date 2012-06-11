@@ -45,7 +45,7 @@ module OCCI
           # get information on storage object from OpenNebula backend
           backend_object.info
 
-          network_kind = OCCI::Registry.get_by_id("http://schemas.ogf.org/occi/infrastructure#network")
+          network_kind = OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network")
 
           id = self.generate_occi_id(network_kind, backend_object.id.to_s)
           @@location_cache[id] = backend_object.id.to_s
@@ -95,7 +95,7 @@ module OCCI
           check_rc(rc)
 
           backend_object.info
-          network.id = self.generate_occi_id(OCCI::Registry.get_by_id(network.kind), backend_object['ID'].to_s)
+          network.id = self.generate_occi_id(OCCI::Model.get_by_id(network.kind), backend_object['ID'].to_s)
 
           network_set_state(backend_object, network)
 
