@@ -6,7 +6,7 @@ require 'json'
 require 'uri'
 
 require 'occi/server'
-require 'occi/registry'
+require 'occi/model'
 
 VERSION_NUMBER=0.5
 
@@ -19,51 +19,26 @@ describe OCCI::Server do
 
   describe "Model" do
 
-    it "initializes Core Model successfully" do
-      OCCI::Server.initialize_core_model
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/core#entity').should be_kind_of OCCI::Core::Kind
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/core#resource').should be_kind_of OCCI::Core::Kind
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/core#link').should be_kind_of OCCI::Core::Kind
-    end
-
-    it "initializes Infrastructure Model successfully" do
-      OCCI::Server.initialize_model('etc/model/infrastructure/')
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#compute').should be_kind_of OCCI::Core::Kind
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#os_tpl').should be_kind_of OCCI::Core::Mixin
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#resource_tpl').should be_kind_of OCCI::Core::Mixin
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#network').should be_kind_of OCCI::Core::Kind
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure/network#ipnetwork').should be_kind_of OCCI::Core::Mixin
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#networkinterface').should be_kind_of OCCI::Core::Kind
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface').should be_kind_of OCCI::Core::Mixin
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#storage').should be_kind_of OCCI::Core::Kind
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure#storagelink').should be_kind_of OCCI::Core::Kind
-    end
-
     it "initializes Model Extensions successfully" do
-      OCCI::Server.initialize_model('etc/model/extensions/')
-      OCCI::Registry.get_by_id('http://schemas.ogf.org/occi/infrastructure/compute#console').should be_kind_of OCCI::Core::Kind
+      OCCI::Model.register_files('etc/model/extensions/', 'http://example.com')
+      OCCI::Model.get_by_id('http://schemas.ogf.org/occi/infrastructure/compute#console').should be_kind_of OCCI::Core::Kind
     end
 
     it "initializes OpenNebula Model Extensions successfully" do
-      OCCI::Server.initialize_model('etc/backend/opennebula/model/')
-      OCCI::Registry.get_by_id('http://opennebula.org/occi/infrastructure#compute').should be_kind_of OCCI::Core::Mixin
-      OCCI::Registry.get_by_id('http://opennebula.org/occi/infrastructure#storage').should be_kind_of OCCI::Core::Mixin
-      OCCI::Registry.get_by_id('http://opennebula.org/occi/infrastructure#storagelink').should be_kind_of OCCI::Core::Mixin
-      OCCI::Registry.get_by_id('http://opennebula.org/occi/infrastructure#network').should be_kind_of OCCI::Core::Mixin
-      OCCI::Registry.get_by_id('http://opennebula.org/occi/infrastructure#networkinterface').should be_kind_of OCCI::Core::Mixin
+      OCCI::Model.register_files('etc/backend/opennebula/model/', 'http://example.com')
+      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#compute').should be_kind_of OCCI::Core::Mixin
+      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#storage').should be_kind_of OCCI::Core::Mixin
+      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#storagelink').should be_kind_of OCCI::Core::Mixin
+      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#network').should be_kind_of OCCI::Core::Mixin
+      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#networkinterface').should be_kind_of OCCI::Core::Mixin
     end
-
-    #it "initializes OpenNebula Templates successfully" do
-    #  OCCI::Server.initialize_model('etc/backend/opennebula/templates')
-    #  OCCI::Registry.get_by_id('http://opennebula.org/occi/infrastructure#virtualmachine').should be_kind_of OCCI::Core::Mixin
-    #end
 
   end
 
   describe "GET /-/" do
 
     it "returns registered categories in JSON format" do
-      header "Accept", "application/json"
+      header "Accept", "application/occi+json"
       get '/-/'
       last_response.should be_ok
       collection = Hashie::Mash.new(JSON.parse(last_response.body))
@@ -96,15 +71,77 @@ describe OCCI::Server do
       post '/compute/', body
       last_response.should be_http_created
     end
+
+    it "creates a new compute resource with a resource template in json format" do
+      header "Accept", "application/occi+json"
+      header "Content-type", "text/occi"
+      header "Category", %Q|resource_tpl;scheme="http://schemas.ogf.org/occi/infrastructure#";class="mixin"|
+      get '/-/'
+      last_response.should be_ok
+      collection = Hashie::Mash.new(JSON.parse(last_response.body))
+      collection.mixins.should have_at_least(1).mixin
+      resource_template = collection.mixins.select { |mixin| mixin.term != "resource_tpl" }.first
+      jj resource_template
+      header "Accept", "text/uri-list"
+      header "Content-type", "application/occi+json"
+      header "Category", ''
+      body = %Q|{"resources":[{"kind":"http://schemas.ogf.org/occi/infrastructure#compute","mixins":["#{resource_template.scheme + resource_template.term}"]}]}|
+      post '/compute/', body
+      last_response.should be_http_created
+    end
+
+    it "creates a new compute resource with an OS template in json format" do
+      header "Accept", "application/occi+json"
+      header "Content-type", "text/occi"
+      header "Category", %Q|os_tpl;scheme="http://schemas.ogf.org/occi/infrastructure#";class="mixin"|
+      get '/-/'
+      last_response.should be_ok
+      collection = Hashie::Mash.new(JSON.parse(last_response.body))
+      collection.mixins.should have_at_least(1).mixin
+      os_template = collection.mixins.select { |mixin| mixin.term != "os_tpl" }.first
+      jj os_template
+      header "Accept", "text/uri-list"
+      header "Content-type", "application/occi+json"
+      header "Category", ''
+      body = %Q|{"resources":[{"kind":"http://schemas.ogf.org/occi/infrastructure#compute","mixins":["#{os_template.scheme + os_template.term}"]}]}|
+      post '/compute/', body
+      last_response.should be_http_created
+    end
+
+    it "creates a new compute resource with a resource and an OS template in json format" do
+      header "Accept", "application/occi+json"
+      header "Content-type", "text/occi"
+      header "Category", %Q|resource_tpl;scheme="http://schemas.ogf.org/occi/infrastructure#";class="mixin"|
+      get '/-/'
+      last_response.should be_ok
+      collection = Hashie::Mash.new(JSON.parse(last_response.body))
+      collection.mixins.should have_at_least(1).mixin
+      resource_template = collection.mixins.select { |mixin| mixin.term != "resource_tpl" }.first
+      jj resource_template
+      header "Category", %Q|os_tpl;scheme="http://schemas.ogf.org/occi/infrastructure#";class="mixin""|
+      get '/-/'
+      last_response.should be_ok
+      collection = Hashie::Mash.new(JSON.parse(last_response.body))
+      collection.mixins.should have_at_least(1).mixin
+      os_template = collection.mixins.select { |mixin| mixin.term != "os_tpl" }.first
+      jj os_template
+      header "Accept", "text/uri-list"
+      header "Content-type", "application/occi+json"
+      header "Category", ''
+      body = %Q|{"resources":[{"kind":"http://schemas.ogf.org/occi/infrastructure#compute","mixins":["#{resource_template.scheme + resource_template.term}","#{os_template.scheme + os_template.term}"]}]}|
+      post '/compute/', body
+      last_response.should be_http_created
+    end
+
   end
 
   describe "GET /compute/" do
     it "gets all compute resources" do
-      sleep 40
+      sleep 10
       header "Accept", "text/uri-list"
       get '/compute/'
       last_response.should be_http_ok
-      last_response.body.lines.count.should == 2
+      last_response.body.lines.count.should >= 4
     end
   end
 
@@ -122,7 +159,7 @@ describe OCCI::Server do
   end
 
   describe "GET /compute/$uuid" do
-    it "gets specific compute resource in application/json format" do
+    it "gets specific compute resource in application/occi+json format" do
       header "Accept", "text/uri-list"
       get '/compute/'
       last_response.should be_http_ok
@@ -137,18 +174,20 @@ describe OCCI::Server do
 
   describe "POST /compute/$uuid?action=X" do
     it "triggers applicable action on a previously created compute resource" do
-      sleep 2
       header "Content-type", ''
       header "Accept", "text/uri-list"
       get '/compute/'
       last_response.should be_http_ok
       location = URI.parse(last_response.body.lines.to_a.last)
       header "Accept", "application/occi+json"
-      get location.path
-      last_response.should be_http_ok
-      collection = Hashie::Mash.new(JSON.parse(last_response.body))
+      for i in 1..120
+        get location.path
+        last_response.should be_http_ok
+        collection = Hashie::Mash.new(JSON.parse(last_response.body))
+        break if collection.resources.first.attributes.occi.compute.state == "active"
+        sleep 1
+      end
       action_location = collection.resources.first.links.first.target
-      puts action_location
       post action_location
       last_response.should be_http_ok
     end
