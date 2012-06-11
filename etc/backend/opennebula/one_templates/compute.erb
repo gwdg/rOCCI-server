@@ -22,7 +22,7 @@ OS = [
 <% @compute.links.select {|link| link.kind == "http://schemas.ogf.org/occi/infrastructure#storagelink"}.each do |storagelink| %>
 DISK = [
     <% if URI.parse(storagelink.target).relative? %>
-	IMAGE 	= <%= OCCI::Registry.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first.title.inspect %>,
+	IMAGE 	= <%= OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first.title.inspect %>,
     <% else %>
     TYPE    = "OS",
     SOURCE  = <%= storagelink.target %>,
@@ -36,7 +36,7 @@ DISK = [
 <%# Links to networks %>
 <% @compute.links.select {|link| link.kind == "http://schemas.ogf.org/occi/infrastructure#networkinterface"}.each do |networkinterface| %>
 NIC = [
-    NETWORK   = <%= OCCI::Registry.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first.title.inspect %>,
+    NETWORK   = <%= OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first.title.inspect %>,
     IP        = <%= link.attributes!.occi!.networkinferface!.address %>,
     MAC       = <%= link.attributes!.occi!.networkinferface!.mac %>,
     TARGET    = <%= link.attributes!.occi!.networkinferface!.interface %>,
