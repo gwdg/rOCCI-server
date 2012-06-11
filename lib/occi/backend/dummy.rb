@@ -90,7 +90,7 @@ module OCCI
         @store.transaction(read_only=true) do
           entities = @store['resources'] + @store['links']
           entities.each do |entity|
-            kind = OCCI::Registry.get_by_id(entity.kind)
+            kind = OCCI::Model.get_by_id(entity.kind)
             kind.entities << entity
             OCCI::Log.debug("#### Number of entities in kind #{kind.type_identifier}: #{kind.entities.size}")
           end
