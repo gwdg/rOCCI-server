@@ -81,7 +81,6 @@ describe OCCI::Server do
       collection = Hashie::Mash.new(JSON.parse(last_response.body))
       collection.mixins.should have_at_least(1).mixin
       resource_template = collection.mixins.select { |mixin| mixin.term != "resource_tpl" }.first
-      jj resource_template
       header "Accept", "text/uri-list"
       header "Content-type", "application/occi+json"
       header "Category", ''
@@ -99,7 +98,6 @@ describe OCCI::Server do
       collection = Hashie::Mash.new(JSON.parse(last_response.body))
       collection.mixins.should have_at_least(1).mixin
       os_template = collection.mixins.select { |mixin| mixin.term != "os_tpl" }.first
-      jj os_template
       header "Accept", "text/uri-list"
       header "Content-type", "application/occi+json"
       header "Category", ''
@@ -117,14 +115,12 @@ describe OCCI::Server do
       collection = Hashie::Mash.new(JSON.parse(last_response.body))
       collection.mixins.should have_at_least(1).mixin
       resource_template = collection.mixins.select { |mixin| mixin.term != "resource_tpl" }.first
-      jj resource_template
       header "Category", %Q|os_tpl;scheme="http://schemas.ogf.org/occi/infrastructure#";class="mixin""|
       get '/-/'
       last_response.should be_ok
       collection = Hashie::Mash.new(JSON.parse(last_response.body))
       collection.mixins.should have_at_least(1).mixin
       os_template = collection.mixins.select { |mixin| mixin.term != "os_tpl" }.first
-      jj os_template
       header "Accept", "text/uri-list"
       header "Content-type", "application/occi+json"
       header "Category", ''

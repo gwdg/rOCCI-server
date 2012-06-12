@@ -164,6 +164,7 @@ module OCCI
                      OCCI::Backend::EC2::EC2.new(user, password)
                    when "dummy" then
                      require 'occi/backend/dummy'
+                     OCCI::Model.register_files('etc/backend/dummy', OCCI::Server.location)
                      OCCI::Backend::Manager.register_backend(OCCI::Backend::Dummy, OCCI::Backend::Dummy::OPERATIONS)
                      OCCI::Backend::Dummy.new()
                    else
