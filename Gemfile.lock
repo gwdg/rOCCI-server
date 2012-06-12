@@ -1,16 +1,16 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    activesupport (3.2.2)
+    activesupport (3.2.5)
       i18n (~> 0.6)
       multi_json (~> 1.0)
     antlr3 (1.8.12)
-    aws-sdk (1.3.8)
+    aws-sdk (1.5.2)
       httparty (~> 0.7)
       json (~> 1.4)
-      nokogiri (<= 1.5.0)
+      nokogiri (>= 1.4.4)
       uuidtools (~> 2.1)
-    backports (2.5.0)
+    backports (2.6.1)
     builder (3.0.0)
     daemon_controller (1.0.0)
     diff-lcs (1.1.3)
@@ -19,17 +19,25 @@ GEM
     fastthread (1.0.7)
     haml (3.1.6)
     hashie (1.2.0)
-    httparty (0.8.1)
-      multi_json
+    httparty (0.8.3)
+      multi_json (~> 1.0)
       multi_xml
     i18n (0.6.0)
-    json (1.6.6)
-    multi_json (1.2.0)
-    multi_xml (0.4.2)
+    json (1.7.3)
+    multi_json (1.3.6)
+    multi_xml (0.5.1)
     nokogiri (1.5.0)
-    oca (3.4)
-    occi (2.0.3)
-    passenger (3.0.11)
+    oca (3.4.1)
+      nokogiri
+      xmlparser
+    occi (2.1.1)
+      activesupport
+      antlr3
+      hashie
+      json
+      nokogiri
+      uuidtools
+    passenger (3.0.12)
       daemon_controller (>= 0.2.5)
       fastthread (>= 1.0.1)
       rack
@@ -40,17 +48,17 @@ GEM
     rack-test (0.6.1)
       rack (>= 1.0)
     rake (0.9.2.2)
-    rspec (2.9.0)
-      rspec-core (~> 2.9.0)
-      rspec-expectations (~> 2.9.0)
-      rspec-mocks (~> 2.9.0)
-    rspec-core (2.9.0)
-    rspec-expectations (2.9.0)
+    rspec (2.10.0)
+      rspec-core (~> 2.10.0)
+      rspec-expectations (~> 2.10.0)
+      rspec-mocks (~> 2.10.0)
+    rspec-core (2.10.1)
+    rspec-expectations (2.10.0)
       diff-lcs (~> 1.1.3)
     rspec-http (0.10.0)
       rspec (~> 2.0)
-    rspec-mocks (2.9.0)
-    simplecov (0.6.1)
+    rspec-mocks (2.10.1)
+    simplecov (0.6.4)
       multi_json (~> 1.0)
       simplecov-html (~> 0.5.3)
     simplecov-html (0.5.3)
@@ -69,7 +77,8 @@ GEM
     tilt (1.3.3)
     uuidtools (2.1.2)
     xml-simple (1.1.1)
-    yard (0.7.5)
+    xmlparser (0.7.2.1)
+    yard (0.8.1)
     yard-sinatra (1.0.0)
       yard (~> 0.7)
 
@@ -85,9 +94,9 @@ DEPENDENCIES
   haml
   hashie
   json
-  nokogiri (<= 1.5.0)
-  oca
-  occi
+  nokogiri
+  oca (~> 3.4.0)
+  occi (>= 2.1.1)
   passenger
   rspec
   rspec-http
