@@ -187,7 +187,8 @@ module OCCI
       OCCI::Log.debug("### Client Request URL: #{request.url}")
       OCCI::Log.debug("### Client Request method: #{request.request_method}")
       OCCI::Log.debug("### Client Request Media Type: #{request.media_type}")
-      OCCI::Log.debug("### Client Request body: \n #{request.body.read}")
+      OCCI::Log.debug("### Client Request header: #{request.env.select {|k,v| k.include? 'HTTP'}}")
+      OCCI::Log.debug("### Client Request body: #{request.body.read}")
       OCCI::Log.debug('--------------------------------------------------------------------')
       request.body.rewind
       OCCI::Log.debug('### Prepare response ###')
