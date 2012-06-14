@@ -10,7 +10,7 @@ gem "nokogiri"
 gem "builder"
 gem "haml"
 gem "erubis"
-gem "occi", "~>2.2.0"
+gem "occi", "~>2.2.1"
 gem "oca", "~>3.4.0"
 
 # sinatra and related
