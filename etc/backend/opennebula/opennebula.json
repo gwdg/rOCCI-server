@@ -7,7 +7,7 @@
                     "rocci":{
                         "backend":{
                             "opennebula":{
-                                "endpoint":"http://10.211.55.4:2633/RPC2",
+                                "endpoint":"http://localhost:2633/RPC2",
                                 "admin":"occi",
                                 "password":"occi",
                                 "scheme":"http://my.occi.service/"
