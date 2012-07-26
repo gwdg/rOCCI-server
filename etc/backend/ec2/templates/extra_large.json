@@ -11,31 +11,31 @@
                 "occi":{
                     "compute":{
                         "architecture":{
-                            "mutable":false,
-                            "type":"string",
-                            "default":"x64"
+                            "Mutable":false,
+                            "Type":"string",
+                            "Default":"x64"
                         },
                         "cores":{
-                            "mutable":false,
-                            "type":"number",
-                            "default":4
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":4
                         },
                         "speed":{
-                            "mutable":false,
-                            "type":"number",
-                            "default":2
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":2
                         },
                         "memory":{
-                            "mutable":false,
-                            "type":"number",
-                            "default":15
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":15
                         }
                     },
                     "storage":{
                         "size":{
-                            "mutable":false,
-                            "type":"number",
-                            "default":1690
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":1690
                         }
                     }
                 }
