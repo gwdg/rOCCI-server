@@ -9,12 +9,12 @@
                     "opennebula":{
                         "storagelink":{
                             "bus":{
-                                "description":"Type of disk device to emulate",
-                                "pattern":"ide|scsi"
+                                "Description":"Type of disk device to emulate",
+                                "Pattern":"ide|scsi"
                             },
                             "driver":{
-                                "description":"Specific image mapping driver. For XEN: tap:aio:,file: For KVM: raw, qcow2",
-                                "pattern":"tap:aio:|file:|raw|qcow2"
+                                "Description":"Specific image mapping driver. For XEN: tap:aio:,file: For KVM: raw, qcow2",
+                                "Pattern":"tap:aio:|file:|raw|qcow2"
                             }
                         }
                     }

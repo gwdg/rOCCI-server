@@ -9,27 +9,27 @@
                     "opennebula":{
                         "storage":{
                             "type":{
-                                "description":"Type of the image. If omitted, the default value is the one defined in oned.conf (install default is OS).",
-                                "pattern": "OS|CDROM|DATABLOCK"
+                                "Description":"Type of the image. If omitted, the default value is the one defined in oned.conf (install default is OS).",
+                                "Pattern": "OS|CDROM|DATABLOCK"
                             },
                             "persistent":{
-                                "description":"Persistence of the image. If omitted, the default value is NO.",
-                                "pattern": "YES|NO",
-                                "default":"NO"
+                                "Description":"Persistence of the image. If omitted, the default value is NO.",
+                                "Pattern": "YES|NO",
+                                "Default":"NO"
                             },
                             "dev_prefix":{
-                                "description":"Prefix for the emulated device this image will be mounted at. For instance, “hd”, “sd”. If omitted, the default value is the one defined in oned.conf (installation default is “hd”)."
+                                "Description":"Prefix for the emulated device this image will be mounted at. For instance, “hd”, “sd”. If omitted, the default value is the one defined in oned.conf (installation default is “hd”)."
                             },
                             "bus":{
-                                "description":"Type of disk device to emulate.",
-                                "pattern": "IDE|SCSI|virtio"
+                                "Description":"Type of disk device to emulate.",
+                                "Pattern": "IDE|SCSI|virtio"
                             },
                             "driver":{
-                                "description":"Specific image mapping driver. VMware is unsupported",
-                                "pattern": "raw|qcow2|tap:aio:|file:"
+                                "Description":"Specific image mapping driver. VMware is unsupported",
+                                "Pattern": "raw|qcow2|tap:aio:|file:"
                             },
                             "fstype":{
-                                "description":"Type of file system to be built. This can be any value understood by mkfs unix command."
+                                "Description":"Type of file system to be built. This can be any value understood by mkfs unix command."
                             }
                         }
                     }
