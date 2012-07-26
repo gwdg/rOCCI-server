@@ -1,5 +1,5 @@
 ##############################################################################
-#  Copyright 2012 GWDG
+#  Copyright 2011 Service Computing group, TU Dortmund
 #  
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,35 +15,13 @@
 ##############################################################################
 
 ##############################################################################
-# Description: OCCI monitoring VM memory usage
-# Author(s): Ali Imran Jehangiri, Florian Feldhaus, Piotr Kasprzak
+# Description: registry for all Category/Kind/Mixin instances currently 
+#              known to the OCCI server
+# Author(s): Hayati Bice, Florian Feldhaus, Piotr Kasprzak
 ##############################################################################
 
-require 'singleton'
-require 'occi/core/mixin'
-
 module OCCI
-  module Monitor
-    class Memory < OCCI::Core::Mixin
-
-      # Define appropriate mixin
-      begin
-        # Define actions
-        actions = []
-
-        related = [OCCI::Monitor::Metric::MIXIN]
-        entities = []
-
-        term    = "memory"
-        scheme  = "http://example.com/occi/infrastructure/metric/compute#"
-        title   = "compute.memory"
-
-        attributes = OCCI::Core::Attributes.new()
-        MIXIN = OCCI::Core::Mixin.new(term, scheme, title, attributes, actions, related, entities)
-        OCCI::CategoryRegistry.register(MIXIN)
-        OCCI::Rendering::HTTP::LocationRegistry.register('/metric/compute/memory', MIXIN)
-
-      end
-    end
-  end
+    
+  class BackendError < RuntimeError; end
+  
 end
