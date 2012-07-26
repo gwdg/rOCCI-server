@@ -1,7 +1,7 @@
 source :rubygems
 
 # external ruby libraries
-gem "uuidtools"
+gem "uuidtools", ">=2.1.3"
 gem "json"
 gem "antlr3"
 #gem "hashie", :git => 'git://github.com/ffeldhaus/hashie.git', :branch => "hash_deep_merge_with_array_concatenation"
@@ -10,7 +10,7 @@ gem "nokogiri"
 gem "builder"
 gem "haml"
 gem "erubis"
-gem "occi", "~>2.2.1"
+gem "occi", ">=2.4.0"
 gem "oca", "~>3.4.0"
 
 # sinatra and related
