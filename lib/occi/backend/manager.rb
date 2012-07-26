@@ -21,8 +21,8 @@
 
 require 'rubygems'
 
-require 'occi/backend/opennebula/opennebula'
-require 'occi/backend/ec2/ec2'
+require 'occi/backend/opennebula'
+require 'occi/backend/ec2'
 require 'occi/backend/dummy'
 
 #require 'uuidtools'
@@ -80,7 +80,7 @@ module OCCI
       end
 
       # ---------------------------------------------------------------------------------------------------------------------
-      def self.signal_resource(backend, operation, resource, operation_parameters = nil)
+      def self.signal_resource(client, backend, operation, resource, operation_parameters = nil)
 
         resource_type = resource.kind
         backend_ident = backend.class.name.downcase
@@ -101,16 +101,16 @@ module OCCI
 
         if operation_parameters.nil?
           # Generic resource operation
-          backend.send(operations[resource_type][operation.to_sym], resource)
+          backend.send(operations[resource_type][operation.to_sym], client, resource)
         else
           # Action related operation, we need to pass on the action parameters
-          backend.send(operations[resource_type][operation.to_sym], resource, operation_parameters)
+          backend.send(operations[resource_type][operation.to_sym], client, resource, operation_parameters)
         end
 
       end
 
       # ---------------------------------------------------------------------------------------------------------------------
-      def self.delegate_action(backend, action, parameters, resource)
+      def self.delegate_action(client, backend, action, parameters, resource)
 
         OCCI::Log.debug("Delegating invocation of action [#{action}] on resource [#{resource}] with parameters [#{parameters}] to backend...")
 
@@ -118,7 +118,7 @@ module OCCI
         operation = action.term
 
         # TODO: define some convention for result handling!
-        signal_resource(backend, operation, resource, parameters)
+        signal_resource(client, backend, operation, resource, parameters)
 
       end
     end

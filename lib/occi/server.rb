@@ -1,80 +1,19 @@
-##############################################################################
-#  Copyright 2011 Service Computing group, TU Dortmund
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-##############################################################################
-
-##############################################################################
-# Description: OCCI RESTful Web Service
-# Author(s): Hayati Bice, Florian Feldhaus, Piotr Kasprzak
-##############################################################################
-
-##############################################################################
-# Require Ruby Gems
-
-# gems
-require 'rubygems'
-
-require 'oca'
-
-# sinatra
-require 'sinatra'
+require 'sinatra/base'
 require 'sinatra/multi_route'
 require 'sinatra/cross_origin'
 require 'sinatra/respond_with'
 
-# Ruby standard library
-require 'uri'
-require 'fileutils'
+require 'hashie/mash'
 
-require 'occi/log'
-
-# Server configuration
-require 'occi/configuration'
-
-# Active support notifications
-require 'active_support/notifications'
-
-# Active support for xml rendering
-require 'active_support/core_ext'
-
-##############################################################################
-# Require OCCI classes
-
-# Category registry
-require 'occi/model'
-
-# OCCI Core classes
-require 'occi/core/action'
-require 'occi/core/category'
-require 'occi/core/entity'
-require 'occi/core/kind'
-require 'occi/core/link'
-require 'occi/core/mixin'
-require 'occi/core/resource'
-
-# OCCI parser
-require 'occi/parser'
-
-# Backend support
-require 'occi/backend/manager'
-
-##############################################################################
-# Sinatra methods for handling HTTP requests
+require 'occi'
+require 'occi/exceptions'
 
 module OCCI
+  class Server < Sinatra::Base
 
-  class Server < Sinatra::Application
+    set :sessions, true
+    set :views, File.dirname(__FILE__) + "/../../views"
+    enable :logging
 
     VERSION = "0.5.0-beta1"
 
@@ -84,102 +23,170 @@ module OCCI
 
     enable cross_origin
 
-    # Read configuration file
-    def self.config
-      @@config ||= OCCI::Configuration.new('etc/occi-server.conf')
-    end
+    def initialize
 
-    def self.location
-      OCCI::Server.config[:server].chomp('/')
-    end
+      logger = Logger.new(STDOUT)
 
-    def self.port
-      OCCI::Server.config[:port]
-    end
-
-    def self.uri
-      self.port.nil? ? self.location : self.location + ':' + self.port
-    end
-
-    def initialize(config = { })
-      # create logger
-      config[:log_dest]  ||= STDOUT
-      config[:log_level] ||= Logger::INFO
-      config[:log_level] = case OCCI::Server.config[:log_level]
-                             when "debug"
-                               Logger::DEBUG
-                             when "info"
-                               Logger::INFO
-                             when "warn"
-                               Logger::WARN
-                             when "error"
-                               Logger::ERROR
-                             when "fatal"
-                               Logger::FATAL
-                             else
-                               Logger::INFO
-                           end
-
-      OCCI::Log.new(config[:log_dest], config[:log_level])
-
-      # Configuration of HTTP Authentication
-      if OCCI::Server.config['username'] != nil and OCCI::Server.config['password'] != nil
-        use Rack::Auth::Basic, "Restricted Area" do |username, password|
-          [username, password] == [OCCI::Server.config['username'], OCCI::Server.config['password']]
-        end
+      @log_subscriber = ActiveSupport::Notifications.subscribe("log") do |name, start, finish, id, payload|
+        logger.log(payload[:level], payload[:message])
       end
 
-      OCCI::Model.register_core
-      OCCI::Model.register_infrastructure
-      OCCI::Model.register_files(OCCI::Server.config['occi_model_path'], OCCI::Server.location)
+      @model = OCCI::Model.new
 
-      # set views explicitly
-      set :views, File.dirname(__FILE__) + "/../../views"
+      collection = Hashie::Mash.new(JSON.parse(File.read(File.dirname(__FILE__) + "/../../etc/backend/default.json")))
+      backend    = collection.resources.first
+      case backend.kind
+        when 'http://rocci.info/server/backend#dummy'
+          require 'occi/backend/dummy'
+          @model.register(OCCI::Backend::Dummy.kind_definition)
+          @backend = OCCI::Backend::Dummy.new(backend.kind, backend.mixins, backend.attributes, backend.links)
+          @backend.check(@model)
+          OCCI::Log.debug('Dummy backend initialized')
+        #@backend = OCCI::Backend::Dummy.new(backend.kind,backend.mixins,backend.attributes,backend.links)
+        when 'http://rocci.info/server/backend#opennebula'
+          require 'occi/backend/opennebula'
+          @model.register(OCCI::Backend::OpenNebula.kind_definition)
+          @backend = OCCI::Backend::OpenNebula.new(backend.kind, backend.mixins, backend.attributes, backend.links)
+          @backend.check(@model)
+          OCCI::Log.debug('Opennebula backend initialized')
+        when 'http://rocci.info/server/backend#ec2'
+          require 'occi/backend/ec2'
+          @model.register(OCCI::Backend::EC2.kind_definition)
+          @backend.check(@model)
+          OCCI::Log.debug('EC2 backend initialized')
+        #@backend = OCCI::Backend::EC2.new(backend.kind,backend.mixins,backend.attributes,backend.links)
+        else
+          raise "Backend #{backend.kind} unknown"
+      end
+
+      ## initialize backend
+      #@backend = case OCCI::Server.config["backend"]
+      #             when "opennebula"
+      #               require 'oca'
+      #               require 'occi/backend/opennebula/opennebula'
+      #               OCCI::Backend.kind_definition
+      #               @backend.model = OCCI::Model.new
+      #               @backend.model.register_core
+      #               @backend.model.register_infrastructure
+      #               @backend.model.register_files(OCCI::Server.config['occi_model_path'], OCCI::Server.location)
+      #               @backend.model.register_files('etc/backend/opennebula', OCCI::Server.location)
+      #               OCCI::Backend::Manager.register_backend(OCCI::Backend::OpenNebula::OpenNebula, OCCI::Backend::OpenNebula::OpenNebula::OPERATIONS)
+      #               OCCI::Backend::OpenNebula::OpenNebula.new(user, password)
+      #             when "ec2"
+      #               require 'occi/backend/ec2/ec2'
+      #               Bundler.require(:ec2)
+      #               @backend.model.register_files('etc/backend/ec2', OCCI::Server.location)
+      #               OCCI::Backend::Manager.register_backend(OCCI::Backend::EC2::EC2, OCCI::Backend::EC2::EC2::OPERATIONS)
+      #               OCCI::Backend::EC2::EC2.new(user, password)
+      #             when "dummy" then
+      #               require 'occi/backend/dummy'
+      #               @backend.model.register_files('etc/backend/dummy', OCCI::Server.location)
+      #               OCCI::Backend::Manager.register_backend(OCCI::Backend::Dummy, OCCI::Backend::Dummy::OPERATIONS)
+      #               OCCI::Backend::Dummy.new()
+      #             else
+      #               raise "Backend '" + OCCI::Server.config["backend"] + "' not found"
+      #           end
+
+      #
+      #case @backend.attributes.info!.rocci!.server!.authentication
+      #  when 'basic'
+      #    use Rack::Auth::Basic, "Restricted Area" do |username, password|
+      #      @backend.authorized?(username,password)
+      #    end
+      #  when 'digest'
+      #    require 'securerandom'
+      #    realm  = "Description of the protected area."
+      #    opaque = SecureRandom.hex
+      #    use Rack::Auth::Digest::MD5, realm, opaque do |username|
+      #      @backend.get_password(username)
+      #    end
+      #  when 'x509'
+      #    # For https, the web service should be set to include the user cert in the environment.
+      #    cert_line = request.env['HTTP_SSL_CLIENT_CERT']
+      #    cert_line = nil if cert_line == '(null)' # For Apache mod_ssl
+      #    chain_index = 0
+      #
+      #    # Use the https credentials for authentication
+      #    if cert_line
+      #      begin
+      #        m      = cert_line.match(/(-+BEGIN CERTIFICATE-+)([^-]*)(-+END CERTIFICATE-+)/)
+      #        cert_s = "#{m[1]}#{m[2].gsub(' ', "\n")}#{m[3]}"
+      #        cert   = OpenSSL::X509::Certificate.new(cert_s)
+      #      rescue
+      #        raise "Could not create X509 certificate from " + cert_line
+      #      end
+      #
+      #      # Password should be DN with whitespace removed.
+      #      username = get_username(cert.subject.to_s.delete("\s"))
+      #    else
+      #      raise "Username not found in certificate chain "
+      #    end
+      #end
+
 
       super
     end
 
-    # ---------------------------------------------------------------------------------------------------------------------
-    def initialize_backend(auth)
+    def check_authorization
+      #
 
-      if auth.provided? && auth.basic? && auth.credentials
-        user, password = auth.credentials
-      else
-        user, password = [OCCI::Server.config['one_user'], OCCI::Server.config['one_password']]
-        logger.debug("No basic auth data provided: using defaults from config (user = '#{user}')")
+      #
+      #  # TODO: investigate usage fo expiration time and session cookies
+      #  expiration_time = Time.now.to_i + 1800
+      #
+      #  token = @one_auth.login_token(expiration_time, username)
+      #
+      #  Client.new(token, @endpoint)
+
+      basic_auth  = Rack::Auth::Basic::Request.new(env)
+      digest_auth = Rack::Auth::Digest::Request.new(env)
+      if basic_auth.provided? && basic_auth.basic?
+        username, password = basic_auth.credentials
+        halt 403, "Password in request does not match password of user #{username}" unless @backend.authorized?(username, password)
+        puts "basic auth successful"
+        username
+      elsif digest_auth.provided? && digest_auth.digest?
+        username, password = digest_auth.credentials
+        halt 403, "Password in request does not match password of user #{username}" unless @backend.authorized?(username, password)
+        username
+      elsif request.env['HTTP_SSL_CLIENT_S_DN']
+        # For https, the web service should be set to include the user cert in the environment.
+
+        cert_subject = request.env['HTTP_SSL_CLIENT_S_DN']
+        # Password should be DN with whitespace removed.
+        username     = @backend.get_username(cert_subject)
+
+        OCCI::Log.debug "Cert Subject: #{cert_subject}"
+        OCCI::Log.debug "Username: #{username.inspect}"
+        OCCI::Log.debug "Username nil?: #{username.nil?}"
+
+        halt 403, "User with DN #{cert_subject} could not be authenticated" if username.nil?
+        username
       end
-
-      @backend = case OCCI::Server.config["backend"]
-                   when "opennebula"
-                     require 'oca'
-                     require 'occi/backend/opennebula/opennebula'
-                     OCCI::Model.register_files('etc/backend/opennebula', OCCI::Server.location)
-                     OCCI::Backend::Manager.register_backend(OCCI::Backend::OpenNebula::OpenNebula, OCCI::Backend::OpenNebula::OpenNebula::OPERATIONS)
-                     OCCI::Backend::OpenNebula::OpenNebula.new(user, password)
-                   when "ec2"
-                     require 'occi/backend/ec2/ec2'
-                     Bundler.require(:ec2)
-                     OCCI::Model.register_files('etc/backend/ec2', OCCI::Server.location)
-                     OCCI::Backend::Manager.register_backend(OCCI::Backend::EC2::EC2, OCCI::Backend::EC2::EC2::OPERATIONS)
-                     OCCI::Backend::EC2::EC2.new(user, password)
-                   when "dummy" then
-                     require 'occi/backend/dummy'
-                     OCCI::Model.register_files('etc/backend/dummy', OCCI::Server.location)
-                     OCCI::Backend::Manager.register_backend(OCCI::Backend::Dummy, OCCI::Backend::Dummy::OPERATIONS)
-                     OCCI::Backend::Dummy.new()
-                   else
-                     raise "Backend '" + OCCI::Server.config["backend"] + "' not found"
-                 end
-
-
     end
 
-# ---------------------------------------------------------------------------------------------------------------------
+    # from sinatra master, fixing issue with halt and after filter
+    # Dispatch a request with error handling.
+    def dispatch!
+      invoke do
+        static! if settings.static? && (request.get? || request.head?)
+        filter! :before
+        route!
+      end
+    rescue ::Exception => boom
+      invoke { handle_exception!(boom) }
+    ensure
+      filter! :after unless env['sinatra.static_file']
+    end
 
-# GET request
 
-# tasks to be executed before the request is handled
+    # ---------------------------------------------------------------------------------------------------------------------
+
+    # GET request
+
+    # tasks to be executed before the request is handled
     before do
+
       OCCI::Log.debug('--------------------------------------------------------------------')
       OCCI::Log.debug("### Client IP: #{request.ip}")
       OCCI::Log.debug("### Client Accept: #{request.accept}")
@@ -187,31 +194,40 @@ module OCCI
       OCCI::Log.debug("### Client Request URL: #{request.url}")
       OCCI::Log.debug("### Client Request method: #{request.request_method}")
       OCCI::Log.debug("### Client Request Media Type: #{request.media_type}")
-      OCCI::Log.debug("### Client Request header: #{request.env.select {|k,v| k.include? 'HTTP'}}")
+      OCCI::Log.debug("### Client Request header: #{request.env.select { |k, v| k.include? 'HTTP' }}")
       OCCI::Log.debug("### Client Request body: #{request.body.read}")
       OCCI::Log.debug('--------------------------------------------------------------------')
       request.body.rewind
+
+      OCCI::Log.debug('### Check authorization ###')
+      user = check_authorization
+      OCCI::Log.debug("### User #{user} authenticated successfully")
+      @client = @backend.client(user)
+
       OCCI::Log.debug('### Prepare response ###')
       response['Accept'] = "application/occi+json,application/json,text/plain,text/uri-list,application/xml,text/xml,application/occi+xml"
       response['Server'] = "rOCCI/#{OCCI::Server::VERSION} OCCI/1.1"
       OCCI::Log.debug('### Initialize response OCCI collection ###')
-      @collection = Hashie::Mash.new(:kinds => [], :mixins => [], :actions => [], :resources => [], :links => [])
+      @collection = OCCI::Collection.new
       @locations  = Array.new
-      OCCI::Log.debug('### Preparing authentication handling ###')
-      authentication = Rack::Auth::Basic::Request.new(request.env)
-      OCCI::Log.debug('### Initializing backend ###')
-      initialize_backend(authentication)
       OCCI::Log.debug('### Reset OCCI model ###')
-      OCCI::Model.reset
-      @request_locations, @request_collection = OCCI::Parser.parse(request.media_type, request.body.read, request.path_info.include?('/-/'), request.env)
+      @backend.model.reset
+      OCCI::Log.debug('### Parse request')
+      @backend.model.get_by_location(request.path_info) ? entity_type = @backend.model.get_by_location(request.path_info).entity_type : entity_type = OCCI::Core::Resource
+      @request_locations, @request_collection = OCCI::Parser.parse(request.media_type, request.body.read, request.path_info.include?('/-/'), entity_type, request.env)
+      OCCI::Log.debug("Locations: #{@request_locations}")
+      OCCI::Log.debug("Collection: #{@request_collection.to_json.to_s}")
+      jj @request_collection
       OCCI::Log.debug('### Fill OCCI model with entities from backend ###')
-      @backend.register_existing_resources
+      @backend.register_existing_resources(@client)
+      OCCI::Log.debug('### Finished response initialization starting with processing the request ...')
     end
 
     after do
-      # OCCI::Log.debug((@collection.resources.to_a + @collection.links.to_a).collect {|entity| entity.location}.join("\n"))
+      @collection ||= OCCI::Collection.new
+      @locations  ||= Array.new
       OCCI::Log.debug('### Rendering response ###')
-      @collection.delete_if { |k, v| v.empty? } # remove empty entries
+      OCCI::Log.debug("### Collection : \n #{@collection.to_json}")
       respond_to do |f|
         f.txt { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
         f.on('*/*') { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
@@ -229,33 +245,34 @@ module OCCI
 # returns all kinds, mixins and actions registered for the server
     get '/-/', '/.well-known/org/ogf/occi/-/' do
       OCCI::Log.info("### Listing all kinds, mixins and actions ###")
-      @collection = OCCI::Model.get(@request_collection.categories)
+      @collection = @backend.model.get(@request_collection)
       status 200
     end
 
 # Resource retrieval
 # returns entities either below a certain path or belonging to a certain kind or mixin
     get '*' do
+      OCCI::Log.debug('GET')
       if request.path_info.end_with?('/')
         if request.path_info == '/'
-          kinds = OCCI::Model.get.kinds
+          kinds = @backend.model.get.kinds
         else
-          kinds = [OCCI::Model.get_by_location(request.path_info)]
+          kinds = [@backend.model.get_by_location(request.path_info)]
         end
 
         kinds.each do |kind|
           OCCI::Log.info("### Listing all entities of kind #{kind.type_identifier} ###")
-          @collection.resources.concat kind.entities if kind.entity_type == OCCI::Core::Resource.name
-          @collection.links.concat kind.entities if kind.entity_type == OCCI::Core::Link.name
-          @locations.concat kind.entities.collect { |entity| OCCI::Server.uri + entity.location }
+          @collection.resources.concat kind.entities if kind.entity_type == OCCI::Core::Resource
+          @collection.links.concat kind.entities if kind.entity_type == OCCI::Core::Link
+          @locations.concat kind.entities.collect { |entity| request.base_url + request.script_name + entity.location }
         end
       else
-        kind = OCCI::Model.get_by_location(request.path_info.rpartition('/').first + '/')
+        kind = @backend.model.get_by_location(request.path_info.rpartition('/').first + '/')
         uuid = request.path_info.rpartition('/').last
         error 404 if kind.nil? or uuid.nil?
         OCCI::Log.info("### Listing entity with uuid #{uuid} ###")
-        @collection.resources = kind.entities.select { |entity| entity.id == uuid } if kind.entity_type == OCCI::Core::Resource.name
-        @collection.links = kind.entities.select { |entity| entity.id == uuid } if kind.entity_type == OCCI::Core::Link.name
+        @collection.resources = kind.entities.select { |entity| entity.id == uuid } if kind.entity_type == OCCI::Core::Resource
+        @collection.links = kind.entities.select { |entity| entity.id == uuid } if kind.entity_type == OCCI::Core::Link
       end
       status 200
     end
@@ -264,17 +281,17 @@ module OCCI
 # POST request
     post '/-/', '/.well-known/org/ogf/occi/-/' do
       logger.info("## Creating user defined mixin ###")
-      raise "Mixin already exists!" if OCCI::Model.get(@request_collection.mixins)
+      raise "Mixin already exists!" if @backend.model.get(@request_collection).mixins.any?
       @request_collection.mixins.each do |mixin|
-        OCCI::Model.register(mixin)
+        @backend.model.register(mixin)
         # TODO: inform backend about new mixin
       end
     end
 
 # Create an instance appropriate to category field and optionally link an instance to another one
     post '*' do
-
-      category = OCCI::Model.get_by_location(request.path_info.rpartition('/').first + '/')
+      OCCI::Log.debug('### POST request processing ...')
+      category = @backend.model.get_by_location(request.path_info.rpartition('/').first + '/')
 
       if category.nil?
         OCCI::Log.debug("### No category found for request location #{request.path_info} ###")
@@ -283,27 +300,32 @@ module OCCI
 
       # if action
       if params[:action]
+        OCCI::Log.debug("### Action #{params[:action]} triggered ...")
+        action = nil
         if @request_collection.actions.any?
           action = @request_collection.actions.first
-          params[:method] ||= action.attributes!.method if action
+          params[:method] ||= action.attributes[:method] if action
         else
-          action = OCCI::Model.get_by_id(category.actions.select { |action| action.split('#').last == params[:action] }.first)
+          OCCI::Log.debug("Category actions #{category.actions}")
+          action = @backend.model.get_by_id(category.actions.select { |action| action.split('#').last == params[:action] }.first)
         end
-        if request.path_info.ends_with?('/')
+        halt 400, "Corresponding category for action #{params[:action]} not found" if action.nil?
+        OCCI::Log.debug(action)
+        if request.path_info.end_with?('/')
           category.entities.each do |entity|
-            OCCI::Backend::Manager.delegate_action(@backend, action, params, entity)
+            OCCI::Backend::Manager.delegate_action(@client, @backend, action, params, entity)
             status 200
           end
         else
           entity = category.entities.select { |entity| entity.id == request.path_info.rpartition('/').last }.first
-          OCCI::Backend::Manager.delegate_action(@backend, action, params, entity)
+          OCCI::Backend::Manager.delegate_action(@client, @backend, action, params, entity)
           status 200
         end
       elsif category.kind_of?(OCCI::Core::Kind)
         @request_collection.resources.each do |resource|
           OCCI::Log.debug("Deploying resource with title #{resource.title} in backend #{@backend.class.name}")
-          OCCI::Backend::Manager.signal_resource(@backend, OCCI::Backend::RESOURCE_DEPLOY, resource)
-          @locations << OCCI::Server.uri + resource.location
+          OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DEPLOY, resource)
+          @locations << request.base_url + request.script_name + resource.location
           status 201
         end
       elsif category.kind_of?(OCCI::Core::Mixin)
@@ -349,7 +371,7 @@ module OCCI
       #  if OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).kind_of?(OCCI::Core::Resource)
       #    entities = [OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info)]
       #  elsif not OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).kind_of?(OCCI::Core::Category)
-      #    entities = OCCI::Rendering::HTTP::LocationRegistry.get_resources_below_location(request.path_info, OCCI::Model.get_all)
+      #    entities = OCCI::Rendering::HTTP::LocationRegistry.get_resources_below_location(request.path_info, @backend.model.get_all)
       #  elsif OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info).kind_of?(OCCI::Core::Category)
       #    object = OCCI::Rendering::HTTP::LocationRegistry.get_object(request.path_info)
       #    @occi_request.locations.each do |loc|
@@ -388,7 +410,7 @@ module OCCI
       #    link_kind = nil
       #    link_data.category.split(' ').each do |link_category|
       #      begin
-      #        cat = OCCI::Model.get_by_id(link_category)
+      #        cat = @backend.model.get_by_id(link_category)
       #      rescue OCCI::CategoryNotFoundException => e
       #        logger.info("Category #{link_category} not found")
       #        next
@@ -436,7 +458,7 @@ module OCCI
     delete '/-/', '/.well-known/org/ogf/occi/-/' do
       # Location references query interface => delete provided mixin
       raise OCCI::CategoryMissingException if @request_collection.mixins.nil?
-      mixins = OCCI::Model.get(@request_collection.mixins)
+      mixins = @backend.model.get(@request_collection).mixins
       raise OCCI::MixinNotFoundException if mixins.nil?
       mixins.each do |mixin|
         OCCI::Log.debug("### Deleting mixin #{mixin.type_identifier} ###")
@@ -444,7 +466,7 @@ module OCCI
           entity.mixins.delete(mixin)
         end
         # TODO: Notify backend to delete mixin and unassociate entities
-        OCCI::Model.unregister(mixin)
+        @backend.model.unregister(mixin)
       end
       status 200
     end
@@ -453,9 +475,9 @@ module OCCI
 
       # unassociate resources specified by URI in payload from mixin specified by request location
       if request.path_info == '/'
-        categories = OCCI::Model.get.kinds
+        categories = @backend.model.get.kinds
       else
-        categories = [OCCI::Model.get_by_location(request.path_info.rpartition('/').first + '/')]
+        categories = [@backend.model.get_by_location(request.path_info.rpartition('/').first + '/')]
       end
 
       categories.each do |category|
@@ -473,20 +495,20 @@ module OCCI
               if @request_collection.mixins.any?
                 @request_collection.mixins.each do |mixin|
                   OCCI::Log.debug("### Deleting entities from kind #{kind.type_identifier} with mixin #{mixin.type_identifier} ###")
-                  kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@backend, OCCI::Backend::RESOURCE_DELETE, entity) if mixin.include?(entity) }
+                  kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity) if mixin.include?(entity) }
                   kind.entities.delete_if? { |entity| mixin.include?(entity) }
                   # TODO: links
                 end
               else
                 # TODO: links
                 OCCI::Log.debug("### Deleting entities from kind #{kind.type_identifier} ###")
-                kind.entities.each { |resource| OCCI::Backend::Manager.signal_resource(@backend, OCCI::Backend::RESOURCE_DELETE, resource) }
+                kind.entities.each { |resource| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, resource) }
                 kind.entities.clear
               end
             else
               uuid = request.path_info.rpartition('/').last
               OCCI::Log.debug("### Deleting entity with id #{uuid} from kind #{kind.type_identifier} ###")
-              OCCI::Backend::Manager.signal_resource(@backend, OCCI::Backend::RESOURCE_DELETE, entity)
+              OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity)
               kind.entities.delete_if? { |entity| entity.id == uuid }
             end
         end

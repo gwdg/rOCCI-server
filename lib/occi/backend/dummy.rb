@@ -29,17 +29,53 @@ module OCCI
   module Backend
 
     # ---------------------------------------------------------------------------------------------------------------------         
-    class Dummy
+    class Dummy < OCCI::Core::Resource
 
-      def initialize
-        @store = PStore.new('collection')
-        @store.transaction do
-          @store['resources'] ||= []
-          @store['links'] ||= []
-        end
+      attr_reader :model
+
+      def self.kind_definition
+        kind = OCCI::Core::Kind.new('http://rocci.info/server/backend#', 'dummy')
+
+        kind.related = %w{http://rocci.org/serer#backend}
+        kind.title   = "rOCCI Dummy backend"
+
+        kind.attributes.info!.rocci!.backend!.dummy!.scheme!.Default = 'http://my.occi.service/'
+
+        kind
       end
 
-      # ---------------------------------------------------------------------------------------------------------------------     
+      def initialize(kind='http://rocci.org/server#backend', mixins=nil, attributes=nil, links=nil)
+        scheme = attributes.info!.rocci!.backend!.dummy!.scheme if attributes
+        scheme ||= self.class.kind_definition.attributes.info.rocci.backend.dummy.scheme.Default
+        @model = OCCI::Model.new
+        @model.register_core
+        @model.register_infrastructure
+        @model.register_files('etc/backend/dummy/model', scheme)
+        @model.register_files('etc/backend/dummy/templates', scheme)
+        OCCI::Backend::Manager.register_backend(OCCI::Backend::Dummy, OCCI::Backend::Dummy::OPERATIONS)
+
+        super(kind, mixins, attributes, links)
+      end
+
+      def authorized?(username, password)
+        true
+      end
+
+      # Generate a new Dummy client for the target User, if the username
+      # is nil the Client is generated for the default user
+      # @param [String] username
+      # @return [Client]
+      def client(username='default')
+        username ||= 'default'
+        client = PStore.new(username)
+        client.transaction do
+          client['resources'] ||= []
+          client['links'] ||= []
+        end
+        client
+      end
+
+      # ---------------------------------------------------------------------------------------------------------------------
       # Operation mappings
 
       OPERATIONS = {}
@@ -86,56 +122,56 @@ module OCCI
       }
 
       # ---------------------------------------------------------------------------------------------------------------------
-      def register_existing_resources
-        @store.transaction(read_only=true) do
-          entities = @store['resources'] + @store['links']
+      def register_existing_resources(client)
+        client.transaction(read_only=true) do
+          entities = client['resources'] + client['links']
           entities.each do |entity|
-            kind = OCCI::Model.get_by_id(entity.kind)
+            kind = @model.get_by_id(entity.kind)
             kind.entities << entity
             OCCI::Log.debug("#### Number of entities in kind #{kind.type_identifier}: #{kind.entities.size}")
-          end
+          end                         
         end
       end
 
       # TODO: register user defined mixins
 
-      def compute_deploy(compute)
+      def compute_deploy(client, compute)
         compute.id = UUIDTools::UUID.timestamp_create.to_s
-        compute_action_start(compute)
-        store(compute)
+        compute_action_start(client, compute)
+        store(client, compute)
       end
 
-      def storage_deploy(storage)
+      def storage_deploy(client, storage)
         storage.id = UUIDTools::UUID.timestamp_create.to_s
-        storage_action_online(storage)
-        store(storage)
+        storage_action_online(client, storage)
+        store(client, storage)
       end
 
-      def network_deploy(network)
+      def network_deploy(client, network)
         network.id = UUIDTools::UUID.timestamp_create.to_s
-        network_action_up(network)
-        store(network)
+        network_action_up(client, network)
+        store(client, network)
       end
 
-      # ---------------------------------------------------------------------------------------------------------------------     
-      def store(resource)
+      # ---------------------------------------------------------------------------------------------------------------------
+      def store(client, resource)
         OCCI::Log.debug("### DUMMY: Deploying resource with id #{resource.id}")
-        @store.transaction do
-          @store['resources'].delete_if { |res| res.id == resource.id }
-          @store['resources'] << resource
+        client.transaction do
+          client['resources'].delete_if { |res| res.id == resource.id }
+          client['resources'] << resource
         end
       end
 
-      # ---------------------------------------------------------------------------------------------------------------------     
+      # ---------------------------------------------------------------------------------------------------------------------
       def resource_update_state(resource)
         OCCI::Log.debug("Updating state of resource '#{resource.attributes['occi.core.title']}'...")
       end
 
-      # ---------------------------------------------------------------------------------------------------------------------     
-      def resource_delete(resource)
+      # ---------------------------------------------------------------------------------------------------------------------
+      def resource_delete(client, resource)
         OCCI::Log.debug("Deleting resource '#{resource.attributes['occi.core.title']}'...")
-        @store.transaction do
-          @store['resources'].delete_if { |res| res.id == resource.id }
+        client.transaction do
+          client['resources'].delete_if { |res| res.id == resource.id }
         end
       end
 
@@ -143,84 +179,76 @@ module OCCI
       # ACTIONS
       # ---------------------------------------------------------------------------------------------------------------------
 
-      def compute_action_start(compute, parameters=nil)
-        action_dummy(compute)
-        compute.attributes!.occi!.compute!.state = 'active'
-        compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=stop', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#start')
-        compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=restart', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#restart')
-        compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=suspend', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#suspend')
-        store(compute)
+      def compute_action_start(client, compute, parameters=nil)
+        action_dummy(client, compute)
+        compute.attributes.occi!.compute!.state = 'active'
+        compute.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
+        store(client, compute)
       end
 
-      def compute_action_stop(compute, parameters=nil)
-        action_dummy(compute)
-        compute.attributes!.occi!.compute!.state = 'inactive'
-        compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=start', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#start')
-        store(compute)
+      def compute_action_stop(client, compute, parameters=nil)
+        action_dummy(client, compute)
+        compute.attributes.occi!.compute!.state = 'inactive'
+        compute.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
+        store(client, compute)
       end
 
-      def compute_action_restart(compute, parameters=nil)
-        compute_action_start(compute)
+      def compute_action_restart(client, compute, parameters=nil)
+        compute_action_start(client, compute)
       end
 
-      def compute_action_suspend(compute, parameters=nil)
-        action_dummy(compute)
-        compute.attributes!.occi!.compute!.state = 'suspended'
-        compute.links << OCCI::Core::Link.new(:target => compute.location + '?action=start', :rel => 'http://schemas.ogf.org/occi/infrastructure/compute/action#start')
-        store(compute)
+      def compute_action_suspend(client, compute, parameters=nil)
+        action_dummy(client, compute)
+        compute.attributes.occi!.compute!.state = 'suspended'
+        compute.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
+        store(client, compute)
       end
 
-      def storage_action_online(storage, parameters=nil)
-        action_dummy(storage)
-        storage.attributes!.occi!.storage!.state = 'online'
-        storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=offline', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#offline')
-        storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=backup', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#restart')
-        storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=snapshot', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#suspend')
-        storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=resize', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#resize')
-        store(storage)
+      def storage_action_online(client, storage, parameters=nil)
+        action_dummy(client, storage)
+        storage.attributes.occi!.storage!.state = 'online'
+        storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#offline http://schemas.ogf.org/occi/infrastructure/storage/action#restart http://schemas.ogf.org/occi/infrastructure/storage/action#suspend http://schemas.ogf.org/occi/infrastructure/storage/action#resize|
+        store(client, storage)
       end
 
-      def storage_action_offline(storage, parameters=nil)
-        action_dummy(storage)
-        storage.attributes!.occi!.storage!.state = 'offline'
-        storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=online', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#online')
-        storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=backup', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#restart')
-        storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=snapshot', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#suspend')
-        storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=resize', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#resize')
-        store(storage)
+      def storage_action_offline(client, storage, parameters=nil)
+        action_dummy(client, storage)
+        storage.attributes.occi!.storage!.state = 'offline'
+        storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online http://schemas.ogf.org/occi/infrastructure/storage/action#restart http://schemas.ogf.org/occi/infrastructure/storage/action#suspend http://schemas.ogf.org/occi/infrastructure/storage/action#resize|
+        store(client, storage)
       end
 
-      def storage_action_backup(storage, parameters=nil)
+      def storage_action_backup(client, storage, parameters=nil)
         # nothing to do, state and actions stay the same after the backup which is instant for the dummy
       end
 
-      def storage_action_snapshot(storage, parameters=nil)
+      def storage_action_snapshot(client, storage, parameters=nil)
         # nothing to do, state and actions stay the same after the snapshot which is instant for the dummy
       end
 
-      def storage_action_resize(storage, parameters=nil)
+      def storage_action_resize(client, storage, parameters=nil)
         puts "Parameters: #{parameters}"
-        storage.attributes!.occi!.storage!.size = parameters[:size].to_i
+        storage.attributes.occi!.storage!.size = parameters[:size].to_i
         # state and actions stay the same after the resize which is instant for the dummy
-        store(storage)
+        store(client, storage)
       end
 
-      def network_action_up(network, parameters=nil)
-        action_dummy(network)
-        network.attributes!.occi!.network!.state = 'up'
-        network.links << OCCI::Core::Link.new(:target => network.location + '?action=down', :rel => 'http://schemas.ogf.org/occi/infrastructure/network/action#down')
-        store(network)
+      def network_action_up(client, network, parameters=nil)
+        action_dummy(client, network)
+        network.attributes.occi!.network!.state = 'up'
+        network.actions = %w|http://schemas.ogf.org/occi/infrastructure/network/action#down|
+        store(client, network)
       end
 
-      def network_action_down(network, parameters=nil)
-        action_dummy(network)
-        network.attributes!.occi!.network!.state = 'down'
-        network.links << OCCI::Core::Link.new(:target => network.location + '?action=up', :rel => 'http://schemas.ogf.org/occi/infrastructure/network/action#up')
-        store(network)
+      def network_action_down(client, network, parameters=nil)
+        action_dummy(client, network)
+        network.attributes.occi!.network!.state = 'down'
+        network.actions = %w|http://schemas.ogf.org/occi/infrastructure/network/action#up|
+        store(client, network)
       end
 
-      # ---------------------------------------------------------------------------------------------------------------------     
-      def action_dummy(resource, parameters=nil)
+      # ---------------------------------------------------------------------------------------------------------------------
+      def action_dummy(client, resource, parameters=nil)
         OCCI::Log.debug("Calling method for resource '#{resource.attributes['occi.core.title']}' with parameters: #{parameters.inspect}")
         resource.links ||= []
         resource.links.delete_if { |link| link.rel.include? 'action' }

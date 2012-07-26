@@ -1,12 +1,12 @@
 <%="NAME           =" + @storage.title.inspect if @storage.title %>
 <%="DESCRIPTION    =" + @storage.summary if @storage.summary %>
-<% if @storage.attributes!.org!.opennebula!.storage!.type %>
-   TYPE            = <%= @storage.attributes!.org!.opennebula!.storage!.type %>
-<% elsif @storage.attributes!.occi!.storage!.size %>
+<% if @storage.attributes.org!.opennebula!.storage!.type %>
+   TYPE            = <%= @storage.attributes.org!.opennebula!.storage!.type %>
+<% elsif @storage.attributes.occi!.storage!.size %>
    TYPE            = DATABLOCK
-   FSTYPE          = <%= @storage.attributes!.org!.opennebula!.storage!.fstype ||= "ext3" %>
-   SIZE            = <%= @storage.attributes!.occi!.storage!.size %>
+   FSTYPE          = <%= @storage.attributes.org!.opennebula!.storage!.fstype ||= "ext3" %>
+   SIZE            = <%= @storage.attributes.occi!.storage!.size %>
 <% end %>
-<%="PERSISTENT     =" + @storage.attributes!.org!.opennebula!.storage!.persistent if @storage.attributes!.org!.opennebula!.storage!.persistent %>
-<%="DEV_PREFIX     =" + @storage.attributes!.org!.opennebula!.storage!.dev_prefix if @storage.attributes!.org!.opennebula!.storage!.dev_prefix %>
-<%="BUS            =" + @storage.attributes!.org!.opennebula!.storage!.bus if @storage.attributes!.org!.opennebula!.storage!.bus %>
+<%="PERSISTENT     =" + @storage.attributes.org!.opennebula!.storage!.persistent if @storage.attributes.org!.opennebula!.storage!.persistent %>
+<%="DEV_PREFIX     =" + @storage.attributes.org!.opennebula!.storage!.dev_prefix if @storage.attributes.org!.opennebula!.storage!.dev_prefix %>
+<%="BUS            =" + @storage.attributes.org!.opennebula!.storage!.bus if @storage.attributes.org!.opennebula!.storage!.bus %>

@@ -152,7 +152,7 @@ module OCCI
             entities = []
             related = [OCCI::Infrastructure::ResourceTemplate::MIXIN]
             mixin = OCCI::Core::Mixin.new(term, scheme, title, attributes, actions, related, entities)
-            OCCI::CategoryRegistry.register(mixin)
+            OCCI::Model.register(mixin)
           end
 
           ## import image templates
@@ -168,7 +168,7 @@ module OCCI
             entities = []
             related = [OCCI::Infrastructure::OSTemplate::MIXIN]
             mixin = OCCI::Core::Mixin.new(term, scheme, title, attributes, actions, related, entities)
-            OCCI::CategoryRegistry.register(mixin)
+            OCCI::Model.register(mixin)
           end
           OCCI::Log.debug("Finished loading EC2 templates.")
         end

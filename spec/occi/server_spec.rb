@@ -17,24 +17,6 @@ describe OCCI::Server do
     OCCI::Server
   end
 
-  describe "Model" do
-
-    it "initializes Model Extensions successfully" do
-      OCCI::Model.register_files('etc/model/extensions/', 'http://example.com')
-      OCCI::Model.get_by_id('http://schemas.ogf.org/occi/infrastructure/compute#console').should be_kind_of OCCI::Core::Kind
-    end
-
-    it "initializes OpenNebula Model Extensions successfully" do
-      OCCI::Model.register_files('etc/backend/opennebula/model/', 'http://example.com')
-      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#compute').should be_kind_of OCCI::Core::Mixin
-      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#storage').should be_kind_of OCCI::Core::Mixin
-      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#storagelink').should be_kind_of OCCI::Core::Mixin
-      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#network').should be_kind_of OCCI::Core::Mixin
-      OCCI::Model.get_by_id('http://opennebula.org/occi/infrastructure#networkinterface').should be_kind_of OCCI::Core::Mixin
-    end
-
-  end
-
   describe "GET /-/" do
 
     it "returns registered categories in JSON format" do
@@ -96,8 +78,9 @@ describe OCCI::Server do
       get '/-/'
       last_response.should be_ok
       collection = Hashie::Mash.new(JSON.parse(last_response.body))
-      collection.mixins.should have_at_least(1).mixin
+      collection.mixins.should have_at_least(2).mixins
       os_template = collection.mixins.select { |mixin| mixin.term != "os_tpl" }.first
+      puts os_template
       header "Accept", "text/uri-list"
       header "Content-type", "application/occi+json"
       header "Category", ''
@@ -183,9 +166,20 @@ describe OCCI::Server do
         break if collection.resources.first.attributes.occi.compute.state == "active"
         sleep 1
       end
-      action_location = collection.resources.first.links.first.target
+      resource = collection.resources.first
+      resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop'
+      action_location = location.path + '?action=stop'
       post action_location
       last_response.should be_http_ok
+      for i in 1..120
+        get location.path
+        last_response.should be_http_ok
+        collection = Hashie::Mash.new(JSON.parse(last_response.body))
+        resource = collection.resources.first
+        break if resource.attributes.occi.compute.state == "inactive"
+        sleep 1
+      end
+      resource.attributes.occi.compute.state.should == "inactive"
     end
   end
 
@@ -201,7 +195,7 @@ describe OCCI::Server do
       last_response.should be_http_created
     end
 
-    it "creates a new storage resource with a request in plain text format" do
+    it "creates a new storage resource with a request in json format" do
       sleep 2
       header "Accept", "text/uri-list"
       header "Content-type", "application/occi+json"

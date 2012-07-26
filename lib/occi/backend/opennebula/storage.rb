@@ -24,7 +24,7 @@ require 'erubis'
 
 module OCCI
   module Backend
-    module OpenNebula
+    class OpenNebula
 
       # ---------------------------------------------------------------------------------------------------------------------
       module Storage
@@ -39,33 +39,31 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------
 
         # ---------------------------------------------------------------------------------------------------------------------     
-        def storage_parse_backend_object(backend_object)
+        def storage_parse_backend_object(client, backend_object)
 
           # get information on storage object from OpenNebula backend
           backend_object.info
 
-          storage_kind = OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage")
+          storage_kind = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage")
 
           id = self.generate_occi_id(storage_kind, backend_object.id.to_s)
           @@location_cache[id] = backend_object.id.to_s
 
-          storage = Hashie::Mash.new
-
-          storage.kind = storage_kind.type_identifier
+          storage = OCCI::Core::Resource.new(storage_kind.type_identifier)
           storage.mixins = %w|http://opennebula.org/occi/infrastructure#storage|
           storage.id = id
           storage.title = backend_object['NAME']
           storage.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
 
-          storage.attributes!.occi!.storage!.size = backend_object['TEMPLATE/SIZE'].to_f/1000 if backend_object['TEMPLATE/SIZE']
+          storage.attributes.occi!.storage!.size = backend_object['TEMPLATE/SIZE'].to_f/1000 if backend_object['TEMPLATE/SIZE']
 
-          storage.attributes!.org!.opennebula!.storage!.type = backend_object['TEMPLATE/TYPE'] if backend_object['TEMPLATE/TYPE']
-          storage.attributes!.org!.opennebula!.storage!.persistent = backend_object['TEMPLATE/PERSISTENT'] if backend_object['TEMPLATE/PERSISTENT']
-          storage.attributes!.org!.opennebula!.storage!.dev_prefix = backend_object['TEMPLATE/DEV_PREFIX'] if backend_object['TEMPLATE/DEV_PREFIX']
-          storage.attributes!.org!.opennebula!.storage!.bus = backend_object['TEMPLATE/BUS'] if backend_object['TEMPLATE/BUS']
-          storage.attributes!.org!.opennebula!.storage!.driver = backend_object['TEMPLATE/DRIVER'] if backend_object['TEMPLATE/DRIVER']
+          storage.attributes.org!.opennebula!.storage!.type = backend_object['TEMPLATE/TYPE'] if backend_object['TEMPLATE/TYPE']
+          storage.attributes.org!.opennebula!.storage!.persistent = backend_object['TEMPLATE/PERSISTENT'] if backend_object['TEMPLATE/PERSISTENT']
+          storage.attributes.org!.opennebula!.storage!.dev_prefix = backend_object['TEMPLATE/DEV_PREFIX'] if backend_object['TEMPLATE/DEV_PREFIX']
+          storage.attributes.org!.opennebula!.storage!.bus = backend_object['TEMPLATE/BUS'] if backend_object['TEMPLATE/BUS']
+          storage.attributes.org!.opennebula!.storage!.driver = backend_object['TEMPLATE/DRIVER'] if backend_object['TEMPLATE/DRIVER']
 
-          storage = OCCI::Core::Resource.new(storage)
+          storage.check(@model)
 
           storage_set_state(backend_object, storage)
 
@@ -77,14 +75,14 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------
 
         # ---------------------------------------------------------------------------------------------------------------------
-        def storage_deploy(storage)
+        def storage_deploy(client, storage)
 
-          backend_object = Image.new(Image.build_xml, @one_client)
+          backend_object = OpenNebula::Image.new(OpenNebula::Image.build_xml, client)
 
           # OpenNebula requires all images to have a name/title
           storage.title ||= "Image created at " + Time.now.to_s
 
-          template_location = OCCI::Server.config["TEMPLATE_LOCATION"] + TEMPLATESTORAGERAWFILE
+          template_location = File.dirname(__FILE__) + '/../../../../etc/backend/opennebula/one_templates/' + TEMPLATESTORAGERAWFILE
           template = Erubis::Eruby.new(File.read(template_location)).evaluate(:storage => storage)
 
           OCCI::Log.debug("Parsed template #{template}")
@@ -98,7 +96,7 @@ module OCCI
           check_rc(rc)
 
           backend_object.info
-          storage.id = self.generate_occi_id(OCCI::Model.get_by_id(storage.kind), backend_object['ID'].to_s)
+          storage.id = self.generate_occi_id(@model.get_by_id(storage.kind), backend_object['ID'].to_s)
 
           storage_set_state(backend_object, storage)
         end
@@ -106,39 +104,32 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------
         def storage_set_state(backend_object, storage)
           OCCI::Log.debug("current Image state is: #{backend_object.state_str}")
-          storage.links = []
           case backend_object.state_str
             when "READY", "USED", "LOCKED" then
-              storage.attributes!.occi!.storage!.state = "online"
-              storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=offline', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#offline')
-              storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=backup', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#backup')
-              storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=snapshot', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot')
-              storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=resize', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#resize')
+              storage.attributes.occi!.storage!.state = "online"
+              storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#offline http://schemas.ogf.org/occi/infrastructure/storage/action#backup http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot http://schemas.ogf.org/occi/infrastructure/storage/action#resize|
             when "ERROR" then
-              storage.attributes!.occi!.storage!.state = "degraded"
-              storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=online', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#online')
+              storage.attributes.occi!.storage!.state = "degraded"
+              storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online'|
             else
-              storage.attributes!.occi!.storage!.state = "offline"
-              storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=online', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#online')
-              storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=backup', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#backup')
-              storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=snapshot', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot')
-              storage.links << OCCI::Core::Link.new(:target => storage.location + '?action=resize', :rel => 'http://schemas.ogf.org/occi/infrastructure/storage/action#resize')
+              storage.attributes.occi!.storage!.state = "offline"
+              storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online http://schemas.ogf.org/occi/infrastructure/storage/action#backup http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot http://schemas.ogf.org/occi/infrastructure/storage/action#resize|
           end
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
-        def storage_delete(storage)
-          backend_object = Image.new(Image.build_xml(@@location_cache[storage.id]), @one_client)
+        def storage_delete(client, storage)
+          backend_object = OpenNebula::Image.new(OpenNebula::Image.build_xml(@@location_cache[storage.id]), client)
           rc = backend_object.delete
           check_rc(rc)
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
-        def storage_register_all_instances
+        def storage_register_all_instances(client)
           occi_objects = []
-          backend_object_pool=ImagePool.new(@one_client, OCCI::Backend::OpenNebula::OpenNebula::INFO_ACL)
+          backend_object_pool=ImagePool.new(client, OCCI::Backend::OpenNebula::INFO_ACL)
           backend_object_pool.info
-          backend_object_pool.each { |backend_object| storage_parse_backend_object(backend_object) }
+          backend_object_pool.each { |backend_object| storage_parse_backend_object(client, backend_object) }
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
@@ -146,40 +137,40 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------
 
         # ---------------------------------------------------------------------------------------------------------------------
-        def storage_action_dummy(storage, parameters)
+        def storage_action_dummy(client, storage, parameters)
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
         # Action online
-        def storage_online(storage, parameters)
-          backend_object = Image.new(Image.build_xml(@@location_cache[storage.id]), @one_client)
+        def storage_online(client, storage, parameters)
+          backend_object = OpenNebula::Image.new(OpenNebula::Image.build_xml(@@location_cache[storage.id]), client)
           rc = backend_object.enable
           check_rc(rc)
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
         # Action offline
-        def storage_offline(storage, parameters)
-          backend_object = Image.new(Image.build_xml(@@location_cache[storage.id]), @one_client)
+        def storage_offline(client, storage, parameters)
+          backend_object = OpenNebula::Image.new(OpenNebula::Image.build_xml(@@location_cache[storage.id]), client)
           rc = backend_object.disable
           check_rc(rc)
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
         # Action backup
-        def storage_backup(storage, parameters)
+        def storage_backup(client, storage, parameters)
           OCCI::Log.debug("not yet implemented")
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
         # Action snapshot
-        def storage_snapshot(storage, parameters)
+        def storage_snapshot(client, storage, parameters)
           OCCI::Log.debug("not yet implemented")
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
         # Action resize
-        def storage_resize(storage, parameters)
+        def storage_resize(client, storage, parameters)
           OCCI::Log.debug("not yet implemented")
         end
 

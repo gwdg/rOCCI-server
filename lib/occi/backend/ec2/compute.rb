@@ -111,7 +111,7 @@ module OCCI
           attributes["occi.networkinterface.interface"] = ""
           attributes["occi.core.source"] = compute.get_location
           attributes["occi.core.target"] = "/network/ec2_private_network"
-          ipnetwork = OCCI::CategoryRegistry.get_by_id("http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface")
+          ipnetwork = OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface")
           ipnetwork.backend[:network] = "private"
           mixins = [ipnetwork]
           private_networkinterface = OCCI::Infrastructure::Networkinterface.new(attributes, mixins)
@@ -129,7 +129,7 @@ module OCCI
           attributes["occi.networkinterface.interface"] = ""
           attributes["occi.core.source"] = compute.get_location
           attributes["occi.core.target"] = "/network/ec2_public_network"
-          ipnetwork = OCCI::CategoryRegistry.get_by_id("http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface")
+          ipnetwork = OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface")
           ipnetwork.backend[:network] = "ec2_public_network"
           mixins = [ipnetwork]
           public_networkinterface = OCCI::Infrastructure::Networkinterface.new(attributes, mixins)

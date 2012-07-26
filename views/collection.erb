@@ -18,9 +18,9 @@ X-OCCI-Attribute: <%= name + '=' + value.inspect %>
 <% resource.links.each do |link| %>
 Link: <<%= link.target %>>;rel="<%= link.rel %>"<%= ';self=' + link.location.inspect if link.location %><%= ';category=' + link.kind.inspect if link.kind %><%= ';' + link.attributes.combine.collect { |attr| attr.keys.first + '=' + attr.values.first.inspect }.join(' ') if link.attributes %>
 <% end if resource.links %>
-<% resource.applicable_actions do |action| %>
-Link: <<%= resource.location + '?action=' + action.term %>>;rel="<%= action.type_identifier %>"
-<% end if resource.applicable_actions %>
+<% resource.actions do |action| %>
+Link: <<%= resource.location + '?action=' + action.split('#').last %>>;rel="<%= action %>"
+<% end if resource.actions %>
 <% end if collection.resources and locations.empty? %>
 <% collection.links.each do |link| %>
 Link: <<%= link.target %>>;rel="<%= link.related %>";self="<%= link.location %>";category="<%= link.kind %><%= ';' + link.attributes.combine.collect { |attr| attr.keys.first + '=' + attr.values.first.inspect }.join(' ') if link.attributes %>
