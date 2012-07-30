@@ -58,6 +58,7 @@ module OCCI
       def initialize(kind='http://rocci.org/server#backend', mixins=nil, attributes=nil, links=nil)
         scheme = attributes.info!.rocci!.backend!.opennebula!.scheme if attributes
         scheme ||= self.class.kind_definition.attributes.info.rocci.backend.opennebula.scheme.Default
+        scheme.chomp('/')
         @model = OCCI::Model.new
         @model.register_core
         @model.register_infrastructure
