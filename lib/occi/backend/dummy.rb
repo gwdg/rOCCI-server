@@ -75,6 +75,10 @@ module OCCI
         client
       end
 
+      def get_username(cert_subject)
+        cert_subject
+      end
+
       # ---------------------------------------------------------------------------------------------------------------------
       # Operation mappings
 
