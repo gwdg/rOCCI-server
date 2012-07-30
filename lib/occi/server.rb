@@ -234,7 +234,7 @@ module OCCI
         # f.html { haml :collection, :locals => {:collection => @collection} }
         f.json { @collection.to_json }
         f.on('application/occi+json') { @collection.to_json }
-        f.xml { @collection.to_xml(:root => "collection") }
+        f.xml { XmlSimple.xml_out(@collection.as_json, 'RootName' => 'occi' ) }
         f.on('application/occi+xml') { @collection.to_xml(:root => "collection") }
         f.on('text/uri-list') { @locations.join("\n") }
       end
