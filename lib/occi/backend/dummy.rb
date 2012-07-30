@@ -76,7 +76,9 @@ module OCCI
       end
 
       def get_username(cert_subject)
-        cert_subject
+        cn = cert_subject [/.*\/CN=([^\/]*).*/,1]
+        user = cn.downcase.gsub ' ','' if cn
+        user ||= 'default'
       end
 
       # ---------------------------------------------------------------------------------------------------------------------
