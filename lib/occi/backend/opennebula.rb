@@ -71,9 +71,7 @@ module OCCI
 
         @server_auth           = OpenNebula::Auth::ServerCipherAuth.new(admin, password)
         @token_expiration_time = Time.now.to_i + 1800
-        token                  = @server_auth.login_token(@token_expiration_time)
         @endpoint              = attributes.info.rocci.backend.opennebula.endpoint
-        @oneadmin_client       = OpenNebula::Client.new(token, @endpoint)
         @lock                  = Mutex.new
 
         # TODO: create mixins from existing templates
@@ -101,7 +99,7 @@ module OCCI
       # driver:: _String_ list of valid drivers for the user, | separated
       # [return] _Hash_ with the username
       def get_password(username, driver=nil)
-        user_pool = OpenNebula::UserPool.new(@oneadmin_client)
+        user_pool = OpenNebula::UserPool.new(client)
         rc        = user_pool.info
         raise rc.message if check_rc(rc)
 
@@ -119,7 +117,7 @@ module OCCI
       # password:: _String_ the password
       # [return] _Hash_ with the username
       def get_username(password)
-        user_pool = OpenNebula::UserPool.new(@oneadmin_client)
+        user_pool = OpenNebula::UserPool.new(client)
         rc        = user_pool.info
         raise rc.message if check_rc(rc)
 
