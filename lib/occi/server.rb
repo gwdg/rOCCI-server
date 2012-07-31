@@ -8,6 +8,9 @@ require 'hashie/mash'
 require 'occi'
 require 'occi/exceptions'
 
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
+
 module OCCI
   class Server < Sinatra::Base
 
@@ -84,10 +87,10 @@ module OCCI
         username, password = digest_auth.credentials
         halt 403, "Password in request does not match password of user #{username}" unless @backend.authorized?(username, password)
         username
-      elsif request.env['HTTP_SSL_CLIENT_S_DN']
+      elsif request.env['SSL_CLIENT_S_DN']
         # For https, the web service should be set to include the user cert in the environment.
 
-        cert_subject = request.env['HTTP_SSL_CLIENT_S_DN']
+        cert_subject = request.env['SSL_CLIENT_S_DN']
         # Password should be DN with whitespace removed.
         username     = @backend.get_username(cert_subject)
 
@@ -130,6 +133,7 @@ module OCCI
       OCCI::Log.debug("### Client Request method: #{request.request_method}")
       OCCI::Log.debug("### Client Request Media Type: #{request.media_type}")
       OCCI::Log.debug("### Client Request header: #{request.env.select { |k, v| k.include? 'HTTP' }}")
+      OCCI::Log.debug("### Client SSL certificate subject: #{request.env['SSL_CLIENT_S_DN']}")
       OCCI::Log.debug("### Client Request body: #{request.body.read}")
       OCCI::Log.debug('--------------------------------------------------------------------')
       request.body.rewind
