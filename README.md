@@ -72,7 +72,8 @@ If you intend to manage rOCCI-server from a different user account, you need to 
 Setup RVM for rOCCI-server (change the ruby version to your favorite one)
 
     cd rOCCI-server
-    rvm --rvmrc --create ruby-1.9.3
+    rvm install ruby-1.9.3
+    rvm --rvmrc --create ruby-1.9.3@rOCCI-server
 
 ### Nginx
 
@@ -162,7 +163,7 @@ Backend Customization
 -------------
 
 To configure the behaviour of compute, network and storage resource creation, edit the backend specific extensions of
-the OCCI model at `etc/backend/$BACKEND/model` (e.g. `etc/backend/dummy/model for the dummy backend).
+the OCCI model at `etc/backend/$BACKEND/model` (e.g. `etc/backend/dummy/model` for the dummy backend).
 
 To change the predefined resource or OS templates, you can adapt the existing templates in `etc/backend/$BACKEND/templates`
 or add new templates. If resource or OS templates are already registered in the backend, they will be automatically
