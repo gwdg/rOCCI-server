@@ -91,19 +91,28 @@ to use for verification (there currently seems to be no way to specify multiple 
 should look like this (adapt to your settings, especially $USER! and server_name):
 
         server {
-            server_name  localhost;                          # change to the server name rOCCI-server should be accessible from
-            listen 443;                                      # change to the port rOCCI-server should listen on
-            root /home/$USER/rOCCI-server/public;            # important, this needs to point to the public folder of your rOCCI-server
-            passenger_enabled on;
+            # change to the server name rOCCI-server should be accessible from
+            server_name  localhost;
+            # change to the port rOCCI-server should listen on
+            listen 443;
+            # important, this needs to point to the public folder of your rOCCI-server
+            root /home/$USER/rOCCI-server/public;
 
             ssl on;
-            ssl_certificate /etc/ssl/certs/server.crt;       # this should point to your server host certificate
-            ssl_certificate_key /etc/ssl/private/server.key; # this should point to your server host key
-            ssl_client_certificate /etc/ssl/certs/ca.pem;    # this should point to the Root CAs which should be used for client verification
-            ssl_verify_depth 10;                             # if you have multiple CAs in the file above, you may need to increase the verify depht
-            ssl_verify_client optional;                      # set to optional, this tells nginx to attempt to verify SSL certificates if provided
+            # this should point to your server host certificate
+            ssl_certificate /etc/ssl/certs/server.crt;
+            # this should point to your server host key
+            ssl_certificate_key /etc/ssl/private/server.key;
+            # this should point to the Root CAs which should be used for client verification
+            ssl_client_certificate /etc/ssl/certs/ca.pem;
+            # if you have multiple CAs in the file above, you may need to increase the verify depht
+            ssl_verify_depth 10;
+            # set to optional, this tells nginx to attempt to verify SSL certificates if provided
+            ssl_verify_client optional;
 
-            passenger_set_cgi_param SSL_CLIENT_S_DN $ssl_client_s_dn; # pass the subject of the client certificate to passenger
+            passenger_enabled on;
+            # pass the subject of the client certificate to passenger
+            passenger_set_cgi_param SSL_CLIENT_S_DN $ssl_client_s_dn;
         }
 
 You have to start/restart Nginx before you can use rOCCI-server!
@@ -112,7 +121,7 @@ You have to start/restart Nginx before you can use rOCCI-server!
 
 Let passenger guide you through installing and or configuring Apache for you
 
-    rvmsudo passenger-install-apache2-module
+    bundle exec rvmsudo passenger-install-apache2-module
 
 Create a new VirtualHost in the sites-available directory of Apache (e.g. in `/etc/apache2/sites-available/occi-ssl`)
 with the following content (adapt to your settings, especially $USER! and ServerName):
@@ -133,7 +142,7 @@ with the following content (adapt to your settings, especially $USER! and Server
         SSLOptions +StdEnvVars
 
         ServerName localhost
-        # !!! Be sure to point DocumentRoot to 'public'!
+        # important, this needs to point to the public folder of your rOCCI-server
         DocumentRoot /home/$USER/rOCCI-server/public
         <Directory /home/$USER/rOCCI-server/public>
             Allow from all
