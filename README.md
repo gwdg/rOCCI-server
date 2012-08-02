@@ -65,7 +65,8 @@ Select a user as a manager, and add him to rvm group - he will be responsible fo
 
     usermod -a -G rvm $USER
 
-If you intend to manage rOCCI-server from a different user account, you need to run the following command
+If you intend to manage rOCCI-server from a different user account, you need to run the following command and logout
+and login again
 
     rvm user gemsets
 
@@ -82,7 +83,7 @@ allows to configure one CA file to use for client certificate validation.
 
 Let passenger guide you through installing and or configuring Nginx (for apache see below) for you
 
-    rvmsudo passenger-install-nginx-module
+    bundle exec rvmsudo passenger-install-nginx-module
 
 Edit the Nginx configuration (e.g. `/opt/nginx/conf/nginx.conf`) and insert a new `server` entry for the rOCCI server.
 To use SSL you need a valid server certificate and for client verification you need a file containing all CAs you want
@@ -111,20 +112,25 @@ You have to start/restart Nginx before you can use rOCCI-server!
 
 Let passenger guide you through installing and or configuring Apache for you
 
-    rvmsudo passenger-install-apache-module
+    rvmsudo passenger-install-apache2-module
 
 Create a new VirtualHost in the sites-available directory of Apache (e.g. in `/etc/apache2/sites-available/occi-ssl`)
 with the following content (adapt to your settings, especially $USER! and ServerName):
 
     <VirtualHost *:443>
         SSLEngine on
-        SSLCertificateFile /etc/ssl/certs/server.crt      # this should point to your server host certificate
-        SSLCertificateKeyFile /etc/ssl/private/server.key # this should point to your server host key
-        SSLCACertificatePath /etc/ssl/certs               # directory containing the Root CA certificates and their hashes
-        SSLVerifyClient optional                          # set to optional, this tells Apache to attempt to verify SSL certificates if provided
-        SSLVerifyDepth 10                                 # if you have multiple CAs in the file above, you may need to increase the verify depht
-
-        SSLOptions +StdEnvVars                            # enable passing of SSL variables to passenger
+        # this should point to your server host certificate
+        SSLCertificateFile /etc/ssl/certs/server.crt
+        # this should point to your server host key
+        SSLCertificateKeyFile /etc/ssl/private/server.key
+        # directory containing the Root CA certificates and their hashes
+        SSLCACertificatePath /etc/ssl/certs
+        # set to optional, this tells Apache to attempt to verify SSL certificates if provided
+        SSLVerifyClient optional
+        # if you have multiple CAs in the file above, you may need to increase the verify depht
+        SSLVerifyDepth 10
+        # enable passing of SSL variables to passenger
+        SSLOptions +StdEnvVars
 
         ServerName localhost
         # !!! Be sure to point DocumentRoot to 'public'!
