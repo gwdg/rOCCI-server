@@ -22,11 +22,11 @@
                             },
                             "bus":{
                                 "Description":"Type of disk device to emulate.",
-                                "Pattern": "IDE|SCSI|virtio"
+                                "Pattern": "ide|IDE|scsi|SCSI|virtio"
                             },
                             "driver":{
                                 "Description":"Specific image mapping driver. VMware is unsupported",
-                                "Pattern": "raw|qcow2|tap:aio:|file:"
+                                "Pattern": "raw|qcow2|tap2:tapdisk:aio:|tap:aio:|file:"
                             },
                             "fstype":{
                                 "Description":"Type of file system to be built. This can be any value understood by mkfs unix command."
@@ -38,3 +38,4 @@
         }
     ]
 }
+
