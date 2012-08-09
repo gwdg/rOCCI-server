@@ -68,7 +68,7 @@ For a user named `doe` the command may look like this
     oneuser create doe "/C=US/O=Doe Foundation/CN=John Doe" --driver x509
 
 Backend Customization
--------------
+---------------------
 
 To configure the behaviour of compute, network and storage resource creation, edit the backend specific extensions of
 the OCCI model at `etc/backend/$BACKEND/model` (e.g. `etc/backend/dummy/model` for the dummy backend).
@@ -203,6 +203,27 @@ with the following content (adapt to your settings, especially $USER! and Server
     </VirtualHost>
 
 You have to start/restart Apache before you can use rOCCI-server!
+
+Updating
+--------
+
+If you checked out rOCCI-server from GIT, then you can pull the latest version or a tagged version, update all required
+ruby gems using bundler and restart the server by touching the file tmp/restart.txt:
+
+    cd rOCCI-server
+    git pull
+    bundle install --deployment
+    mkdir tmp
+    touch tmp/restart.txt
+
+If you have downloaded a new milestone from https://github.com/gwdg/rOCCI-server/downloads the steps are similar:
+
+    tar xzf rOCCI-server-X.tar.bz
+    cp rOCCI-server-X rOCCI-server
+    cd rOCCI-server
+    bundle install --deployment
+    mkdir tmp
+    touch tmp/restart.txt
 
 Testing
 -------
