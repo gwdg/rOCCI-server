@@ -8,7 +8,7 @@ gem "hashie"
 gem "nokogiri"
 gem "builder"
 gem "erubis"
-gem "occi", ">=2.5.0"
+gem "occi", "~>2.5.1"
 #gem "occi", :path => "/Users/ffeldhaus/Development/rOCCI"
 gem "oca", "~>3.4.0"
 
