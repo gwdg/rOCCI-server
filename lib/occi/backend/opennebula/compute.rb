@@ -155,10 +155,11 @@ module OCCI
             target           = storage_kind.entities.select { |entity| entity.id == storage_id }.first
             if target.nil?
               one_storage = OpenNebula::Image.new(OpenNebula::Image.build_xml(disk['IMAGE_ID']), client)
-              self.storage_parse_backend_object(one_storage)
+              self.storage_parse_backend_object(client, one_storage)
               target = storage_kind.entities.select { |entity| entity.id == storage_id }.first
             end
             link.target = target.location
+            link.rel    = target.kind
             link.title  = target.title
             link.source = compute.location
             link.mixins = ['http://opennebula.org/occi/infrastructure#storagelink']
@@ -176,22 +177,20 @@ module OCCI
           backend_object.each('TEMPLATE/NIC') do |nic|
             OCCI::Log.debug("Network Backend ID: #{nic['NETWORK_ID']}")
 
-            link                  = OCCI::Core::Link.new
             networkinterface_kind = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#networkinterface')
-            link.kind             = networkinterface_kind.type_identifier
+            link                  = OCCI::Core::Link.new(networkinterface_kind.type_identifier)
             link.id               = self.generate_occi_id(networkinterface_kind, nic['NETWORK_ID'].to_s)
             network_kind          = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#network')
             network_id            = self.generate_occi_id(network_kind, nic['NETWORK_ID'].to_s)
-            target                = network_kind.entitis.select { |entity| entity.id == network_id }.first
+            target                = network_kind.entities.select { |entity| entity.id == network_id }.first
             if target.nil?
               one_network = VirtualNetwork.new(VirtualNetwork.build_xml(nic['NETWORK_ID']), client)
-              self.network_parse_backend_object(one_network)
+              self.network_parse_backend_object(client, one_network)
               target = network_kind.entities.select { |entity| entity.id == network_id }.first
             end
             link.target  = target.location
+            link.rel     = target.kind
             link.title   = target.title
-            link.summary = target.summary
-            link.rel     = network_kind.type_identifier
             link.source  = compute.location
             link.mixins << @model.get_by_id('http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface')
             link.mixins << @model.get_by_id('http://opennebula.org/occi/infrastructure#networkinterface')
@@ -244,8 +243,10 @@ module OCCI
             template.delete_element('TEMPLATE/CPU')
             template.add_element('TEMPLATE', { "CPU" => cpu })
             template.update(template.template_str)
+            OCCI::Log.debug "Template #{template.inspect}"
             backend_id = template.instantiate
-            check_rc(backend_object)
+            check_rc(backend_id)
+            OCCI::Log.debug("Backend ID #{backend_id}") if backend_id
             template.delete_element('TEMPLATE/VCPU')
             template.add_element('TEMPLATE', { "VCPU" => vcpu_old })
             template.delete_element('TEMPLATE/MEMORY')
@@ -269,6 +270,7 @@ module OCCI
           end
 
           backend_object.info
+          OCCI::Log.debug("OCCI Compute resource #{backend_object.inspect}")
           compute.id = self.generate_occi_id(@model.get_by_id(compute.kind), backend_object['ID'].to_s)
 
           compute_set_state(backend_object, compute)
@@ -283,19 +285,19 @@ module OCCI
           case backend_object.lcm_state_str
             when "RUNNING" then
               compute.attributes.occi!.compute!.state = "active"
-              compute.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
+              compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
             when "PROLOG", "BOOT", "SAVE_STOP", "SAVE_SUSPEND", "SAVE_MIGRATE", "MIGRATE", "PROLOG_MIGRATE", "PROLOG_RESUME", "LCM_INIT" then
               compute.attributes.occi!.compute!.state = "inactive"
-              compute.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
+              compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
             when "SUSPENDED" then
               compute.attributes.occi!.compute!.state = "suspended"
-              compute.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
+              compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
             when "FAIL" then
               compute.attributes.occi!.compute!.state = "error"
-              compute.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
+              compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
             else
               compute.attributes.occi!.compute!.state = "inactive"
-              compute.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
+              compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
           end
         end
 
