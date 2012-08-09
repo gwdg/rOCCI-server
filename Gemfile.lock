@@ -17,7 +17,6 @@ GEM
     erubis (2.7.0)
     eventmachine (0.12.10)
     fastthread (1.0.7)
-    haml (3.1.6)
     hashie (1.2.0)
     httparty (0.8.3)
       multi_json (~> 1.0)
@@ -30,7 +29,7 @@ GEM
     oca (3.4.1)
       nokogiri
       xmlparser
-    occi (2.4.0)
+    occi (2.5.0)
       activesupport
       antlr3
       hashie
@@ -92,12 +91,11 @@ DEPENDENCIES
   aws-sdk
   builder
   erubis
-  haml
   hashie
   json
   nokogiri
   oca (~> 3.4.0)
-  occi (>= 2.4.0)
+  occi (>= 2.5.0)
   passenger
   rspec
   rspec-http
