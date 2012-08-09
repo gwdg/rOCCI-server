@@ -28,7 +28,7 @@ module OCCI
 
     def initialize
 
-      logger = Logger.new(STDOUT)
+      logger = Logger.new(STDERR)
 
       @log_subscriber = ActiveSupport::Notifications.subscribe("log") do |name, start, finish, id, payload|
         logger.log(payload[:level], payload[:message])
@@ -100,6 +100,8 @@ module OCCI
 
         halt 403, "User with DN #{cert_subject} could not be authenticated" if username.nil?
         username
+      else
+        'anonymous'
       end
     end
 
@@ -156,7 +158,6 @@ module OCCI
       @request_locations, @request_collection = OCCI::Parser.parse(request.media_type, request.body.read, request.path_info.include?('/-/'), entity_type, request.env)
       OCCI::Log.debug("Locations: #{@request_locations}")
       OCCI::Log.debug("Collection: #{@request_collection.to_json.to_s}")
-      jj @request_collection
       OCCI::Log.debug('### Fill OCCI model with entities from backend ###')
       @backend.register_existing_resources(@client)
       OCCI::Log.debug('### Finished response initialization starting with processing the request ...')
@@ -173,11 +174,10 @@ module OCCI
         # f.html { haml :collection, :locals => {:collection => @collection} }
         f.json { @collection.to_json }
         f.on('application/occi+json') { @collection.to_json }
-        f.xml { XmlSimple.xml_out(@collection.as_json, 'RootName' => 'occi' ) }
+        f.xml { XmlSimple.xml_out(@collection.as_json, 'RootName' => 'occi') }
         f.on('application/occi+xml') { @collection.to_xml(:root => "collection") }
         f.on('text/uri-list') { @locations.join("\n") }
       end
-      OCCI::Log.debug('### Successfully rendered ###')
     end
 
 # discovery interface
@@ -212,6 +212,15 @@ module OCCI
         OCCI::Log.info("### Listing entity with uuid #{uuid} ###")
         @collection.resources = kind.entities.select { |entity| entity.id == uuid } if kind.entity_type == OCCI::Core::Resource
         @collection.links = kind.entities.select { |entity| entity.id == uuid } if kind.entity_type == OCCI::Core::Link
+        #### TODO: remove following legacy code for HTTP Links when rendering spec has changed
+        @collection.entities.each do |resource|
+          link_text = ''
+          resource.links.each { |link| link_text << link.to_reference_text + ',' } if resource.respond_to? 'links'
+          resource.actions.each { |action| link_text << '<' + action.split('#').last + '>;rel=' + action + ',' }
+          link_text.chomp(',')
+          response[:Link] = link_text
+        end
+        ###
       end
       status 200
     end
