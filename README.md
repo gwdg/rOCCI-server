@@ -3,19 +3,22 @@ rOCCI Server - A Ruby OCCI Server
 
 [![Build Status](https://secure.travis-ci.org/gwdg/rOCCI-server.png)](http://travis-ci.org/gwdg/rOCCI-server)
 
+If you want to use rOCCI-server in a production environment, follow the production instructions for installation and
+configuration, otherwise follow the developer instructions for installation and configuration.
+
 Requirements
 ------------
 
 The following setup is recommended
 
 * usage of the Ruby Version Manger (RVM)
-* Ruby 1.9.3
+* Ruby >= 1.9.3
 * Bundler gem installed (use ```gem install bundler```)
 
 Installation
 ------------
 
-### Stable version
+### Production
 
 Download the latest version from https://github.com/gwdg/rOCCI-server/downloads
 
@@ -28,7 +31,7 @@ Install dependencies
 
     bundle install --deployment
 
-### Latest version
+### Developer
 
 Checkout latest version from GIT:
 
@@ -40,20 +43,67 @@ Change to rOCCI folder
 
 Install dependencies
 
-    bundle install --deployment
+    bundle install
 
 Configuration
 -------------
 
-### Passenger
+rOCCI-server comes with different backends. Check the `etc` folder for available backends (e.g. dummy, opennebula, ...).
+Each backend has an example configuration in a file with the name of the backend and the extension `.json`. Copy one of
+those files (e.g. `etc/backend/dummy/dummy.json`) to `etc/backend/default.json` and adapt its content to your setting.
 
-rOCCI-server will work with the default passenger setup. For advanced features such as X.509 authentication, you need
-to set up passenger with a separate Nginx or Apache webserver. Luckily, this is pretty easy. Detailed instructions can
-be found in the [Passenger Documentation](http://www.modrails.com/documentation.html).
+### OpenNebula backend
 
-To setup rOCCI-server with RVM and either Nginx or Apache follow the steps below.
+To use the OpenNebula backend a special server user is required in OpenNebula. To create a user named occi run the
+following command in your OpenNebula environment (replace $RANDOM with a secure password!):
 
-### RVM
+     oneuser create occi $RANDOM --driver server_cipher
+
+After copying `etc/backend/opennebula/opennebula.json` to `etc/backend/default.json` you have to adapt the admin and
+password attributes in that file to the ones you chose during the user creation.
+
+If you want to use X.509 authentication for your users, you need to create the users in OpenNebula with the X.509 driver.
+For a user named `doe` the command may look like this
+
+    oneuser create doe "/C=US/O=Doe Foundation/CN=John Doe" --driver x509
+
+Backend Customization
+-------------
+
+To configure the behaviour of compute, network and storage resource creation, edit the backend specific extensions of
+the OCCI model at `etc/backend/$BACKEND/model` (e.g. `etc/backend/dummy/model` for the dummy backend).
+
+To change the predefined resource or OS templates, you can adapt the existing templates in `etc/backend/$BACKEND/templates`
+or add new templates. If resource or OS templates are already registered in the backend, they will be automatically
+discovered by rOCCI-server.
+
+### OpenNebula backend
+
+If you want to change the actual deployment within OpenNebula you can change the OpenNebula templates in the files in
+`etc/backend/opennebula/one_templates`.
+
+To configure OpenNebula resource templates (e.g. small, medium, large, ...) change the files in etc/backend/opennebula/templates .
+
+Usage
+-----
+
+rOCCI-server is using passenger to be deployed into a webserver.
+
+#### Passenger
+
+rOCCI-server will work with the default passenger setup even though this setup is not recommended for production. To use
+advanced features such as X.509 authentication, you need to set up passenger with a separate Nginx or Apache webserver.
+Luckily, this is pretty easy. Detailed instructions can be found in the
+[Passenger Documentation](http://www.modrails.com/documentation.html).
+
+To use the standalone passenger with nginx run the following command (and maybe follow the installation steps) and
+rOCCI-server is running
+
+    bundle exec passenger start
+
+To install rOCCI-server with RVM and either Nginx or Apache follow the steps below.
+
+#### RVM
 
 Detailed information on setting up and using RVM can be found on the [RVM website](http://rvm.io/).
 
@@ -76,7 +126,7 @@ Setup RVM for rOCCI-server (change the ruby version to your favorite one)
     rvm install ruby-1.9.3
     rvm --rvmrc --create ruby-1.9.3@rOCCI-server
 
-### Nginx
+#### Nginx
 
 Note: If you intend to use several CAs for client certificate validation, you should use Apache as Nginx currently only
 allows to configure one CA file to use for client certificate validation.
@@ -117,7 +167,7 @@ should look like this (adapt to your settings, especially $USER! and server_name
 
 You have to start/restart Nginx before you can use rOCCI-server!
 
-### Apache
+#### Apache
 
 Let passenger guide you through installing and or configuring Apache for you
 
@@ -128,6 +178,8 @@ with the following content (adapt to your settings, especially $USER! and Server
 
     <VirtualHost *:443>
         SSLEngine on
+        # for security reasons you may restrict the SSL protocol, but some clients may fail if SSLv2 is not supported
+        SSLProtocol all
         # this should point to your server host certificate
         SSLCertificateFile /etc/ssl/certs/server.crt
         # this should point to your server host key
@@ -152,50 +204,15 @@ with the following content (adapt to your settings, especially $USER! and Server
 
 You have to start/restart Apache before you can use rOCCI-server!
 
-Configuring rOCCI-server
-------------------------
-
-rOCCI-server comes with different backends. Check the `etc` folder for available backends (e.g. dummy, opennebula, ...).
-Each backend has an example configuration in a file with the name of the backend and the extension `.json`. Copy one of
-those files (e.g. `etc/backend/dummy/dummy.json`) to `etc/backend/default.json` and adapt its content to your setting.
-
-### OpenNebula backend
-
-To use the OpenNebula backend a special server user is required in OpenNebula. To create a user named occi run the
-following command in your OpenNebula environment (replace $RANDOM with a secure password!):
-
-     oneuser create occi $RANDOM --driver server_cipher
-
-After copying `etc/backend/opennebula/opennebula.json` to `etc/backend/default.json` you have to adapt the admin and
-password attributes in that file to the ones you chose during the user creation.
-
-If you want to use X.509 authentication for your users, you need to create the users in OpenNebula with the X.509 driver.
-For a user named `doe` the command may look like this
-
-    oneuser create doe "/C=US/O=Doe Foundation/CN=John Doe" --driver x509
-
-Backend Customization
--------------
-
-To configure the behaviour of compute, network and storage resource creation, edit the backend specific extensions of
-the OCCI model at `etc/backend/$BACKEND/model` (e.g. `etc/backend/dummy/model` for the dummy backend).
-
-To change the predefined resource or OS templates, you can adapt the existing templates in `etc/backend/$BACKEND/templates`
-or add new templates. If resource or OS templates are already registered in the backend, they will be automatically
-discovered by rOCCI-server.
-
-### OpenNebula backend
-
-If you want to change the actual deployment within OpenNebula you can change the OpenNebula templates in the files in
-`etc/backend/opennebula/one_templates`.
-
-To configure OpenNebula resource templates (e.g. small, medium, large, ...) change the files in etc/backend/opennebula/templates .
-
 Testing
 -------
 
-For testing it is recommended to use the OCCI client supplied as part of the rOCCI gem. For more information visit
-https://github.com/gwdg/rOCCI#client
+To run the rspec scenario test run
+
+    bundle exec rspec
+
+For manual testing it is recommended to use the OCCI client supplied as part of the rOCCI gem. For more information
+visit https://github.com/gwdg/rOCCI#client
 
 Development
 -----------
@@ -214,4 +231,4 @@ Development
 2. Create a branch (git checkout -b my_markup)
 3. Commit your changes (git commit -am "My changes")
 4. Push to the branch (git push origin my_markup)
-5. Create an Issue with a link to your branch
+5. [Use GitHubs Pull Requests](https://help.github.com/articles/using-pull-requests/) to submit the code for review
