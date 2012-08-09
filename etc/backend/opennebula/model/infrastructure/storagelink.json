@@ -10,11 +10,11 @@
                         "storagelink":{
                             "bus":{
                                 "Description":"Type of disk device to emulate",
-                                "Pattern":"ide|scsi"
+                                "Pattern":"ide|IDE|scsi|SCSI|virtio"
                             },
                             "driver":{
                                 "Description":"Specific image mapping driver. For XEN: tap:aio:,file: For KVM: raw, qcow2",
-                                "Pattern":"tap:aio:|file:|raw|qcow2"
+                                "Pattern":"raw|qcow2|tap2:tapdisk:aio:|tap:aio:|file:"
                             }
                         }
                     }
