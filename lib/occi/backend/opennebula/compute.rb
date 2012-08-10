@@ -128,24 +128,23 @@ module OCCI
         def compute_parse_links(client, compute, backend_object)
           # create links for all storage instances
           backend_object.each('TEMPLATE/DISK') do |disk|
-            id = offset = 0
-            if disk['DISK_ID']
-              id             = disk['DISK_ID'].to_i
-              offset         = 100000 # set an offset for OCCI ID generation to distinguish from Images
-              storage        = OCCI::Core::Resource.new('http://schemas.ogf.org/occi/infrastructure#storage')
-              storage.mixins = ['http://opennebula.org/occi/infrastructure#storagelink']
-              puts self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
-              storage.id = self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
-              puts "test"
-              storage.attributes.occi!.storage!.size              = disk['SIZE']
-              storage.attributes.org!.opennebula!.storage!.fstype = disk['FORMAT']
-              @model.get_by_id(storage.kind).entities << storage
-            elsif disk['IMAGE_ID']
-              id = disk['IMAGE_ID'].to_i
-            else
-              next
+            offset = 0
+            id     = disk['DISK_ID'].to_i
+            id = disk['IMAGE_ID'].to_i if disk['IMAGE_ID']
+            OCCI::Log.debug("Disk type #{disk['TYPE']}")
+            OCCI::Log.debug disk.inspect
+            case disk['TYPE'].downcase
+              when 'fs', 'swap'
+                offset         = 100000 # set an offset for OCCI ID generation to distinguish from Images
+                storage        = OCCI::Core::Resource.new('http://schemas.ogf.org/occi/infrastructure#storage')
+                storage.mixins = ['http://opennebula.org/occi/infrastructure#storage']
+                puts self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
+                storage.id                                          = self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
+                storage.attributes.occi!.storage!.size              = disk['SIZE']
+                storage.attributes.org!.opennebula!.storage!.fstype = disk['FORMAT']
+                @model.get_by_id(storage.kind).entities << storage
+              else
             end
-            puts "test"
             OCCI::Log.debug("Storage Backend ID: #{id}")
             storage_kind     = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#storage')
             storage_id       = self.generate_occi_id(storage_kind, (id + offset).to_s)
@@ -188,10 +187,10 @@ module OCCI
               self.network_parse_backend_object(client, one_network)
               target = network_kind.entities.select { |entity| entity.id == network_id }.first
             end
-            link.target  = target.location
-            link.rel     = target.kind
-            link.title   = target.title
-            link.source  = compute.location
+            link.target = target.location
+            link.rel    = target.kind
+            link.title  = target.title
+            link.source = compute.location
             link.mixins << @model.get_by_id('http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface')
             link.mixins << @model.get_by_id('http://opennebula.org/occi/infrastructure#networkinterface')
             link.attributes.occi!.networkinterface!.address = nic['IP'] if nic['IP']
@@ -316,7 +315,7 @@ module OCCI
         # GET ALL COMPUTE INSTANCES
         def compute_register_all_instances(client)
           backend_object_pool = VirtualMachinePool.new(client)
-          backend_object_pool.info(OCCI::Backend::OpenNebula::INFO_ACL, -1, -1, OpenNebula::VirtualMachinePool::INFO_NOT_DONE)
+          backend_object_pool.info
           backend_object_pool.each { |backend_object| compute_parse_backend_object(client, backend_object) }
         end
 

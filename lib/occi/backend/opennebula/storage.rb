@@ -67,7 +67,7 @@ module OCCI
 
           storage_set_state(backend_object, storage)
 
-          storage_kind.entities << storage
+          storage_kind.entities << storage unless storage_kind.entities.select {|entity| entity.id == storage.id}.any?
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------
         def storage_register_all_instances(client)
           occi_objects = []
-          backend_object_pool=ImagePool.new(client, OCCI::Backend::OpenNebula::INFO_ACL)
+          backend_object_pool=ImagePool.new(client)
           backend_object_pool.info
           backend_object_pool.each { |backend_object| storage_parse_backend_object(client, backend_object) }
         end

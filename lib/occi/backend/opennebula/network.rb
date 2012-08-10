@@ -115,7 +115,7 @@ module OCCI
         # ---------------------------------------------------------------------------------------------------------------------     
         def network_register_all_instances(client)
           occi_objects = []
-          backend_object_pool=VirtualNetworkPool.new(client, OCCI::Backend::OpenNebula::INFO_ACL)
+          backend_object_pool=VirtualNetworkPool.new(client)
           backend_object_pool.info
           backend_object_pool.each { |backend_object| network_parse_backend_object(client, backend_object) }
         end
