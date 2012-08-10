@@ -1,59 +1,107 @@
-<%# Mandatory settings %>
-OCCI_ID       = <%= @compute.id %>
-NAME          = <%= @compute.title.inspect if @compute.title %>
-DESCRIPTION   = <%= @compute.summary.inspect if @compute.summary %>
-MEMORY        = <%= @compute.attributes.occi!.compute!.memory.to_f * 1000 if @compute.attributes.occi!.compute!.memory %>
-VCPU          = <%= @compute.attributes.occi!.compute!.cores ||= 1 %>
-CPU        	  = <%= @compute.attributes.occi!.compute!.speed ||= 0.01 %>
+<%# Template options %>
+<%# Some default values are hypervisor specific %>
+<% hypervisor = :kvm #or :xen %>
+<%# Should we automaticaly enable VNC? %>
+<% vnc_enable = false #or true %>
+<%# Some restricted attributes cannot be used it the template, WIP%>
+<% restricted = ["SOURCE", "RANK"] %>
 
-<%# KVM specific settings %>
-RAW = [TYPE = kvm]
+<%# Mandatory settings %>
+OCCI_ID       = "<%= @compute.id %>"
+NAME          = "<%= @compute.title ||= "rOCCI VM" %>"
+DESCRIPTION   = "<%= @compute.summary ||= "VM instantiated using rOCCI-server" %>"
+<% if @compute.attributes.occi!.compute!.memory %>
+MEMORY        = "<%= (@compute.attributes.occi!.compute!.memory.to_f * 1000).to_i %>"
+<% else %>
+MEMORY        = "512"
+<% end %>
+VCPU          = "<%= @compute.attributes.occi!.compute!.cores ||= 1 %>"
+CPU        	  = "<%= @compute.attributes.occi!.compute!.speed ||= 0.01 %>"
+
+<%# Hypervisor specific settings %>
+RAW = [TYPE = <%= hypervisor.to_s %>]
 OS = [
 	<% if @compute.attributes.occi!.compute!.architecture == "x64" %>
-	ARCH = x86_64,
+	ARCH = "x86_64"
 	<% else %>
-	ARCH = i686,
+	ARCH = "i686"
 	<% end %>
 
-	BOOT          = <%= @compute.attributes.org!.opennebula!.boot ||= "hd" %>
+        <% if hypervisor == :xen  %>
+        ,BOOTLOADER = "pygrub"
+        <% else %>
+	,BOOT          = "<%= @compute.attributes.org!.opennebula!.boot ||= "hd" %>"
+        <% end  %>
 ]           
 
 <%# Links to images %>
 <% @compute.links.select {|link| link.kind == "http://schemas.ogf.org/occi/infrastructure#storagelink"}.each do |storagelink| %>
 DISK = [
-    <% if URI.parse(storagelink.target).relative? %>
-	IMAGE 	= <%= OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first.title.inspect %>,
+    <% if restricted.include? "SOURCE" %>
+	IMAGE 	= <%= @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first.title.inspect %>
     <% else %>
     TYPE    = "OS",
-    SOURCE  = <%= storagelink.target %>,
+    SOURCE  = "<%= storagelink.target %>"
     <% end %>
-    TARGET  = <%= link.attributes.occi!.storagelink!.deviceid %>,
-    BUS     = <%= link.attributes.org!.opennebula!.storagelink!.bus %>,
-    DRIVER  = <%= link.attributes.org!.opennebula!.storagelink!.driver %>
+
+    <% if @compute.attributes.occi!.storagelink!.deviceid %>
+    ,TARGET  = "<%= @compute.attributes.occi!.storagelink!.deviceid %>"
+    <% end %>
+    <% if @compute.attributes.org!.opennebula!.storagelink!.bus %>
+    ,BUS     = "<%= @compute.attributes.org!.opennebula!.storagelink!.bus %>"
+    <% end %>
+    <% if @compute.attributes.org!.opennebula!.storagelink!.driver %>
+    ,DRIVER  = "<%= @compute.attributes.org!.opennebula!.storagelink!.driver %>"
+    <% end %>
 ]
 <%end if @compute.links%>
 
 <%# Links to networks %>
 <% @compute.links.select {|link| link.kind == "http://schemas.ogf.org/occi/infrastructure#networkinterface"}.each do |networkinterface| %>
 NIC = [
-    NETWORK   = <%= OCCI::Model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first.title.inspect %>,
-    IP        = <%= link.attributes.occi!.networkinferface!.address %>,
-    MAC       = <%= link.attributes.occi!.networkinferface!.mac %>,
-    TARGET    = <%= link.attributes.occi!.networkinferface!.interface %>,
-    BRIDGE    = <%= link.attributes.org!.opennebula!.networkinterface!.bridge %>,
-    SCRIPT    = <%= link.attributes.org!.opennebula!.networkinterface!.script %>,
-    WHITE_PORTS_TCP = <%= link.attributes.org!.opennebula!.networkinterface!.white_ports_tcp %>,
-    BLACK_PORTS_TCP = <%= link.attributes.org!.opennebula!.networkinterface!.black_ports_tcp %>,
-    WHITE_PORTS_UDP = <%= link.attributes.org!.opennebula!.networkinterface!.white_ports_udp %>,
-    BLACK_PORTS_UDP = <%= link.attributes.org!.opennebula!.networkinterface!.black_ports_udp %>,
-    ICMP     = <%= link.attributes.org!.opennebula!.networkinterface!.icmp %>
+    NETWORK   = <%= @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first.title.inspect %>
+
+    <% if @compute.attributes.occi!.networkinferface!.address %>
+    ,IP        = <%= @compute.attributes.occi!.networkinferface!.address %>
+    <% end %>
+    <% if @compute.attributes.occi!.networkinferface!.mac %>
+    ,MAC       = <%= @compute.attributes.occi!.networkinferface!.mac %>
+    <% end %>
+    <% if @compute.attributes.occi!.networkinferface!.interface %>
+    ,TARGET    = <%= @compute.attributes.occi!.networkinferface!.interface %>
+    <% end %>
+    <% if @compute.attributes.org!.opennebula!.networkinterface!.bridge %>
+    ,BRIDGE    = <%= @compute.attributes.org!.opennebula!.networkinterface!.bridge %>
+    <% end %>
+    <% if @compute.attributes.org!.opennebula!.networkinterface!.script %>
+    ,SCRIPT    = <%= @compute.attributes.org!.opennebula!.networkinterface!.script %>
+    <% end %>
+    <% if @compute.attributes.org!.opennebula!.networkinterface!.white_ports_tcp %>
+    ,WHITE_PORTS_TCP = <%= @compute.attributes.org!.opennebula!.networkinterface!.white_ports_tcp %>
+    <% end %>
+    <% if @compute.attributes.org!.opennebula!.networkinterface!.black_ports_tcp %>
+    ,BLACK_PORTS_TCP = <%= @compute.attributes.org!.opennebula!.networkinterface!.black_ports_tcp %>
+    <% end %>
+    <% if @compute.attributes.org!.opennebula!.networkinterface!.white_ports_udp %>
+    ,WHITE_PORTS_UDP = <%= @compute.attributes.org!.opennebula!.networkinterface!.white_ports_udp %>
+    <% end %>
+    <% if @compute.attributes.org!.opennebula!.networkinterface!.black_ports_udp %>
+    ,BLACK_PORTS_UDP = <%= @compute.attributes.org!.opennebula!.networkinterface!.black_ports_udp %>
+    <% end %>
+    <% if @compute.attributes.org!.opennebula!.networkinterface!.icmp %>
+    ,ICMP     = <%= @compute.attributes.org!.opennebula!.networkinterface!.icmp %>
+    <% end %>
 ]
 <%end if @compute.links%>
 
 <%# Custom settings %>
+<% if vnc_enable %>
 GRAPHICS   	= [
 	TYPE	= vnc,
   	LISTEN	= 0.0.0.0
 ]
+<% end %>
 FEATURES	= [ acpi="yes" ]
+<% unless restricted.include? "RANK" %>
 RANK = FREECPU
+<% end %>
