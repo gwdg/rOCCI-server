@@ -261,7 +261,7 @@ module OCCI
             backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
 
             template_location = File.dirname(__FILE__) + '/../../../../etc/backend/opennebula/one_templates/' + TEMPLATECOMPUTERAWFILE
-            template          = Erubis::Eruby.new(File.read(template_location)).evaluate(:compute => compute)
+            template          = Erubis::Eruby.new(File.read(template_location)).evaluate({:compute => compute, :model => @model})
 
             OCCI::Log.debug("Parsed template #{template}")
             rc = backend_object.allocate(template)
