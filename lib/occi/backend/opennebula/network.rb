@@ -92,7 +92,7 @@ module OCCI
           rc = backend_object.allocate(template)
           check_rc(rc)
 
-          backend_object.info
+          backend_object.info_all
           network.id = self.generate_occi_id(@model.get_by_id(network.kind), backend_object['ID'].to_s)
 
           network_set_state(backend_object, network)
@@ -116,7 +116,7 @@ module OCCI
         def network_register_all_instances(client)
           occi_objects = []
           backend_object_pool=VirtualNetworkPool.new(client)
-          backend_object_pool.info
+          backend_object_pool.info_all
           backend_object_pool.each { |backend_object| network_parse_backend_object(client, backend_object) }
         end
 
