@@ -128,7 +128,7 @@ module OCCI
         def storage_register_all_instances(client)
           occi_objects = []
           backend_object_pool=ImagePool.new(client)
-          backend_object_pool.info
+          backend_object_pool.info_all
           backend_object_pool.each { |backend_object| storage_parse_backend_object(client, backend_object) }
         end
 

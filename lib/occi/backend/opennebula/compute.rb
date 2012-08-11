@@ -120,7 +120,7 @@ module OCCI
           compute_parse_links(client, compute, backend_object)
 
           # register compute resource in entities of compute kind
-          compute_kind.entities << compute
+          compute_kind.entities << compute unless compute_kind.entities.select {|entity| entity.id == compute.id}.any?
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
@@ -315,7 +315,7 @@ module OCCI
         # GET ALL COMPUTE INSTANCES
         def compute_register_all_instances(client)
           backend_object_pool = VirtualMachinePool.new(client)
-          backend_object_pool.info
+          backend_object_pool.info_all
           backend_object_pool.each { |backend_object| compute_parse_backend_object(client, backend_object) }
         end
 

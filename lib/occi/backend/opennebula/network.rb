@@ -73,7 +73,7 @@ module OCCI
 
           network_set_state(backend_object, network)
 
-          network_kind.entities << network
+          network_kind.entities << network unless network_kind.entities.select {|entity| entity.id == network.id}.any?
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
