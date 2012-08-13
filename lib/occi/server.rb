@@ -212,15 +212,6 @@ module OCCI
         OCCI::Log.info("### Listing entity with uuid #{uuid} ###")
         @collection.resources = kind.entities.select { |entity| entity.id == uuid } if kind.entity_type == OCCI::Core::Resource
         @collection.links = kind.entities.select { |entity| entity.id == uuid } if kind.entity_type == OCCI::Core::Link
-        #### TODO: remove following legacy code for HTTP Links when rendering spec has changed
-        @collection.entities.each do |resource|
-          link_text = ''
-          resource.links.each { |link| link_text << link.to_reference_text + ',' } if resource.respond_to? 'links'
-          resource.actions.each { |action| link_text << '<' + action.split('#').last + '>;rel=' + action + ',' }
-          link_text.chomp(',')
-          response[:Link] = link_text
-        end
-        ###
       end
       status 200
     end
