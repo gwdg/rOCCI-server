@@ -92,7 +92,7 @@ module OCCI
           rc = backend_object.allocate(template)
           check_rc(rc)
 
-          backend_object.info_all
+          backend_object.info
           network.id = self.generate_occi_id(@model.get_by_id(network.kind), backend_object['ID'].to_s)
 
           network_set_state(backend_object, network)

@@ -248,8 +248,8 @@ module OCCI
 
       # ---------------------------------------------------------------------------------------------------------------------
       def os_template_register(client)
-        backend_object_pool=TemplatePool.new(client, INFO_ACL)
-        backend_object_pool.info
+        backend_object_pool=TemplatePool.new(client)
+        backend_object_pool.info_all
         backend_object_pool.each do |backend_object|
           related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
           term    = backend_object['NAME'].downcase.chomp.gsub(/\W/, '_')
