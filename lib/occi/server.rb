@@ -435,7 +435,7 @@ module OCCI
                 @request_collection.mixins.each do |mixin|
                   OCCI::Log.debug("### Deleting entities from kind #{kind.type_identifier} with mixin #{mixin.type_identifier} ###")
                   kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity) if mixin.include?(entity) }
-                  kind.entities.delete_if? { |entity| mixin.include?(entity) }
+                  kind.entities.delete_if { |entity| mixin.include?(entity) }
                   # TODO: links
                 end
               else
@@ -447,8 +447,8 @@ module OCCI
             else
               uuid = request.path_info.rpartition('/').last
               OCCI::Log.debug("### Deleting entity with id #{uuid} from kind #{kind.type_identifier} ###")
-              OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity)
-              kind.entities.delete_if? { |entity| entity.id == uuid }
+              kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity) if entity.id == uuid}
+              kind.entities.delete_if { |entity| entity.id == uuid }
             end
         end
       end
