@@ -52,24 +52,6 @@ rOCCI-server comes with different backends. Check the `etc` folder for available
 Each backend has an example configuration in a file with the name of the backend and the extension `.json`. Copy one of
 those files (e.g. `etc/backend/dummy/dummy.json`) to `etc/backend/default.json` and adapt its content to your setting.
 
-### OpenNebula backend
-
-To use the OpenNebula backend a special server user is required in OpenNebula. To create a user named occi run the
-following command in your OpenNebula environment (replace $RANDOM with a secure password!):
-
-     oneuser create occi $RANDOM --driver server_cipher
-
-After copying `etc/backend/opennebula/opennebula.json` to `etc/backend/default.json` you have to adapt the admin and
-password attributes in that file to the ones you chose during the user creation.
-
-If you want to use X.509 authentication for your users, you need to create the users in OpenNebula with the X.509 driver.
-For a user named `doe` the command may look like this
-
-    oneuser create doe "/C=US/O=Doe Foundation/CN=John Doe" --driver x509
-
-Backend Customization
----------------------
-
 To configure the behaviour of compute, network and storage resource creation, edit the backend specific extensions of
 the OCCI model at `etc/backend/$BACKEND/model` (e.g. `etc/backend/dummy/model` for the dummy backend).
 
@@ -82,7 +64,24 @@ discovered by rOCCI-server.
 If you want to change the actual deployment within OpenNebula you can change the OpenNebula templates in the files in
 `etc/backend/opennebula/one_templates`.
 
-To configure OpenNebula resource templates (e.g. small, medium, large, ...) change the files in etc/backend/opennebula/templates .
+To configure OpenNebula resource templates (e.g. small, medium, large, ...) change the files in
+etc/backend/opennebula/templates .
+
+For the OpenNebula backend a special server user is required in OpenNebula. To create a user named occi run the
+following command in your OpenNebula environment (replace $RANDOM with a secure password!):
+
+     oneuser create occi $RANDOM --driver server_cipher
+
+After copying `etc/backend/opennebula/opennebula.json` to `etc/backend/default.json` you have to adapt the admin and
+password attributes in that file to the ones you chose during the user creation.
+
+If you want to use X.509 authentication for your users, you need to create the users in OpenNebula with the X.509
+driver. For a user named `doe` the command may look like this
+
+    oneuser create doe "/C=US/O=Doe Foundation/CN=John Doe" --driver x509
+
+For more information have a look at the
+[OpenNebula Documentation on x509 Authentication](http://opennebula.org/documentation:rel3.6:x509_auth)
 
 Usage
 -----
