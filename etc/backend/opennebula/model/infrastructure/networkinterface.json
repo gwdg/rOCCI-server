@@ -7,7 +7,7 @@
             "attributes":{
                 "org":{
                     "opennebula":{
-                        "storagelink":{
+                        "networkinterface":{
                             "bridge":{
                                 "Description":"Name of the bridge the network device is going to be attached to."
                             },
