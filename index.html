@@ -1,0 +1,329 @@
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
+  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>rOCCI-server</title>
+  <meta name="description" content="OCCI service provider">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">rOCCI-server</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">OCCI service provider</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/gwdg/rOCCI-server/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/gwdg/rOCCI-server/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/gwdg/rOCCI-server" class="code">View rOCCI-server on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <h1>rOCCI Server - A Ruby OCCI Server</h1>
+
+<p><a href="http://travis-ci.org/gwdg/rOCCI-server"><img src="https://secure.travis-ci.org/gwdg/rOCCI-server.png" alt="Build Status"></a></p>
+
+<p>If you want to use rOCCI-server in a production environment, follow the production instructions for installation and
+configuration, otherwise follow the developer instructions for installation and configuration.</p>
+
+<h2>Requirements</h2>
+
+<p>The following setup is recommended</p>
+
+<ul>
+<li>usage of the Ruby Version Manger (RVM)</li>
+<li>Ruby &gt;= 1.9.3</li>
+<li>Bundler gem installed (use <code>gem install bundler</code>)</li>
+</ul><h2>Installation</h2>
+
+<h3>Production</h3>
+
+<p>Download the latest version from <a href="https://github.com/gwdg/rOCCI-server/downloads">https://github.com/gwdg/rOCCI-server/downloads</a></p>
+
+<p>Extract file</p>
+
+<pre><code>tar xzf rOCCI-server-*.tar.bz
+unzip rOCCI-server-*.zip
+</code></pre>
+
+<p>Install dependencies</p>
+
+<pre><code>bundle install --deployment
+</code></pre>
+
+<h3>Developer</h3>
+
+<p>Checkout latest version from GIT:</p>
+
+<pre><code>git clone git://github.com/gwdg/rOCCI-server.git
+</code></pre>
+
+<p>Change to rOCCI folder</p>
+
+<pre><code>cd rOCCI-server
+</code></pre>
+
+<p>Install dependencies</p>
+
+<pre><code>bundle install
+</code></pre>
+
+<h2>Configuration</h2>
+
+<p>rOCCI-server comes with different backends. Check the <code>etc</code> folder for available backends (e.g. dummy, opennebula, ...).
+Each backend has an example configuration in a file with the name of the backend and the extension <code>.json</code>. Copy one of
+those files (e.g. <code>etc/backend/dummy/dummy.json</code>) to <code>etc/backend/default.json</code> and adapt its content to your setting.</p>
+
+<p>To configure the behaviour of compute, network and storage resource creation, edit the backend specific extensions of
+the OCCI model at <code>etc/backend/$BACKEND/model</code> (e.g. <code>etc/backend/dummy/model</code> for the dummy backend).</p>
+
+<p>To change the predefined resource or OS templates, you can adapt the existing templates in <code>etc/backend/$BACKEND/templates</code>
+or add new templates. If resource or OS templates are already registered in the backend, they will be automatically
+discovered by rOCCI-server.</p>
+
+<h3>OpenNebula backend</h3>
+
+<p>If you want to change the actual deployment within OpenNebula you can change the OpenNebula templates in the files in
+<code>etc/backend/opennebula/one_templates</code>.</p>
+
+<p>To configure OpenNebula resource templates (e.g. small, medium, large, ...) change the files in
+etc/backend/opennebula/templates .</p>
+
+<p>For the OpenNebula backend a special server user is required in OpenNebula. To create a user named occi run the
+following command in your OpenNebula environment (replace $RANDOM with a secure password!):</p>
+
+<pre><code> oneuser create occi $RANDOM --driver server_cipher
+</code></pre>
+
+<p>After copying <code>etc/backend/opennebula/opennebula.json</code> to <code>etc/backend/default.json</code> you have to adapt the admin and
+password attributes in that file to the ones you chose during the user creation.</p>
+
+<p>If you want to use X.509 authentication for your users, you need to create the users in OpenNebula with the X.509
+driver. For a user named <code>doe</code> the command may look like this</p>
+
+<pre><code>oneuser create doe "/C=US/O=Doe Foundation/CN=John Doe" --driver x509
+</code></pre>
+
+<p>For more information have a look at the
+<a href="http://opennebula.org/documentation:rel3.6:x509_auth">OpenNebula Documentation on x509 Authentication</a></p>
+
+<h2>Usage</h2>
+
+<p>rOCCI-server is using passenger to be deployed into a webserver.</p>
+
+<h4>Passenger</h4>
+
+<p>rOCCI-server will work with the default passenger setup even though this setup is not recommended for production. To use
+advanced features such as X.509 authentication, you need to set up passenger with a separate Nginx or Apache webserver.
+Luckily, this is pretty easy. Detailed instructions can be found in the
+<a href="http://www.modrails.com/documentation.html">Passenger Documentation</a>.</p>
+
+<p>To use the standalone passenger with nginx run the following command (and maybe follow the installation steps) and
+rOCCI-server is running</p>
+
+<pre><code>bundle exec passenger start
+</code></pre>
+
+<p>To install rOCCI-server with RVM and either Nginx or Apache follow the steps below.</p>
+
+<h4>RVM</h4>
+
+<p>Detailed information on setting up and using RVM can be found on the <a href="http://rvm.io/">RVM website</a>.</p>
+
+<p>Install RVM as sudo user (e.g. not root)</p>
+
+<pre><code>curl -L https://get.rvm.io | sudo bash -s stable
+</code></pre>
+
+<p>Select a user as a manager, and add him to rvm group - he will be responsible for installing new rubies.</p>
+
+<pre><code>usermod -a -G rvm $USER
+</code></pre>
+
+<p>If you intend to manage rOCCI-server from a different user account, you need to run the following command and logout
+and login again</p>
+
+<pre><code>rvm user gemsets
+</code></pre>
+
+<p>Setup RVM for rOCCI-server (change the ruby version to your favorite one)</p>
+
+<pre><code>cd rOCCI-server
+rvm install ruby-1.9.3
+rvm --rvmrc --create ruby-1.9.3@rOCCI-server
+</code></pre>
+
+<h4>Nginx</h4>
+
+<p>Note: If you intend to use several CAs for client certificate validation, you should use Apache as Nginx currently only
+allows to configure one CA file to use for client certificate validation.</p>
+
+<p>Let passenger guide you through installing and or configuring Nginx (for apache see below) for you</p>
+
+<pre><code>bundle exec rvmsudo passenger-install-nginx-module
+</code></pre>
+
+<p>Edit the Nginx configuration (e.g. <code>/opt/nginx/conf/nginx.conf</code>) and insert a new <code>server</code> entry for the rOCCI server.
+To use SSL you need a valid server certificate and for client verification you need a file containing all CAs you want
+to use for verification (there currently seems to be no way to specify multiple CA files for verification). The entry
+should look like this (adapt to your settings, especially $USER! and server_name):</p>
+
+<pre><code>    server {
+        # change to the server name rOCCI-server should be accessible from
+        server_name  localhost;
+        # change to the port rOCCI-server should listen on
+        listen 443;
+        # important, this needs to point to the public folder of your rOCCI-server
+        root /home/$USER/rOCCI-server/public;
+
+        ssl on;
+        # this should point to your server host certificate
+        ssl_certificate /etc/ssl/certs/server.crt;
+        # this should point to your server host key
+        ssl_certificate_key /etc/ssl/private/server.key;
+        # this should point to the Root CAs which should be used for client verification
+        ssl_client_certificate /etc/ssl/certs/ca.pem;
+        # if you have multiple CAs in the file above, you may need to increase the verify depht
+        ssl_verify_depth 10;
+        # set to optional, this tells nginx to attempt to verify SSL certificates if provided
+        ssl_verify_client optional;
+
+        passenger_enabled on;
+        # pass the subject of the client certificate to passenger
+        passenger_set_cgi_param SSL_CLIENT_S_DN $ssl_client_s_dn;
+    }
+</code></pre>
+
+<p>You have to start/restart Nginx before you can use rOCCI-server!</p>
+
+<h4>Apache</h4>
+
+<p>Let passenger guide you through installing and or configuring Apache for you</p>
+
+<pre><code>bundle exec rvmsudo passenger-install-apache2-module
+</code></pre>
+
+<p>Create a new VirtualHost in the sites-available directory of Apache (e.g. in <code>/etc/apache2/sites-available/occi-ssl</code>)
+with the following content (adapt to your settings, especially $USER! and ServerName):</p>
+
+<pre><code>&lt;VirtualHost *:443&gt;
+    SSLEngine on
+    # for security reasons you may restrict the SSL protocol, but some clients may fail if SSLv2 is not supported
+    SSLProtocol all
+    # this should point to your server host certificate
+    SSLCertificateFile /etc/ssl/certs/server.crt
+    # this should point to your server host key
+    SSLCertificateKeyFile /etc/ssl/private/server.key
+    # directory containing the Root CA certificates and their hashes
+    SSLCACertificatePath /etc/ssl/certs
+    # set to optional, this tells Apache to attempt to verify SSL certificates if provided
+    SSLVerifyClient optional
+    # if you have multiple CAs in the file above, you may need to increase the verify depht
+    SSLVerifyDepth 10
+    # enable passing of SSL variables to passenger
+    SSLOptions +StdEnvVars
+
+    ServerName localhost
+    # important, this needs to point to the public folder of your rOCCI-server
+    DocumentRoot /home/$USER/rOCCI-server/public
+    &lt;Directory /home/$USER/rOCCI-server/public&gt;
+        Allow from all
+        Options -MultiViews
+    &lt;/Directory&gt;
+&lt;/VirtualHost&gt;
+</code></pre>
+
+<p>You have to start/restart Apache before you can use rOCCI-server!</p>
+
+<h2>Updating</h2>
+
+<p>If you checked out rOCCI-server from GIT, then you can pull the latest version or a tagged version, update all required
+ruby gems using bundler and restart the server by touching the file tmp/restart.txt:</p>
+
+<pre><code>cd rOCCI-server
+git pull
+bundle install --deployment
+mkdir tmp
+touch tmp/restart.txt
+</code></pre>
+
+<p>If you have downloaded a new milestone from <a href="https://github.com/gwdg/rOCCI-server/downloads">https://github.com/gwdg/rOCCI-server/downloads</a> the steps are similar:</p>
+
+<pre><code>tar xzf rOCCI-server-X.tar.bz
+cp rOCCI-server-X rOCCI-server
+cd rOCCI-server
+bundle install --deployment
+mkdir tmp
+touch tmp/restart.txt
+</code></pre>
+
+<h2>Testing</h2>
+
+<p>To run the rspec scenario test run</p>
+
+<pre><code>bundle exec rspec
+</code></pre>
+
+<p>For manual testing it is recommended to use the OCCI client supplied as part of the rOCCI gem. For more information
+visit <a href="https://github.com/gwdg/rOCCI#client">https://github.com/gwdg/rOCCI#client</a></p>
+
+<h2>Development</h2>
+
+<h3>Code Documentation</h3>
+
+<p><a href="http://rubydoc.info/github/gwdg/rOCCI-server/">Code Documentation for rOCCI by YARD</a></p>
+
+<h3>Continuous integration</h3>
+
+<p><a href="http://travis-ci.org/gwdg/rOCCI-server/">Continuous integration for rOCCI by Travis-CI</a></p>
+
+<h3>Contribute</h3>
+
+<ol>
+<li>Fork it.</li>
+<li>Create a branch (git checkout -b my_markup)</li>
+<li>Commit your changes (git commit -am "My changes")</li>
+<li>Push to the branch (git push origin my_markup)</li>
+<li>
+<a href="https://help.github.com/articles/using-pull-requests/">Use GitHubs Pull Requests</a> to submit the code for review</li>
+</ol>
+        </article>
+      </div>
+    </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/gwdg" class="avatar"><img src="https://secure.gravatar.com/avatar/a07f5ea1ba64627f16b2ebe47fc24410?s=30&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png" width="48" height="48"/></a> <a href="https://github.com/gwdg">gwdg</a> maintains <a href="https://github.com/gwdg/rOCCI-server">rOCCI-server</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/gwdg/rOCCI-server/tarball/master" class="tar">tar</a><a href="https://github.com/gwdg/rOCCI-server/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+  
+</body>
+</html>
