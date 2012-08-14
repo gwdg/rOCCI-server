@@ -62,6 +62,7 @@ module OCCI
           network.attributes.occi!.network!.allocation = "static" if backend_object['TEMPLATE/TYPE'].downcase == "fixed"
           network.attributes.occi!.network!.allocation = "dynamic" if backend_object['TEMPLATE/TYPE'].downcase == "ranged"
 
+          network.attributes.org!.opennebula!.network!.id = backend_object['ID'] if backend_object['ID']
           network.attributes.org!.opennebula!.network!.vlan = backend_object['TEMPLATE/VLAN'] if backend_object['TEMPLATE/VLAN']
           network.attributes.org!.opennebula!.network!.phydev = backend_object['TEMPLATE/PHYDEV'] if backend_object['TEMPLATE/PHYDEV']
           network.attributes.org!.opennebula!.network!.bridge = backend_object['TEMPLATE/BRIDGE'] if backend_object['TEMPLATE/BRIDGE']

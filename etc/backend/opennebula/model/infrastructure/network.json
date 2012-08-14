@@ -8,6 +8,9 @@
                 "org":{
                     "opennebula":{
                         "network":{
+                            "id":{
+                                "Description":"ID of the virtual network"
+                            },
                             "bridge":{
                                 "Description":"Name of the physical bridge in the physical host where the VM should connect its network interface"
                             },

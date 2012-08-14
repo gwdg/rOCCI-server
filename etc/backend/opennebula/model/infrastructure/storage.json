@@ -8,6 +8,9 @@
                 "org":{
                     "opennebula":{
                         "storage":{
+                            "id":{
+                                 "Description":"ID of the storage element"
+                            },
                             "type":{
                                 "Description":"Type of the image. If omitted, the default value is the one defined in oned.conf (install default is OS).",
                                 "Pattern": "OS|CDROM|DATABLOCK"
