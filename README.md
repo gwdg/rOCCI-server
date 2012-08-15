@@ -9,11 +9,14 @@ configuration, otherwise follow the developer instructions for installation and 
 Requirements
 ------------
 
-The following setup is recommended
+The following setup is required
+* Ruby >= 1.8.7
+* Bundler gem installed (use ```gem install bundler```)
+* OpenNebula >= 3.2 if the OpenNebula backend is used
 
+The following setup is recommended
 * usage of the Ruby Version Manger (RVM)
 * Ruby >= 1.9.3
-* Bundler gem installed (use ```gem install bundler```)
 
 Installation
 ------------
