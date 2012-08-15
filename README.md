@@ -64,8 +64,14 @@ discovered by rOCCI-server.
 If you want to change the actual deployment within OpenNebula you can change the OpenNebula templates in the files in
 `etc/backend/opennebula/one_templates`.
 
-To configure OpenNebula resource templates (e.g. small, medium, large, ...) change the files in
-etc/backend/opennebula/templates .
+Templates registered within OpenNebula will be made available by rOCCI as OS templates. To properly use these templates
+ ensure that the permissions are set correctly. If the templates are only used by the owner of the template, the
+ permission must be `400` or `u--`for the user. If the templates should be used by users from the same group, the
+ permissions must at least be `440` or `uu-` for both user and group. If you want to combine OS templates with resource
+ templates, you must ensure that rOCCI can modify the resource templates. Thus the permissions must be `600` or `um-`
+ for the user or `660` or `um-` for both user and group.
+
+To configure resource templates (e.g. small, medium, large, ...) change the files in `etc/backend/opennebula/templates`.
 
 For the OpenNebula backend a special server user is required in OpenNebula. To create a user named occi run the
 following command in your OpenNebula environment (replace $RANDOM with a secure password!):
