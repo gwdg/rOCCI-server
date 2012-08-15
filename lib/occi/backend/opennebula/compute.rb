@@ -220,11 +220,13 @@ module OCCI
           os_tpl = compute.mixins.select { |mixin|
             OCCI::Log.debug("Compute deploy found mixin: #{mixin}")
             if mixin.kind_of? String
-              @model.get_by_id(mixin).related_to?("http://schemas.ogf.org/occi/infrastructure#os_tpl")
+              @model.get_by_id(mixin).related_to? "http://schemas.ogf.org/occi/infrastructure#os_tpl"
             else
-              mixin[0].related[0] == "http://schemas.ogf.org/occi/infrastructure#os_tpl"
+              mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#os_tpl"
             end
           }.first
+
+          os_tpl = @model.get_by_id(os_tpl)
 
           OCCI::Log.debug("Compute deploy OS template: #{os_tpl}")
 
@@ -237,7 +239,7 @@ module OCCI
           unless os_tpl.nil?
             template = templates.select { |template| 
               OCCI::Log.debug("Going through ON template #{template['NAME']}")
-              template['NAME'] == os_tpl[0].title
+              template['NAME'] == os_tpl.title
             }.first
           end
 
