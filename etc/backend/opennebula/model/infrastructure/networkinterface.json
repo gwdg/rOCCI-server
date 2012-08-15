@@ -3,11 +3,11 @@
         {
             "term":"networkinterface",
             "scheme":"http://opennebula.org/occi/infrastructure#",
-            "title":"OpenNebula specific Storagelink attributes",
+            "title":"OpenNebula specific Networkinterface attributes",
             "attributes":{
                 "org":{
                     "opennebula":{
-                        "storagelink":{
+                        "networkinterface":{
                             "bridge":{
                                 "Description":"Name of the bridge the network device is going to be attached to."
                             },

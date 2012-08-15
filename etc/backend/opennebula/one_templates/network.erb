@@ -1,3 +1,4 @@
+ID              = <%= @network.attributes.org!.opennebula!.network!.id %>
 OCCI_ID         = <%= @network.id %>
 NAME            = <%= @network.title.inspect if @network.title %>
 DESCRIPTION     = <%= @network.summary.inspect if @network.summary %>
