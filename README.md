@@ -25,10 +25,11 @@ Installation
 
 Download the latest version from https://github.com/gwdg/rOCCI-server/tags
 
-Extract file
+Extract downloaded file, remove it and change to rOCCI-server directory
 
-    tar xzf rOCCI-server-*.tar.bz
-    unzip rOCCI-server-*.zip
+    unzip gwdg-rOCCI-server-*.zip
+    rm gwdg-rOCCI-server-*.zip
+    cd gwdg-rOCCI-server-*
 
 Install dependencies
 
