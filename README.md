@@ -23,7 +23,7 @@ Installation
 
 ### Production
 
-Download the latest version from https://github.com/gwdg/rOCCI-server/downloads
+Download the latest version from https://github.com/gwdg/rOCCI-server/tags
 
 Extract file
 
