@@ -59,8 +59,8 @@ module OCCI
           network.attributes.occi!.network!.address = backend_object['TEMPLATE/NETWORK_ADDRESS'] if backend_object['TEMPLATE/NETWORK_ADDRESS']
           network.attributes.occi!.network!.gateway = backend_object['TEMPLATE/GATEWAY'] if backend_object['TEMPLATE/GATEWAY']
           network.attributes.occi!.network!.vlan = backend_object['TEMPLATE/VLAN_ID'] if backend_object['TEMPLATE/VLAN_ID']
-          network.attributes.occi!.network!.allocation = "static" if backend_object['TEMPLATE/TYPE'].downcase == "fixed"
-          network.attributes.occi!.network!.allocation = "dynamic" if backend_object['TEMPLATE/TYPE'].downcase == "ranged"
+          network.attributes.occi!.network!.allocation = "static" if backend_object['TYPE'].to_i == 1
+          network.attributes.occi!.network!.allocation = "dynamic" if backend_object['TYPE'].to_i == 0
 
           network.attributes.org!.opennebula!.network!.id = backend_object['ID'] if backend_object['ID']
           network.attributes.org!.opennebula!.network!.vlan = backend_object['TEMPLATE/VLAN'] if backend_object['TEMPLATE/VLAN']
