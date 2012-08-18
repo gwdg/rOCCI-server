@@ -247,7 +247,7 @@ module OCCI
             vcpu_old = template['TEMPLATE/VCPU']
             vcpu = compute.attributes.occi.compute.cores if compute.attributes.occi!.compute!.cores
             memory_old = template['TEMPLATE/MEMORY']
-            memory = (compute.attributes.occi.compute.memory.to_f * 1000).to_s if compute.attributes.occi!.compute!.memory
+            memory = (compute.attributes.occi.compute.memory.to_f * 1000).to_i if compute.attributes.occi!.compute!.memory
             architecture_old = template['TEMPLATE/ARCHITECTURE']
             architecture = compute.attributes.occi.compute.architecture if compute.attributes.occi!.compute!.architecture
             cpu_old = template['TEMPLATE/CPU']
@@ -275,7 +275,11 @@ module OCCI
 
             template.update(template.template_str)
             OCCI::Log.debug "Template #{template.inspect}"
-            backend_id = template.instantiate
+            
+            vm_name = ""
+            vm_name = compute.attributes.occi.core.title unless compute.attributes.occi.core.title.nil? or compute.attributes.occi.core.title.empty?
+            backend_id = template.instantiate vm_name
+            
             check_rc(backend_id)
             
             OCCI::Log.debug("Backend ID #{backend_id}") if backend_id
