@@ -69,6 +69,14 @@ module OCCI
           compute.attributes.org!.opennebula!.compute!.kernel_cmd = backend_object['TEMPLATE/KERNEL_CMD'] if backend_object['TEMPLATE/KERNEL_CMD']
           compute.attributes.org!.opennebula!.compute!.bootloader = backend_object['TEMPLATE/BOOTLOADER'] if backend_object['TEMPLATE/BOOTLOADER']
           compute.attributes.org!.opennebula!.compute!.boot = backend_object['TEMPLATE/BOOT'] if backend_object['TEMPLATE/BOOT']
+          
+          compute.attributes.org!.opennebula!.compute!.ip = ""
+          backend_object.each('TEMPLATE/NIC') do |nic|
+            compute.attributes.org!.opennebula!.compute!.ip << nic['IP']
+            compute.attributes.org!.opennebula!.compute!.ip << '|'
+          end if backend_object['TEMPLATE/NIC']
+
+          compute.attributes.org!.opennebula!.compute!.ip.chomp!("|")
 
           compute.check(@model)
 
