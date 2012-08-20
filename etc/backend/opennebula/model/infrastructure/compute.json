@@ -30,6 +30,9 @@
                             },
                             "boot":{
                                 "Description":"boot device type: hd,fd,cdrom ,network"
+                            },
+                            "ip":{
+                                "Description":"IP addresses of all network interfaces separated by '|'"
                             }
                         }
                     }
