@@ -262,6 +262,9 @@ module OCCI
         end
       elsif category.kind_of?(OCCI::Core::Kind)
         @request_collection.resources.each do |resource|
+          kind = @backend.model.get_by_id category.type_identifier
+          # if resource with ID already exists then return 409 Conflict
+          halt 409 if kind.entities.select {|entity| entity.id == resource.id}.any?
           OCCI::Log.debug("Deploying resource with title #{resource.title} in backend #{@backend.class.name}")
           OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DEPLOY, resource)
           @locations << request.base_url + request.script_name + resource.location

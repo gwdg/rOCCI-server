@@ -47,11 +47,20 @@ module OCCI
 
           network_kind = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network")
 
-          id = self.generate_occi_id(network_kind, backend_object.id.to_s)
+          id = backend_object['TEMPLATE/OCCI_ID']
+          id ||= self.generate_occi_id(network_kind, backend_object.id.to_s)
+
           @@location_cache[id] = backend_object.id.to_s
 
           network = OCCI::Core::Resource.new(network_kind.type_identifier)
-          network.mixins = %w|http://opennebula.org/occi/infrastructure#network http://schemas.ogf.org/occi/infrastructure#ipnetwork|
+
+          network.mixins << 'http://opennebula.org/occi/infrastructure#network'
+          network.mixins << 'http://schemas.ogf.org/occi/infrastructure#ipnetwork'
+          backend_object.each 'TEMPLATE/OCCI_MIXIN' do |mixin|
+            network.mixins << mixin.text
+          end
+          network.mixins.uniq!
+
           network.id = id
           network.title = backend_object['NAME']
           network.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
@@ -119,7 +128,7 @@ module OCCI
           check_rc(rc)
 
           backend_object.info
-          network.id = self.generate_occi_id(@model.get_by_id(network.kind), backend_object['ID'].to_s)
+          network.id ||= self.generate_occi_id(@model.get_by_id(network.kind), backend_object['ID'].to_s)
 
           network_set_state(backend_object, network)
 
