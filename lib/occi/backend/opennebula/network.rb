@@ -56,8 +56,8 @@ module OCCI
 
           network.mixins << 'http://opennebula.org/occi/infrastructure#network'
           network.mixins << 'http://schemas.ogf.org/occi/infrastructure#ipnetwork'
-          backend_object.each 'OCCI_MIXIN' do |mixin|
-            network.mixins << mixin
+          backend_object.each 'TEMPLATE/OCCI_MIXIN' do |mixin|
+            network.mixins << mixin.text
           end
           network.mixins.uniq!
 

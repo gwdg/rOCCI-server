@@ -54,8 +54,8 @@ module OCCI
           storage = OCCI::Core::Resource.new(storage_kind.type_identifier)
 
           storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
-          backend_object.each 'OCCI_MIXIN' do |mixin|
-            storage.mixins << mixin
+          backend_object.each 'TEMPLATE/OCCI_MIXIN' do |mixin|
+            storage.mixins << mixin.text
           end
           storage.mixins.uniq!
 

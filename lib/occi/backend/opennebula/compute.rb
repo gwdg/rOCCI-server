@@ -55,8 +55,8 @@ module OCCI
           compute = OCCI::Core::Resource.new(compute_kind.type_identifier)
 
           compute.mixins << 'http://opennebula.org/occi/infrastructure#compute'
-          backend_object.each 'OCCI_MIXIN' do |mixin|
-            compute.mixins << mixin
+          backend_object.each 'TEMPLATE/OCCI_MIXIN' do |mixin|
+            compute.mixins << mixin.text
           end
           compute.mixins.uniq!
 
@@ -173,7 +173,7 @@ module OCCI
             link.source = compute.location
             link.mixins << 'http://opennebula.org/occi/infrastructure#storagelink'
             disk.each 'LINK_OCCI_MIXIN' do |mixin|
-              link.mixins << mixin
+              link.mixins << mixin.text
             end
             link.mixins.uniq!
             link.attributes.occi!.storagelink!.deviceid = disk['TARGET'] if disk['TARGET']
@@ -212,7 +212,7 @@ module OCCI
             link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
             link.mixins << 'http://opennebula.org/occi/infrastructure#networkinterface'
             nic.each 'LINK_OCCI_MIXIN' do |mixin|
-              link.mixins << mixin
+              link.mixins << mixin.text
             end
             link.mixins.uniq!
             link.attributes.occi!.networkinterface!.address = nic['IP'] if nic['IP']
