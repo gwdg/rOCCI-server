@@ -1,5 +1,8 @@
 ID              = <%= @network.attributes.org!.opennebula!.network!.id %>
 OCCI_ID         = <%= @network.id %>
+<% @network.mixins.each do |mixin| %>
+OCCI_MIXIN    = "<%= mixin %>"
+<% end %>
 NAME            = <%= @network.title.inspect if @network.title %>
 DESCRIPTION     = <%= @network.summary.inspect if @network.summary %>
 VLAN            = <%= @network.attributes.org!.opennebula!.network!.vlan %>

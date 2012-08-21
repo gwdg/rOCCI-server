@@ -54,9 +54,14 @@ module OCCI
 
           compute = OCCI::Core::Resource.new(compute_kind.type_identifier)
 
-          compute.mixins = %w|http://opennebula.org/occi/infrastructure#compute|
-          compute.id     = id
-          compute.title  = backend_object['NAME']
+          compute << 'http://opennebula.org/occi/infrastructure#compute'
+          backend_object.each 'OCCI_MIXIN' do |mixin|
+            compute.mixins << mixin
+          end
+          compute.mixins.uniq!
+
+          compute.id    = id
+          compute.title = backend_object['NAME']
           compute.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
 
           compute.attributes.occi!.compute!.cores = backend_object['TEMPLATE/VCPU'].to_i if backend_object['TEMPLATE/VCPU']
@@ -137,11 +142,11 @@ module OCCI
             OCCI::Log.debug disk.inspect
             case disk['TYPE'].downcase
               when 'fs', 'swap'
-                offset         = 100000 # set an offset for OCCI ID generation to distinguish from Images
-                storage        = OCCI::Core::Resource.new('http://schemas.ogf.org/occi/infrastructure#storage')
+                offset  = 100000 # set an offset for OCCI ID generation to distinguish from Images
+                storage = OCCI::Core::Resource.new('http://schemas.ogf.org/occi/infrastructure#storage')
                 storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
-                storage.id     = disk['STORAGE_OCCI_ID']
-                storage.id     ||= self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
+                storage.id = disk['STORAGE_OCCI_ID']
+                storage.id ||= self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
 
                 storage.attributes.occi!.storage!.size              = disk['SIZE']
                 storage.attributes.org!.opennebula!.storage!.fstype = disk['FORMAT']
@@ -167,6 +172,10 @@ module OCCI
             link.title  = target.title
             link.source = compute.location
             link.mixins << 'http://opennebula.org/occi/infrastructure#storagelink'
+            disk.each 'LINK_OCCI_MIXIN' do |mixin|
+              link.mixins << mixin
+            end
+            link.mixins.uniq!
             link.attributes.occi!.storagelink!.deviceid = disk['TARGET'] if disk['TARGET']
             link.attributes.org!.opennebula!.storagelink!.bus = disk['BUS'] if disk['BUS']
             link.attributes.org!.opennebula!.storagelink!.driver = disk['DRIVER'] if disk['TARGET']
@@ -202,6 +211,10 @@ module OCCI
             link.source = compute.location
             link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
             link.mixins << 'http://opennebula.org/occi/infrastructure#networkinterface'
+            nic.each 'LINK_OCCI_MIXIN' do |mixin|
+              link.mixins << mixin
+            end
+            link.mixins.uniq!
             link.attributes.occi!.networkinterface!.address = nic['IP'] if nic['IP']
             link.attributes.occi!.networkinterface!.mac = nic['MAC'] if nic['MAC']
             link.attributes.occi!.networkinterface!.interface = nic['TARGET'] if nic['TARGET']
@@ -282,6 +295,12 @@ module OCCI
             unless cpu.nil?
               template.delete_element('TEMPLATE/CPU')
               template.add_element('TEMPLATE', { "CPU" => cpu })
+            end
+
+            template.add_element('TEMPLATE', :OCCI_ID => compute.id)
+
+            compute.mixins.each do |mixin|
+              template.add_element('TEMPLATE', :OCCI_MIXIN => mixin)
             end
 
             template.update(template.template_str)

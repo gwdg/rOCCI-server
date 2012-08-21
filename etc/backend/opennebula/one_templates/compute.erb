@@ -8,6 +8,9 @@
 
 <%# Mandatory settings %>
 OCCI_ID       = "<%= @compute.id %>"
+<% @compute.mixins.each do |mixin| %>
+OCCI_MIXIN    = "<%= mixin %>"
+<% end %>
 NAME          = "<%= @compute.title ||= "rOCCI VM" %>"
 DESCRIPTION   = "<%= @compute.summary ||= "VM instantiated using rOCCI-server" %>"
 <% if @compute.attributes.occi!.compute!.memory %>
@@ -39,6 +42,9 @@ OS = [
 DISK = [
     <% storage = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first %>
     LINK_OCCI_ID = "<%= storagelink.id %>",
+    <% storagelink.mixins.each do |mixin| %>
+        LINK_OCCI_MIXIN    = "<%= mixin %>"
+    <% end %>
     STORAGE_OCCI_ID = "<%= storage.id %>",
     <% if restricted.include? "SOURCE" %>
 	<%# IMAGE 	= <%= @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first.title.inspect %>
@@ -65,6 +71,9 @@ DISK = [
 NIC = [
     <% network = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first %>
     LINK_OCCI_ID = "<%= networkinterface.id %>",
+    <% networkinterface.mixins.each do |mixin| %>
+        LINK_OCCI_MIXIN    = "<%= mixin %>"
+    <% end %>
     NETWORK_OCCI_ID = "<%= network.id %>",
     <%# NETWORK   = <%= @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first.title.inspect %>
     NETWORK_ID = <%= network.attributes.org!.opennebula!.network!.id %>

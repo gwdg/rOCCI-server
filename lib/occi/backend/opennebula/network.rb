@@ -53,7 +53,13 @@ module OCCI
           @@location_cache[id] = backend_object.id.to_s
 
           network = OCCI::Core::Resource.new(network_kind.type_identifier)
-          network.mixins = %w|http://opennebula.org/occi/infrastructure#network http://schemas.ogf.org/occi/infrastructure#ipnetwork|
+          network.mixins << 'http://opennebula.org/occi/infrastructure#network'
+          network.mixins << 'http://schemas.ogf.org/occi/infrastructure#ipnetwork'
+          backend_object.each 'OCCI_MIXIN' do |mixin|
+            network.mixins << mixin
+          end
+          network.mixins.uniq!
+
           network.id = id
           network.title = backend_object['NAME']
           network.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
