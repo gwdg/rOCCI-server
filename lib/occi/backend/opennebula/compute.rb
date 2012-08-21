@@ -54,7 +54,7 @@ module OCCI
 
           compute = OCCI::Core::Resource.new(compute_kind.type_identifier)
 
-          compute << 'http://opennebula.org/occi/infrastructure#compute'
+          compute.mixins << 'http://opennebula.org/occi/infrastructure#compute'
           backend_object.each 'OCCI_MIXIN' do |mixin|
             compute.mixins << mixin
           end

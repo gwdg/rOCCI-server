@@ -52,6 +52,7 @@ module OCCI
           @@location_cache[id] = backend_object.id.to_s
 
           storage = OCCI::Core::Resource.new(storage_kind.type_identifier)
+
           storage.mixins = 'http://opennebula.org/occi/infrastructure#storage'
           backend_object.each 'OCCI_MIXIN' do |mixin|
             storage.mixins << mixin

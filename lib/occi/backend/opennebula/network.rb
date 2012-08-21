@@ -53,6 +53,7 @@ module OCCI
           @@location_cache[id] = backend_object.id.to_s
 
           network = OCCI::Core::Resource.new(network_kind.type_identifier)
+
           network.mixins << 'http://opennebula.org/occi/infrastructure#network'
           network.mixins << 'http://schemas.ogf.org/occi/infrastructure#ipnetwork'
           backend_object.each 'OCCI_MIXIN' do |mixin|
