@@ -1,4 +1,8 @@
 <%="ID           =" + @storage.attributes.org!.opennebula!.storage!.id %>
+OCCI_ID         = <%= @storage.id %>
+<% @storage.mixins.each do |mixin| %>
+OCCI_MIXIN    = "<%= mixin %>"
+<% end %>
 <%="NAME           =" + @storage.title.inspect if @storage.title %>
 <%="DESCRIPTION    =" + @storage.summary if @storage.summary %>
 <% if @storage.attributes.org!.opennebula!.storage!.type %>

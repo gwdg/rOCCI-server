@@ -47,14 +47,21 @@ module OCCI
 
           compute_kind = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#compute")
 
-          id                   = self.generate_occi_id(compute_kind, backend_object.id.to_s)
+          id = backend_object['TEMPLATE/OCCI_ID']
+          id ||= self.generate_occi_id(compute_kind, backend_object.id.to_s)
+
           @@location_cache[id] = backend_object.id.to_s
 
           compute = OCCI::Core::Resource.new(compute_kind.type_identifier)
 
-          compute.mixins = %w|http://opennebula.org/occi/infrastructure#compute|
-          compute.id     = id
-          compute.title  = backend_object['NAME']
+          compute.mixins << 'http://opennebula.org/occi/infrastructure#compute'
+          backend_object.each 'TEMPLATE/OCCI_MIXIN' do |mixin|
+            compute.mixins << mixin.text
+          end
+          compute.mixins.uniq!
+
+          compute.id    = id
+          compute.title = backend_object['NAME']
           compute.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
 
           compute.attributes.occi!.compute!.cores = backend_object['TEMPLATE/VCPU'].to_i if backend_object['TEMPLATE/VCPU']
@@ -120,7 +127,7 @@ module OCCI
           compute_parse_links(client, compute, backend_object)
 
           # register compute resource in entities of compute kind
-          compute_kind.entities << compute unless compute_kind.entities.select {|entity| entity.id == compute.id}.any?
+          compute_kind.entities << compute unless compute_kind.entities.select { |entity| entity.id == compute.id }.any?
         end
 
         # ---------------------------------------------------------------------------------------------------------------------
@@ -135,11 +142,12 @@ module OCCI
             OCCI::Log.debug disk.inspect
             case disk['TYPE'].downcase
               when 'fs', 'swap'
-                offset         = 100000 # set an offset for OCCI ID generation to distinguish from Images
-                storage        = OCCI::Core::Resource.new('http://schemas.ogf.org/occi/infrastructure#storage')
-                storage.mixins = ['http://opennebula.org/occi/infrastructure#storage']
-                puts self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
-                storage.id                                          = self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
+                offset  = 100000 # set an offset for OCCI ID generation to distinguish from Images
+                storage = OCCI::Core::Resource.new('http://schemas.ogf.org/occi/infrastructure#storage')
+                storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
+                storage.id = disk['STORAGE_OCCI_ID']
+                storage.id ||= self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
+
                 storage.attributes.occi!.storage!.size              = disk['SIZE']
                 storage.attributes.org!.opennebula!.storage!.fstype = disk['FORMAT']
                 @model.get_by_id(storage.kind).entities << storage
@@ -147,10 +155,12 @@ module OCCI
             end
             OCCI::Log.debug("Storage Backend ID: #{id}")
             storage_kind     = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#storage')
-            storage_id       = self.generate_occi_id(storage_kind, (id + offset).to_s)
+            storage_id       = disk['STORAGE_OCCI_ID']
+            storage_id       ||= self.generate_occi_id(storage_kind, (id + offset).to_s)
             storagelink_kind = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#storagelink')
             link             = OCCI::Core::Link.new(storagelink_kind.type_identifier)
-            link.id          = self.generate_occi_id(storagelink_kind, (id + offset).to_s)
+            link.id          = disk['LINK_OCCI_ID']
+            link.id          ||= self.generate_occi_id(storagelink_kind, (id + offset).to_s)
             target           = storage_kind.entities.select { |entity| entity.id == storage_id }.first
             if target.nil?
               one_storage = OpenNebula::Image.new(OpenNebula::Image.build_xml(disk['IMAGE_ID']), client)
@@ -161,13 +171,19 @@ module OCCI
             link.rel    = target.kind
             link.title  = target.title
             link.source = compute.location
-            link.mixins = ['http://opennebula.org/occi/infrastructure#storagelink']
+            link.mixins << 'http://opennebula.org/occi/infrastructure#storagelink'
+            disk.each 'LINK_OCCI_MIXIN' do |mixin|
+              link.mixins << mixin.text
+            end
+            link.mixins.uniq!
             link.attributes.occi!.storagelink!.deviceid = disk['TARGET'] if disk['TARGET']
             link.attributes.org!.opennebula!.storagelink!.bus = disk['BUS'] if disk['BUS']
             link.attributes.org!.opennebula!.storagelink!.driver = disk['DRIVER'] if disk['TARGET']
 
             # check link attributes against definition in kind and mixins
             link.check(@model)
+
+            compute.links << link
 
             storagelink_kind.entities << link
           end
@@ -178,9 +194,11 @@ module OCCI
 
             networkinterface_kind = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#networkinterface')
             link                  = OCCI::Core::Link.new(networkinterface_kind.type_identifier)
-            link.id               = self.generate_occi_id(networkinterface_kind, nic['NETWORK_ID'].to_s)
+            link.id               = nic['LINK_OCCI_ID']
+            link.id               ||= self.generate_occi_id(networkinterface_kind, nic['NETWORK_ID'].to_s)
             network_kind          = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#network')
-            network_id            = self.generate_occi_id(network_kind, nic['NETWORK_ID'].to_s)
+            network_id            = nic['NETWORK_OCCI_ID']
+            network_id            ||= self.generate_occi_id(network_kind, nic['NETWORK_ID'].to_s)
             target                = network_kind.entities.select { |entity| entity.id == network_id }.first
             if target.nil?
               one_network = VirtualNetwork.new(VirtualNetwork.build_xml(nic['NETWORK_ID']), client)
@@ -191,8 +209,12 @@ module OCCI
             link.rel    = target.kind
             link.title  = target.title
             link.source = compute.location
-            link.mixins << @model.get_by_id('http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface')
-            link.mixins << @model.get_by_id('http://opennebula.org/occi/infrastructure#networkinterface')
+            link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
+            link.mixins << 'http://opennebula.org/occi/infrastructure#networkinterface'
+            nic.each 'LINK_OCCI_MIXIN' do |mixin|
+              link.mixins << mixin.text
+            end
+            link.mixins.uniq!
             link.attributes.occi!.networkinterface!.address = nic['IP'] if nic['IP']
             link.attributes.occi!.networkinterface!.mac = nic['MAC'] if nic['MAC']
             link.attributes.occi!.networkinterface!.interface = nic['TARGET'] if nic['TARGET']
@@ -206,6 +228,8 @@ module OCCI
 
             # check link attributes against definition in kind and mixins
             link.check(@model)
+
+            compute.links << link
 
             networkinterface_kind.entities << link
           end
@@ -234,10 +258,10 @@ module OCCI
 
           templates = TemplatePool.new(client)
           templates.info_all
-         
+
           template = nil
           unless os_tpl.nil?
-            template = templates.select { |template| 
+            template = templates.select { |template|
               OCCI::Log.debug("Going through ON template #{template['NAME']}")
               template['NAME'] == os_tpl.title
             }.first
@@ -266,23 +290,31 @@ module OCCI
             unless architecture.nil?
               template.delete_element('TEMPLATE/ARCHITECTURE')
               template.add_element('TEMPLATE', { "ARCHITECTURE" => architecture })
-            end            
+            end
 
             unless cpu.nil?
               template.delete_element('TEMPLATE/CPU')
               template.add_element('TEMPLATE', { "CPU" => cpu })
-            end            
+            end
+
+            template.add_element('TEMPLATE', "OCCI_ID" => compute.id)
+
+            compute.mixins.each do |mixin|
+              template.add_element('TEMPLATE', "OCCI_MIXIN" => mixin)
+            end
 
             template.update(template.template_str)
             OCCI::Log.debug "Template #{template.inspect}"
-            
+
             vm_name = ""
             vm_name = compute.attributes.occi.core.title unless compute.attributes.occi.core.title.nil? or compute.attributes.occi.core.title.empty?
             backend_id = template.instantiate vm_name
-            
+
             check_rc(backend_id)
-            
+
             OCCI::Log.debug("Backend ID #{backend_id}") if backend_id
+            template.delete_element('TEMPLATE/OCCI_ID')
+            template.delete_element('TEMPLATE/OCCI_MIXIN')
             template.delete_element('TEMPLATE/VCPU')
             template.add_element('TEMPLATE', { "VCPU" => vcpu_old })
             template.delete_element('TEMPLATE/MEMORY')
@@ -297,7 +329,7 @@ module OCCI
             backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
 
             template_location = File.dirname(__FILE__) + '/../../../../etc/backend/opennebula/one_templates/' + TEMPLATECOMPUTERAWFILE
-            template          = Erubis::Eruby.new(File.read(template_location)).evaluate({:compute => compute, :model => @model})
+            template          = Erubis::Eruby.new(File.read(template_location)).evaluate({ :compute => compute, :model => @model })
 
             OCCI::Log.debug("Parsed template #{template}")
             rc = backend_object.allocate(template)
@@ -307,7 +339,8 @@ module OCCI
 
           backend_object.info
           OCCI::Log.debug("OCCI Compute resource #{backend_object.inspect}")
-          compute.id = self.generate_occi_id(@model.get_by_id(compute.kind), backend_object['ID'].to_s)
+
+          compute.id ||= self.generate_occi_id(@model.get_by_id(compute.kind), backend_object['ID'].to_s)
 
           compute_set_state(backend_object, compute)
 
