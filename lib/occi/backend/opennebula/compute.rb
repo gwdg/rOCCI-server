@@ -139,7 +139,7 @@ module OCCI
               when 'fs', 'swap'
                 offset         = 100000 # set an offset for OCCI ID generation to distinguish from Images
                 storage        = OCCI::Core::Resource.new('http://schemas.ogf.org/occi/infrastructure#storage')
-                storage.mixins = ['http://opennebula.org/occi/infrastructure#storage']
+                storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
                 storage.id     = disk['STORAGE_OCCI_ID']
                 storage.id     ||= self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
 
@@ -166,7 +166,7 @@ module OCCI
             link.rel    = target.kind
             link.title  = target.title
             link.source = compute.location
-            link.mixins = ['http://opennebula.org/occi/infrastructure#storagelink']
+            link.mixins << 'http://opennebula.org/occi/infrastructure#storagelink'
             link.attributes.occi!.storagelink!.deviceid = disk['TARGET'] if disk['TARGET']
             link.attributes.org!.opennebula!.storagelink!.bus = disk['BUS'] if disk['BUS']
             link.attributes.org!.opennebula!.storagelink!.driver = disk['DRIVER'] if disk['TARGET']
@@ -200,8 +200,8 @@ module OCCI
             link.rel    = target.kind
             link.title  = target.title
             link.source = compute.location
-            link.mixins << @model.get_by_id('http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface')
-            link.mixins << @model.get_by_id('http://opennebula.org/occi/infrastructure#networkinterface')
+            link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
+            link.mixins << 'http://opennebula.org/occi/infrastructure#networkinterface'
             link.attributes.occi!.networkinterface!.address = nic['IP'] if nic['IP']
             link.attributes.occi!.networkinterface!.mac = nic['MAC'] if nic['MAC']
             link.attributes.occi!.networkinterface!.interface = nic['TARGET'] if nic['TARGET']
