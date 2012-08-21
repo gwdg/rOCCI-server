@@ -38,8 +38,8 @@ OS = [
 <% @compute.links.select {|link| link.kind == "http://schemas.ogf.org/occi/infrastructure#storagelink"}.each do |storagelink| %>
 DISK = [
     <% storage = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first %>
-    LINK_OCCI_ID = "<%= storagelink.id %>
-    STORAGE_OCCI_ID = "<%= storage.id %>
+    LINK_OCCI_ID = "<%= storagelink.id %>",
+    STORAGE_OCCI_ID = "<%= storage.id %>",
     <% if restricted.include? "SOURCE" %>
 	<%# IMAGE 	= <%= @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first.title.inspect %>
         IMAGE_ID = <%= storage.attributes.org!.opennebula!.storage!.id %>
@@ -64,8 +64,8 @@ DISK = [
 <% @compute.links.select {|link| link.kind == "http://schemas.ogf.org/occi/infrastructure#networkinterface"}.each do |networkinterface| %>
 NIC = [
     <% network = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first %>
-    LINK_OCCI_ID = "<%= networkinterface.id %>
-    NETWORK_OCCI_ID = "<%= network.id %>
+    LINK_OCCI_ID = "<%= networkinterface.id %>",
+    NETWORK_OCCI_ID = "<%= network.id %>",
     <%# NETWORK   = <%= @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first.title.inspect %>
     NETWORK_ID = <%= network.attributes.org!.opennebula!.network!.id %>
 
