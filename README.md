@@ -80,7 +80,11 @@ To configure resource templates (e.g. small, medium, large, ...) change the file
 For the OpenNebula backend a special server user is required in OpenNebula. To create a user named occi run the
 following command in your OpenNebula environment (replace $RANDOM with a secure password!):
 
-     oneuser create occi $RANDOM --driver server_cipher
+    oneuser create occi $RANDOM --driver server_cipher
+
+Make sure that the user is member of the oneadmin group
+
+    oneuser chgrp occi oneadmin
 
 After copying `etc/backend/opennebula/opennebula.json` to `etc/backend/default.json` you have to adapt the admin and
 password attributes in that file to the ones you chose during the user creation.
