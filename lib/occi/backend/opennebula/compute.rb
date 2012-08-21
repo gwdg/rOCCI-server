@@ -297,10 +297,10 @@ module OCCI
               template.add_element('TEMPLATE', { "CPU" => cpu })
             end
 
-            template.add_element('TEMPLATE', :OCCI_ID => compute.id)
+            template.add_element('TEMPLATE', "OCCI_ID" => compute.id)
 
             compute.mixins.each do |mixin|
-              template.add_element('TEMPLATE', :OCCI_MIXIN => mixin)
+              template.add_element('TEMPLATE', "OCCI_MIXIN" => mixin)
             end
 
             template.update(template.template_str)
