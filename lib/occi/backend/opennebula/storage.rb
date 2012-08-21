@@ -46,7 +46,9 @@ module OCCI
 
           storage_kind = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage")
 
-          id = self.generate_occi_id(storage_kind, backend_object.id.to_s)
+          id = backend_object['TEMPLATE/OCCI_ID']
+          id ||= self.generate_occi_id(storage_kind, backend_object.id.to_s)
+
           @@location_cache[id] = backend_object.id.to_s
 
           storage = OCCI::Core::Resource.new(storage_kind.type_identifier)
@@ -97,7 +99,8 @@ module OCCI
           check_rc(rc)
 
           backend_object.info
-          storage.id = self.generate_occi_id(@model.get_by_id(storage.kind), backend_object['ID'].to_s)
+
+          storage.id ||= self.generate_occi_id(@model.get_by_id(storage.kind), backend_object['ID'].to_s)
 
           storage_set_state(backend_object, storage)
         end
