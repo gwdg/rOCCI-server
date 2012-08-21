@@ -313,6 +313,8 @@ module OCCI
             check_rc(backend_id)
 
             OCCI::Log.debug("Backend ID #{backend_id}") if backend_id
+            template.delete_element('TEMPLATE/OCCI_ID')
+            template.delete_element('TEMPLATE/OCCI_MIXIN')
             template.delete_element('TEMPLATE/VCPU')
             template.add_element('TEMPLATE', { "VCPU" => vcpu_old })
             template.delete_element('TEMPLATE/MEMORY')
