@@ -174,6 +174,8 @@ module OCCI
             # check link attributes against definition in kind and mixins
             link.check(@model)
 
+            compute.links << link
+
             storagelink_kind.entities << link
           end
 
@@ -213,6 +215,8 @@ module OCCI
 
             # check link attributes against definition in kind and mixins
             link.check(@model)
+
+            compute.links << link
 
             networkinterface_kind.entities << link
           end
