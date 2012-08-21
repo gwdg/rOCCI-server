@@ -149,7 +149,7 @@ module OCCI
                 storage.id ||= self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
 
                 storage.attributes.occi!.storage!.size              = disk['SIZE']
-                storage.attributes.org!.opennebula!.storage!.fstype = disk['FORMAT']
+                storage.attributes.org!.opennebula!.storage!.fstype = disk['FORMAT'] if disk['FORMAT']
                 @model.get_by_id(storage.kind).entities << storage
               else
             end
