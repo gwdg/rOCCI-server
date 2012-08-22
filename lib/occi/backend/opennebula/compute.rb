@@ -61,7 +61,7 @@ module OCCI
           compute.mixins.uniq!
 
           compute.id    = id
-          compute.title = backend_object['NAME']
+          compute.title = backend_object['NAME'] if backend_object['NAME']
           compute.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
 
           compute.attributes.occi!.compute!.cores = backend_object['TEMPLATE/VCPU'].to_i if backend_object['TEMPLATE/VCPU']

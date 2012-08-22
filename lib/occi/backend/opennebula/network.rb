@@ -62,7 +62,7 @@ module OCCI
           network.mixins.uniq!
 
           network.id = id
-          network.title = backend_object['NAME']
+          network.title = backend_object['NAME'] if backend_object['NAME']
           network.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
 
           network.attributes.occi!.network!.address = backend_object['TEMPLATE/NETWORK_ADDRESS'] if backend_object['TEMPLATE/NETWORK_ADDRESS']

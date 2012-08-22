@@ -60,7 +60,7 @@ module OCCI
           storage.mixins.uniq!
 
           storage.id = id
-          storage.title = backend_object['NAME']
+          storage.title = backend_object['NAME'] if backend_object['NAME']
           storage.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
 
           storage.attributes.occi!.storage!.size = backend_object['TEMPLATE/SIZE'].to_f/1000 if backend_object['TEMPLATE/SIZE']
