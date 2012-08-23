@@ -169,7 +169,7 @@ module OCCI
             end
             link.target = target.location
             link.rel    = target.kind
-            link.title  = target.title
+            link.title  = target.title unless target.title.nil?
             link.source = compute.location
             link.mixins << 'http://opennebula.org/occi/infrastructure#storagelink'
             disk.each 'LINK_OCCI_MIXIN' do |mixin|
@@ -207,7 +207,7 @@ module OCCI
             end
             link.target = target.location
             link.rel    = target.kind
-            link.title  = target.title
+            link.title  = target.title unless target.title.nil?
             link.source = compute.location
             link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
             link.mixins << 'http://opennebula.org/occi/infrastructure#networkinterface'
