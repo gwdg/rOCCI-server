@@ -89,6 +89,11 @@ Make sure that the user is member of the oneadmin group
 After copying `etc/backend/opennebula/opennebula.json` to `etc/backend/default.json` you have to adapt the admin and
 password attributes in that file to the ones you chose during the user creation.
 
+If you want to use basic or digest authentication for users of rOCCI-server you have to create the users in OpenNebula
+ with the `core` auth driver. For a user named `john` the command may look like this
+
+    oneuser create john johnspassword --driver core
+
 If you want to use X.509 authentication for your users, you need to create the users in OpenNebula with the X.509
 driver. For a user named `doe` the command may look like this
 
