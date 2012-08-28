@@ -18,7 +18,7 @@ module OCCI
     set :views, File.dirname(__FILE__) + "/../../views"
     enable :logging
 
-    VERSION = "0.5.0-beta1"
+    VERSION = "0.5.0"
 
     register Sinatra::MultiRoute
     register Sinatra::CrossOrigin
