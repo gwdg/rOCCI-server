@@ -29,11 +29,12 @@ GEM
     oca (3.4.1)
       nokogiri
       xmlparser
-    occi (2.5.3)
+    occi (2.5.7)
       activesupport
       antlr3
       hashie
       httparty
+      i18n
       json
       nokogiri
       uuidtools
@@ -95,7 +96,7 @@ DEPENDENCIES
   json
   nokogiri
   oca (~> 3.4.0)
-  occi (~> 2.5.3)
+  occi (~> 2.5.7)
   passenger
   rspec
   rspec-http
