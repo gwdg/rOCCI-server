@@ -10,7 +10,7 @@ Category: <%= mixin.split('#').last %>;scheme="<%= mixin.split('#').first + '#' 
 X-OCCI-Attribute: <%= name + '=' + value.inspect %>
 <% end %>
 <% entity.links.each do |link| %>
-Link: <<%= link.target %>>;rel="<%= link.rel %>"<%= ';self=' + link.location.inspect if link.location %><%= ';category=' + link.kind.inspect if link.kind %><%= ';' + link.attributes.combine.collect { |attr| attr.keys.first + '=' + attr.values.first.inspect }.join(' ') %>
+Link: <<%= link.target %>>;rel="<%= link.rel %>"<%= ';self=' + link.location.inspect if link.location %><%= ';category=' + link.kind.inspect if link.kind %><%= ';' + link.attributes.combine.collect { |key,value| key + '=' + value.inspect }.join(' ') %>
 <% end if entity.respond_to? 'links' %>
 <% entity.actions do |action| %>
 Link: <<%= entity.location + '?action=' + action.split('#').last %>>;rel="<%= action %>"
