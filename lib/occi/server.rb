@@ -173,6 +173,7 @@ module OCCI
         f.on('*/*') { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
         f.on('text/occi') do
           response.header.merge! @collection.to_header
+          response.header['X-OCCI-Location'] = @locations.join ','
           ''
         end
         # f.html { haml :collection, :locals => {:collection => @collection} }
