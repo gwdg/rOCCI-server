@@ -1,3 +1,16 @@
+PATH
+  remote: /Users/ffeldhaus/Development/rOCCI
+  specs:
+    occi (2.5.7)
+      activesupport
+      antlr3
+      hashie
+      httparty
+      i18n
+      json
+      nokogiri
+      uuidtools
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -29,15 +42,6 @@ GEM
     oca (3.4.1)
       nokogiri
       xmlparser
-    occi (2.5.7)
-      activesupport
-      antlr3
-      hashie
-      httparty
-      i18n
-      json
-      nokogiri
-      uuidtools
     passenger (3.0.12)
       daemon_controller (>= 0.2.5)
       fastthread (>= 1.0.1)
@@ -96,7 +100,7 @@ DEPENDENCIES
   json
   nokogiri
   oca (~> 3.4.0)
-  occi (~> 2.5.7)
+  occi!
   passenger
   rspec
   rspec-http
