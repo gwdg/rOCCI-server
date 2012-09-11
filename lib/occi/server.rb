@@ -146,7 +146,7 @@ module OCCI
       @client = @backend.client(user)
 
       OCCI::Log.debug('### Prepare response ###')
-      response['Accept'] = "application/occi+json,application/json,text/plain,text/uri-list,application/xml,text/xml,application/occi+xml"
+      response['Accept'] = "application/occi+json,application/json,text/plain,text/uri-list,application/xml,text/xml,application/occi+xml,text/occi"
       response['Server'] = "rOCCI/#{OCCI::Server::VERSION} OCCI/1.1"
       OCCI::Log.debug('### Initialize response OCCI collection ###')
       @collection = OCCI::Collection.new
@@ -171,6 +171,10 @@ module OCCI
       respond_to do |f|
         f.txt { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
         f.on('*/*') { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
+        f.on('text/occi') do
+          response.header.merge! @collection.to_header
+          ''
+        end
         # f.html { haml :collection, :locals => {:collection => @collection} }
         f.json { @collection.to_json }
         f.on('application/occi+json') { @collection.to_json }
@@ -264,7 +268,7 @@ module OCCI
         @request_collection.resources.each do |resource|
           kind = @backend.model.get_by_id category.type_identifier
           # if resource with ID already exists then return 409 Conflict
-          halt 409 if kind.entities.select {|entity| entity.id == resource.id}.any?
+          halt 409 if kind.entities.select { |entity| entity.id == resource.id }.any?
           OCCI::Log.debug("Deploying resource with title #{resource.title} in backend #{@backend.class.name}")
           OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DEPLOY, resource)
           @locations << request.base_url + request.script_name + resource.location
@@ -450,7 +454,7 @@ module OCCI
             else
               uuid = request.path_info.rpartition('/').last
               OCCI::Log.debug("### Deleting entity with id #{uuid} from kind #{kind.type_identifier} ###")
-              kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity) if entity.id == uuid}
+              kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity) if entity.id == uuid }
               kind.entities.delete_if { |entity| entity.id == uuid }
             end
         end
