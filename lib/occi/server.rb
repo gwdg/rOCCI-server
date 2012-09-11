@@ -172,7 +172,7 @@ module OCCI
         f.txt { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
         f.on('*/*') { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
         f.on('text/occi') do
-          response.header.merge! @collection.to_header
+          response.header.merge! @collection.to_header if @locations.empty?
           response.header['X-OCCI-Location'] = @locations.join ',' if @locations.any?
           ''
         end
