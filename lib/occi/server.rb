@@ -174,7 +174,7 @@ module OCCI
         f.on('text/occi') do
           response.header.merge! @collection.to_header if @locations.empty?
           response.header['X-OCCI-Location'] = @locations.join ',' if @locations.any?
-          ''
+          'OK'
         end
         # f.html { haml :collection, :locals => {:collection => @collection} }
         f.json { @collection.to_json }
