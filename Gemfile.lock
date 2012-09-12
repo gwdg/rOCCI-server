@@ -30,7 +30,7 @@ GEM
     oca (3.4.1)
       nokogiri
       xmlparser
-    occi (2.5.9)
+    occi (2.5.10)
       activesupport
       antlr3
       hashie
@@ -98,7 +98,7 @@ DEPENDENCIES
   json
   nokogiri
   oca (~> 3.4.0)
-  occi (~> 2.5.9)
+  occi (~> 2.5.10)
   passenger
   rspec
   rspec-http
