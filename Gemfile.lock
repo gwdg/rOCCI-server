@@ -4,6 +4,14 @@ GEM
     activesupport (3.2.5)
       i18n (~> 0.6)
       multi_json (~> 1.0)
+    amq-client (0.9.4)
+      amq-protocol (>= 0.9.4)
+      eventmachine
+    amq-protocol (0.9.4)
+    amqp (0.9.7)
+      amq-client (~> 0.9.4)
+      amq-protocol (>= 0.9.4)
+      eventmachine
     antlr3 (1.8.12)
     aws-sdk (1.5.2)
       httparty (~> 0.7)
@@ -87,6 +95,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport
+  amqp
   antlr3
   aws-sdk
   builder
