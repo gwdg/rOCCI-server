@@ -1,7 +1,7 @@
 rOCCI Server - A Ruby OCCI Server
 =============================
 
-[![Build Status](https://secure.travis-ci.org/gwdg/rOCCI-server.png)](http://travis-ci.org/gwdg/rOCCI-server)
+[![Build Status](https://secure.travis-ci.org/gwdg/rOCCI-server.png)](http://travis-ci.org/gwdg/rOCCI-server) [![Dependency Status](https://gemnasium.com/gwdg/rOCCI-server.png)](https://gemnasium.com/gwdg/rOCCI-server)
 
 If you want to use rOCCI-server in a production environment, follow the production instructions for installation and
 configuration, otherwise follow the developer instructions for installation and configuration.
