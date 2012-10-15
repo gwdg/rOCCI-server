@@ -8,6 +8,9 @@ require 'hashie/mash'
 require 'occi'
 require 'occi/exceptions'
 
+#require 'occi/amqp_old'
+require 'occi/occi_amqp/amqp_server'
+
 Encoding.default_external = Encoding::UTF_8 if defined? Encoding
 Encoding.default_internal = Encoding::UTF_8 if defined? Encoding
 
@@ -17,6 +20,8 @@ module OCCI
     set :sessions, true
     set :views, File.dirname(__FILE__) + "/../../views"
     enable :logging
+
+    attr_reader :backend
 
     VERSION = "0.5.0"
 
@@ -62,6 +67,10 @@ module OCCI
           raise "Backend #{backend.kind} unknown"
       end
 
+      #AMQP Part #########
+      OCCI::OCCI_AMQP::AmqpServer.new(self)
+      ####################
+
       super
     end
 
@@ -74,8 +83,7 @@ module OCCI
       #
       #  token = @one_auth.login_token(expiration_time, username)
       #
-      #  Client.new(token, @endpoint)
-
+      #  Client.new(token, @en
       basic_auth  = Rack::Auth::Basic::Request.new(env)
       digest_auth = Rack::Auth::Digest::Request.new(env)
       if basic_auth.provided? && basic_auth.basic?
@@ -134,7 +142,7 @@ module OCCI
       OCCI::Log.debug("### Client Request URL: #{request.url}")
       OCCI::Log.debug("### Client Request method: #{request.request_method}")
       OCCI::Log.debug("### Client Request Media Type: #{request.media_type}")
-      OCCI::Log.debug("### Client Request header: #{request.env.select { |k, v| k.include? 'HTTP' }}")
+      OCCI::Log.debug("### Client Request header ich: #{request.env.select { |k, v| k.include? 'HTTP' }}")
       OCCI::Log.debug("### Client SSL certificate subject: #{request.env['SSL_CLIENT_S_DN']}")
       OCCI::Log.debug("### Client Request body: #{request.body.read}")
       OCCI::Log.debug('--------------------------------------------------------------------')

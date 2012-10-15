@@ -12,7 +12,7 @@ gem "occi", "~>2.5.7"
 #gem "occi", :path => "/Users/ffeldhaus/Development/rOCCI"
 gem "oca", "~>3.4.0"
 
-# amqp
+# occi_amqp
 gem "amqp"
 
 # sinatra and related
