@@ -9,7 +9,7 @@ require 'occi'
 require 'occi/exceptions'
 
 #require 'occi/amqp_old'
-require 'occi/occi_amqp/amqp_server'
+require 'occi/occi_amqp/amqp_frontend'
 
 Encoding.default_external = Encoding::UTF_8 if defined? Encoding
 Encoding.default_internal = Encoding::UTF_8 if defined? Encoding
@@ -68,7 +68,9 @@ module OCCI
       end
 
       #AMQP Part #########
-      OCCI::OCCI_AMQP::AmqpServer.new(self)
+      if Config.instance.occi[:amqp]
+        OCCI::OCCI_AMQP::AmqpFrontend.new(self)
+      end
       ####################
 
       super
@@ -275,6 +277,11 @@ module OCCI
           halt 409 if kind.entities.select {|entity| entity.id == resource.id}.any?
           OCCI::Log.debug("Deploying resource with title #{resource.title} in backend #{@backend.class.name}")
           OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DEPLOY, resource)
+
+          t1 = request.base_url
+          t2 = request.script_name
+          t3 = resource.location
+
           @locations << request.base_url + request.script_name + resource.location
           status 201
         end

@@ -1,0 +1,47 @@
+default:
+  amqp:
+    connection_setting:
+      host: 10.108.16.15
+      port: 5672
+      password: stack
+
+    identifier: amqp.occi.localhost2.default
+
+  occi:
+    amqp: true
+
+production:
+  amqp:
+    connection_setting:
+      host: 10.108.16.15
+      port: 5672
+      password: stack
+
+    identifier: amqp.occi.localhost2.production
+
+  occi:
+    amqp: true
+
+development:
+  amqp:
+    connection_setting:
+      host: 10.108.16.15
+      port: 5672
+      password: stack
+
+    identifier: amqp.occi.localhost2.development
+
+  occi:
+    amqp: true
+
+test:
+  amqp:
+    connection_setting:
+      host: 10.108.16.15
+      port: 5672
+      password: stack
+
+    identifier: amqp.occi.localhost2.test
+
+  occi:
+    amqp: true
