@@ -1,0 +1,46 @@
+{
+    "mixins":[
+        {
+            "term":"simulationY",
+            "scheme":"http://cloud4e.de/occi/service/simulation#",
+            "title":"simulationY Instance",
+            "attributes":{
+                "de":{
+                    "cloud4e":{
+                        "simulationY": {
+                            "parameter1":{
+                                "Mutable":false,
+                                "Type":"string",
+                                "Default":"value1"
+                            },
+                            "parameter2":{
+                                "Mutable":false,
+                                "Type":"string",
+                                "Default":"value2"
+                            }
+                        }
+                    }
+                }
+            },
+            "actions":[
+                "http://schemas.ogf.org/occi/infrastructure/compute/action#foo"
+            ]
+        }
+    ],
+    "actions":[
+        {
+            "term":"foo",
+            "scheme":"http://cloud4e.de/occi/service/simulation/simulationY/action#",
+            "title":"foo on simulationY",
+            "attributes":{
+                "parameter1":{
+                    "Mutable":true,
+                    "Required":false,
+                    "Type":"string",
+                    "Default":"test"
+                }
+            }
+        }
+    ]
+
+}

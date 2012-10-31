@@ -1,0 +1,38 @@
+{
+    "mixins":[
+        {
+            "term":"large",
+            "scheme":"/occi/infrastructure/resource_tpl#",
+            "title":"Large Instance",
+            "related":[
+                "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+            ],
+            "attributes":{
+                "occi":{
+                    "compute":{
+                        "architecture":{
+                            "Mutable":false,
+                            "Type":"string",
+                            "Default":"x64"
+                        },
+                        "cores":{
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":2
+                        },
+                        "speed":{
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":2
+                        },
+                        "memory":{
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":7.5
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
