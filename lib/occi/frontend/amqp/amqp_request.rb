@@ -1,5 +1,5 @@
 require "occi/frontend/base/base_request"
-require "CGI"
+require "cgi"
 
 module OCCI
   module Frontend
