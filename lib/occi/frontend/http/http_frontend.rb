@@ -9,6 +9,8 @@ module OCCI
           super
         end
 
+        # @param [OCCI::Frontend::Http::HttpRequest] request
+        # @return [String]
         def check_authorization(request)
           #
           #  # TODO: investigate usage fo expiration time and session cookies

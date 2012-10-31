@@ -12,6 +12,8 @@ module OCCI
       attr_reader :response, :request
 
       #describe Initialize the AMQP Frontend
+      # @param [Boolean] standalone should the amqp frontend start in an thread or as standalone process
+      # @param [Object] identifier
       def initialize(standalone, identifier = Config.instance.amqp[:identifier])
 
         log("debug", __LINE__, "Initialize AMQPFrontend")
@@ -55,21 +57,27 @@ module OCCI
         end
       end
 
+      # @param [Integer] code
+      # @param [String] message
       def status (code, message = '')
         @response.status = code
       end
 
+      # @param [Integer] code
+      # @param [String] message
       def error (code, message = '')
         @response.error code, message
       end
 
+      # @param [Integer] code
+      # @param [String] message
       def halt (code, message = '')
         @response.status = code
       end
 
-      #describe binded methode to handle amqp message requests
-      #@param metadata
-      #@param payload
+      # @describe binded methode to handle amqp message requests
+      # @param [Hash] metadata
+      # @param [String] payload
       def handle_message(metadata, payload)
         log("debug", __LINE__, "Handle message: #{ payload }")
         begin
@@ -80,6 +88,9 @@ module OCCI
         end
       end
 
+      # @describe parse message and execute them
+      # @param [Hash] metadata
+      # @param [String] payload
       def parse_message(metadata, payload)
         @request  = OCCI::Frontend::Amqp::AmqpRequest.new(metadata, payload)
         @response = OCCI::Frontend::Amqp::AmqpResponse.new(@request, metadata)

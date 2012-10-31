@@ -7,14 +7,14 @@ module OCCI
       class AmqpRequest < OCCI::Frontend::Base::BaseRequest
         attr_reader :message_id, :type  #sollte in request_method umbenannt werden
 
-        #describe initialize amqp request
-        #@param [String] payload content of the message
-        #@param [AMQP::Metadata] information about the message
+        # @param [String] payload content of the message
+        # @param [Hash] metadata information about the message
         def initialize(metadata, payload)
           parse(metadata, payload)
         end
 
-        #describe grep header from metadata
+        # @describe grep header from metadata
+        # @return [Array]
         def env
           return {
               'HTTP_X_OCCI_ATTRIBUTE' => @header["X_OCCI_ATTRIBUTE"],
@@ -27,7 +27,9 @@ module OCCI
         private
         ##################################################################################################################
 
-        #describe parse information from the requested message
+        # @describe parse information from the requested message
+        # @param [Hash] metadata
+        # @param [String] payload content of the message
         def parse(metadata, payload)
           @body         = payload
           @params       = parse_params(metadata.headers["path_info"])
@@ -47,7 +49,9 @@ module OCCI
           @script_name      = ""
         end
 
-        #describe parse query from the given path_info
+        # @describe parse query from the given path_info
+        # @param [String] path_info
+        # @return [Hash]
         def parse_params(path_info)
           query  = path_info.split("?")[1]
           params = Hash.new

@@ -46,10 +46,14 @@ module OCCI
           end
         end
 
+        # @describe must implement be your own frontend (http, amqp)
+        # @param [OCCI::Frontend::Base::BaseRequest] request
         def check_authorization(request)
           raise "check_authorization is not implemented"
         end
 
+        # @describe tasks to be executed before the request is handled
+        # @param [OCCI::Frontend::Base::BaseRequest] request
         def before_execute(request)
           OCCI::Log.debug('### Check authorization ###')
           user = check_authorization(request)
@@ -58,9 +62,6 @@ module OCCI
           @client = @backend.client(user)
 
           OCCI::Log.debug('### Prepare response ###')
-
-          #response.accept = "application/occi+json,application/json,text/plain,text/uri-list,application/xml,text/xml,application/occi+xml"
-          #response.server = "rOCCI/#{OCCI::Server::VERSION} OCCI/1.1"
 
           OCCI::Log.debug('### Initialize response OCCI collection ###')
           @collection = OCCI::Collection.new
@@ -81,6 +82,9 @@ module OCCI
           OCCI::Log.debug('### Finished response initialization starting with processing the request ...')
         end
 
+        # @describe delegate request to the resource request
+        # @param [String] type
+        # @param [OCCI::Frontend::Base::BaseRequest] request
         def dynamic_execute(type, request)
           begin
             method(type).call(request)
@@ -91,6 +95,7 @@ module OCCI
           end
         end
 
+        # @param [OCCI::Frontend::Base::BaseRequest] request
         def after_execute(request)
           @collection ||= OCCI::Collection.new
           @locations  ||= Array.new
@@ -101,6 +106,14 @@ module OCCI
           return @collection, @locations
         end
 
+        private
+        ##################################################################################################################
+
+        # ---------------------------------------------------------------------------------------------------------------------
+        # Get request
+
+        # @describe discovery interface and Resource retrieval - returns all kinds, mixins and actions registered for the server or returns entities either below a certain path or belonging to a certain kind or mixin
+        # @param [OCCI::Frontend::Base::BaseRequest] request
         def get(request)
           if request.path_info == "/-/" or request.path_info == "/.well-known/org/ogf/occi/-/"
             OCCI::Log.info("### Listing all kinds, mixins and actions ###")
@@ -139,6 +152,11 @@ module OCCI
           end
         end
 
+        # ---------------------------------------------------------------------------------------------------------------------
+        # POST request
+
+        # @describe Create an instance appropriate to category field and optionally link an instance to another one
+        # @param [OCCI::Frontend::Base::BaseRequest] request
         def post(request)
           params = request.params
 
@@ -213,12 +231,20 @@ module OCCI
           end
         end
 
+        # ---------------------------------------------------------------------------------------------------------------------
+        # PUT request
+
+        # @param [OCCI::Frontend::Base::BaseRequest] request
         def put(request)
           # TODO implement pull
           log("debug", __LINE__, "Handle pull: #{ request }")
           @server.status 501
         end
 
+        # ---------------------------------------------------------------------------------------------------------------------
+        # DELETE request
+
+        # @param [OCCI::Frontend::Base::BaseRequest] request
         def delete(request)
           if request.path_info == "/-/" or request.path_info == "/.well-known/org/ogf/occi/-/"
             # Location references query interface => delete provided mixin
@@ -278,9 +304,9 @@ module OCCI
           end
         end
 
-        private
-        ##################################################################################################################
-
+        # @param [String] type
+        # @param [Integer] line
+        # @param [String] message
         def log(type, line, message)
 
           script_name =  File.basename(__FILE__);

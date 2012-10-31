@@ -13,8 +13,7 @@ module OCCI
         _define_parser
       end
 
-
-
+      # @param [Arguable] args
       def _parse(args)
         begin
           @opts.parse!(args)

@@ -6,7 +6,8 @@ module OCCI
     module Amqp
       class AmqpResponse < OCCI::Frontend::Base::BaseResponse
         attr_reader   :routing_key
-
+        # @param [OCCI::Frontend::Http:HttpRequest] request
+        # @param [Hash] metadata
         def initialize(request, metadata)
           @status       = 200
           @routing_key  = metadata.reply_to
@@ -14,18 +15,24 @@ module OCCI
           @media_type   = request.accept
         end
 
+        # @param [Integer] code
+        # @param [String] message
         def error (code , message = "")
           @message  = message
           @status     = code
           @is_error = true
         end
 
+        # @param [Integer] code
+        # @param [String] message
         def halt (code , message = "")
           @message  = message
           @status     = code
           @is_error = true
         end
 
+        # @describe generates payload for the response
+        # @return [String]
         def generate_output()
           if @is_error
             @media_type  = "text/plain"
@@ -57,6 +64,7 @@ module OCCI
           end
         end
 
+        # @return [Array]
         def reply_options
           return {
               :routing_key    => @routing_key,
@@ -66,6 +74,7 @@ module OCCI
           }
         end
 
+        # @return [Array]
         def header
           return {
               :status_code => @status,

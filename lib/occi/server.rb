@@ -14,10 +14,11 @@ module OCCI
       @log_subscriber = ActiveSupport::Notifications.subscribe("log") do |name, start, finish, id, payload|
         logger.log(payload[:level], payload[:message])
       end
-             #ServerAmqp
-
     end
 
+    # @param [String] frontend_identifier
+    # @param [Boolean] standalone
+    # @return [OCCI::Frontend::Server]
     def start(frontend_identifier = 'http', standalone = false)
       server_identifier = frontend_identifier.downcase + '_server'
 

@@ -79,7 +79,7 @@ module OCCI
       end
 
       # Resource retrieval
-      #-----------------------------------------------------------------------------------------------------------------------
+      # -----------------------------------------------------------------------------------------------------------------------
       # GET request
       # returns entities either below a certain path or belonging to a certain kind or mixin
       get '*' do
@@ -87,17 +87,21 @@ module OCCI
         @frontend.dynamic_execute 'get', @_request
       end
 
+      # ---------------------------------------------------------------------------------------------------------------------
+      # POST request
       post '/-/', '/.well-known/org/ogf/occi/-/' do
         @_request.params = params
         @frontend.dynamic_execute 'post', @_request
       end
 
-  # Create an instance appropriate to category field and optionally link an instance to another one
+      # Create an instance appropriate to category field and optionally link an instance to another one
       post '*' do
         @_request.params = params
         @frontend.dynamic_execute 'post', @_request
       end
 
+      # ---------------------------------------------------------------------------------------------------------------------
+      # PUT request
       put '*' do
         @_request.params = params
         @frontend.dynamic_execute 'put', @_request
@@ -105,7 +109,6 @@ module OCCI
 
       # ---------------------------------------------------------------------------------------------------------------------
       # DELETE request
-
       delete '/-/', '/.well-known/org/ogf/occi/-/' do
         @_request.params = params
         @frontend.dynamic_execute 'delete', @_request
@@ -114,6 +117,11 @@ module OCCI
       delete '*' do
         @_request.params = params
         @frontend.dynamic_execute 'delete', @_request
+      end
+
+      error do
+        OCCI::Log.error(sinatra.error)
+        'Sorry there was a nasty error - ' + env['sinatra.error'].name
       end
     end
   end

@@ -13,6 +13,8 @@ module OCCI
           super
         end
 
+        # @param [OCCI::Frontend::Amqp::AmqpRequest] request
+        # @return [String]
         def check_authorization(request)
           'anonymous'
         end
