@@ -44,7 +44,7 @@ module OCCI
 
           case @media_type
             when 'text/occi', 'text/plain', '*/*'
-              template = ERB.new( File.new(File.dirname(__FILE__) + "/../../../../views/collection.erb").read)
+              template = ERB.new(File.new(File.dirname(__FILE__) + "/../../../../views/collection.erb").read, nil, '>')
               return template.result(binding)
             when 'application/occi+json', 'application/json'
               return @collection.to_json
