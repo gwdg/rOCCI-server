@@ -1,0 +1,7 @@
+{
+    "resources":[
+        {
+            "kind":"http://rocci.info/server/backend#dummy"
+        }
+    ]
+}

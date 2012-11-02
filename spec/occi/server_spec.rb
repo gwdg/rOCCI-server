@@ -5,16 +5,17 @@ require 'logger'
 require 'json'
 require 'uri'
 
+require 'occi/frontend/http_server'
 require 'occi/server'
 require 'occi/model'
 
 VERSION_NUMBER=0.5
 
-describe OCCI::Server do
+describe OCCI::Frontend::HttpServer do
   include Rack::Test::Methods
 
   def app
-    OCCI::Server
+    OCCI::Frontend::HttpServer
   end
 
   describe "GET /-/" do
