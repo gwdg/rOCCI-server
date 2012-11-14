@@ -4,5 +4,5 @@ require 'rubygems'
 require 'sinatra'
 require 'occi/server'
 
-run OCCI::Server.new().start('amqp')
+run OCCI::Server.new().start('http')
 
