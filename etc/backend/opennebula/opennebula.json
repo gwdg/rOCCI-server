@@ -10,7 +10,7 @@
                                 "endpoint":"http://localhost:2633/RPC2",
                                 "admin":"occi",
                                 "password":"occi",
-                                "scheme":"http://my.occi.service/"
+                                "scheme":"http://my.occi.service"
                             }
                         }
                     }
