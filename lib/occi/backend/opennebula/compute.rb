@@ -241,6 +241,9 @@ module OCCI
 
         # ---------------------------------------------------------------------------------------------------------------------
         def compute_deploy(client, compute)
+
+          OCCI::Log.debug "Deploying #{compute.inspect}"
+
           os_tpl = compute.mixins.select { |mixin|
             OCCI::Log.debug("Compute deploy found mixin: #{mixin}")
             if mixin.kind_of? String
@@ -252,7 +255,7 @@ module OCCI
 
           os_tpl = @model.get_by_id(os_tpl)
 
-          OCCI::Log.debug("Compute deploy OS template: #{os_tpl}")
+          OCCI::Log.debug("Compute deploy OS template: #{os_tpl} #{os_tpl.nil? ? 'No template found!' : os_tpl.title}")
 
           backend_object = nil
 
@@ -260,7 +263,7 @@ module OCCI
           templates.info_all
 
           template = nil
-          unless os_tpl.nil?
+          if os_tpl
             template = templates.select { |template|
               OCCI::Log.debug("Going through ON template #{template['NAME']}")
               template['NAME'] == os_tpl.title
@@ -268,31 +271,30 @@ module OCCI
           end
 
           if template
-            vcpu_old = template['TEMPLATE/VCPU']
-            vcpu = compute.attributes.occi.compute.cores if compute.attributes.occi!.compute!.cores
-            memory_old = template['TEMPLATE/MEMORY']
-            memory = (compute.attributes.occi.compute.memory.to_f * 1000).to_i if compute.attributes.occi!.compute!.memory
-            architecture_old = template['TEMPLATE/ARCHITECTURE']
-            architecture = compute.attributes.occi.compute.architecture if compute.attributes.occi!.compute!.architecture
-            cpu_old = template['TEMPLATE/CPU']
-            cpu = compute.attributes.occi.compute.speed if compute.attributes.occi!.compute!.speed
 
-            unless vcpu.nil?
+	    if compute.attributes.occi.compute
+              vcpu = compute.attributes.occi.compute.cores if compute.attributes.occi.compute.cores
+              memory = (compute.attributes.occi.compute.memory.to_f * 1000).to_i if compute.attributes.occi.compute.memory
+              architecture = compute.attributes.occi.compute.architecture if compute.attributes.occi.compute.architecture
+              cpu = compute.attributes.occi.compute.speed if compute.attributes.occi.compute.speed
+	    end
+
+            if vcpu
               template.delete_element('TEMPLATE/VCPU')
               template.add_element('TEMPLATE', { "VCPU" => vcpu })
             end
 
-            unless memory.nil?
+            if memory
               template.delete_element('TEMPLATE/MEMORY')
               template.add_element('TEMPLATE', { "MEMORY" => memory })
             end
 
-            unless architecture.nil?
+            if architecture
               template.delete_element('TEMPLATE/ARCHITECTURE')
               template.add_element('TEMPLATE', { "ARCHITECTURE" => architecture })
             end
 
-            unless cpu.nil?
+            if cpu
               template.delete_element('TEMPLATE/CPU')
               template.add_element('TEMPLATE', { "CPU" => cpu })
             end
@@ -303,28 +305,31 @@ module OCCI
               template.add_element('TEMPLATE', "OCCI_MIXIN" => mixin)
             end
 
-            template.update(template.template_str)
-            OCCI::Log.debug "Template #{template.inspect}"
-
             vm_name = ""
             vm_name = compute.attributes.occi.core.title unless compute.attributes.occi.core.title.nil? or compute.attributes.occi.core.title.empty?
-            backend_id = template.instantiate vm_name
 
-            check_rc(backend_id)
+            # remove template-specific values 
+            template.delete_element('ID')
+            template.delete_element('UID')
+            template.delete_element('GID')
+            template.delete_element('UNAME')
+            template.delete_element('GNAME')
+            template.delete_element('REGTIME')
+            template.delete_element('PERMISSIONS')
+            template.delete_element('TEMPLATE/TEMPLATE_ID')
 
-            OCCI::Log.debug("Backend ID #{backend_id}") if backend_id
-            template.delete_element('TEMPLATE/OCCI_ID')
-            template.delete_element('TEMPLATE/OCCI_MIXIN')
-            template.delete_element('TEMPLATE/VCPU')
-            template.add_element('TEMPLATE', { "VCPU" => vcpu_old })
-            template.delete_element('TEMPLATE/MEMORY')
-            template.add_element('TEMPLATE', { "MEMORY" => memory_old })
-            template.delete_element('TEMPLATE/ARCHITECTURE')
-            template.add_element('TEMPLATE', { "ARCHITECTURE" => architecture_old })
-            template.delete_element('TEMPLATE/CPU')
-            template.add_element('TEMPLATE', { "CPU" => cpu_old })
-            template.update(template.template_str)
-            backend_object = VirtualMachine.new(VirtualMachine.build_xml(backend_id), client)
+            # set template name
+            template.delete_element('TEMPLATE/NAME')
+            template.add_element('TEMPLATE', 'NAME' => vm_name || "rOCCIVMGeneric")
+
+            OCCI::Log.debug "Template #{template.template_str}"
+
+            backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
+
+            rc = backend_object.allocate(template.template_str)
+            check_rc(rc)
+
+            OCCI::Log.debug("Return code from OpenNebula #{rc}") if rc != nil
           else
             backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
 
