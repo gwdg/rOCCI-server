@@ -254,7 +254,7 @@ module OCCI
           related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
           term    = backend_object['NAME'].downcase.chomp.gsub(/\W/, '_')
           # TODO: implement correct schema for service provider
-          scheme  = self.attributes.info.rocci.backend.opennebula.scheme + "occi/infrastructure/os_tpl#"
+          scheme  = self.attributes.info.rocci.backend.opennebula.scheme + "/occi/infrastructure/os_tpl#"
           title   = backend_object['NAME']
           mixin   = OCCI::Core::Mixin.new(scheme, term, title, nil, related)
           @model.register(mixin)
