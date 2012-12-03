@@ -98,26 +98,33 @@ module OCCI
         username     = @backend.get_username(cert_subject)
 
         if username.nil?
-          OCCI::Log.debug "User not found! Attempting to handle VOMS proxy certificates..."
+          OCCI::Log.debug "User not found! Attempting to handle proxy certificates..."
 
-          OCCI::Log.debug "Looking for GRST_CRED_* env variables..."
-          if request.env['GRST_CRED_0'] && request.env['GRST_CRED_AURI_0']
-            cert_subject = request.env['SSL_CLIENT_I_DN']
-
-            # Password should be an issuer DN with whitespace removed.
-            gridsite_subject = request.env['GRST_CRED_AURI_0'].gsub("dn:", '').gsub('+', ' ')
-
-            OCCI::Log.debug "Looking for: #{gridsite_subject} == #{cert_subject}"
-
-            if gridsite_subject == cert_subject
-              username = @backend.get_username(cert_subject)
+          OCCI::Log.debug "Looking for SSL_CLIENT_S_DN_CN_* env variables..."
+          last_cn = 0
+          (1..10).each do |i|
+            if request.env["SSL_CLIENT_S_DN_CN_#{i}"]
+              last_cn = i
             else
-              OCCI::Log.debug "Issuer DN doesn't match the DN from mod_gridsite, I won't accept this VOMS proxy!"
+              break
+            end
+          end
+
+          if last_cn > 0
+            cert_issuer = request.env['SSL_CLIENT_I_DN']
+            proxy_cn = request.env["SSL_CLIENT_S_DN_CN_#{last_cn}"]
+            proxy_subject = request.env['SSL_CLIENT_S_DN'].gsub("/CN=#{proxy_cn}", '')
+
+            OCCI::Log.debug "#{proxy_subject} == #{cert_issuer}?"
+
+            if proxy_subject == cert_issuer
+              username = @backend.get_username(cert_issuer)
+            else
+              OCCI::Log.debug "Issuer DN doesn't match stripped cert DN, I won't accept this proxy!"
               username = nil
             end
           else
-            OCCI::Log.debug "This is not a VOMS proxy certificate, there is nothing I can do!"
-            OCCI::Log.debug "Please, make sure that mod_gridsite is loaded and properly configured!"
+            OCCI::Log.debug "This is not a RFC compliant proxy certificate, there is nothing I can do!"
           end
         end
 
