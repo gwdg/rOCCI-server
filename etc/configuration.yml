@@ -8,7 +8,7 @@ default:
     identifier: amqp.occi.localhost2.default
 
   occi:
-    amqp: true
+    amqp: false
 
 production:
   amqp:
@@ -20,7 +20,7 @@ production:
     identifier: amqp.occi.localhost2.production
 
   occi:
-    amqp: true
+    amqp: false
 
 development:
   amqp:
@@ -32,7 +32,7 @@ development:
     identifier: amqp.occi.localhost2.development
 
   occi:
-    amqp: true
+    amqp: false
 
 test:
   amqp:
@@ -44,4 +44,4 @@ test:
     identifier: amqp.occi.localhost2.test
 
   occi:
-    amqp: true
+    amqp: false
