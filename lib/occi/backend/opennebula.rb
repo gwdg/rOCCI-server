@@ -121,7 +121,7 @@ module OCCI
         rc        = user_pool.info
         raise rc.message if check_rc(rc)
 
-        xpath = "USER[contains(PASSWORD, \"#{password.to_s.delete("\s")}\")]/NAME"
+        xpath = "USER[PASSWORD=\"#{password.to_s.delete("\s")}\"]/NAME"
         user_pool[xpath]
       end
 
