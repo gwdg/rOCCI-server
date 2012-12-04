@@ -121,8 +121,25 @@ module OCCI
         rc        = user_pool.info
         raise rc.message if check_rc(rc)
 
-        xpath = "USER[PASSWORD=\"#{password.to_s.delete("\s")}\"]/NAME"
-        user_pool[xpath]
+        password = password.to_s.delete("\s")
+
+        xpath = "USER[PASSWORD=\"#{password}\"]/NAME"
+        username = user_pool[xpath]
+
+        if username.nil?
+          user_pool.each do |x509_user|
+            x509_user["PASSWORD"].split('|').each do |x509_user_dn|
+              if x509_user_dn == password
+                username = x509_user["NAME"]
+                break
+              end
+            end if x509_user["AUTH_DRIVER"] == "x509"
+
+            break unless username.nil?
+          end
+        end
+
+        username
       end
 
       # Generate a new OpenNebula client for the target User, if the username
