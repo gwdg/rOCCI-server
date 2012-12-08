@@ -4,7 +4,6 @@ require 'sinatra/cross_origin'
 require 'sinatra/respond_with'
 
 require 'hashie/mash'
-require 'openssl'
 
 require 'occi'
 require 'occi/exceptions'
@@ -68,7 +67,7 @@ module OCCI
 
     def check_authorization
       #
-
+      OCCI::Log.debug "ENV: #{request.env}"
       #
       #  # TODO: investigate usage fo expiration time and session cookies
       #  expiration_time = Time.now.to_i + 1800
@@ -96,10 +95,11 @@ module OCCI
         OCCI::Log.debug "Looking for user #{cert_subject}"
         username     = @backend.get_username(cert_subject)
 
-        # Lookup failed with SSL_CLIENT_S_DN, we should try handling the certificate as a VOMS proxy
-        if username.nil?
-          OCCI::Log.debug "User not found! Attempting to handle proxy certificates..."
-          cert_subject = check_voms_proxy_cert
+        # Lookup failed with SSL_CLIENT_S_DN, try handling the certificate as a proxy
+        # This requires mod_gridsite ENV variables GRST_CRED_*
+        if username.nil? && request.env['GRST_CRED_0']
+          OCCI::Log.debug "Attempting to handle proxy certificates..."
+          cert_subject = check_proxy_cert
 
           OCCI::Log.debug "Looking for user #{cert_subject}"
           username     = @backend.get_username(cert_subject)
@@ -114,78 +114,46 @@ module OCCI
       end
     end
 
-    ## TODO: use modified mod_gridsite
-    def check_voms_proxy_cert
-      OCCI::Log.debug "Looking for SSL_CLIENT_S_DN_CN_* env variables..."
+    def check_proxy_cert
+      OCCI::Log.debug "Looking for GRST_CRED_{1,2} env variables..."
 
-      #
+      # Here is a sample of the structures parsed below:
+      # "GRST_CRED_0"=>"X509USER 1341878400 1376092799 1 /DC=org/DC=terena/DC=tcs/C=CZ/O=Masaryk University/CN=My Name"
+      # "GRST_CRED_1"=>"GSIPROXY 1354921680 1354965180 1 /DC=org/DC=terena/DC=tcs/C=CZ/O=Masaryk University/CN=My Name/CN=447432737"
+      # "GRST_CRED_2"=>"VOMS 140365809703311 1354965180 0 /vo.example.org/Role=NULL/Capability=NULL"
+
+      grst_cred_regexp = /(.+)\s(\d+)\s(\d+)\s(\d)\s(.+)/
+      grst_voms_regexp = /\/(.+)\/Role=(.+)\/Capability=(.+)/
       proxy_cert_subject = nil
 
-      # Proxy certs append CNs, we have to find the last one
-      last_cn = 0
-      (1..256).each do |i|
-        if request.env["SSL_CLIENT_S_DN_CN_#{i}"]
-          last_cn = i
-        else
-          break
-        end
-      end
+      # Proxy cert has to have GRST_CRED_1 set
+      if request.env['GRST_CRED_1']
+        # Get user's DN
+        proxy_cert_subject = grst_cred_regexp.match(request.env['GRST_CRED_0'])[5]
 
-      # Proxy cert has to have at least SSL_CLIENT_S_DN_CN_1
-      if last_cn > 0
+	# Get VOMS extension
+        if proxy_cert_subject && request.env['GRST_CRED_2']
+          # Parse extension and drop useless first element of MatchData
+          voms_ext = grst_cred_regexp.match request.env['GRST_CRED_2']
+          voms_ext = voms_ext.to_a.drop 1
 
-        # Just to be sure, we should get issuer's DN
-        # and compare it to subject's DN
-        cert_issuer = request.env['SSL_CLIENT_I_DN']
-        proxy_cn = request.env["SSL_CLIENT_S_DN_CN_#{last_cn}"]
-        proxy_cert_subject = request.env['SSL_CLIENT_S_DN'].gsub("/CN=#{proxy_cn}", '')
-
-        OCCI::Log.debug "#{proxy_cert_subject} == #{cert_issuer}?"
-        if proxy_cert_subject == cert_issuer
-
-          # SSL_CLIENT_CERT should contain client's certificate
-          if request.env['SSL_CLIENT_CERT']
-
-            # Read client's certificate
-            proxy_cert = OpenSSL::X509::Certificate.new request.env['SSL_CLIENT_CERT']
-            OCCI::Log.debug "Proxy cert extensions: #{proxy_cert.extensions.inspect}"
-
-            # Iterate through available extensions
-            voms_ary = nil
-            proxy_cert.extensions.each do |ext|
-
-              # Find VOMS extensions using their OID
-              if ext.oid == "1.3.6.1.4.1.8005.100.100.5"
-
-                # Parse group and role from cert extension
-                # TODO: use ASN1 or mod_gridsite
-                voms_ary = /\*\/(.+)\/Role=(.+)\/Capability=NULL/.match ext.value
-                OCCI::Log.debug "VOMS ext: group=#{voms_ary[1]} role=#{voms_ary[2]}"
-
-              else
-                OCCI::Log.debug "Gen. ext: #{ext.oid} = #{ext.value}"
-              end
-
-            end
+          if voms_ext && voms_ext[0] == "VOMS"
+            # Parse group, role and capability from VOMS extension
+            voms_ary = grst_voms_regexp.match voms_ext[4]
 
             # Append found values to user's DN
-            if voms_ary && voms_ary[1] && voms_ary[2]
-              proxy_cert_subject = proxy_cert_subject << "/VO=#{voms_ary[1]}/Role=#{voms_ary[2]}/Capability=NULL"
-            else
-              OCCI::Log.debug "This proxy certificate doesn't contain VOMS extensions!"
+            if voms_ary && voms_ary[1] && voms_ary[2] && voms_ary[3]
+              OCCI::Log.debug "VOMS ext: vo=#{voms_ary[1]} role=#{voms_ary[2]} capability=#{voms_ary[3]}"
+              proxy_cert_subject = proxy_cert_subject << "/VO=#{voms_ary[1]}/Role=#{voms_ary[2]}/Capability=#{voms_ary[3]}"
             end
-
           else
-            OCCI::Log.debug "SSL_CLIENT_CERT is not available, add +ExportCertData to SSLOptions!"
+            OCCI::Log.warn "This VOMS extension seems to be malformed! #{request.env['GRST_CRED_2']}"
           end
-
         else
-          OCCI::Log.debug "Issuer DN doesn't match stripped cert DN, I won't accept this proxy!"
-          proxy_cert_subject = nil
+          OCCI::Log.debug "This proxy certificate doesn't contain VOMS extensions!"
         end
-
       else
-        OCCI::Log.debug "This is not a RFC compliant proxy certificate, there is nothing I can do!"
+        OCCI::Log.debug "This is not a RFC compliant proxy certificate!"
       end
 
       proxy_cert_subject
