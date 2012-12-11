@@ -59,9 +59,18 @@ module OCCI
 
       after do
         @collection, @locations = @frontend.after_execute @_request
+        @collection ||= OCCI::Collection.new
+        @locations  ||= Array.new
+        OCCI::Log.debug('### Rendering response ###')
+        OCCI::Log.debug("### Collection : \n #{@collection.to_json}")
         respond_to do |f|
           f.txt { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
           f.on('*/*') { erb :collection, :locals => { :collection => @collection, :locations => @locations } }
+          f.on('text/occi') do
+            response.header.merge! @collection.to_header if @locations.empty?
+            response.header['X-OCCI-Location'] = @locations.join ',' if @locations.any?
+            'OK'
+          end
           # f.html { haml :collection, :locals => {:collection => @collection} }
           f.json { @collection.to_json }
           f.on('application/occi+json') { @collection.to_json }
