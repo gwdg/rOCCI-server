@@ -320,7 +320,7 @@ module OCCI
           status 200
         end
       elsif category.kind_of?(OCCI::Core::Kind)
-        @server.status 400
+        status 400
         @request_collection.resources << OCCI::Core::Resource.new(category.type_identifier) if @request_collection.resources.empty?
 
         @request_collection.resources.each do |resource|
