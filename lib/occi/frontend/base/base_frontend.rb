@@ -203,6 +203,9 @@ module OCCI
               end
             elsif category.kind_of?(OCCI::Core::Kind)
               @server.status 400
+
+              @request_collection.resources << OCCI::Core::Resource.new(category.type_identifier) if @request_collection.resources.empty?
+
               @request_collection.resources.each do |resource|
                 kind = @backend.model.get_by_id category.type_identifier
 
