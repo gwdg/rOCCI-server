@@ -12,7 +12,7 @@ Requirements
 The following setup is required
 * Ruby >= 1.8.7
 * Bundler gem installed (use ```gem install bundler```)
-* OpenNebula >= 3.2 if the OpenNebula backend is used
+* OpenNebula >= 3.4 if the OpenNebula backend is used
 
 The following setup is recommended
 * usage of the Ruby Version Manger (RVM)
@@ -105,6 +105,47 @@ Usage
 
 rOCCI-server is using passenger to be deployed into a webserver.
 
+#### RVM
+
+Detailed information on setting up and using RVM can be found on the [RVM website](http://rvm.io/).
+
+Do **NOT** install RVM as root, you should always use a different user account with sudo privileges.
+This is **NOT** just an annoying complication, RVM will **NOT** work properly when installed from the
+root account! We will use `rocci` user account. 
+
+Install RVM
+
+    curl -L https://get.rvm.io | sudo bash -s stable
+
+Add `rocci` user to `rvm` group - he will be responsible for installing new rubies.
+
+    usermod -a -G rvm rocci
+
+Log out and log back in (always as `rocci`) and make sure that RVM is working
+
+    rvm info
+
+Check RVM requirements and install missing packages
+
+    rvm requirements
+
+Setup RVM for rOCCI-server (change the ruby version to your favorite one)
+
+    cd rOCCI-server
+    rvm install ruby-1.9.3
+    rvm --rvmrc --create ruby-1.9.3@rOCCI-server
+
+Reload RVM configuration for this directory
+
+    cd ..
+    cd rOCCI-server
+
+Install gems using bundler
+
+    bundle install
+
+Proceed with Passenger configuration
+
 #### Passenger
 
 rOCCI-server will work with the default passenger setup even though this setup is not recommended for production. To use
@@ -119,37 +160,17 @@ rOCCI-server is running
 
 To install rOCCI-server with RVM and either Nginx or Apache follow the steps below.
 
-#### RVM
-
-Detailed information on setting up and using RVM can be found on the [RVM website](http://rvm.io/).
-
-Install RVM as sudo user (e.g. '''NOT''' root)
-
-    curl -L https://get.rvm.io | sudo bash -s stable
-
-Select a user as a manager, and add him to rvm group - he will be responsible for installing new rubies.
-
-    usermod -a -G rvm $USER
-
-If you intend to manage rOCCI-server from a different user account, you need to run the following command and logout
-and login again
-
-    rvm user gemsets
-
-Setup RVM for rOCCI-server (change the ruby version to your favorite one)
-
-    cd rOCCI-server
-    rvm install ruby-1.9.3
-    rvm --rvmrc --create ruby-1.9.3@rOCCI-server
-
 #### Nginx
 
-Note: If you intend to use several CAs for client certificate validation, you should use Apache as Nginx currently only
+**Warning:** If you are running SL6, `rvmsudo` won't work properly until you add paths from `rvm info | grep PATH` to
+`Defaults    secure_path = ...` using `visudo`.
+
+**Note:** If you intend to use several CAs for client certificate validation, you should use Apache as Nginx currently only
 allows to configure one CA file to use for client certificate validation.
 
 Let passenger guide you through installing and or configuring Nginx (for apache see below) for you
 
-    bundle exec passenger-install-nginx-module
+    bundle exec rvmsudo passenger-install-nginx-module
 
 Edit the Nginx configuration (e.g. `/opt/nginx/conf/nginx.conf`) and insert a new `server` entry for the rOCCI server.
 To use SSL you need a valid server certificate and for client verification you need a file containing all CAs you want
@@ -184,6 +205,10 @@ should look like this (adapt to your settings, especially $USER! and server_name
 You have to start/restart Nginx before you can use rOCCI-server!
 
 #### Apache
+
+**Note:** There is no need to run this command with `rvmsudo`, Apache2 module will be compiled locally
+and the script will provide you with additional LoadModule lines that you have to manually add to Apache's
+configuration files.
 
 Let passenger guide you through installing and configuring Apache2
 
