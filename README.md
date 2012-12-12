@@ -31,6 +31,12 @@ Extract downloaded file, remove it and change to rOCCI-server directory
     rm gwdg-rOCCI-server-*.zip
     cd gwdg-rOCCI-server-*
 
+or clone this GIT repository and switch to a numbered branch, e.g. stable `0.5.x`
+
+    git clone git://github.com/gwdg/rOCCI-server.git
+    cd rOCCI-server
+    git checkout 0.5.x
+
 Install dependencies
 
     bundle install --deployment
@@ -109,7 +115,7 @@ rOCCI-server is using passenger to be deployed into a webserver.
 
 Detailed information on setting up and using RVM can be found on the [RVM website](http://rvm.io/).
 
-Do **NOT** install RVM as root, you should always use a different user account with sudo privileges.
+**Warning:** Do **NOT** install RVM as root, you should always use a different user account with sudo privileges.
 This is **NOT** just an annoying complication, RVM will **NOT** work properly when installed from the
 root account! We will use `rocci` user account. 
 
