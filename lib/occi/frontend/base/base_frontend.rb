@@ -215,6 +215,9 @@ module OCCI
                   return
                 end
 
+                # check resource attributes against their definition and set default attributes
+                resource.check @backend.model
+
                 OCCI::Log.debug("Deploying resource with title #{resource.title} in backend #{@backend.class.name}")
                 OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DEPLOY, resource)
 
