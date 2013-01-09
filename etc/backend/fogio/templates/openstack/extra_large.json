@@ -1,0 +1,38 @@
+{
+    "mixins":[
+        {
+            "term":"extra_large",
+            "scheme":"/occi/infrastructure/resource_tpl#",
+            "title":"Extra Large Instance",
+            "related":[
+                "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+            ],
+            "attributes":{
+                "occi":{
+                    "compute":{
+                        "architecture":{
+                            "Mutable":false,
+                            "Type":"string",
+                            "Default":"x64"
+                        },
+                        "cores":{
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":4
+                        },
+                        "speed":{
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":2
+                        },
+                        "memory":{
+                            "Mutable":false,
+                            "Type":"number",
+                            "Default":15
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

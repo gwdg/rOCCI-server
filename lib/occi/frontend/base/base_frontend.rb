@@ -14,6 +14,7 @@ module OCCI
 
         ACTIVE_BACKENDS = {
             'dummy'      => {:backend => 'Dummy'     , :register => true, :instance => true},
+            'fogio'      => {:backend => 'Fogio'     , :register => true, :instance => true},
             'opennebula' => {:backend => 'OpenNebula', :register => true, :instance => true},
             'ec2'        => {:backend => 'EC2'       , :register => true, :instance => false},
         }
