@@ -1,7 +1,19 @@
 {
     "resources":[
         {
-            "kind":"http://rocci.info/server/backend#fogio"
+            "kind":"http://rocci.info/server/backend#fogio",
+            "attributes":{
+                "info":{
+                    "rocci":{
+                        "backend":{
+                           "fogio":{
+                               "provider":"openstack",
+                               "endpoint":"endpoint to openstack/token"
+                           }
+                        }
+                    }
+                }
+            }
         }
     ]
 }

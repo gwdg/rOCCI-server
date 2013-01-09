@@ -24,6 +24,7 @@ require 'hashie/hash'
 require 'occi/log'
 require 'uuidtools'
 require 'pstore'
+require 'fog'
 
 module OCCI
   module Backend
@@ -39,23 +40,48 @@ module OCCI
         kind.related = %w{http://rocci.org/serer#backend}
         kind.title   = "rOCCI fog.io backend"
 
+        kind.attributes.info!.rocci!.backend!.fogio!.provider!.Default     = 'openstack'
+        kind.attributes.info!.rocci!.backend!.fogio!.provider!.Pattern     = '[a-zA-Z0-9_]*'
+        kind.attributes.info!.rocci!.backend!.fogio!.provider!.Description = 'Management Middelware'
+
+        kind.attributes.info!.rocci!.backend!.fogio!.endpoint!.Required = true
+
         kind.attributes.info!.rocci!.backend!.fogio!.scheme!.Default = 'http://my.occi.service/'
 
         kind
       end
 
       def initialize(kind='http://rocci.org/server#backend', mixins=nil, attributes=nil, links=nil)
+        #TODO openstack_api_key and openstack_username per authorization
+        @provider = attributes.info.rocci.backend.fogio.provider
+        @endpoint = attributes.info.rocci.backend.fogio.endpoint
+
+        #TODO make it independent from openstack
+        @credentials = {:provider => @provider, :openstack_auth_url => @endpoint, :openstack_auth_token => "f225f1902948459c97c12f8309f36f31"}
+
         scheme = attributes.info!.rocci!.backend!.fogio!.scheme if attributes
         scheme ||= self.class.kind_definition.attributes.info.rocci.backend.fogio.scheme.Default
         scheme.chomp!('/')
         @model = OCCI::Model.new
         @model.register_core
         @model.register_infrastructure
-        @model.register_files('etc/backend/fogio/model', scheme)
-        @model.register_files('etc/backend/fogio/templates', scheme)
+        @model.register_files("etc/backend/fogio/model/infrastructur/#{@provider}", scheme)
+        @model.register_files("etc/backend/fogio/templates/#{@provider}", scheme)
+
+        require "occi/backend/fogio/#{@provider}/compute"
+        @compute = class_from_string("OCCI::Backend::Fogio::#{@provider.camelize}::Compute").new(@model)
+        @network = class_from_string("OCCI::Backend::Fogio::#{@provider.camelize}::Network").new(@model)
+        @storage = class_from_string("OCCI::Backend::Fogio::#{@provider.camelize}::Storage").new(@model)
+
         OCCI::Backend::Manager.register_backend(OCCI::Backend::Fogio, OCCI::Backend::Fogio::OPERATIONS)
 
         super(kind, mixins, attributes, links)
+      end
+
+      def class_from_string(str)
+        str.split('::').inject(Object) do |mod, class_name|
+          mod.const_get(class_name)
+        end
       end
 
       def authorized?(username, password)
@@ -68,6 +94,11 @@ module OCCI
       # @return [Client]
       def client(username='default')
         username ||= 'default'
+
+        #TODO return fogio client
+        fog_client = Fog::Compute.new(@credentials)
+
+
         client = PStore.new(username)
         client.transaction do
           client['resources'] ||= []
@@ -130,6 +161,17 @@ module OCCI
 
       # ---------------------------------------------------------------------------------------------------------------------
       def register_existing_resources(client)
+        #TODO use Client later
+        fog_client = Fog::Compute.new(@credentials)
+
+        #TODO remove Testing stuff
+        servers = fog_client.servers
+        flavors = fog_client.flavors
+
+
+
+
+
         client.transaction(read_only=true) do
           entities = client['resources'] + client['links']
           entities.each do |entity|

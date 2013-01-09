@@ -15,6 +15,9 @@ gem "oca", "~>3.4.0"
 # occi_amqp
 gem "amqp"
 
+# fogio
+gem "fog"
+
 # sinatra and related
 gem "sinatra"
 gem "sinatra-contrib"
