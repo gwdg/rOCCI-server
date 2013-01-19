@@ -16,7 +16,11 @@ module OCCI
         # @param [OCCI::Frontend::Amqp::AmqpRequest] request
         # @return [String]
         def check_authorization(request)
-          'anonymous'
+          if request.env['HTTP_X_AUTH_TOKEN']
+            username = @backend.get_username(request.env['HTTP_X_AUTH_TOKEN'], "KEYSTONE")
+          end
+
+          username ||= 'anonymous'
         end
       end
     end

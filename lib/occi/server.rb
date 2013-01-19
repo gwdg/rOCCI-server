@@ -1,5 +1,6 @@
 require 'occi'
 require 'occi/exceptions'
+require "occi/config"
 
 Encoding.default_external = Encoding::UTF_8 if defined? Encoding
 Encoding.default_internal = Encoding::UTF_8 if defined? Encoding
@@ -26,6 +27,12 @@ module OCCI
       server_clazz = server_identifier.camelize
 
       @server = OCCI::Frontend.const_get(server_clazz).new(standalone)
+
+      if frontend_identifier != 'amqp' && Config.instance.occi[:amqp]
+        require "occi/frontend/amqp_server"
+        OCCI::Frontend::AmqpServer.new(false)
+      end
+
       @server
     end
   end

@@ -8,7 +8,8 @@
                         "backend":{
                            "fogio":{
                                "provider":"openstack",
-                               "endpoint":"endpoint to openstack/token"
+                               "endpoint":"http://10.108.16.13:5000/v2.0/tokens",
+                               "token": "e9e480b452644202bc1ec8614959775b"
                            }
                         }
                     }

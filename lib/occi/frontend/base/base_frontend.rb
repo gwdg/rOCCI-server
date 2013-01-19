@@ -11,6 +11,9 @@ module OCCI
         VERSION = "0.5.0"
 
         attr_accessor :server
+        attr_reader :backend
+
+        @@static_backend = nil
 
         ACTIVE_BACKENDS = {
             'dummy'      => {:backend => 'Dummy'     , :register => true, :instance => true},
@@ -22,29 +25,34 @@ module OCCI
         def initialize()
           @model  = OCCI::Model.new
 
-          collection   = Hashie::Mash.new(JSON.parse(File.read(File.dirname(__FILE__) + "/../../../../etc/backend/default.json")))
-          backend      = collection.resources.first
-          backend_name = backend.kind[(backend.kind.index("#") + 1) .. -1]
+          if @@static_backend.nil?
 
-          unless ACTIVE_BACKENDS.has_key?(backend_name)
-            raise "Backend #{backend.kind} unknown"
+            collection   = Hashie::Mash.new(JSON.parse(File.read(File.dirname(__FILE__) + "/../../../../etc/backend/default.json")))
+              backend      = collection.resources.first
+              backend_name = backend.kind[(backend.kind.index("#") + 1) .. -1]
+
+              unless ACTIVE_BACKENDS.has_key?(backend_name)
+                raise "Backend #{backend.kind} unknown"
+              end
+
+              require 'occi/backend/' + backend_name.downcase
+              backend_clazz = ACTIVE_BACKENDS[backend_name][:backend]
+
+              if ACTIVE_BACKENDS[backend_name][:register]
+                @model.register(OCCI::Backend.const_get(backend_clazz).kind_definition)
+              end
+
+              if ACTIVE_BACKENDS[backend_name][:instance]
+                @@static_backend = OCCI::Backend.const_get(backend_clazz).new(
+                    backend.kind,
+                    backend.mixins,
+                    backend.attributes,
+                    backend.links
+                )
+              end
           end
 
-          require 'occi/backend/' + backend_name.downcase
-          backend_clazz = ACTIVE_BACKENDS[backend_name][:backend]
-
-          if ACTIVE_BACKENDS[backend_name][:register]
-            @model.register(OCCI::Backend.const_get(backend_clazz).kind_definition)
-          end
-
-          if ACTIVE_BACKENDS[backend_name][:instance]
-            @backend = OCCI::Backend.const_get(backend_clazz).new(
-                backend.kind,
-                backend.mixins,
-                backend.attributes,
-                backend.links
-            )
-          end
+          @backend = @@static_backend
         end
 
         # @describe must implement be your own frontend (http, amqp)
@@ -162,11 +170,13 @@ module OCCI
           params = request.params
 
           if request.path_info == "/-/" or request.path_info == "/.well-known/org/ogf/occi/-/"
-            logger.info("## Creating user defined mixin ###")
+            OCCI::Log.info("## Creating user defined mixin ###")
             raise "Mixin already exists!" if @backend.model.get(@request_collection).mixins.any?
+            @request_collection.actions.each do |action|
+              @backend.register_action(action)
+            end
             @request_collection.mixins.each do |mixin|
-              @backend.model.register(mixin)
-              # TODO: inform backend about new mixin
+              @backend.register_mixin(mixin)
             end
           else
             OCCI::Log.debug('### POST request processing ...')
@@ -205,7 +215,25 @@ module OCCI
             elsif category.kind_of?(OCCI::Core::Kind)
               @server.status 400
 
-              @request_collection.resources << OCCI::Core::Resource.new(category.type_identifier) if @request_collection.resources.empty?
+              @request_collection.resources << OCCI::Core::Resource.new(category.type_identifier) if @request_collection.resources.empty? && @request_collection.links.empty?
+
+              @request_collection.links.each do |link|
+                kind = @backend.model.get_by_id category.type_identifier
+
+                # if resource with ID already exists then return 409 Conflict
+                if kind.entities.select {|entity| entity.id == link.id}.any?
+                  @server.status 409
+                  return
+                end
+
+                link.check @backend.model
+
+                OCCI::Log.debug("Link resource #{link.target} with #{link.source}")
+                OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_LINK, link)
+
+                @locations << request.base_url + request.script_name + link.location
+                @server.status 201
+              end
 
               @request_collection.resources.each do |resource|
                 kind = @backend.model.get_by_id category.type_identifier

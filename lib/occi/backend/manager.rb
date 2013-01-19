@@ -50,6 +50,7 @@ module OCCI
 
     # ---------------------------------------------------------------------------------------------------------------------
     RESOURCE_DEPLOY       = :deploy
+    RESOURCE_LINK         = :link
     RESOURCE_UPDATE_STATE = :update_state
     RESOURCE_DELETE       = :delete
 
@@ -115,7 +116,12 @@ module OCCI
         OCCI::Log.debug("Delegating invocation of action [#{action}] on resource [#{resource}] with parameters [#{parameters}] to backend...")
 
         # Use action term as ident
-        operation = action.term
+        if resource.kind == "http://schemas.ogf.org/occi/infrastructure#amqplink"
+          operation = "amqp_call"
+          parameters = {"action" => action, "parameters" => parameters}
+        else
+          operation = action.term
+        end
 
         # TODO: define some convention for result handling!
         signal_resource(client, backend, operation, resource, parameters)

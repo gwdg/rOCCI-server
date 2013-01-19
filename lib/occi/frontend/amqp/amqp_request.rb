@@ -21,6 +21,7 @@ module OCCI
               'HTTP_X_OCCI_LOCATION'  => @header["X_OCCI_LOCATION"],
               'HTTP_CATEGORY'         => @header["CATEGORY"],
               'HTTP_LINK'             => @header["LINK"],
+              'HTTP_X_AUTH_TOKEN'     => @header["X-AUTH-TOKEN"]
           }
         end
 

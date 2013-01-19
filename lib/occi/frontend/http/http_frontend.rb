@@ -52,6 +52,11 @@ module OCCI
 
             halt 403, "User with DN #{cert_subject} could not be authenticated" if username.nil?
             username
+          elsif request.env['HTTP_X_AUTH_TOKEN']
+            username = @backend.get_username(request.env['HTTP_X_AUTH_TOKEN'], "KEYSTONE")
+            #TODO make better implementation
+            @backend.authorized?(username, request.env['HTTP_X_AUTH_TOKEN'])
+            username
           else
             'anonymous'
           end

@@ -1,0 +1,23 @@
+{
+    "kinds":[
+        {
+            "term":"amqplink",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure#",
+            "title":"Link an amqp queue",
+            "attributes":{
+                "occi":{
+                    "amqplink":{
+                        "queue" :{
+                            "Description":"queue for publish messages",
+                            "Type":"string",
+                            "Required": true
+                        }
+                    }
+                }
+            },
+            "related":[
+                "http://schemas.ogf.org/occi/core#link"
+            ]
+        }
+    ]
+}

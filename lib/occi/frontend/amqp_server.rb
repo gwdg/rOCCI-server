@@ -49,6 +49,8 @@ module OCCI
 
             @reply_producer = OCCI::OCCI_AMQP::AmqpProducer.new(channel, channel.default_exchange)
 
+            @frontend.backend.amqp_producer = @reply_producer
+
             log("debug", __LINE__, "AMQP Connection ready")
           end
 

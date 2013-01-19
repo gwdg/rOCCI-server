@@ -1,0 +1,27 @@
+{
+    "mixins":[
+        {
+            "term":"simulation",
+            "scheme":"http://cloud4e.org/occi/service#",
+            "title":"Cloud4e specific Simulation attributes",
+            "attributes":{
+                "org":{
+                    "cloud4e":{
+                        "service":{
+                            "simulation":{
+                                "id" :{
+                                    "Description":"UUID for the Simulation Image",
+                                    "Type":"string",
+                                    "Required": true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "related":[
+                "http://schemas.ogf.org/occi/infrastructure#compute"
+            ]
+        }
+    ]
+}

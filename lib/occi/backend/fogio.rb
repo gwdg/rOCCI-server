@@ -33,6 +33,7 @@ module OCCI
     class Fogio < OCCI::Core::Resource
 
       attr_reader :model
+      attr_accessor :amqp_producer
 
       def self.kind_definition
         kind = OCCI::Core::Kind.new('http://rocci.info/server/backend#', 'fogio')
@@ -53,11 +54,12 @@ module OCCI
 
       def initialize(kind='http://rocci.org/server#backend', mixins=nil, attributes=nil, links=nil)
         #TODO openstack_api_key and openstack_username per authorization
-        @provider = attributes.info.rocci.backend.fogio.provider
-        @endpoint = attributes.info.rocci.backend.fogio.endpoint
+        @provider    = attributes.info.rocci.backend.fogio.provider
+        @endpoint    = attributes.info.rocci.backend.fogio.endpoint
+        @admin_token = attributes.info.rocci.backend.fogio.token
 
         #TODO make it independent from openstack
-        @credentials = {:provider => @provider, :openstack_auth_url => @endpoint, :openstack_auth_token => "f225f1902948459c97c12f8309f36f31"}
+        @credentials = {:provider => @provider, :openstack_auth_url => @endpoint, :openstack_auth_token => @admin_token, :openstack_tenant => "rocci"}
 
         scheme = attributes.info!.rocci!.backend!.fogio!.scheme if attributes
         scheme ||= self.class.kind_definition.attributes.info.rocci.backend.fogio.scheme.Default
@@ -65,13 +67,19 @@ module OCCI
         @model = OCCI::Model.new
         @model.register_core
         @model.register_infrastructure
-        @model.register_files("etc/backend/fogio/model/infrastructur/#{@provider}", scheme)
+        @model.register_files("etc/backend/fogio/model/infrastructure/#{@provider}", scheme)
+        @model.register_files("etc/backend/fogio/model/infrastructure/amqp", scheme)
+        @model.register_files("etc/backend/fogio/model/service", scheme)
         @model.register_files("etc/backend/fogio/templates/#{@provider}", scheme)
 
         require "occi/backend/fogio/#{@provider}/compute"
+        require "occi/backend/fogio/#{@provider}/network"
+        require "occi/backend/fogio/#{@provider}/storage"
+        require "occi/backend/fogio/cloud4e/simulation"
         @compute = class_from_string("OCCI::Backend::Fogio::#{@provider.camelize}::Compute").new(@model)
         @network = class_from_string("OCCI::Backend::Fogio::#{@provider.camelize}::Network").new(@model)
         @storage = class_from_string("OCCI::Backend::Fogio::#{@provider.camelize}::Storage").new(@model)
+        @simulation = class_from_string("OCCI::Backend::Fogio::Cloud4e::Simulation").new(@model)
 
         OCCI::Backend::Manager.register_backend(OCCI::Backend::Fogio, OCCI::Backend::Fogio::OPERATIONS)
 
@@ -85,7 +93,9 @@ module OCCI
       end
 
       def authorized?(username, password)
-        true
+        #TODO make it intependent from openstack
+        #test= Fog::OpenStack.authenticate_v2({:openstack_auth_token => @token, :openstack_auth_uri => URI.parse(@endpoint), :openstack_tenant => "rocci"})
+        #test = test
       end
 
       # Generate a new fog.io client for the target User, if the username
@@ -95,21 +105,52 @@ module OCCI
       def client(username='default')
         username ||= 'default'
 
+        @pstore = PStore.new(username)
+        @pstore.transaction do
+          @pstore['links']   ||= []
+          @pstore['mixins']  ||= []
+          @pstore['actions'] ||= []
+        end
+
+        #register saved mixins and actions
+        @pstore.transaction(read_only=true) do
+          actions = @pstore['actions']
+
+          actions.each do |action|
+            @model.register(action)
+          end
+
+          mixins = @pstore['mixins']
+
+          mixins.each do |mixin|
+            @model.register(mixin)
+          end
+        end
+
         #TODO return fogio client
         fog_client = Fog::Compute.new(@credentials)
-
-
-        client = PStore.new(username)
-        client.transaction do
-          client['resources'] ||= []
-          client['links'] ||= []
-        end
-        client
+        fog_client
       end
 
-      def get_username(cert_subject)
-        cn = cert_subject [/.*\/CN=([^\/]*).*/,1]
-        user = cn.downcase.gsub ' ','' if cn
+      #def get_username(cert_subject)
+      #  cn = cert_subject [/.*\/CN=([^\/]*).*/,1]
+      #  user = cn.downcase.gsub ' ','' if cn
+      #  user ||= 'default'
+      #end
+
+      def get_username(subject, type="CERT")
+        test = test
+        case(type)
+          when "KEYSTONE"
+            @token = subject
+            @credentials = {:provider => @provider, :openstack_auth_url => @endpoint, :openstack_auth_token => subject, :openstack_tenant => "rocci"}
+            #TODO geht Username over check
+            user ||= 'anonymous'
+            #test= Fog::OpenStack.authenticate_v2({:openstack_auth_token => @token, :openstack_auth_uri => URI.parse(@endpoint), :openstack_tenant => "rocci"})
+          else
+            cn = cert_subject [/.*\/CN=([^\/]*).*/,1]
+            user = cn.downcase.gsub ' ','' if cn
+        end
         user ||= 'default'
       end
 
@@ -130,6 +171,17 @@ module OCCI
           :stop => :compute_action_stop,
           :restart => :compute_action_restart,
           :suspend => :compute_action_suspend
+      }
+
+      OPERATIONS["http://cloud4e.org/occi/service#simulation"] = {
+          :deploy => :simulation_deploy,
+          :delete => :simulation_delete
+      }
+
+      OPERATIONS["http://schemas.ogf.org/occi/infrastructure#amqplink"] = {
+          :link   => :amqplink_link,
+          :delete => :amqplink_delete,
+          :amqp_call => :amqplink_call
       }
 
       OPERATIONS["http://schemas.ogf.org/occi/infrastructure#network"] = {
@@ -161,39 +213,80 @@ module OCCI
 
       # ---------------------------------------------------------------------------------------------------------------------
       def register_existing_resources(client)
-        #TODO use Client later
-        fog_client = Fog::Compute.new(@credentials)
+        #@network.register_all_instances
+        #@storage.register_all_instances
+        @compute.register_all_instances client
 
-        #TODO remove Testing stuff
-        servers = fog_client.servers
-        flavors = fog_client.flavors
-
-
-
-
-
-        client.transaction(read_only=true) do
-          entities = client['resources'] + client['links']
+        @pstore.transaction(read_only=true) do
+          entities = @pstore['links']
           entities.each do |entity|
             kind = @model.get_by_id(entity.kind)
             kind.entities << entity
+
+            #Link zu seiner Resource hinzufügen
+            add_actions_from_link(entity)
+            add_link_to_resource(entity)
+
             OCCI::Log.debug("#### Number of entities in kind #{kind.type_identifier}: #{kind.entities.size}")
-          end                         
+          end
+        end
+      end
+
+      def add_actions_from_link(link)
+        if link.mixins.any?
+          #has mixins
+
+          link.mixins.each do |key, value|
+            mixin = @model.get_by_id key
+            if mixin.actions.any?
+              mixin.actions.each do |key2, value2|
+                link.actions << key2
+              end
+            end
+            link.actions.uniq!
+          end
+        end
+      end
+
+      def add_link_to_resource(link)
+        source = link.source
+        kind = @model.get_by_location(source.rpartition('/').first + '/')
+        uuid = source.rpartition('/').last
+
+        resource = (kind.entities.select { |entity| entity.id == uuid } if kind.entity_type == OCCI::Core::Resource).first
+
+        if !resource.nil?
+          resource.links << link
         end
       end
 
       # TODO: register user defined mixins
 
       def compute_deploy(client, compute)
-        compute.id = UUIDTools::UUID.timestamp_create.to_s
-        compute_action_start(client, compute)
-        store(client, compute)
+        @compute.deploy(client, compute)
       end
 
       def storage_deploy(client, storage)
         storage.id = UUIDTools::UUID.timestamp_create.to_s
         storage_action_online(client, storage)
         store(client, storage)
+      end
+
+      def simulation_deploy(client, simulation)
+        @simulation.deploy(client, simulation)
+      end
+
+      def simulation_delete(client, simulation)
+        @simulation.deploy(client, simulation)
+      end
+
+      def amqplink_link(client, amqplink)
+        amqplink.id = UUIDTools::UUID.timestamp_create.to_s
+        store_link(amqplink)
+      end
+
+      def amqplink_delete(client, amqplink)
+        #link aus resource lösen und dann löschen
       end
 
       def network_deploy(client, network)
@@ -203,11 +296,25 @@ module OCCI
       end
 
       # ---------------------------------------------------------------------------------------------------------------------
-      def store(client, resource)
-        OCCI::Log.debug("### DUMMY: Deploying resource with id #{resource.id}")
-        client.transaction do
-          client['resources'].delete_if { |res| res.id == resource.id }
-          client['resources'] << resource
+      def store_link(link)
+        OCCI::Log.debug("### DUMMY: Deploying link with id #{link.id}")
+        @pstore.transaction do
+          @pstore['links'].delete_if { |res| res.id == link.id }
+          @pstore['links'] << link
+        end
+      end
+
+      def store_action(action)
+        @pstore.transaction do
+          @pstore['actions'].delete_if { |res| res.type_identifier == action.type_identifier }
+          @pstore['actions'] << action
+        end
+      end
+
+      def store_mixin(mixin)
+        @pstore.transaction do
+          @pstore['mixins'].delete_if { |res| res.type_identifier == mixin.type_identifier }
+          @pstore['mixins'] << mixin
         end
       end
 
@@ -296,11 +403,97 @@ module OCCI
         store(client, network)
       end
 
+      def amqplink_call(client, amqplink, parameters=nil)
+        #TODO Link muss angepasst werden
+        amqp_target = amqplink.target
+        queue       = amqplink.attributes.occi.amqplink.queue
+        action      = parameters["action"]
+        params      = parameters["parameters"]
+        params.delete(:action)
+        params.delete(:method)
+
+        raise "No Amqp Producer is set" unless @amqp_producer
+
+        path = amqplink.location + "?action=" + action.term
+
+        params.each do |key, value|
+          path += "&" + key.to_s + "=" + value.to_s
+        end
+
+        options = {
+            :routing_key  => queue,
+            :content_type => "application/occi+json",
+            :type         => "post",
+            :headers => {
+                :path_info => path
+            }
+        }
+        collection = OCCI::Collection.new
+        collection.actions << action
+        message = collection.to_json
+
+        @amqp_producer.send(message, options)
+        #TODO vergiss nicht das occi 2.5.16 gem mit den änderungen an dem parser -> link rel actions source target
+
+      end
+
+      def send_to_amqp(amqp_queue, resource, action, parameters)
+        OCCI::Log.debug("Delegating action to amqp_queue: [#{amqp_queue}]")
+
+        if @amqp_producer
+          path = resource.location + "?action=" + parameters[:action]
+
+          #alles ausser action und method
+          parameters.each do |key, value|
+            unless key.to_s == "action" || key.to_s == "method"
+              path += "&" + key.to_s + "=" + value.to_s
+            end
+          end
+
+          options = {
+              :routing_key  => amqp_queue,
+              :content_type => "application/occi+json",
+              :type         => "post",
+              :headers => {
+                  :path_info => path
+              }
+          }
+          collection   = OCCI::Collection.new
+          collection.actions << action
+
+
+
+          message = collection.to_json
+          @amqp_producer.send(message, options)
+          test = test
+        end
+
+
+      end
+
       # ---------------------------------------------------------------------------------------------------------------------
       def action_fogio(client, resource, parameters=nil)
         OCCI::Log.debug("Calling method for resource '#{resource.attributes['occi.core.title']}' with parameters: #{parameters.inspect}")
         resource.links ||= []
         resource.links.delete_if { |link| link.rel.include? 'action' }
+      end
+
+      def register_action(action)
+        store_action action
+        @model.register(action)
+      end
+
+      def register_mixin(mixin)
+
+        #convert actions from occi 3.0.x to occi 2.5.x
+        actions = mixin.actions
+        mixin.actions = []
+        actions.each do |action|
+          mixin.actions << (action.scheme + action.term)
+        end
+
+        store_mixin mixin
+        @model.register(mixin)
       end
 
     end
