@@ -1,47 +1,32 @@
 default:
-  amqp:
-    connection_setting:
-      host: localhost
-      port: 5672
-      password: test
-
-    identifier: amqp.occi.localhost2.default
-
   occi:
-    amqp: false
+    occi_admin_user: demo
+    occi_admin_password: demo
 
-production:
-  amqp:
-    connection_setting:
-      host: localhost
-      port: 5672
-      password: test
+    backenend:
+      infrastructure:
+        compute:
+          compute_provider: openstack
+          compute_endpoint: ...
+          compute_admin_user: demo
+          compute_admin_password: demo
+        network:
+          network_provider: openstack
+          network_endpoint: ...
+          network_admin_user: demo
+          network_admin_password: demo
+        storage:
+          storage_provider: openstack
+          storage_endpoint: ...
+          storage_admin_user: demo
+          storage_admin_password: demo
 
-    identifier: amqp.occi.localhost2.production
-
-  occi:
-    amqp: false
-
-development:
-  amqp:
-    connection_setting:
-      host: localhost
-      port: 5672
-      password: test
-
-    identifier: amqp.occi.localhost2.development
-
-  occi:
-    amqp: false
-
-test:
-  amqp:
-    connection_setting:
-      host: localhost
-      port: 5672
-      password: test
-
-    identifier: amqp.occi.localhost2.test
-
-  occi:
-    amqp: false
+    amqp:
+      active: true
+      connection_setting:
+        host: localhost
+        port: 5672
+        user: guest
+        password: guest
+        vhost:
+      identifier: amqp.occi.http://141.5.99.83/
