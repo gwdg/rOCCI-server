@@ -3,8 +3,7 @@ module Occi
     module Backend
       module Infrastructure
         module Storage
-          class Dummy
-            # To change this template use File | Settings | File Templates.
+          class Cloudstack
           end
         end
       end

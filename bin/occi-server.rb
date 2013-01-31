@@ -13,24 +13,7 @@
 # See the License for the specific language governing permissions and        #
 # limitations under the License.                                             #
 #--------------------------------------------------------------------------- #
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
-#TODO write an script to start rocci with amqp or http frontend
-
-require 'rubygems'
-require 'occi/helper/occi_server_options'
-require 'occi/server'
-require 'rack'
-
-options = OCCI::Helper::OcciServerOptions.new
-options._parse ARGV
-
-server = OCCI::Server.new().start(options.frontend, true)
-
-if options.frontend == 'http'
-  #TODO start inside Passenger
-  Rack::Server.new(:app => server, :Port => 9292, :server => 'webrick').start
-end
 
 
 

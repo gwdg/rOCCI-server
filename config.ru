@@ -4,4 +4,4 @@ require 'rubygems'
 require 'sinatra'
 require 'occi/server'
 
-run OCCI::Server.new().start()
+run OCCI::Server.new.start

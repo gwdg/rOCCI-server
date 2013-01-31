@@ -1,3 +1,8 @@
-class Http
-  # To change this template use File | Settings | File Templates.
+module Occi
+  module Server
+    module Frontend
+      class Http
+      end
+    end
+  end
 end

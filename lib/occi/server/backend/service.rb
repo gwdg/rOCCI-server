@@ -1,3 +1,10 @@
-class Service
-  # To change this template use File | Settings | File Templates.
+module Occi
+  module Server
+    module Backend
+      module Service
+        class Service
+        end
+      end
+    end
+  end
 end

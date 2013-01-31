@@ -3,23 +3,23 @@ default:
     occi_admin_user: demo
     occi_admin_password: demo
 
-    backenend:
+    backends:
       infrastructure:
         compute:
-          compute_provider: openstack
-          compute_endpoint: ...
-          compute_admin_user: demo
-          compute_admin_password: demo
+          provider: openstack
+          endpoint: ...
+          admin_user: demo
+          admin_password: demo
         network:
-          network_provider: openstack
-          network_endpoint: ...
-          network_admin_user: demo
-          network_admin_password: demo
+          provider: openstack
+          endpoint: ...
+          admin_user: demo
+          admin_password: demo
         storage:
-          storage_provider: openstack
-          storage_endpoint: ...
-          storage_admin_user: demo
-          storage_admin_password: demo
+          provider: openstack
+          endpoint: ...
+          admin_user: demo
+          admin_password: demo
 
     amqp:
       active: true

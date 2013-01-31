@@ -1,3 +1,8 @@
-class Amqp
-  # To change this template use File | Settings | File Templates.
+module Occi
+  module Server
+    module Frontend
+      class Amqp
+      end
+    end
+  end
 end
