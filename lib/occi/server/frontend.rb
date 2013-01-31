@@ -19,7 +19,7 @@ module Occi
             require 'occi/server/frontend/amqp'
             Occi::Server::Frontend::Amqp.new(attributes)
           else
-            raise Occi::Exceptions::FrontendError.new("#{frontend} is not a recognized as valid frontend")
+            raise Occi::Helper::FrontendError.new("#{frontend} is not a recognized as valid frontend")
         end
       end
     end
