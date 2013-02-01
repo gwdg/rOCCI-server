@@ -3,7 +3,8 @@ module Occi
     module Backend
       module Infrastructure
         module Network
-          class Network
+          def self.register(network_backend)
+
           end
         end
       end

@@ -3,7 +3,8 @@ module Occi
     module Backend
       module Infrastructure
         module Storage
-          class Storage
+          def self.register(storage_backend)
+
           end
         end
       end

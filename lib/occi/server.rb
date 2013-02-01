@@ -8,7 +8,7 @@ Encoding.default_external = Encoding::UTF_8 if defined? Encoding
 Encoding.default_internal = Encoding::UTF_8 if defined? Encoding
 
 module Occi
-  class Server
+  module Server
     VERSION = "0.9.0"
 
     def self.start(frontend_identifier = 'http')

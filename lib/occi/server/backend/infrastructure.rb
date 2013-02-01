@@ -2,7 +2,8 @@ module Occi
   module Server
     module Backend
       module Infrastructure
-        class Infrastructure
+        def self.register(attributes)
+
         end
       end
     end

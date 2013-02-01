@@ -1,8 +1,9 @@
 module Occi
   module Server
     module Backend
-      module Service
-
+      module Security
+        class Keystone
+        end
       end
     end
   end

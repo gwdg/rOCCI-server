@@ -1,7 +1,7 @@
 module Occi
   module Server
     module Backend
-      module Service
+      module Monitoring
 
       end
     end

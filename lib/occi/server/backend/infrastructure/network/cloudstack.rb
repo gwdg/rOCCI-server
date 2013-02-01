@@ -4,6 +4,9 @@ module Occi
       module Infrastructure
         module Network
           class Cloudstack
+            def initialize(attributes)
+              attributes = attributes.dup
+            end
           end
         end
       end

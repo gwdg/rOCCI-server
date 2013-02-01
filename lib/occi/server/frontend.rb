@@ -1,7 +1,7 @@
 module Occi
   module Server
     module Frontend
-      attr_accessor :backends
+      attr_accessor :backend
 
       def self.[](frontend)
         self.new(:frontend => frontend)

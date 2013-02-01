@@ -1,8 +1,7 @@
 module Occi
   module Server
-    module Backend
-      module Service
-
+    module Usermanaagment
+      class Usermanagement
       end
     end
   end

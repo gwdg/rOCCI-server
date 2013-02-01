@@ -3,7 +3,8 @@ module Occi
     module Backend
       module Infrastructure
         module Compute
-          class Compute
+          def self.new(compute_backend)
+
           end
         end
       end
