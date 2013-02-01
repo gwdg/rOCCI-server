@@ -1,0 +1,12 @@
+module Occi
+  module Server
+    module Backend
+      module Infrastructure
+        module Storage
+          class Cloudstack
+          end
+        end
+      end
+    end
+  end
+end
