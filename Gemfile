@@ -1,4 +1,4 @@
-source "https://rubygems.org/"
+source :rubygems
 
 # external ruby libraries
 gem "uuidtools", ">=2.1.3"
