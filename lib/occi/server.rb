@@ -151,6 +151,7 @@ module OCCI
             if voms_ary && voms_ary[0] && voms_ary[1] && voms_ary[2]
               OCCI::Log.debug "VOMS ext: vo=#{voms_ary[0]} role=#{voms_ary[1]} capability=#{voms_ary[2]}"
               proxy_cert_subject = proxy_cert_subject << "/VO=#{voms_ary[0]}/Role=#{voms_ary[1]}/Capability=#{voms_ary[2]}"
+              break
             end
           end
         else
