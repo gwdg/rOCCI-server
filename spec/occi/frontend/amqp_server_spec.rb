@@ -17,7 +17,7 @@ module Occi
     describe OCCI::Frontend::AmqpServer do
 
       before(:each) do
-        @server = OCCI::Frontend::AmqpServer.new(false)
+        @server = OCCI::Frontend::AmqpServer.new(false, 'amqp.occi.http://localhost:9292/', true)
       end
 
       def create_metadata(type)

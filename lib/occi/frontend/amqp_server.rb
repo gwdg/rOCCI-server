@@ -12,7 +12,7 @@ module OCCI
       #describe Initialize the AMQP Frontend
       # @param [Boolean] standalone should the amqp frontend start in an thread or as standalone process
       # @param [Object] identifier
-      def initialize(standalone, identifier = Config.instance.amqp[:identifier])
+      def initialize(standalone, identifier = Config.instance.amqp[:identifier], mock = false)
 
         log("debug", __LINE__, "Initialize AMQPFrontend")
 
@@ -20,11 +20,15 @@ module OCCI
 
         @frontend   = OCCI::Frontend::Amqp::AmqpFrontend.new()
 
+        startAMQP standalone, identifier if !mock
+      end
+
+      def startAMQP(standalone = false, identifier)
         @worker =  OCCI::OCCI_AMQP::Worker.new
         @worker.start :queue_name => identifier, :callback => method(:handle_message)
         log("debug", __LINE__, "AMQP Connection ready")
 
-        super()
+        @frontend.backend.amqp_worker = @worker if @frontend.backend.respond_to? :amqp_worker
 
         @worker.join if standalone
       end
