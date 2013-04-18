@@ -1,60 +1,36 @@
 require "amqp"
-require "occi/occi_amqp/amqp_consumer"
-require "occi/occi_amqp/amqp_worker"
-require "occi/occi_amqp/amqp_producer"
+require "occi/occi_amqp/worker"
 require "occi/config"
 require "occi/frontend/amqp/amqp_frontend"
 
 module OCCI
   module Frontend
-    class AmqpServer < OCCI::OCCI_AMQP::AmqpConsumer
+    class AmqpServer
 
       attr_reader :response, :request
 
       #describe Initialize the AMQP Frontend
       # @param [Boolean] standalone should the amqp frontend start in an thread or as standalone process
       # @param [Object] identifier
-      def initialize(standalone, identifier = Config.instance.amqp[:identifier])
+      def initialize(standalone, identifier = Config.instance.amqp[:identifier], mock = false)
 
         log("debug", __LINE__, "Initialize AMQPFrontend")
 
         @identifier = identifier
+
         @frontend   = OCCI::Frontend::Amqp::AmqpFrontend.new()
 
-        start standalone
-
-        super()
+        startAMQP standalone, identifier if !mock
       end
 
-      #describe Start the amqp frontend
-      #@param [boolean] standalone should the amqp frontend start in an thread or as standalone process
-      def start(standalone = false)
-        if standalone
-          run
-        else
-          Thread.new { run }
-        end
-      end
+      def startAMQP(standalone = false, identifier)
+        @worker =  OCCI::OCCI_AMQP::Worker.new
+        @worker.start :queue_name => identifier, :callback => method(:handle_message)
+        log("debug", __LINE__, "AMQP Connection ready")
 
-      #describe Eventloop for amqp connection
-      def run
-        log("debug", __LINE__, "Start AMQP Connection")
+        @frontend.backend.amqp_worker = @worker if @frontend.backend.respond_to? :amqp_worker
 
-        begin
-
-          AMQP.start(Config.instance.amqp[:connection_setting]) do |connection, open_ok|
-            channel  = AMQP::Channel.new(connection)
-            worker   = OCCI::OCCI_AMQP::AmqpWorker.new(channel, self, @identifier)
-            worker.start
-
-            @reply_producer = OCCI::OCCI_AMQP::AmqpProducer.new(channel, channel.default_exchange)
-
-            log("debug", __LINE__, "AMQP Connection ready")
-          end
-
-        rescue Exception => e
-          log("error", __LINE__, "Amqp Thread get an Error: #{e.message} \n #{e.backtrace.join("\n")}")
-        end
+        @worker.join if standalone
       end
 
       # @param [Integer] code
@@ -82,7 +58,7 @@ module OCCI
         log("debug", __LINE__, "Handle message: #{ payload }")
         begin
           parse_message(metadata, payload)
-          @reply_producer.send(@response.generate_output, @response.reply_options)
+          @worker.request(@response.generate_output, @response.reply_options)
         rescue Exception => e
           log("error", __LINE__, "Received a message get an Error: #{e.message} \n #{e.backtrace.join("\n")}")
         end
@@ -102,6 +78,20 @@ module OCCI
 
         @response.collection = collection
         @response.locations  = locations
+      end
+
+      def log(type, line, message)
+
+        script_name =  File.basename(__FILE__);
+
+        case type
+          when "error"
+            OCCI::Log.error("Script: (#{ script_name }) Line: (#{ line }) OCCI/AMQP: #{ message }")
+          when "debug"
+            OCCI::Log.debug("Script: (#{ script_name }) Line: (#{ line }) OCCI/AMQP: #{ message }")
+          else
+            OCCI::Log.info ("Script: (#{ script_name }) Line: (#{ line }) OCCI/AMQP: #{ message }")
+        end
       end
     end
   end
