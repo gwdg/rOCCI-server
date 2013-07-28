@@ -24,7 +24,7 @@ module OCCI
     register Sinatra::CrossOrigin
     register Sinatra::RespondWith
 
-    enable cross_origin
+    enable :cross_origin
 
     def initialize
 
