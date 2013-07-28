@@ -34,11 +34,11 @@ module OCCI
 
         TEMPLATECOMPUTERAWFILE = 'compute.erb'
 
-        # ---------------------------------------------------------------------------------------------------------------------       
+        # ---------------------------------------------------------------------------------------------------------------------
         #        private
         # ---------------------------------------------------------------------------------------------------------------------
 
-        # ---------------------------------------------------------------------------------------------------------------------     
+        # ---------------------------------------------------------------------------------------------------------------------
         # PARSE OPENNEBULA COMPUTE OBJECT
         def compute_parse_backend_object(client, backend_object)
 
@@ -80,50 +80,6 @@ module OCCI
           compute.check(@model)
 
           compute_set_state(backend_object, compute)
-
-          # TODO: refactor VNC handling
-          #if backend_object['TEMPLATE/GRAPHICS/TYPE'] == 'vnc' \
-          #and backend_object['HISTORY_RECORDS/HISTORY/HOSTNAME'] \
-          #and not OCCI::Server.config[:novnc_path].nil? \
-          #and not OCCI::Server.config[:vnc_proxy_base_port].nil?
-          #
-          #  vnc_host = backend_object['HISTORY_RECORDS/HISTORY/HOSTNAME']
-          #  vnc_port = backend_object['TEMPLATE/GRAPHICS/PORT']
-          #
-          #  vnc_proxy_host = URI.parse(OCCI::Server.location).host
-          #
-          #  # The noVNC proxy_port
-          #  proxy_port = OCCI::Server.config[:vnc_proxy_base_port].to_i + vnc_port.to_i
-          #
-          #  OCCI::Log.debug("NOVNC path: #{OCCI::Server.config[:novnc_path]}")
-          #  OCCI::Log.debug("Graphics type: #{backend_object['TEMPLATE/GRAPHICS/TYPE']}")
-          #  OCCI::Log.debug("VNC base port: #{OCCI::Server.config[:vnc_proxy_base_port]}")
-          #  OCCI::Log.debug("VNC port: #{vnc_port}")
-          #  OCCI::Log.debug("VNC host: #{vnc_host}")
-          #
-          #  compute.mixins << @model.get_by_id("http://schemas.ogf.org/occi/infrastructure/compute#console")
-          #
-          #  if occi_object.attributes['opennebula.vm.vnc'].nil? or occi_object.backend[:novnc_pipe].nil?
-          #
-          #    # CREATE PROXY FOR VNC SERVER
-          #    begin
-          #      novnc_cmd = "#{OCCI::Server.config[:novnc_path]}/utils/websockify"
-          #      pipe = IO.popen("#{novnc_cmd} --web #{OCCI::Server.config[:novnc_path]} #{proxy_port} #{vnc_host}:#{vnc_port}")
-          #
-          #      if pipe
-          #        vnc_url = OCCI::Server.config[:server].chomp('/') + ':' + vnc_port + '/vnc_auto.html?host=' + vnc_proxy_host + '&port=' + vnc_port
-          #        OCCI::Log.debug("VNC URL: #{vnc_url}")
-          #        occi_object.backend[:novnc_pipe] = pipe
-          #        occi_object.attributes['opennebula.vm.vnc'] = vnc_host + ':' + vnc_port
-          #        occi_object.attributes['opennebula.vm.web_vnc'] = vnc_url
-          #      end
-          #    rescue Exception => e
-          #      OCCI::Log.error("Error in creating VNC proxy: #{e.message}")
-          #    end
-          #  end
-          #  @model.get_by_id(kind).entities << compute
-          #end
-
           compute_parse_links(client, compute, backend_object)
 
           # register compute resource in entities of compute kind
@@ -141,17 +97,17 @@ module OCCI
             OCCI::Log.debug("Disk type #{disk['TYPE']}")
             OCCI::Log.debug disk.inspect
             case disk['TYPE'].downcase
-              when 'fs', 'swap'
-                offset  = 100000 # set an offset for OCCI ID generation to distinguish from Images
-                storage = OCCI::Core::Resource.new('http://schemas.ogf.org/occi/infrastructure#storage')
-                storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
-                storage.id = disk['STORAGE_OCCI_ID']
-                storage.id ||= self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
+            when 'fs', 'swap'
+              offset  = 100000 # set an offset for OCCI ID generation to distinguish from Images
+              storage = OCCI::Core::Resource.new('http://schemas.ogf.org/occi/infrastructure#storage')
+              storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
+              storage.id = disk['STORAGE_OCCI_ID']
+              storage.id ||= self.generate_occi_id(@model.get_by_id(storage.kind), (id + offset).to_s)
 
-                storage.attributes.occi!.storage!.size              = disk['SIZE']
-                storage.attributes.org!.opennebula!.storage!.fstype = disk['FORMAT'] if disk['FORMAT']
-                @model.get_by_id(storage.kind).entities << storage
-              else
+              storage.attributes.occi!.storage!.size              = disk['SIZE']
+              storage.attributes.org!.opennebula!.storage!.fstype = disk['FORMAT'] if disk['FORMAT']
+              @model.get_by_id(storage.kind).entities << storage
+            else
             end
             OCCI::Log.debug("Storage Backend ID: #{id}")
             storage_kind     = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#storage')
@@ -237,126 +193,126 @@ module OCCI
 
         # ---------------------------------------------------------------------------------------------------------------------
         public
-        # ---------------------------------------------------------------------------------------------------------------------
+          # ---------------------------------------------------------------------------------------------------------------------
 
-        # ---------------------------------------------------------------------------------------------------------------------
-        def compute_deploy(client, compute)
+          # ---------------------------------------------------------------------------------------------------------------------
+          def compute_deploy(client, compute)
 
-          OCCI::Log.debug "Deploying #{compute.inspect}"
+            OCCI::Log.debug "Deploying #{compute.inspect}"
 
-          os_tpl = compute.mixins.select { |mixin|
-            OCCI::Log.debug("Compute deploy found mixin: #{mixin}")
-            if mixin.kind_of? String
-              @model.get_by_id(mixin).related_to? "http://schemas.ogf.org/occi/infrastructure#os_tpl"
+            os_tpl = compute.mixins.select { |mixin|
+              OCCI::Log.debug("Compute deploy found mixin: #{mixin}")
+              if mixin.kind_of? String
+                mixin = @model.get_by_id(mixin)
+              end
+
+              mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#os_tpl" if mixin
+            }.compact.first
+
+            os_tpl = @model.get_by_id(os_tpl)
+
+            OCCI::Log.debug("Compute deploy OS template: #{os_tpl} #{os_tpl.nil? ? 'No template found!' : os_tpl.title}")
+
+            backend_object = nil
+
+            templates = TemplatePool.new(client)
+            templates.info_all
+
+            template = nil
+            if os_tpl
+              template = templates.select { |template|
+                OCCI::Log.debug("Going through ON template #{template['NAME']}")
+                template['NAME'] == os_tpl.title
+              }.first
+            end
+
+            if template
+
+              if compute.attributes.occi.compute
+                vcpu = compute.attributes.occi.compute.cores if compute.attributes.occi.compute.cores
+                memory = (compute.attributes.occi.compute.memory.to_f * 1000).to_i if compute.attributes.occi.compute.memory
+                architecture = compute.attributes.occi.compute.architecture if compute.attributes.occi.compute.architecture
+                cpu = compute.attributes.occi.compute.speed if compute.attributes.occi.compute.speed
+              end
+
+              if vcpu
+                template.delete_element('TEMPLATE/VCPU')
+                template.add_element('TEMPLATE', { "VCPU" => vcpu })
+              end
+
+              if memory
+                template.delete_element('TEMPLATE/MEMORY')
+                template.add_element('TEMPLATE', { "MEMORY" => memory })
+              end
+
+              if architecture
+                template.delete_element('TEMPLATE/ARCHITECTURE')
+                template.add_element('TEMPLATE', { "ARCHITECTURE" => architecture })
+              end
+
+              if cpu
+                template.delete_element('TEMPLATE/CPU')
+                template.add_element('TEMPLATE', { "CPU" => cpu })
+              end
+
+              template.add_element('TEMPLATE', "OCCI_ID" => compute.id)
+
+              compute.mixins.each do |mixin|
+                template.add_element('TEMPLATE', "OCCI_MIXIN" => mixin)
+              end
+
+              vm_name = ""
+              vm_name = compute.attributes.occi.core.title unless compute.attributes.occi.core.title.nil? or compute.attributes.occi.core.title.empty?
+
+              # remove template-specific values
+              template.delete_element('ID')
+              template.delete_element('UID')
+              template.delete_element('GID')
+              template.delete_element('UNAME')
+              template.delete_element('GNAME')
+              template.delete_element('REGTIME')
+              template.delete_element('PERMISSIONS')
+              template.delete_element('TEMPLATE/TEMPLATE_ID')
+
+              # set template name
+              template.delete_element('TEMPLATE/NAME')
+              template.add_element('TEMPLATE', 'NAME' => vm_name || "rOCCIVMGeneric")
+
+              OCCI::Log.debug "Template #{template.template_str}"
+
+              backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
+
+              rc = backend_object.allocate(template.template_str)
+              check_rc(rc)
+
+              OCCI::Log.debug("Return code from OpenNebula #{rc}") if rc != nil
             else
-              mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#os_tpl"
+              backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
+
+              template_location = File.dirname(__FILE__) + '/../../../../etc/backend/opennebula/one_templates/' + TEMPLATECOMPUTERAWFILE
+              template          = Erubis::Eruby.new(File.read(template_location)).evaluate({ :compute => compute, :model => @model })
+
+              OCCI::Log.debug("Parsed template #{template}")
+              rc = backend_object.allocate(template)
+              check_rc(rc)
+              OCCI::Log.debug("Return code from OpenNebula #{rc}") if rc != nil
             end
-          }.first
 
-          os_tpl = @model.get_by_id(os_tpl)
+            backend_object.info
+            OCCI::Log.debug("OCCI Compute resource #{backend_object.inspect}")
 
-          OCCI::Log.debug("Compute deploy OS template: #{os_tpl} #{os_tpl.nil? ? 'No template found!' : os_tpl.title}")
+            compute.id ||= self.generate_occi_id(@model.get_by_id(compute.kind), backend_object['ID'].to_s)
 
-          backend_object = nil
+            compute_set_state(backend_object, compute)
 
-          templates = TemplatePool.new(client)
-          templates.info_all
-
-          template = nil
-          if os_tpl
-            template = templates.select { |template|
-              OCCI::Log.debug("Going through ON template #{template['NAME']}")
-              template['NAME'] == os_tpl.title
-            }.first
+            OCCI::Log.debug("OpenNebula automatically triggers action start for Virtual Machines")
+            OCCI::Log.debug("Changing state to started")
           end
 
-          if template
-
-	    if compute.attributes.occi.compute
-              vcpu = compute.attributes.occi.compute.cores if compute.attributes.occi.compute.cores
-              memory = (compute.attributes.occi.compute.memory.to_f * 1000).to_i if compute.attributes.occi.compute.memory
-              architecture = compute.attributes.occi.compute.architecture if compute.attributes.occi.compute.architecture
-              cpu = compute.attributes.occi.compute.speed if compute.attributes.occi.compute.speed
-	    end
-
-            if vcpu
-              template.delete_element('TEMPLATE/VCPU')
-              template.add_element('TEMPLATE', { "VCPU" => vcpu })
-            end
-
-            if memory
-              template.delete_element('TEMPLATE/MEMORY')
-              template.add_element('TEMPLATE', { "MEMORY" => memory })
-            end
-
-            if architecture
-              template.delete_element('TEMPLATE/ARCHITECTURE')
-              template.add_element('TEMPLATE', { "ARCHITECTURE" => architecture })
-            end
-
-            if cpu
-              template.delete_element('TEMPLATE/CPU')
-              template.add_element('TEMPLATE', { "CPU" => cpu })
-            end
-
-            template.add_element('TEMPLATE', "OCCI_ID" => compute.id)
-
-            compute.mixins.each do |mixin|
-              template.add_element('TEMPLATE', "OCCI_MIXIN" => mixin)
-            end
-
-            vm_name = ""
-            vm_name = compute.attributes.occi.core.title unless compute.attributes.occi.core.title.nil? or compute.attributes.occi.core.title.empty?
-
-            # remove template-specific values 
-            template.delete_element('ID')
-            template.delete_element('UID')
-            template.delete_element('GID')
-            template.delete_element('UNAME')
-            template.delete_element('GNAME')
-            template.delete_element('REGTIME')
-            template.delete_element('PERMISSIONS')
-            template.delete_element('TEMPLATE/TEMPLATE_ID')
-
-            # set template name
-            template.delete_element('TEMPLATE/NAME')
-            template.add_element('TEMPLATE', 'NAME' => vm_name || "rOCCIVMGeneric")
-
-            OCCI::Log.debug "Template #{template.template_str}"
-
-            backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
-
-            rc = backend_object.allocate(template.template_str)
-            check_rc(rc)
-
-            OCCI::Log.debug("Return code from OpenNebula #{rc}") if rc != nil
-          else
-            backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
-
-            template_location = File.dirname(__FILE__) + '/../../../../etc/backend/opennebula/one_templates/' + TEMPLATECOMPUTERAWFILE
-            template          = Erubis::Eruby.new(File.read(template_location)).evaluate({ :compute => compute, :model => @model })
-
-            OCCI::Log.debug("Parsed template #{template}")
-            rc = backend_object.allocate(template)
-            check_rc(rc)
-            OCCI::Log.debug("Return code from OpenNebula #{rc}") if rc != nil
-          end
-
-          backend_object.info
-          OCCI::Log.debug("OCCI Compute resource #{backend_object.inspect}")
-
-          compute.id ||= self.generate_occi_id(@model.get_by_id(compute.kind), backend_object['ID'].to_s)
-
-          compute_set_state(backend_object, compute)
-
-          OCCI::Log.debug("OpenNebula automatically triggers action start for Virtual Machines")
-          OCCI::Log.debug("Changing state to started")
-        end
-
-        # ---------------------------------------------------------------------------------------------------------------------
-        def compute_set_state(backend_object, compute)
-          OCCI::Log.debug("current VM state is: #{backend_object.lcm_state_str}")
-          case backend_object.lcm_state_str
+          # ---------------------------------------------------------------------------------------------------------------------
+          def compute_set_state(backend_object, compute)
+            OCCI::Log.debug("current VM state is: #{backend_object.lcm_state_str}")
+            case backend_object.lcm_state_str
             when "RUNNING" then
               compute.attributes.occi!.compute!.state = "active"
               compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
@@ -372,50 +328,50 @@ module OCCI
             else
               compute.attributes.occi!.compute!.state = "inactive"
               compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
+            end
           end
-        end
 
-        # ---------------------------------------------------------------------------------------------------------------------
-        def compute_delete(client, compute)
-          backend_object=VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
+          # ---------------------------------------------------------------------------------------------------------------------
+          def compute_delete(client, compute)
+            backend_object=VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
 
-          rc = backend_object.finalize
-          check_rc(rc)
-          # TODO: VNC
-          #OCCI::Log.debug("killing NoVNC pipe with pid #{compute.backend[:novnc_pipe].pid}") unless compute.backend[:novnc_pipe].nil?
-          #Process.kill 'INT', compute.backend[:novnc_pipe].pid unless compute.backend[:novnc_pipe].nil?
-        end
+            rc = backend_object.finalize
+            check_rc(rc)
+            # TODO: VNC
+            #OCCI::Log.debug("killing NoVNC pipe with pid #{compute.backend[:novnc_pipe].pid}") unless compute.backend[:novnc_pipe].nil?
+            #Process.kill 'INT', compute.backend[:novnc_pipe].pid unless compute.backend[:novnc_pipe].nil?
+          end
 
-        # ---------------------------------------------------------------------------------------------------------------------
-        # GET ALL COMPUTE INSTANCES
-        def compute_register_all_instances(client)
-          backend_object_pool = VirtualMachinePool.new(client)
-          backend_object_pool.info_all
-          backend_object_pool.each { |backend_object| compute_parse_backend_object(client, backend_object) }
-        end
+          # ---------------------------------------------------------------------------------------------------------------------
+          # GET ALL COMPUTE INSTANCES
+          def compute_register_all_instances(client)
+            backend_object_pool = VirtualMachinePool.new(client)
+            backend_object_pool.info_all
+            backend_object_pool.each { |backend_object| compute_parse_backend_object(client, backend_object) }
+          end
 
-        # ---------------------------------------------------------------------------------------------------------------------
-        # COMPUTE ACTIONS
-        # ---------------------------------------------------------------------------------------------------------------------
+          # ---------------------------------------------------------------------------------------------------------------------
+          # COMPUTE ACTIONS
+          # ---------------------------------------------------------------------------------------------------------------------
 
-        # ---------------------------------------------------------------------------------------------------------------------
-        def compute_action_dummy(compute, parameters)
-        end
+          # ---------------------------------------------------------------------------------------------------------------------
+          def compute_action_dummy(compute, parameters)
+          end
 
-        # ---------------------------------------------------------------------------------------------------------------------
-        # COMPUTE Action start
-        def compute_start(client, compute, parameters)
-          backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
-          rc             = backend_object.resume
-          check_rc(rc)
-        end
+          # ---------------------------------------------------------------------------------------------------------------------
+          # COMPUTE Action start
+          def compute_start(client, compute, parameters)
+            backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
+            rc             = backend_object.resume
+            check_rc(rc)
+          end
 
-        # ---------------------------------------------------------------------------------------------------------------------
-        # Action stop
-        def compute_stop(client, compute, parameters)
-          backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
-          # TODO: implement parameters when available in OpenNebula
-          case parameters
+          # ---------------------------------------------------------------------------------------------------------------------
+          # Action stop
+          def compute_stop(client, compute, parameters)
+            backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
+            # TODO: implement parameters when available in OpenNebula
+            case parameters
             when 'method="graceful"'
               OCCI::Log.debug("Trying to stop VM graceful")
               rc = backend_object.shutdown
@@ -425,33 +381,33 @@ module OCCI
             else # method="poweroff" or no method specified
               OCCI::Log.debug("Powering off VM")
               rc = backend_object.shutdown
+            end
+            check_rc(rc)
           end
-          check_rc(rc)
-        end
 
-        # ---------------------------------------------------------------------------------------------------------------------
-        # Action restart
-        def compute_restart(client, compute, parameters)
-          backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
-          # TODO: implement parameters when available in OpenNebula
-          case parameters
+          # ---------------------------------------------------------------------------------------------------------------------
+          # Action restart
+          def compute_restart(client, compute, parameters)
+            backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
+            # TODO: implement parameters when available in OpenNebula
+            case parameters
             when "graceful"
               rc = vm.reboot
             when "warm"
               rc = vm.reboot
             else # "cold" or no parameter specified
               rc = vm.resubmit
+            end
+            check_rc(rc)
           end
-          check_rc(rc)
-        end
 
-        # ---------------------------------------------------------------------------------------------------------------------
-        # Action suspend
-        def compute_suspend(client, compute, parameters)
-          backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
-          rc             = vm.suspend
-          check_rc(rc)
-        end
+          # ---------------------------------------------------------------------------------------------------------------------
+          # Action suspend
+          def compute_suspend(client, compute, parameters)
+            backend_object = VirtualMachine.new(VirtualMachine.build_xml(@@location_cache[compute.id]), client)
+            rc             = vm.suspend
+            check_rc(rc)
+          end
 
       end
     end
