@@ -18,13 +18,13 @@ module OCCI
     set :views, File.dirname(__FILE__) + "/../../views"
     enable :logging
 
-    VERSION = "0.5.3"
+    VERSION = "0.5.4"
 
     register Sinatra::MultiRoute
     register Sinatra::CrossOrigin
     register Sinatra::RespondWith
 
-    enable cross_origin
+    enable :cross_origin
 
     def initialize
 
@@ -39,27 +39,27 @@ module OCCI
       collection = Hashie::Mash.new(JSON.parse(File.read(File.dirname(__FILE__) + "/../../etc/backend/default.json")))
       backend    = collection.resources.first
       case backend.kind
-        when 'http://rocci.info/server/backend#dummy'
-          require 'occi/backend/dummy'
-          @model.register(OCCI::Backend::Dummy.kind_definition)
-          @backend = OCCI::Backend::Dummy.new(backend.kind, backend.mixins, backend.attributes, backend.links)
-          @backend.check(@model)
-          OCCI::Log.debug('Dummy backend initialized')
+      when 'http://rocci.info/server/backend#dummy'
+        require 'occi/backend/dummy'
+        @model.register(OCCI::Backend::Dummy.kind_definition)
+        @backend = OCCI::Backend::Dummy.new(backend.kind, backend.mixins, backend.attributes, backend.links)
+        @backend.check(@model)
+        OCCI::Log.debug('Dummy backend initialized')
         #@backend = OCCI::Backend::Dummy.new(backend.kind,backend.mixins,backend.attributes,backend.links)
-        when 'http://rocci.info/server/backend#opennebula'
-          require 'occi/backend/opennebula'
-          @model.register(OCCI::Backend::OpenNebula.kind_definition)
-          @backend = OCCI::Backend::OpenNebula.new(backend.kind, backend.mixins, backend.attributes, backend.links)
-          @backend.check(@model)
-          OCCI::Log.debug('Opennebula backend initialized')
-        when 'http://rocci.info/server/backend#ec2'
-          require 'occi/backend/ec2'
-          @model.register(OCCI::Backend::EC2.kind_definition)
-          @backend.check(@model)
-          OCCI::Log.debug('EC2 backend initialized')
+      when 'http://rocci.info/server/backend#opennebula'
+        require 'occi/backend/opennebula'
+        @model.register(OCCI::Backend::OpenNebula.kind_definition)
+        @backend = OCCI::Backend::OpenNebula.new(backend.kind, backend.mixins, backend.attributes, backend.links)
+        @backend.check(@model)
+        OCCI::Log.debug('Opennebula backend initialized')
+      when 'http://rocci.info/server/backend#ec2'
+        require 'occi/backend/ec2'
+        @model.register(OCCI::Backend::EC2.kind_definition)
+        @backend.check(@model)
+        OCCI::Log.debug('EC2 backend initialized')
         #@backend = OCCI::Backend::EC2.new(backend.kind,backend.mixins,backend.attributes,backend.links)
-        else
-          raise "Backend #{backend.kind} unknown"
+      else
+        raise "Backend #{backend.kind} unknown"
       end
 
       super
@@ -131,23 +131,28 @@ module OCCI
         # Get user's DN
         proxy_cert_subject = grst_cred_regexp.match(request.env['GRST_CRED_0'])[5]
 
-	# Get VOMS extension
+        # Get VOMS extension
         if proxy_cert_subject && request.env['GRST_CRED_2']
-          # Parse extension and drop useless first element of MatchData
-          voms_ext = grst_cred_regexp.match request.env['GRST_CRED_2']
-          voms_ext = voms_ext.to_a.drop 1
+          # Find the first VOMS extension in GRST_CRED_[2 - 10]
+          (2..10).each do |idx|
+            break unless request.env["GRST_CRED_#{idx}"]
 
-          if voms_ext && voms_ext[0] == "VOMS"
+            # Parse extension and drop useless first element of MatchData
+            voms_ext = grst_cred_regexp.match request.env["GRST_CRED_#{idx}"]
+            voms_ext = voms_ext.to_a.drop 1
+
+            next unless voms_ext && voms_ext[0] == "VOMS"
+
             # Parse group, role and capability from VOMS extension
             voms_ary = grst_voms_regexp.match voms_ext[4]
+            voms_ary = voms_ary.to_a.drop 1
 
             # Append found values to user's DN
-            if voms_ary && voms_ary[1] && voms_ary[2] && voms_ary[3]
-              OCCI::Log.debug "VOMS ext: vo=#{voms_ary[1]} role=#{voms_ary[2]} capability=#{voms_ary[3]}"
-              proxy_cert_subject = proxy_cert_subject << "/VO=#{voms_ary[1]}/Role=#{voms_ary[2]}/Capability=#{voms_ary[3]}"
+            if voms_ary && voms_ary[0] && voms_ary[1] && voms_ary[2]
+              OCCI::Log.debug "VOMS ext: vo=#{voms_ary[0]} role=#{voms_ary[1]} capability=#{voms_ary[2]}"
+              proxy_cert_subject = proxy_cert_subject << "/VO=#{voms_ary[0]}/Role=#{voms_ary[1]}/Capability=#{voms_ary[2]}"
+              break
             end
-          else
-            OCCI::Log.warn "This VOMS extension seems to be malformed! #{request.env['GRST_CRED_2']}"
           end
         else
           OCCI::Log.debug "This proxy certificate doesn't contain VOMS extensions!"
@@ -239,16 +244,16 @@ module OCCI
       end
     end
 
-# discovery interface
-# returns all kinds, mixins and actions registered for the server
+    # discovery interface
+    # returns all kinds, mixins and actions registered for the server
     get '/-/', '/.well-known/org/ogf/occi/-/' do
       OCCI::Log.info("### Listing all kinds, mixins and actions ###")
       @collection = @backend.model.get(@request_collection)
       status 200
     end
 
-# Resource retrieval
-# returns entities either below a certain path or belonging to a certain kind or mixin
+    # Resource retrieval
+    # returns entities either below a certain path or belonging to a certain kind or mixin
     get '*' do
       OCCI::Log.debug('GET')
       if request.path_info.end_with?('/')
@@ -275,8 +280,8 @@ module OCCI
       status 200
     end
 
-# ---------------------------------------------------------------------------------------------------------------------
-# POST request
+    # ---------------------------------------------------------------------------------------------------------------------
+    # POST request
     post '/-/', '/.well-known/org/ogf/occi/-/' do
       logger.info("## Creating user defined mixin ###")
       raise "Mixin already exists!" if @backend.model.get(@request_collection).mixins.any?
@@ -286,7 +291,7 @@ module OCCI
       end
     end
 
-# Create an instance appropriate to category field and optionally link an instance to another one
+    # Create an instance appropriate to category field and optionally link an instance to another one
     post '*' do
       OCCI::Log.debug('### POST request processing ...')
       category = @backend.model.get_by_location(request.path_info.rpartition('/').first + '/')
@@ -347,8 +352,8 @@ module OCCI
 
     end
 
-# ---------------------------------------------------------------------------------------------------------------------
-# PUT request
+    # ---------------------------------------------------------------------------------------------------------------------
+    # PUT request
 
     put '*' do
       status 501
@@ -458,8 +463,8 @@ module OCCI
 
     end
 
-# ---------------------------------------------------------------------------------------------------------------------
-# DELETE request
+    # ---------------------------------------------------------------------------------------------------------------------
+    # DELETE request
 
     delete '/-/', '/.well-known/org/ogf/occi/-/' do
       # Location references query interface => delete provided mixin
@@ -488,35 +493,35 @@ module OCCI
 
       categories.each do |category|
         case category
-          when OCCI::Core::Mixin
-            mixin = category
-            OCCI::Log.debug("### Deleting entities from mixin #{mixin.type_identifier} ###")
-            @request_collection.locations.each do |location|
-              uuid = location.to_s.rpartition('/').last
-              mixin.entities.delete_if { |entity| entity.id == uuid }
-            end
-          when OCCI::Core::Kind
-            kind = category
-            if request.path_info.end_with?('/')
-              if @request_collection.mixins.any?
-                @request_collection.mixins.each do |mixin|
-                  OCCI::Log.debug("### Deleting entities from kind #{kind.type_identifier} with mixin #{mixin.type_identifier} ###")
-                  kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity) if mixin.include?(entity) }
-                  kind.entities.delete_if { |entity| mixin.include?(entity) }
-                  # TODO: links
-                end
-              else
+        when OCCI::Core::Mixin
+          mixin = category
+          OCCI::Log.debug("### Deleting entities from mixin #{mixin.type_identifier} ###")
+          @request_collection.locations.each do |location|
+            uuid = location.to_s.rpartition('/').last
+            mixin.entities.delete_if { |entity| entity.id == uuid }
+          end
+        when OCCI::Core::Kind
+          kind = category
+          if request.path_info.end_with?('/')
+            if @request_collection.mixins.any?
+              @request_collection.mixins.each do |mixin|
+                OCCI::Log.debug("### Deleting entities from kind #{kind.type_identifier} with mixin #{mixin.type_identifier} ###")
+                kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity) if mixin.include?(entity) }
+                kind.entities.delete_if { |entity| mixin.include?(entity) }
                 # TODO: links
-                OCCI::Log.debug("### Deleting entities from kind #{kind.type_identifier} ###")
-                kind.entities.each { |resource| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, resource) }
-                kind.entities.clear
               end
             else
-              uuid = request.path_info.rpartition('/').last
-              OCCI::Log.debug("### Deleting entity with id #{uuid} from kind #{kind.type_identifier} ###")
-              kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity) if entity.id == uuid }
-              kind.entities.delete_if { |entity| entity.id == uuid }
+              # TODO: links
+              OCCI::Log.debug("### Deleting entities from kind #{kind.type_identifier} ###")
+              kind.entities.each { |resource| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, resource) }
+              kind.entities.clear
             end
+          else
+            uuid = request.path_info.rpartition('/').last
+            OCCI::Log.debug("### Deleting entity with id #{uuid} from kind #{kind.type_identifier} ###")
+            kind.entities.each { |entity| OCCI::Backend::Manager.signal_resource(@client, @backend, OCCI::Backend::RESOURCE_DELETE, entity) if entity.id == uuid }
+            kind.entities.delete_if { |entity| entity.id == uuid }
+          end
         end
       end
 
