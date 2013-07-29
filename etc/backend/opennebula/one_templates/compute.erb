@@ -14,7 +14,7 @@ OCCI_MIXIN    = "<%= mixin %>"
 NAME          = "<%= @compute.title ||= "rOCCI VM" %>"
 DESCRIPTION   = "<%= @compute.summary ||= "VM instantiated using rOCCI-server" %>"
 <% if @compute.attributes.occi!.compute!.memory %>
-MEMORY        = "<%= (@compute.attributes.occi!.compute!.memory.to_f * 1000).to_i %>"
+MEMORY        = "<%= (@compute.attributes.occi!.compute!.memory.to_f * 1024).to_i %>"
 <% else %>
 MEMORY        = "512"
 <% end %>
@@ -38,20 +38,20 @@ OS = [
 ]           
 
 <%# Links to images %>
-<% @compute.links.select {|link| link.kind == "http://schemas.ogf.org/occi/infrastructure#storagelink"}.each do |storagelink| %>
+<% @compute.links.select {|link| link.rel == "http://schemas.ogf.org/occi/infrastructure#storage"}.each do |storagelink| %>
 DISK = [
     <% storage = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first %>
-    LINK_OCCI_ID = "<%= storagelink.id %>",
+    LINK_OCCI_ID = "<%= storagelink.attributes.occi.core.id %>"
     <% storagelink.mixins.each do |mixin| %>
-        LINK_OCCI_MIXIN    = "<%= mixin %>"
+        ,LINK_OCCI_MIXIN    = "<%= mixin %>"
     <% end %>
-    STORAGE_OCCI_ID = "<%= storage.id %>",
+    ,STORAGE_OCCI_ID = "<%= storage.id %>"
     <% if restricted.include? "SOURCE" %>
 	<%# IMAGE 	= <%= @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage").entities.select {|storage| storage.id == storagelink.target.split('/').last}.first.title.inspect %>
-        IMAGE_ID = <%= storage.attributes.org!.opennebula!.storage!.id %>
+        ,IMAGE_ID = <%= storage.attributes.org!.opennebula!.storage!.id %>
     <% else %>
-    TYPE    = "OS",
-    SOURCE  = "<%= storagelink.target %>"
+    ,TYPE    = "OS"
+    ,SOURCE  = "<%= storagelink.source %>"
     <% end %>
 
     <% if @compute.attributes.occi!.storagelink!.deviceid %>
@@ -67,16 +67,16 @@ DISK = [
 <%end if @compute.links%>
 
 <%# Links to networks %>
-<% @compute.links.select {|link| link.kind == "http://schemas.ogf.org/occi/infrastructure#networkinterface"}.each do |networkinterface| %>
+<% @compute.links.select {|link| link.rel == "http://schemas.ogf.org/occi/infrastructure#network"}.each do |networkinterface| %>
 NIC = [
     <% network = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first %>
-    LINK_OCCI_ID = "<%= networkinterface.id %>",
+    LINK_OCCI_ID = "<%= networkinterface.attributes.occi.core.id %>"
     <% networkinterface.mixins.each do |mixin| %>
-        LINK_OCCI_MIXIN    = "<%= mixin %>"
+        ,LINK_OCCI_MIXIN    = "<%= mixin %>"
     <% end %>
-    NETWORK_OCCI_ID = "<%= network.id %>",
+    ,NETWORK_OCCI_ID = "<%= network.id %>"
     <%# NETWORK   = <%= @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network").entities.select {|network| network.id == networkinterface.target.split('/').last}.first.title.inspect %>
-    NETWORK_ID = <%= network.attributes.org!.opennebula!.network!.id %>
+    ,NETWORK_ID = <%= network.attributes.org!.opennebula!.network!.id %>
 
     <% if @compute.attributes.occi!.networkinferface!.address %>
     ,IP        = <%= @compute.attributes.occi!.networkinferface!.address %>

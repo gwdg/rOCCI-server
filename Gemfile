@@ -1,27 +1,27 @@
-source "https://rubygems.org/"
+source 'https://rubygems.org'
 
 # external ruby libraries
-gem "uuidtools", ">=2.1.3"
+gem "uuidtools", "~> 2.1.3"
 gem "json"
 gem "antlr3"
-gem "hashie"
-gem "nokogiri"
+gem "hashie", "~> 1.2.0"
+gem "nokogiri", "~> 1.5.9"
 gem "builder"
 gem "erubis"
-gem "occi", "~>2.5.12"
+gem "occi", "~> 2.5.12"
 #gem "occi", :path => "/Users/ffeldhaus/Development/rOCCI"
-gem "oca", "~>3.4.0"
+gem "oca", "~> 3.4.0"
+
+# sinatra and related
+gem "sinatra", "~> 1.3.2"
+gem "sinatra-contrib", "~> 1.3.1"
+gem "sinatra-cross_origin", "~> 0.2.0"
 
 # occi_amqp
 gem "amqp"
 
-# sinatra and related
-gem "sinatra"
-gem "sinatra-contrib"
-gem "sinatra-cross_origin"
-
 # active gems
-gem "activesupport"
+gem "activesupport", "~> 3.2.14"
 
 # passenger
 gem "passenger"
