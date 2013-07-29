@@ -6,7 +6,7 @@ Encoding.default_internal = Encoding::UTF_8 if defined? Encoding
 
 module OCCI
   class Server
-    VERSION = "0.5.0"
+    VERSION = "1.0.0.alpha.1"
 
     def initialize()
       logger = Logger.new(STDERR)

@@ -76,21 +76,26 @@ module OCCI
 
             # Get VOMS extension
             if proxy_cert_subject && request.env['GRST_CRED_2']
-              # Parse extension and drop useless first element of MatchData
-              voms_ext = grst_cred_regexp.match request.env['GRST_CRED_2']
-              voms_ext = voms_ext.to_a.drop 1
+              # Find the first VOMS extension in GRST_CRED_[2 - 10]
+              (2..10).each do |idx|
+                break unless request.env["GRST_CRED_#{idx}"]
 
-              if voms_ext && voms_ext[0] == "VOMS"
+                # Parse extension and drop useless first element of MatchData
+                voms_ext = grst_cred_regexp.match request.env["GRST_CRED_#{idx}"]
+                voms_ext = voms_ext.to_a.drop 1
+
+                next unless voms_ext && voms_ext[0] == "VOMS"
+
                 # Parse group, role and capability from VOMS extension
                 voms_ary = grst_voms_regexp.match voms_ext[4]
+                voms_ary = voms_ary.to_a.drop 1
 
                 # Append found values to user's DN
-                if voms_ary && voms_ary[1] && voms_ary[2] && voms_ary[3]
-                  OCCI::Log.debug "VOMS ext: vo=#{voms_ary[1]} role=#{voms_ary[2]} capability=#{voms_ary[3]}"
-                  proxy_cert_subject = proxy_cert_subject << "/VO=#{voms_ary[1]}/Role=#{voms_ary[2]}/Capability=#{voms_ary[3]}"
+                if voms_ary && voms_ary[0] && voms_ary[1] && voms_ary[2]
+                  OCCI::Log.debug "VOMS ext: vo=#{voms_ary[0]} role=#{voms_ary[1]} capability=#{voms_ary[2]}"
+                  proxy_cert_subject = proxy_cert_subject << "/VO=#{voms_ary[0]}/Role=#{voms_ary[1]}/Capability=#{voms_ary[2]}"
+                  break
                 end
-              else
-                OCCI::Log.warn "This VOMS extension seems to be malformed! #{request.env['GRST_CRED_2']}"
               end
             else
               OCCI::Log.debug "This proxy certificate doesn't contain VOMS extensions!"
