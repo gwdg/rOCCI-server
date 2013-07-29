@@ -220,8 +220,6 @@ module OCCI
 
           OCCI::Log.debug("Compute deploy OS template: #{os_tpl} #{os_tpl.nil? ? 'No template found!' : os_tpl.title}")
 
-          backend_object = nil
-
           templates = TemplatePool.new(client)
           templates.info_all
 
@@ -233,6 +231,7 @@ module OCCI
             }.first
           end
 
+          backend_object = nil
           if template
 
             if compute.attributes.occi.compute
@@ -268,8 +267,22 @@ module OCCI
               template.add_element('TEMPLATE', "OCCI_MIXIN" => mixin)
             end
 
+            if compute.attributes.org!.openstack
+              template.add_element('TEMPLATE', "CONTEXT")
+
+              if compute.attributes.org!.openstack!.credentials!.publickey!.data
+                template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
+                template.add_element('TEMPLATE/CONTEXT', "SSH_KEY" => compute.attributes.org.openstack.credentials.publickey.data)
+              end
+
+              if compute.attributes.org!.openstack!.compute!.user_data
+                template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
+                template.add_element('TEMPLATE/CONTEXT', "USER_DATA" => compute.attributes.org.openstack.compute.user_data)
+              end
+            end
+
             vm_name = ""
-            vm_name = compute.attributes.occi.core.title unless compute.attributes.occi.core.title.nil? or compute.attributes.occi.core.title.empty?
+            vm_name = compute.attributes.occi.core.title if compute.attributes.occi.core.title
 
             # remove template-specific values
             template.delete_element('ID')
@@ -285,25 +298,20 @@ module OCCI
             template.delete_element('TEMPLATE/NAME')
             template.add_element('TEMPLATE', 'NAME' => vm_name || "rOCCIVMGeneric")
 
-            OCCI::Log.debug "Template #{template.template_str}"
-
-            backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
-
-            rc = backend_object.allocate(template.template_str)
-            check_rc(rc)
-
-            OCCI::Log.debug("Return code from OpenNebula #{rc}") if rc != nil
+            template = template.template_str
+            OCCI::Log.debug "Template #{template}"
           else
-            backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
-
             template_location = File.dirname(__FILE__) + '/../../../../etc/backend/opennebula/one_templates/' + TEMPLATECOMPUTERAWFILE
             template          = Erubis::Eruby.new(File.read(template_location)).evaluate({ :compute => compute, :model => @model })
 
             OCCI::Log.debug("Parsed template #{template}")
-            rc = backend_object.allocate(template)
-            check_rc(rc)
-            OCCI::Log.debug("Return code from OpenNebula #{rc}") if rc != nil
           end
+
+          backend_object = VirtualMachine.new(VirtualMachine.build_xml, client)
+
+          rc = backend_object.allocate(template)
+          check_rc(rc)
+          OCCI::Log.debug("Return code from OpenNebula #{rc}") if rc != nil
 
           backend_object.info
           OCCI::Log.debug("OCCI Compute resource #{backend_object.inspect}")

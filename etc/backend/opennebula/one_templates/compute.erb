@@ -5,6 +5,8 @@
 <% vnc_enable = false #or true %>
 <%# Some restricted attributes cannot be used it the template, WIP%>
 <% restricted = ["SOURCE", "RANK"] %>
+<%# Path or URL to your contextualization init.sh script %>
+<% context_init = "/home/oneadmin/init.sh" %>
 
 <%# Mandatory settings %>
 OCCI_ID       = "<%= @compute.id %>"
@@ -19,23 +21,37 @@ MEMORY        = "<%= (@compute.attributes.occi!.compute!.memory.to_f * 1024).to_
 MEMORY        = "512"
 <% end %>
 VCPU          = "<%= @compute.attributes.occi!.compute!.cores ||= 1 %>"
-CPU        	  = "<%= @compute.attributes.occi!.compute!.speed ||= 0.01 %>"
+CPU           = "<%= @compute.attributes.occi!.compute!.speed ||= 0.01 %>"
 
 <%# Hypervisor specific settings %>
 RAW = [TYPE = <%= hypervisor.to_s %>]
 OS = [
-	<% if @compute.attributes.occi!.compute!.architecture == "x64" %>
-	ARCH = "x86_64"
-	<% else %>
-	ARCH = "i686"
-	<% end %>
+   <% if @compute.attributes.occi!.compute!.architecture == "x64" %>
+     ARCH = "x86_64"
+   <% else %>
+     ARCH = "i686"
+  <% end %>
 
-        <% if hypervisor == :xen  %>
-        ,BOOTLOADER = "pygrub"
-        <% else %>
-	,BOOT          = "<%= @compute.attributes.org!.opennebula!.boot ||= "hd" %>"
-        <% end  %>
-]           
+  <% if hypervisor == :xen  %>
+     ,BOOTLOADER = "pygrub"
+  <% else %>
+     ,BOOT = "<%= @compute.attributes.org!.opennebula!.boot ||= "hd" %>"
+  <% end  %>
+]
+
+<%# Contextualization %>
+CONTEXT=[
+  FILES="<%= context_init %>",
+  PUBLIC_IP="$NIC[IP]",
+  <% if @compute.attributes.org!.openstack!.credentials!.publickey!.data%>
+  SSH_KEY="<%= @compute.attributes.org.openstack.credentials.publickey.data %>"
+  <% else %>
+  SSH_KEY="$USER[SSH_KEY]"
+  <% end %>
+  <% if @compute.attributes.org!.openstack!.compute!.user_data %>
+  ,USER_DATA="<%= @compute.attributes.org!.openstack!.compute!.user_data %>"
+  <% end %>
+]
 
 <%# Links to images %>
 <% @compute.links.select {|link| link.rel == "http://schemas.ogf.org/occi/infrastructure#storage"}.each do |storagelink| %>
