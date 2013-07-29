@@ -48,6 +48,7 @@ module OCCI
           network_kind = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#network")
 
           id = backend_object['TEMPLATE/OCCI_ID']
+          id ||= backend_object['USER_TEMPLATE/OCCI_ID']
           id ||= self.generate_occi_id(network_kind, backend_object.id.to_s)
 
           @@location_cache[id] = backend_object.id.to_s
@@ -59,11 +60,15 @@ module OCCI
           backend_object.each 'TEMPLATE/OCCI_MIXIN' do |mixin|
             network.mixins << mixin.text
           end
+          backend_object.each 'USER_TEMPLATE/OCCI_MIXIN' do |mixin|
+            network.mixins << mixin.text
+          end
           network.mixins.uniq!
 
           network.id = id
           network.title = backend_object['NAME'] if backend_object['NAME']
           network.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
+          network.summary = backend_object['USER_TEMPLATE/DESCRIPTION'] if backend_object['USER_TEMPLATE/DESCRIPTION']
 
           network.attributes.occi!.network!.address = backend_object['TEMPLATE/NETWORK_ADDRESS'] if backend_object['TEMPLATE/NETWORK_ADDRESS']
           network.attributes.occi!.network!.gateway = backend_object['TEMPLATE/GATEWAY'] if backend_object['TEMPLATE/GATEWAY']
@@ -79,16 +84,16 @@ module OCCI
               network.attributes.occi!.network!.address = backend_object['NETWORK_ADDRESS']
             else
               cidr = case backend_object['NETWORK_SIZE']
-                       when 'A'
-                         8
-                       when 'B'
-                         16
-                       when 'C'
-                         24
-                       when /\d/
-                         (32-(Math.log(backend_object['NETWORK_SIZE'])/Math.log(2)).ceil).to_s
-                       else
-                         0
+                     when 'A'
+                       8
+                     when 'B'
+                       16
+                     when 'C'
+                       24
+                     when /\d/
+                       (32-(Math.log(backend_object['NETWORK_SIZE'])/Math.log(2)).ceil).to_s
+                     else
+                       0
                      end
               cidr = IPAddr.new(backend_object['NETWORK_MASK']).to_i.to_s(2).count("1") if  backend_object['NETWORK_MASK']
 
