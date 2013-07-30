@@ -268,7 +268,7 @@ module OCCI
             end
 
             if compute.attributes.org!.openstack
-              template.add_element('TEMPLATE', "CONTEXT")
+              template.add_element('TEMPLATE', "CONTEXT" => '')
 
               if compute.attributes.org!.openstack!.credentials!.publickey!.data
                 template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
