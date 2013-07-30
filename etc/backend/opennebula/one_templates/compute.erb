@@ -1,11 +1,14 @@
 <%# Template options %>
 <%# Some default values are hypervisor specific %>
 <% hypervisor = :kvm #or :xen %>
-<%# Should we automaticaly enable VNC? %>
+<%# Should we automatically enable VNC? %>
 <% vnc_enable = false #or true %>
 <%# Some restricted attributes cannot be used it the template, WIP%>
 <% restricted = ["SOURCE", "RANK"] %>
+<%# Should we automatically insert CONTEXT? %>
+<% contextualization = false # or true %>
 <%# Path or URL to your contextualization init.sh script %>
+<%# If you enable contextualization, you HAVE TO provide an init script! %>
 <% context_init = "/home/oneadmin/init.sh" %>
 
 <%# Mandatory settings %>
@@ -40,6 +43,7 @@ OS = [
 ]
 
 <%# Contextualization %>
+<% if contextualization %>
 CONTEXT=[
   FILES="<%= context_init %>",
   PUBLIC_IP="$NIC[IP]",
@@ -52,6 +56,7 @@ CONTEXT=[
   ,USER_DATA="<%= @compute.attributes.org!.openstack!.compute!.user_data %>"
   <% end %>
 ]
+<% end %>
 
 <%# Links to images %>
 <% @compute.links.select {|link| link.rel == "http://schemas.ogf.org/occi/infrastructure#storage"}.each do |storagelink| %>
