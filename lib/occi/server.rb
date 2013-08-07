@@ -81,11 +81,12 @@ module OCCI
       if basic_auth.provided? && basic_auth.basic?
         username, password = basic_auth.credentials
         halt 403, "Password in request does not match password of user #{username}" unless @backend.authorized?(username, password)
-        puts "basic auth successful"
+        OCCI::Log.debug "Basic auth successful for #{username}"
         username
       elsif digest_auth.provided? && digest_auth.digest?
         username, password = digest_auth.credentials
         halt 403, "Password in request does not match password of user #{username}" unless @backend.authorized?(username, password)
+        OCCI::Log.debug "Digest auth successful for #{username}"
         username
       elsif request.env['SSL_CLIENT_S_DN']
         # For https, the web service should be set to include the user cert in the environment
