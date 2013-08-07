@@ -1,7 +1,7 @@
 rOCCI Server - A Ruby OCCI Server
 =============================
 
-**rOCCI-server is going through a complete re-design and re-write. Please, do NOT use the master branch for deployment in production or testing environments! Use the stable [0.5.x](https://github.com/gwdg/rOCCI-server/tree/0.5.x) branch as described in [Installation#Production](https://github.com/arax/rOCCI-server#production).**
+**rOCCI-server is going through a complete re-design and re-write. Please, do NOT use the master branch for deployment in production or testing environments! Use the stable [0.5.x](https://github.com/gwdg/rOCCI-server/tree/0.5.x) branch as described in [Installation#Production](https://github.com/gwdg/rOCCI-server#production).**
 
 [![Build Status](https://secure.travis-ci.org/gwdg/rOCCI-server.png)](http://travis-ci.org/gwdg/rOCCI-server) [![Dependency Status](https://gemnasium.com/gwdg/rOCCI-server.png)](https://gemnasium.com/gwdg/rOCCI-server)
 
