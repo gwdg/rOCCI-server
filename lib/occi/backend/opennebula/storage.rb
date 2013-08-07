@@ -47,6 +47,7 @@ module OCCI
           storage_kind = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage")
 
           id = backend_object['TEMPLATE/OCCI_ID']
+          id ||= backend_object['USER_TEMPLATE/OCCI_ID']
           id ||= self.generate_occi_id(storage_kind, backend_object.id.to_s)
 
           @@location_cache[id] = backend_object.id.to_s
@@ -57,11 +58,15 @@ module OCCI
           backend_object.each 'TEMPLATE/OCCI_MIXIN' do |mixin|
             storage.mixins << mixin.text
           end
+          backend_object.each 'USER_TEMPLATE/OCCI_MIXIN' do |mixin|
+            storage.mixins << mixin.text
+          end
           storage.mixins.uniq!
 
           storage.id = id
           storage.title = backend_object['NAME'] if backend_object['NAME']
           storage.summary = backend_object['TEMPLATE/DESCRIPTION'] if backend_object['TEMPLATE/DESCRIPTION']
+          storage.summary = backend_object['USER_TEMPLATE/DESCRIPTION'] if backend_object['USER_TEMPLATE/DESCRIPTION']
 
           storage.attributes.occi!.storage!.size = backend_object['TEMPLATE/SIZE'].to_f/1000 if backend_object['TEMPLATE/SIZE']
 
@@ -115,15 +120,15 @@ module OCCI
         def storage_set_state(backend_object, storage)
           OCCI::Log.debug("current Image state is: #{backend_object.state_str}")
           case backend_object.state_str
-            when "READY", "USED", "LOCKED" then
-              storage.attributes.occi!.storage!.state = "online"
-              storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#offline http://schemas.ogf.org/occi/infrastructure/storage/action#backup http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot http://schemas.ogf.org/occi/infrastructure/storage/action#resize|
-            when "ERROR" then
-              storage.attributes.occi!.storage!.state = "degraded"
-              storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online'|
-            else
-              storage.attributes.occi!.storage!.state = "offline"
-              storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online http://schemas.ogf.org/occi/infrastructure/storage/action#backup http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot http://schemas.ogf.org/occi/infrastructure/storage/action#resize|
+          when "READY", "USED", "LOCKED" then
+            storage.attributes.occi!.storage!.state = "online"
+            storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#offline http://schemas.ogf.org/occi/infrastructure/storage/action#backup http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot http://schemas.ogf.org/occi/infrastructure/storage/action#resize|
+          when "ERROR" then
+            storage.attributes.occi!.storage!.state = "degraded"
+            storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online'|
+          else
+            storage.attributes.occi!.storage!.state = "offline"
+            storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online http://schemas.ogf.org/occi/infrastructure/storage/action#backup http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot http://schemas.ogf.org/occi/infrastructure/storage/action#resize|
           end
         end
 
