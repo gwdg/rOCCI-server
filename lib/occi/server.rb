@@ -29,6 +29,11 @@ module OCCI
     def initialize
 
       logger = Logger.new(STDERR)
+      if settings.development?
+        logger.level = Logger::DEBUG
+      else
+        logger.level = Logger::WARN
+      end
 
       @log_subscriber = ActiveSupport::Notifications.subscribe("log") do |name, start, finish, id, payload|
         logger.log(payload[:level], payload[:message])
