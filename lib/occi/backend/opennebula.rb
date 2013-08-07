@@ -88,10 +88,8 @@ module OCCI
       end
 
       def authorized?(username, password)
-        one_pass = get_password(username, 'core|public')
-        one_user = get_username(Digest::SHA1.hexdigest(password))
-        return true if (one_pass == Digest::SHA1.hexdigest(password) && one_user == username)
-        false
+        return if username.blank? || password.blank?
+        (get_password(username, 'core|public') == Digest::SHA1.hexdigest(password))
       end
 
       # Gets the password associated with a username
@@ -103,7 +101,7 @@ module OCCI
         rc        = user_pool.info
         raise rc.message if check_rc(rc)
 
-        xpath = "USER[NAME=\"#{username}\""
+        xpath = "USER[NAME=#{username.encode(:xml => :attr)}"
         if driver
           xpath << " and (AUTH_DRIVER=\""
           xpath << driver.split('|').join("\" or AUTH_DRIVER=\"") << '")'
@@ -113,33 +111,41 @@ module OCCI
         user_pool[xpath]
       end
 
-      # Gets the username associated with a password
-      # password:: _String_ the password
+      # Gets the username associated with a cert_subject
+      # cert_subject:: _String_ DN from user's certificate
       # [return] _Hash_ with the username
-      def get_username(password)
+      def get_username(cert_subject)
         user_pool = OpenNebula::UserPool.new(client)
         rc        = user_pool.info
         raise rc.message if check_rc(rc)
 
-        password = password.to_s.delete("\s")
+        username = nil
+        user_pool.each do |x509_user|
+          next unless x509_user["AUTH_DRIVER"] == "x509"
 
-        xpath = "USER[PASSWORD=\"#{password}\"]/NAME"
-        username = user_pool[xpath]
-
-        if username.nil?
-          user_pool.each do |x509_user|
-            x509_user["PASSWORD"].split('|').each do |x509_user_dn|
-              if x509_user_dn == password
-                username = x509_user["NAME"]
-                break
-              end
-            end if x509_user["AUTH_DRIVER"] == "x509"
-
-            break unless username.nil?
+          x509_user["PASSWORD"].split('|').each do |x509_user_dn|
+            if stored_dn_matches_cert_subject?(x509_user_dn, cert_subject)
+              username = x509_user["NAME"]
+              break
+            end
           end
+
+          break if username
         end
 
         username
+      end
+
+      # Returns true if given cert_subject after normalization
+      # matches stored_x509_dn
+      def stored_dn_matches_cert_subject?(stored_x509_dn, cert_subject)
+        # first, try removing spaces
+        return true if stored_x509_dn == cert_subject.delete("\s")
+
+        # then, try the more complicated encoding used in ON 4.x+
+        return true if stored_x509_dn == cert_subject.gsub(/\s/) { |s| "\\"+s[0].ord.to_s(16) }
+
+        false
       end
 
       # Generate a new OpenNebula client for the target User, if the username
