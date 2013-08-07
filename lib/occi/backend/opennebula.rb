@@ -101,7 +101,7 @@ module OCCI
         rc        = user_pool.info
         raise rc.message if check_rc(rc)
 
-        xpath = "USER[NAME=\"#{username.encode(:xml => :attr)}\""
+        xpath = "USER[NAME=#{username.encode(:xml => :attr)}"
         if driver
           xpath << " and (AUTH_DRIVER=\""
           xpath << driver.split('|').join("\" or AUTH_DRIVER=\"") << '")'
