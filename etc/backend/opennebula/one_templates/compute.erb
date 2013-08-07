@@ -53,7 +53,7 @@ CONTEXT=[
   SSH_KEY="$USER[SSH_KEY]"
   <% end %>
   <% if @compute.attributes.org!.openstack!.compute!.user_data %>
-  ,USER_DATA="<%= @compute.attributes.org!.openstack!.compute!.user_data %>"
+  ,USER_DATA="<%= @compute.attributes.org.openstack.compute.user_data %>"
   <% end %>
 ]
 <% end %>
