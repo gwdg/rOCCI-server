@@ -80,11 +80,13 @@ module OCCI
       digest_auth = Rack::Auth::Digest::Request.new(env)
       if basic_auth.provided? && basic_auth.basic?
         username, password = basic_auth.credentials
+        OCCI::Log.debug "Checking basic auth for #{username}"
         halt 403, "Password in request does not match password of user #{username}" unless @backend.authorized?(username, password)
         OCCI::Log.debug "Basic auth successful for #{username}"
         username
       elsif digest_auth.provided? && digest_auth.digest?
         username, password = digest_auth.credentials
+        OCCI::Log.debug "Checking digest auth for #{username}"
         halt 403, "Password in request does not match password of user #{username}" unless @backend.authorized?(username, password)
         OCCI::Log.debug "Digest auth successful for #{username}"
         username
@@ -224,6 +226,8 @@ module OCCI
     end
 
     after do
+      return if [403].include?(response.status.to_i)
+
       @collection ||= OCCI::Collection.new
       @locations  ||= Array.new
       OCCI::Log.debug('### Rendering response ###')
@@ -264,6 +268,7 @@ module OCCI
           kinds = [@backend.model.get_by_location(request.path_info)]
         end
 
+        kinds.compact!
         kinds.each do |kind|
           OCCI::Log.info("### Listing all entities of kind #{kind.type_identifier} ###")
           @collection.resources.concat kind.entities if kind.entity_type == OCCI::Core::Resource
