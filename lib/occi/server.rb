@@ -28,15 +28,11 @@ module OCCI
 
     def initialize
 
-      logger = Logger.new(STDERR)
+      log = OCCI::Log.new(STDERR)
       if settings.development?
-        logger.level = Logger::DEBUG
+        log.level = OCCI::Log::DEBUG
       else
-        logger.level = Logger::WARN
-      end
-
-      @log_subscriber = ActiveSupport::Notifications.subscribe("log") do |name, start, finish, id, payload|
-        logger.log(payload[:level], payload[:message])
+        log.level = OCCI::Log::WARN
       end
 
       @model = OCCI::Model.new
@@ -294,7 +290,7 @@ module OCCI
     # ---------------------------------------------------------------------------------------------------------------------
     # POST request
     post '/-/', '/.well-known/org/ogf/occi/-/' do
-      logger.info("## Creating user defined mixin ###")
+      OCCI::Log.info("## Creating user defined mixin ###")
       raise "Mixin already exists!" if @backend.model.get(@request_collection).mixins.any?
       @request_collection.mixins.each do |mixin|
         @backend.model.register(mixin)
