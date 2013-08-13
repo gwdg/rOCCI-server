@@ -1,3 +1,0 @@
-[submodule "public/novnc"]
-	path = public/novnc
-	url = git://github.com/kanaka/noVNC
