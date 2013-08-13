@@ -40,6 +40,46 @@ end
 
 # Use Capistrano for deployment
 gem 'capistrano', group: :development
+gem 'rvm-capistrano', group: :development
 
 # Use debugger
 gem 'debugger', group: [:development, :test]
+
+# Use whenever for scheduled jobs
+gem 'whenever', require: false
+
+# Use passenger for deployment (standalone or in Apache2)
+gem 'passenger'
+
+# Use cancan for resource-centric authorization
+gem 'cancan'
+
+# Use simplecov for coverage reports
+gem 'simplecov', group: [:development, :test]
+
+# Use RSpec for unit tests
+gem 'rspec-rails', '~> 2.0', group: [:development, :test]
+
+# Use guard to speed-up devel process
+gem 'guard-bundler', group: :development
+gem 'guard-test', group: :development
+gem 'guard-rails', group: :development
+
+# Use notification libs to integrate guard with pop-ups
+gem 'rb-inotify', '~> 0.8.8', require: false, group: :development
+gem 'libnotify', group: :development
+
+# Use bond+hirb to extend irb
+#
+# Add the following to your ~/.irbrc:
+#
+# require 'bond'
+# require 'hirb'
+#
+# Bond.start
+# Hirb.enable
+#
+# Or type it in the current irb session.
+
+gem 'bond', group: :development
+gem 'hirb', group: :development
