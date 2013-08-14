@@ -3,9 +3,6 @@ source 'https://rubygems.org'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '>= 4.0.0', '< 4.1.0'
 
-# Use sqlite3 as the database for Active Record
-gem 'sqlite3'
-
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 1.2'
 
@@ -65,9 +62,9 @@ gem 'hirb', group: :development
 
 # Use DataMapper
 gem 'dm-core', git: 'https://github.com/datamapper/dm-core', branch: 'release-1.2'
-gem 'dm-active_model', git: 'https://github.com/datamapper/dm-active_model.git', branch: 'release-1.2'
-gem 'dm-validations', git: 'https://github.com/datamapper/dm-validations.git', branch: 'release-1.2'
-gem 'dm-rails', git: 'https://github.com/datamapper/dm-rails.git', branch: 'release-1.2'
+gem 'dm-active_model', git: 'https://github.com/datamapper/dm-active_model', branch: 'release-1.2'
+gem 'dm-validations', git: 'https://github.com/datamapper/dm-validations', branch: 'release-1.2'
+gem 'dm-rails', git: 'https://github.com/arax/dm-rails', branch: 'release-1.2'
 gem 'dm-migrations', git: 'https://github.com/datamapper/dm-migrations', branch: 'release-1.2'
 gem 'dm-types', git: 'https://github.com/datamapper/dm-types', branch: 'release-1.2'
 gem 'dm-constraints', git: 'https://github.com/datamapper/dm-constraints', branch: 'release-1.2'
