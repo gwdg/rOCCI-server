@@ -1,3 +1,103 @@
+GIT
+  remote: https://github.com/datamapper/dm-active_model.git
+  revision: c3b6ee07d40b8e2b4dbd60166a707da45beaefb4
+  branch: release-1.2
+  specs:
+    dm-active_model (1.2.1)
+      activemodel (>= 3.0, < 5.0)
+      dm-active_model
+      dm-core (~> 1.2, >= 1.2.0)
+
+GIT
+  remote: https://github.com/datamapper/dm-aggregates
+  revision: 278042a49310baf42f18fac85a574e7c88923669
+  branch: release-1.2
+  specs:
+    dm-aggregates (1.2.0)
+      dm-core (~> 1.2.0)
+
+GIT
+  remote: https://github.com/datamapper/dm-constraints
+  revision: 754f0b45d4eaafd5a9f7a2014d88a2b5c97e4dcb
+  branch: release-1.2
+  specs:
+    dm-constraints (1.2.0)
+      dm-core (~> 1.2.0)
+
+GIT
+  remote: https://github.com/datamapper/dm-core
+  revision: 7cc4c145329e81d8b373a37694d050aa197c3699
+  branch: release-1.2
+  specs:
+    dm-core (1.2.1)
+      addressable (~> 2.3, >= 2.3.5)
+
+GIT
+  remote: https://github.com/datamapper/dm-migrations
+  revision: 28bb3b0c3005773ad09e9ee82cf8d45f93a9ec48
+  branch: release-1.2
+  specs:
+    dm-migrations (1.2.0)
+      dm-core (~> 1.2.0)
+
+GIT
+  remote: https://github.com/datamapper/dm-observer
+  revision: e737e29dbc54a6cc04e995066bffa159d696db83
+  branch: release-1.2
+  specs:
+    dm-observer (1.2.0)
+      dm-core (~> 1.2.0)
+
+GIT
+  remote: https://github.com/datamapper/dm-rails.git
+  revision: 30e992275262245b24a71cf09dc57fa3b723eb85
+  branch: release-1.2
+  specs:
+    dm-rails (1.2.1)
+      actionpack (>= 3.0, < 5.0)
+      dm-active_model (~> 1.2.0)
+      dm-core (~> 1.2.0)
+      railties (>= 3.0, < 5.0)
+
+GIT
+  remote: https://github.com/datamapper/dm-timestamps
+  revision: 1d3e199632c8e97a964f843786a7039e3398f135
+  branch: release-1.2
+  specs:
+    dm-timestamps (1.2.0)
+      dm-core (~> 1.2.0)
+
+GIT
+  remote: https://github.com/datamapper/dm-transactions
+  revision: a400e7ffdca0a358b44698259584bb5c29f9f1b8
+  branch: release-1.2
+  specs:
+    dm-transactions (1.2.0)
+      dm-core (~> 1.2.0)
+
+GIT
+  remote: https://github.com/datamapper/dm-types
+  revision: 613cc5698874bb7a55603e196e1923157e96df08
+  branch: release-1.2
+  specs:
+    dm-types (1.2.2)
+      bcrypt-ruby (~> 3.0)
+      dm-core (~> 1.2.0)
+      fastercsv (~> 1.5)
+      json (~> 1.6)
+      multi_json (~> 1.0)
+      safe_yaml (~> 0.6.1)
+      stringex (~> 1.4)
+      uuidtools (~> 2.1)
+
+GIT
+  remote: https://github.com/datamapper/dm-validations.git
+  revision: b6542e79bb2ea022241ee8cf1e861153824ffda4
+  branch: release-1.2
+  specs:
+    dm-validations (1.2.0)
+      dm-core (~> 1.2.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -25,12 +125,14 @@ GEM
       multi_json (~> 1.3)
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
+    addressable (2.3.5)
     arel (4.0.0)
-    atomic (1.1.12)
+    atomic (1.1.13)
+    bcrypt-ruby (3.1.1)
     bond (0.4.3)
     builder (3.1.4)
     cancan (1.6.10)
-    capistrano (2.15.4)
+    capistrano (2.15.5)
       highline
       net-scp (>= 1.0.0)
       net-sftp (>= 2.0.0)
@@ -38,25 +140,17 @@ GEM
       net-ssh-gateway (>= 1.1.0)
     chronic (0.9.1)
     coderay (1.0.9)
-    coffee-rails (4.0.0)
-      coffee-script (>= 2.2.0)
-      railties (>= 4.0.0.beta, < 5.0)
-    coffee-script (2.2.0)
-      coffee-script-source
-      execjs
-    coffee-script-source (1.6.3)
     columnize (0.3.6)
     daemon_controller (1.1.5)
-    debugger (1.6.0)
+    debugger (1.6.1)
       columnize (>= 0.3.1)
       debugger-linecache (~> 1.2.0)
-      debugger-ruby_core_source (~> 1.2.1)
+      debugger-ruby_core_source (~> 1.2.3)
     debugger-linecache (1.2.0)
     debugger-ruby_core_source (1.2.3)
     diff-lcs (1.2.4)
     erubis (2.7.0)
-    execjs (1.4.0)
-      multi_json (~> 1.0)
+    fastercsv (1.5.5)
     ffi (1.9.0)
     formatador (0.2.4)
     guard (1.7.0)
@@ -80,9 +174,6 @@ GEM
     jbuilder (1.5.0)
       activesupport (>= 3.0.0)
       multi_json (>= 1.2.0)
-    jquery-rails (3.0.4)
-      railties (>= 3.0, < 5.0)
-      thor (>= 0.14, < 2.0)
     json (1.8.0)
     libnotify (0.8.1)
       ffi (>= 1.0.11)
@@ -132,7 +223,7 @@ GEM
       ffi (>= 0.5.0)
     rdoc (3.12.2)
       json (~> 1.4)
-    rspec-core (2.14.4)
+    rspec-core (2.14.5)
     rspec-expectations (2.14.1)
       diff-lcs (>= 1.1.3, < 2.0)
     rspec-mocks (2.14.3)
@@ -143,13 +234,9 @@ GEM
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
       rspec-mocks (~> 2.14.0)
-    rvm-capistrano (1.4.3)
+    rvm-capistrano (1.4.4)
       capistrano (>= 2.15.4)
-    sass (3.2.10)
-    sass-rails (4.0.0)
-      railties (>= 4.0.0.beta, < 5.0)
-      sass (>= 3.1.10)
-      sprockets-rails (~> 2.0.0)
+    safe_yaml (0.6.3)
     sdoc (0.3.20)
       json (>= 1.1.3)
       rdoc (~> 3.10)
@@ -168,6 +255,7 @@ GEM
       activesupport (>= 3.0)
       sprockets (~> 2.8)
     sqlite3 (1.3.7)
+    stringex (1.5.1)
     test-unit (2.5.5)
     thor (0.18.1)
     thread_safe (0.1.2)
@@ -176,12 +264,8 @@ GEM
     treetop (1.4.14)
       polyglot
       polyglot (>= 0.3.1)
-    turbolinks (1.3.0)
-      coffee-rails
     tzinfo (0.3.37)
-    uglifier (2.1.2)
-      execjs (>= 0.3.0)
-      multi_json (~> 1.0, >= 1.0.2)
+    uuidtools (2.1.4)
     whenever (0.8.4)
       activesupport (>= 2.3.4)
       chronic (>= 0.6.3)
@@ -193,24 +277,30 @@ DEPENDENCIES
   bond
   cancan
   capistrano
-  coffee-rails (~> 4.0.0)
   debugger
+  dm-active_model!
+  dm-aggregates!
+  dm-constraints!
+  dm-core!
+  dm-migrations!
+  dm-observer!
+  dm-rails!
+  dm-timestamps!
+  dm-transactions!
+  dm-types!
+  dm-validations!
   guard-bundler
   guard-rails
   guard-test
   hirb
   jbuilder (~> 1.2)
-  jquery-rails
   libnotify
   passenger
-  rails (= 4.0.0)
+  rails (>= 4.0.0, < 4.1.0)
   rb-inotify (~> 0.8.8)
   rspec-rails (~> 2.0)
   rvm-capistrano
-  sass-rails (~> 4.0.0)
   sdoc
   simplecov
   sqlite3
-  turbolinks
-  uglifier (>= 1.3.0)
   whenever

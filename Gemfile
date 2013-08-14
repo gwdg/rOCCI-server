@@ -1,28 +1,10 @@
 source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.0.0'
+gem 'rails', '>= 4.0.0', '< 4.1.0'
 
 # Use sqlite3 as the database for Active Record
 gem 'sqlite3'
-
-# Use SCSS for stylesheets
-gem 'sass-rails', '~> 4.0.0'
-
-# Use Uglifier as compressor for JavaScript assets
-gem 'uglifier', '>= 1.3.0'
-
-# Use CoffeeScript for .js.coffee assets and views
-gem 'coffee-rails', '~> 4.0.0'
-
-# See https://github.com/sstephenson/execjs#readme for more supported runtimes
-# gem 'therubyracer', platforms: :ruby
-
-# Use jquery as the JavaScript library
-gem 'jquery-rails'
-
-# Turbolinks makes following links in your web application faster. Read more: https://github.com/rails/turbolinks
-gem 'turbolinks'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 1.2'
@@ -34,9 +16,6 @@ end
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
-
-# Use unicorn as the app server
-# gem 'unicorn'
 
 # Use Capistrano for deployment
 gem 'capistrano', group: :development
@@ -83,3 +62,19 @@ gem 'libnotify', group: :development
 
 gem 'bond', group: :development
 gem 'hirb', group: :development
+
+# Use DataMapper
+gem 'dm-core', git: 'https://github.com/datamapper/dm-core', branch: 'release-1.2'
+gem 'dm-active_model', git: 'https://github.com/datamapper/dm-active_model.git', branch: 'release-1.2'
+gem 'dm-validations', git: 'https://github.com/datamapper/dm-validations.git', branch: 'release-1.2'
+gem 'dm-rails', git: 'https://github.com/datamapper/dm-rails.git', branch: 'release-1.2'
+gem 'dm-migrations', git: 'https://github.com/datamapper/dm-migrations', branch: 'release-1.2'
+gem 'dm-types', git: 'https://github.com/datamapper/dm-types', branch: 'release-1.2'
+gem 'dm-constraints', git: 'https://github.com/datamapper/dm-constraints', branch: 'release-1.2'
+gem 'dm-transactions', git: 'https://github.com/datamapper/dm-transactions', branch: 'release-1.2'
+gem 'dm-aggregates', git: 'https://github.com/datamapper/dm-aggregates', branch: 'release-1.2'
+gem 'dm-timestamps', git: 'https://github.com/datamapper/dm-timestamps', branch: 'release-1.2'
+gem 'dm-observer', git: 'https://github.com/datamapper/dm-observer', branch: 'release-1.2'
+
+# Use occi-core
+#gem 'occi-core', '~> 4.0.0'
