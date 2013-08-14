@@ -78,3 +78,6 @@ gem 'dm-observer', git: 'https://github.com/datamapper/dm-observer', branch: 're
 
 # Use occi-core
 #gem 'occi-core', '~> 4.0.0'
+
+# Use YAML as a demo back-end
+gem 'dm-yaml-adapter', git: 'https://github.com/arax/dm-yaml-adapter', branch: 'release-1.2'

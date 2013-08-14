@@ -1,4 +1,13 @@
 GIT
+  remote: https://github.com/arax/dm-yaml-adapter
+  revision: 63dff14e2c45e3f5120aef49c91bce1e5e3a3fc5
+  branch: release-1.2
+  specs:
+    dm-yaml-adapter (1.2.1)
+      dm-core (~> 1.2.0)
+      safe_yaml (~> 0.6.0)
+
+GIT
   remote: https://github.com/datamapper/dm-active_model.git
   revision: c3b6ee07d40b8e2b4dbd60166a707da45beaefb4
   branch: release-1.2
@@ -289,6 +298,7 @@ DEPENDENCIES
   dm-transactions!
   dm-types!
   dm-validations!
+  dm-yaml-adapter!
   guard-bundler
   guard-rails
   guard-test
