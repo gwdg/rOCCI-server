@@ -26,6 +26,9 @@ module OCCI
   module Backend
     class OpenNebula
 
+      SSH_REGEXP = /^(command=.+\s)?((?:ssh\-|ecds)[\w-]+\s.+)$/
+      BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
+
       # ---------------------------------------------------------------------------------------------------------------------
       module Compute
 
@@ -231,6 +234,17 @@ module OCCI
             }.first
           end
 
+          # check context vars
+          if compute.attributes.org!.openstack
+            if compute.attributes.org!.openstack!.credentials!.publickey!.data
+              raise OCCI::BackendError, 'Public key is invalid!' unless SSH_REGEXP.match(compute.attributes.org.openstack.credentials.publickey.data)
+            end
+
+            if compute.attributes.org!.openstack!.compute!.user_data
+              raise OCCI::BackendError, 'User data contains invalid characters!' unless BASE64_REGEXP.match(compute.attributes.org.openstack.compute.user_data.gsub("\n", ''))
+            end
+          end
+
           backend_object = nil
           if template
 
@@ -273,6 +287,9 @@ module OCCI
               if compute.attributes.org!.openstack!.credentials!.publickey!.data
                 template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
                 template.add_element('TEMPLATE/CONTEXT', "SSH_KEY" => compute.attributes.org.openstack.credentials.publickey.data)
+
+                template.delete_element('TEMPLATE/CONTEXT/SSH_PUBLIC_KEY')
+                template.add_element('TEMPLATE/CONTEXT', "SSH_PUBLIC_KEY" => compute.attributes.org.openstack.credentials.publickey.data)
               end
 
               if compute.attributes.org!.openstack!.compute!.user_data
