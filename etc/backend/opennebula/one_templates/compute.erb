@@ -48,9 +48,11 @@ CONTEXT=[
   FILES="<%= context_init %>",
   PUBLIC_IP="$NIC[IP]",
   <% if @compute.attributes.org!.openstack!.credentials!.publickey!.data%>
-  SSH_KEY="<%= @compute.attributes.org.openstack.credentials.publickey.data %>"
+  SSH_KEY="<%= @compute.attributes.org.openstack.credentials.publickey.data %>",
+  SSH_PUBLIC_KEY="<%= @compute.attributes.org.openstack.credentials.publickey.data %>"
   <% else %>
-  SSH_KEY="$USER[SSH_KEY]"
+  SSH_KEY="$USER[SSH_KEY]",
+  SSH_KEY="$USER[SSH_PUBLIC_KEY]"
   <% end %>
   <% if @compute.attributes.org!.openstack!.compute!.user_data %>
   ,USER_DATA="<%= @compute.attributes.org.openstack.compute.user_data %>"

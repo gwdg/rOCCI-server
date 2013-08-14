@@ -4,7 +4,7 @@ GEM
     activesupport (3.2.14)
       i18n (~> 0.6, >= 0.6.4)
       multi_json (~> 1.0)
-    antlr3 (1.8.13)
+    antlr3 (1.9.2)
     aws-sdk (1.14.1)
       json (~> 1.4)
       nokogiri (< 1.6.0)
@@ -22,13 +22,13 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (0.6.4)
     json (1.8.0)
-    multi_json (1.7.7)
-    multi_xml (0.5.4)
+    multi_json (1.7.8)
+    multi_xml (0.5.5)
     nokogiri (1.5.10)
     oca (3.4.1)
       nokogiri
       xmlparser
-    occi (2.5.16)
+    occi (2.5.19)
       activesupport
       antlr3
       hashie
