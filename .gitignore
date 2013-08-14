@@ -17,3 +17,6 @@
 
 # vim files
 *.swp
+
+# simplecov
+/coverage
