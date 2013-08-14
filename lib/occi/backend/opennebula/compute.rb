@@ -234,6 +234,17 @@ module OCCI
             }.first
           end
 
+          # check context vars
+          if compute.attributes.org!.openstack
+            if compute.attributes.org!.openstack!.credentials!.publickey!.data
+              raise OCCI::BackendError, 'Public key is invalid!' unless SSH_REGEXP.match(compute.attributes.org.openstack.credentials.publickey.data)
+            end
+
+            if compute.attributes.org!.openstack!.compute!.user_data
+              raise OCCI::BackendError, 'User data contains invalid characters!' unless BASE64_REGEXP.match(compute.attributes.org.openstack.compute.user_data.gsub("\n", ''))
+            end
+          end
+
           backend_object = nil
           if template
 
@@ -274,21 +285,16 @@ module OCCI
               template.add_element('TEMPLATE', "CONTEXT" => '')
 
               if compute.attributes.org!.openstack!.credentials!.publickey!.data
-                if SSH_REGEXP.match(compute.attributes.org.openstack.credentials.publickey.data)
-                  template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
-                  template.add_element('TEMPLATE/CONTEXT', "SSH_KEY" => compute.attributes.org.openstack.credentials.publickey.data)
-                else
-                  raise OCCI::BackendError, 'Public key is invalid!'
-                end
+                template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
+                template.add_element('TEMPLATE/CONTEXT', "SSH_KEY" => compute.attributes.org.openstack.credentials.publickey.data)
+
+                template.delete_element('TEMPLATE/CONTEXT/SSH_PUBLIC_KEY')
+                template.add_element('TEMPLATE/CONTEXT', "SSH_PUBLIC_KEY" => compute.attributes.org.openstack.credentials.publickey.data)
               end
 
               if compute.attributes.org!.openstack!.compute!.user_data
-                if BASE64_REGEXP.match(compute.attributes.org.openstack.compute.user_data.gsub("\n", ''))
-                  template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
-                  template.add_element('TEMPLATE/CONTEXT', "USER_DATA" => compute.attributes.org.openstack.compute.user_data)
-                else
-                  raise OCCI::BackendError, 'User data contains invalid characters!'
-                end
+                template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
+                template.add_element('TEMPLATE/CONTEXT', "USER_DATA" => compute.attributes.org.openstack.compute.user_data)
               end
             end
 
