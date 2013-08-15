@@ -1,5 +1,4 @@
 ROCCIServer::Application.routes.draw do
-
   ####################################################
   ## Discovery interface
   ####################################################
@@ -67,16 +66,50 @@ ROCCIServer::Application.routes.draw do
   delete '/storage/', to: 'storage#delete', as: 'delete_storages'
 
   ####################################################
-  ## User-defined mixins (i.e., instance tags)
+  ## Occi::Infrastructure::NetworkInterface
   ####################################################
-  get '/mixin/:term/', to: 'mixin#index', as: 'assigned_to_mixin'
+  get '/link/networkinterface/:id', to: 'networkinterface#show', as: 'networkinterface'
 
-  post '/mixin/:term/', to: 'mixin#action', constraints: { query_string: /^\?action=/ }
-  post '/mixin/:term/', to: 'mixin#assign', as: 'assign_to_mixin'
+  post '/link/networkinterface/', to: 'networkinterface#create', as: 'new_networkinterface'
 
-  put '/mixin/:term/', to: 'mixin#update', as: 'update_in_mixin'
+  delete '/link/networkinterface/:id', to: 'networkinterface#delete', as: 'delete_networkinterface'
 
-  delete '/mixin/:term/', to: 'mixin#delete', as: 'delete_from_mixin'
+  ####################################################
+  ## Occi::Infrastructure::StorageLink
+  ####################################################
+  get '/link/storagelink/:id', to: 'storagelink#show', as: 'storagelink'
+
+  post '/link/storagelink/', to: 'storagelink#create', as: 'new_storagelink'
+
+  delete '/link/storagelink/:id', to: 'storagelink#delete', as: 'delete_storagelink'
+
+  ####################################################
+  ## Occi::Infrastructure::OsTpl
+  ####################################################
+  get '/mixin/os_tpl/:term/', to: 'os_tpl#show', as: 'os_tpl'
+  get '/mixin/os_tpl/', to: 'os_tpl#index', as: 'os_tpls'
+
+  post '/mixin/os_tpl/:term/', to: 'os_tpl#action', constraints: { query_string: /^\?action=/ }
+
+  ####################################################
+  ## Occi::Infrastructure::ResourceTpl
+  ####################################################
+  get '/mixin/resource_tpl/:term/', to: 'resource_tpl#show', as: 'resource_tpl'
+  get '/mixin/resource_tpl/', to: 'resource_tpl#index', as: 'resource_tpls'
+
+  post '/mixin/resource_tpl/:term/', to: 'resource_tpl#action', constraints: { query_string: /^\?action=/ }
+
+  ####################################################
+  ## Occi::Core::Mixin (user-defined mixins)
+  ####################################################
+  get '/mixin/*term/', to: 'mixin#index', as: 'mixin'
+
+  post '/mixin/*term/', to: 'mixin#action', constraints: { query_string: /^\?action=/ }
+  post '/mixin/*term/', to: 'mixin#assign', as: 'assign_mixin'
+
+  put '/mixin/*term/', to: 'mixin#update', as: 'update_mixin'
+
+  delete '/mixin/*term/', to: 'mixin#delete', as: 'unassign_mixin'
 
   ####################################################
   ## Default route

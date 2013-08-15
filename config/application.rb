@@ -30,6 +30,7 @@ module ROCCIServer
       generate.helper false
       generate.assets false
       generate.view_specs false
+      generate.resource_route false
     end
   end
 end

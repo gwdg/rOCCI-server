@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe StorageController do
+describe ResourceTplController do
 
   pending "add some examples to (or delete) #{__FILE__}"
 

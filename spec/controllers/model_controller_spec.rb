@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe StorageController do
+describe ModelController do
 
   pending "add some examples to (or delete) #{__FILE__}"
 
