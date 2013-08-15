@@ -73,8 +73,8 @@ gem 'dm-aggregates', git: 'https://github.com/datamapper/dm-aggregates', branch:
 gem 'dm-timestamps', git: 'https://github.com/datamapper/dm-timestamps', branch: 'release-1.2'
 gem 'dm-observer', git: 'https://github.com/datamapper/dm-observer', branch: 'release-1.2'
 
-# Use occi-core
-#gem 'occi-core', '~> 4.0.0'
+# Use occi-core for OCCI stuff
+gem 'occi-core', '~> 4.1.0'
 
 # Use YAML as a demo back-end
 gem 'dm-yaml-adapter', git: 'https://github.com/arax/dm-yaml-adapter', branch: 'release-1.2'
