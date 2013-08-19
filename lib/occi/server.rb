@@ -210,7 +210,7 @@ module OCCI
 
       OCCI::Log.debug('### Prepare response ###')
       response['Accept'] = "application/occi+json,application/json,text/plain,text/uri-list,application/xml,text/xml,application/occi+xml,text/occi"
-      response['Server'] = "rOCCI/#{OCCI::Server::VERSION} OCCI/1.1"
+      response['X-rOCCI-Version'] = "rOCCI-server/#{OCCI::Server::VERSION} OCCI/1.1"
       OCCI::Log.debug('### Initialize response OCCI collection ###')
       @collection = OCCI::Collection.new
       @locations  = Array.new
