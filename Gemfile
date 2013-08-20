@@ -35,6 +35,7 @@ gem 'simplecov', group: [:development, :test]
 
 # Use RSpec for unit tests
 gem 'rspec-rails', '~> 2.0', group: [:development, :test]
+gem 'fuubar', group: [:development, :test]
 
 # Use guard to speed-up devel process
 gem 'guard-bundler', group: :development
