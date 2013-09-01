@@ -20,3 +20,6 @@
 
 # simplecov
 /coverage
+
+# project files
+/.idea
