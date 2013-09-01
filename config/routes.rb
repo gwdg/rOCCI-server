@@ -2,8 +2,8 @@ ROCCIServer::Application.routes.draw do
   ####################################################
   ## Discovery interface
   ####################################################
-  get '/-/', to: 'model#index', as: 'model'
-  get '/.well-known/org/ogf/occi/-/', to: 'model#index'
+  get '/-/', to: 'model#show', as: 'model'
+  get '/.well-known/org/ogf/occi/-/', to: 'model#show'
 
   post '/-/', to: 'model#create', as: 'add_mixin'
   post '/.well-known/org/ogf/occi/-/', to: 'model#create'
@@ -20,9 +20,9 @@ ROCCIServer::Application.routes.draw do
   get '/compute/:id', to: 'compute#show', as: 'compute'
   get '/compute/', to: 'compute#index', as: 'computes'
 
-  post '/compute/:id', to: 'compute#action', constraints: { query_string: /^\?action=/ }
+  post '/compute/:id', to: 'compute#trigger', constraints: { query_string: /^\?action=/ }
   post '/compute/:id', to: 'compute#update', as: 'update_compute'
-  post '/compute/', to: 'compute#action', constraints: { query_string: /^\?action=/ }
+  post '/compute/', to: 'compute#trigger', constraints: { query_string: /^\?action=/ }
   post '/compute/', to: 'compute#create', as: 'new_compute'
 
   put '/compute/:id', to: 'compute#update'
@@ -37,9 +37,9 @@ ROCCIServer::Application.routes.draw do
   get '/network/:id', to: 'network#show', as: 'network'
   get '/network/', to: 'network#index', as: 'networks'
 
-  post '/network/:id', to: 'network#action', constraints: { query_string: /^\?action=/ }
+  post '/network/:id', to: 'network#trigger', constraints: { query_string: /^\?action=/ }
   post '/network/:id', to: 'network#update', as: 'update_network'
-  post '/network/', to: 'network#action', constraints: { query_string: /^\?action=/ }
+  post '/network/', to: 'network#trigger', constraints: { query_string: /^\?action=/ }
   post '/network/', to: 'network#create', as: 'new_network'
 
   put '/network/:id', to: 'network#update'
@@ -54,9 +54,9 @@ ROCCIServer::Application.routes.draw do
   get '/storage/:id', to: 'storage#show', as: 'storage'
   get '/storage/', to: 'storage#index', as: 'storages'
 
-  post '/storage/:id', to: 'storage#action', constraints: { query_string: /^\?action=/ }
+  post '/storage/:id', to: 'storage#trigger', constraints: { query_string: /^\?action=/ }
   post '/storage/:id', to: 'storage#update', as: 'update_storage'
-  post '/storage/', to: 'storage#action', constraints: { query_string: /^\?action=/ }
+  post '/storage/', to: 'storage#trigger', constraints: { query_string: /^\?action=/ }
   post '/storage/', to: 'storage#create', as: 'new_storage'
 
   put '/storage/:id', to: 'storage#update'
@@ -89,7 +89,7 @@ ROCCIServer::Application.routes.draw do
   get '/mixin/os_tpl/:term/', to: 'os_tpl#show', as: 'os_tpl'
   get '/mixin/os_tpl/', to: 'os_tpl#index', as: 'os_tpls'
 
-  post '/mixin/os_tpl/:term/', to: 'os_tpl#action', constraints: { query_string: /^\?action=/ }
+  post '/mixin/os_tpl/:term/', to: 'os_tpl#trigger', constraints: { query_string: /^\?action=/ }
 
   ####################################################
   ## Occi::Infrastructure::ResourceTpl
@@ -97,14 +97,14 @@ ROCCIServer::Application.routes.draw do
   get '/mixin/resource_tpl/:term/', to: 'resource_tpl#show', as: 'resource_tpl'
   get '/mixin/resource_tpl/', to: 'resource_tpl#index', as: 'resource_tpls'
 
-  post '/mixin/resource_tpl/:term/', to: 'resource_tpl#action', constraints: { query_string: /^\?action=/ }
+  post '/mixin/resource_tpl/:term/', to: 'resource_tpl#trigger', constraints: { query_string: /^\?action=/ }
 
   ####################################################
   ## Occi::Core::Mixin (user-defined mixins)
   ####################################################
   get '/mixin/*term/', to: 'mixin#index', as: 'mixin'
 
-  post '/mixin/*term/', to: 'mixin#action', constraints: { query_string: /^\?action=/ }
+  post '/mixin/*term/', to: 'mixin#trigger', constraints: { query_string: /^\?action=/ }
   post '/mixin/*term/', to: 'mixin#assign', as: 'assign_mixin'
 
   put '/mixin/*term/', to: 'mixin#update', as: 'update_mixin'

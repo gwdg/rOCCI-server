@@ -8,7 +8,7 @@ class NetworkController < ApplicationController
   def create
   end
 
-  def action
+  def trigger
   end
 
   def update

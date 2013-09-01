@@ -2,7 +2,7 @@ class MixinController < ApplicationController
   def index
   end
 
-  def action
+  def trigger
   end
 
   def assign

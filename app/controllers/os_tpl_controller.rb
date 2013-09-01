@@ -5,6 +5,6 @@ class OsTplController < ApplicationController
   def index
   end
 
-  def action
+  def trigger
   end
 end

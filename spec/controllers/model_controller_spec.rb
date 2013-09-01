@@ -4,9 +4,9 @@ describe ModelController do
 
   pending "add some examples to (or delete) #{__FILE__}"
 
-  describe "GET 'index'" do
+  describe "showing model" do
    it "returns http success" do
-     get 'index'
+     get 'show'
      response.should be_success
    end
   end

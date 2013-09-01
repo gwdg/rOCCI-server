@@ -1,5 +1,5 @@
 class ModelController < ApplicationController
-  def index
+  def show
   end
 
   def create
