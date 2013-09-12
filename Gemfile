@@ -11,6 +11,7 @@ gem "erubis"
 gem "occi", "~> 2.5.12"
 #gem "occi", :path => "/Users/ffeldhaus/Development/rOCCI"
 gem "oca", "~> 3.4.0"
+gem "cloudstack_ruby_client", "~> 0.2.0"
 
 # sinatra and related
 gem "sinatra", "~> 1.3.2"

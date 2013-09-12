@@ -51,7 +51,14 @@ module OCCI
         require 'occi/backend/opennebula'
         @model.register(OCCI::Backend::OpenNebula.kind_definition)
         @backend = OCCI::Backend::OpenNebula.new(backend.kind, backend.mixins, backend.attributes, backend.links)
+
+        File.open('/tmp/occi.tmp', 'w') { |file| file.write(@backend.inspect) }
+
         @backend.check(@model)
+
+        File.open('/tmp/occi.tmp', 'a') { |file| file.write("="*100) }
+        File.open('/tmp/occi.tmp', 'a') { |file| file.write(@backend.inspect) }
+
         OCCI::Log.debug('Opennebula backend initialized')
       when 'http://rocci.info/server/backend#ec2'
         require 'occi/backend/ec2'
@@ -59,6 +66,19 @@ module OCCI
         @backend.check(@model)
         OCCI::Log.debug('EC2 backend initialized')
         #@backend = OCCI::Backend::EC2.new(backend.kind,backend.mixins,backend.attributes,backend.links)
+      when 'http://rocci.info/server/backend#cloudstack'
+        require 'occi/backend/cloudstack'
+        @model.register(OCCI::Backend::CloudStack.kind_definition)
+        @backend = OCCI::Backend::CloudStack.new(backend.kind, backend.mixins, backend.attributes, backend.links)
+
+        File.open('/tmp/occi.tmp', 'w') { |file| file.write(@backend.inspect) }
+
+        @backend.check(@model)
+
+        File.open('/tmp/occi.tmp', 'a') { |file| file.write("="*100) }
+        File.open('/tmp/occi.tmp', 'a') { |file| file.write(@backend.inspect) }
+
+        OCCI::Log.debug('Cloudstack backend initialized')
       else
         raise "Backend #{backend.kind} unknown"
       end
