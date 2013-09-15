@@ -71,8 +71,8 @@ module OCCI
 
       def register_existing_resources(client)
         os_template_register(client)
-        service_offering_register(client)
-         available_zone_register(client)
+        compute_offering_register(client)
+        available_zone_register(client)
         compute_register_all_instances(client)
       end
 
@@ -82,7 +82,8 @@ module OCCI
 
         templates['template'].each do |templ|
           related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
-          term    = templ['name'].downcase.chomp.gsub(/\W/, '_')
+          # term    = templ['name'].downcase.chomp.gsub(/\W/, '_')
+          term    = templ['id']
           scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/os_tpl#"
           title   = templ['name']
           attrs   = OCCI::Core::Attributes.new
@@ -95,13 +96,14 @@ module OCCI
         end
       end
 
-      def service_offering_register(client)
+      def compute_offering_register(client)
         compute_offerings = client.list_service_offerings 'listall'  => 'true',
                                                           'issystem' => 'false'
 
         compute_offerings['serviceoffering'].each do |compute_offer|
-          related = %w|http://schemas.ogf.org/occi/infrastructure#service_offering|
-          term    = compute_offer['name'].downcase.chomp.gsub(/\W/, '_')
+          related = %w|http://schemas.ogf.org/occi/infrastructure#compute_offering|
+          # term    = compute_offer['name'].downcase.chomp.gsub(/\W/, '_')
+          term    = compute_offer['id']
           scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/compute_offering#"
           title   = compute_offer['name']
 
@@ -128,7 +130,8 @@ module OCCI
 
         available_zones['zone'].each do |available_zone|
           related = %w|http://schemas.ogf.org/occi/infrastructure#available_zone|
-          term    = available_zone['name'].downcase.chomp.gsub(/\W/, '_')
+          # term    = available_zone['name'].downcase.chomp.gsub(/\W/, '_')
+          term    = available_zone['id']
           scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/available_zone#"
           title   = available_zone['name']
 
@@ -164,6 +167,26 @@ module OCCI
           :stop         => :compute_stop,
           :restart      => :compute_restart,
       }
+
+      def query_async_result(client, jobid)
+        result = nil
+        if async
+          OCCI::Log.debug("Async job id: #{jobid}")
+
+          query_result = client.query_async_job_result 'jobid' => "#{jobid}"
+          while query_result['jobstatus'] != 1
+            query_result = client.query_async_job_result 'jobid' => "#{jobid}"
+            raise OCCI::BackendError if query_result == 2
+          end
+          result = query_result['jobresult']
+        end
+
+        result
+      end
+
+      def check_result(result)
+        raise OCCI::BackendError, "#{result}" if result.kind_of? Error
+      end
     end
   end
 end
