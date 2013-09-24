@@ -1,0 +1,47 @@
+{
+    "mixins":[
+        {
+            "term":"compute_offering",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure#",
+            "title":"CloudStack specific Compute Offering attributes",
+            "attributes":{
+                "org":{
+                    "apache":{
+                        "cloudstack":{
+                            "compute_offering":{
+                                "displaytext":{
+                                    "Description":"Display text of the compute offering"
+                                },
+                                "cpunumber":{
+                                    "Description":"CPU number of the compute offering"
+                                },
+                                "cpuspeed":{
+                                    "Description":"CPU speed of the compute offering"
+                                },
+                                "memory":{
+                                    "Description":"Meory size of the compute offering"
+                                },
+                                "offerha":{
+                                    "Description":"Determine if the compute offering offers HA"
+                                },
+                                "limitcpuuse":{
+                                    "Description":"Limit CPU use"
+                                },
+                                "isvolatile":{
+                                    "Description":"Determine if the compute offering is volatile"
+                                },
+                                "issystem":{
+                                    "Description":"Determine if the compute offering is a system offering"
+                                },
+                                "defaultuse":{
+                                    "Description":"Default use"
+                                }
+                            }
+                        } 
+                    }
+
+                }
+            }
+        }
+    ]
+}

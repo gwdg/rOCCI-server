@@ -10,7 +10,7 @@ module OCCI
   module Backend
     class CloudStack < OCCI::Core::Resource
 
-      attr_reader :model
+      attr_reader :model, :default_available_zone, :default_compute_offering, :default_os_template
 
       def self.kind_definition
         kind = OCCI::Core::Kind.new('http://rocci.info/server/backend#', 'cloudstack')
@@ -25,7 +25,7 @@ module OCCI
         kind.attributes.info!.rocci!.backend!.cloudstack!.password!.Description = "Password for CloudStack admin user"
         kind.attributes.info!.rocci!.backend!.cloudstack!.password!.Required    = true
 
-        kind.attributes.info!.rocci!.backend!.cloudstack!.scheme!.Default = 'http://my.occi.service/'
+        kind.attributes.info!.rocci!.backend!.cloudstack!.scheme!.Default = 'http://schemas.ogf.org'
         kind.attributes.info!.rocci!.backend!.cloudstack!.endpoint!.Default = 'http://localhost:8080/client'
 
         kind
@@ -39,12 +39,12 @@ module OCCI
         @model = OCCI::Model.new
         @model.register_core
         @model.register_infrastructure
+        @model.register_files('etc/backend/cloudstack/model', scheme)
 
         @endpoint        = attributes.info.rocci.backend.cloudstack.endpoint
         @root_api_key    = attributes.info.rocci.backend.cloudstack.apikey
         @root_secret_key = attributes.info.rocci.backend.cloudstack.secretkey
 
-        # TODO: Register files
         OCCI::Backend::Manager.register_backend(OCCI::Backend::CloudStack, OCCI::Backend::CloudStack::OPERATIONS)
 
         OCCI::Log.debug("### Initializing connection with CloudStack")
@@ -70,29 +70,32 @@ module OCCI
       include OCCI::Backend::CloudStack::Compute
 
       def register_existing_resources(client)
-        os_template_register(client)
+        template_register(client)
         compute_offering_register(client)
         available_zone_register(client)
-        compute_register_all_instances(client)
+        # compute_register_all_instances(client)
       end
 
-      def os_template_register(client)
+      def template_register(client)
         # FIXME: Only implement the featured templates
         templates = client.list_templates 'templatefilter' => 'featured'
 
-        templates['template'].each do |templ|
+        templates['template'].each_with_index do |templ, idx|
           related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
-          # term    = templ['name'].downcase.chomp.gsub(/\W/, '_')
           term    = templ['id']
           scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/os_tpl#"
           title   = templ['name']
-          attrs   = OCCI::Core::Attributes.new
-          attrs.displaytext = templ['displaytext']
-          attrs.ispublic    = templ['ispublic']
-          attrs.format      = templ['format']
-          mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
+
+          @default_os_template = "#{scheme+term}" if idx == 0
+
+          # FIXME: attributes
+          # attrs   = OCCI::Core::Attributes.new
+          # # attrs.org!.apache!.cloudstack!.template!.id          = templ['id']
+          # attrs.org!.apache!.cloudstack!.os_tpl!.displaytext = templ['displaytext'] if templ['displaytext']
+          # attrs.org!.apache!.cloudstack!.os_tpl!.ispublic    = templ['ispublic'] if templ['ispublic']
+          # attrs.org!.apache!.cloudstack!.os_tpl!.format      = templ['format'] if templ['format']
+          mixin   = OCCI::Core::Mixin.new(scheme, term, title, nil, related)
           @model.register mixin
-          # File.open('/tmp/occi.tmp', 'a') { |file| file.write(templ.inspect) }
         end
       end
 
@@ -100,26 +103,28 @@ module OCCI
         compute_offerings = client.list_service_offerings 'listall'  => 'true',
                                                           'issystem' => 'false'
 
-        compute_offerings['serviceoffering'].each do |compute_offer|
+        compute_offerings['serviceoffering'].each_with_index do |compute_offer, idx|
           related = %w|http://schemas.ogf.org/occi/infrastructure#compute_offering|
-          # term    = compute_offer['name'].downcase.chomp.gsub(/\W/, '_')
           term    = compute_offer['id']
           scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/compute_offering#"
           title   = compute_offer['name']
 
-          attrs   = OCCI::Core::Attributes.new
-          attrs.displaytext = compute_offer['displaytext'] if compute_offer['displaytext']   
-          attrs.cpunumber   = compute_offer['cpunumber'] if compute_offer['cpunumber']
-          attrs.cpuspeed    = compute_offer['cpuspeed'] if  compute_offer['cpuspeed']
-          attrs.memory      = compute_offer['memory'] if  compute_offer['memory']
-          attrs.offerha     = compute_offer['offerha'] if compute_offer['offerha']
-          attrs.limitcpuuse = compute_offer['limitcpuuse'] if compute_offer['limitcpuuse']
-          attrs.limitcpuuse = compute_offer['limitcpuuse'] if compute_offer['limitcpuuse']
-          attrs.isvolatile  = compute_offer['isvolatile'] if compute_offer['isvolatile']
-          attrs.issystem    = compute_offer['issystem'] if compute_offer['issystem']
-          attrs.defaultuse  = compute_offer['defaultuse'] if compute_offer['defaultuse']
+          @default_compute_offering = "#{scheme+term}" if idx == 0
 
-          mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
+          # FIXME: attributes
+          # attrs   = OCCI::Core::Attributes.new
+          # # attrs.org!.apache!.cloudstack!.template!.id          = compute_offer['id']
+          # attrs.org!.apache!.cloudstack!.compute_offeing!.displaytext = compute_offer['displaytext'] if compute_offer['displaytext']   
+          # attrs.org!.apache!.cloudstack!.compute_offeing!.cpunumber   = compute_offer['cpunumber'] if compute_offer['cpunumber']
+          # attrs.org!.apache!.cloudstack!.compute_offeing!.cpuspeed    = compute_offer['cpuspeed'] if  compute_offer['cpuspeed']
+          # attrs.org!.apache!.cloudstack!.compute_offeing!.memory      = compute_offer['memory'] if  compute_offer['memory']
+          # attrs.org!.apache!.cloudstack!.compute_offeing!.offerha     = compute_offer['offerha'] if compute_offer['offerha']
+          # attrs.org!.apache!.cloudstack!.compute_offeing!.limitcpuuse = compute_offer['limitcpuuse'] if compute_offer['limitcpuuse']
+          # attrs.org!.apache!.cloudstack!.compute_offeing!.isvolatile  = compute_offer['isvolatile'] if compute_offer['isvolatile']
+          # attrs.org!.apache!.cloudstack!.compute_offeing!.issystem    = compute_offer['issystem'] if compute_offer['issystem']
+          # attrs.org!.apache!.cloudstack!.compute_offeing!.defaultuse  = compute_offer['defaultuse'] if compute_offer['defaultuse']
+
+          mixin   = OCCI::Core::Mixin.new(scheme, term, title, nil, related)
           @model.register mixin
         end
       end
@@ -128,26 +133,27 @@ module OCCI
         # FIXME: Fix the argument here
         available_zones = client.list_zones
 
-        available_zones['zone'].each do |available_zone|
+        available_zones['zone'].each_with_index do |available_zone, idx|
           related = %w|http://schemas.ogf.org/occi/infrastructure#available_zone|
-          # term    = available_zone['name'].downcase.chomp.gsub(/\W/, '_')
           term    = available_zone['id']
           scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/available_zone#"
           title   = available_zone['name']
+          
+          @default_available_zone = "#{scheme+term}" if idx == 0
+          # FIXME: attributes
+          # attrs   = OCCI::Core::Attributes.new
+          # attrs.org!.apache!.cloudstack!.available_zone!.displaytext           = available_zone['displaytext'] if available_zone['displaytext']
+          # attrs.org!.apache!.cloudstack!.available_zone!.dns1                  = available_zone['dns1'] if available_zone['dns1']
+          # attrs.org!.apache!.cloudstack!.available_zone!.dns2                  = available_zone['dns2'] if available_zone['dns2']
+          # attrs.org!.apache!.cloudstack!.available_zone!.internaldns1          = available_zone['internaldns1'] if available_zone['internaldns1']
+          # attrs.org!.apache!.cloudstack!.available_zone!.internaldns2          = available_zone['internaldns2'] if available_zone['internaldns2']
+          # attrs.org!.apache!.cloudstack!.available_zone!.networktype           = available_zone['networktype'] if available_zone['networktype']
+          # attrs.org!.apache!.cloudstack!.available_zone!.securitygroupsenabled = available_zone['securitygroupsenabled'] if available_zone['securitygroupsenabled']
+          # attrs.org!.apache!.cloudstack!.available_zone!.zonetoken             = available_zone['zonetoken'] if available_zone['zonetoken']
+          # attrs.org!.apache!.cloudstack!.available_zone!.dhcpprovider          = available_zone['dhcpprovider'] if available_zone['dhcpprovider']
+          # attrs.org!.apache!.cloudstack!.available_zone!.localstorageenabled   = available_zone['localstorageenabled'] if available_zone['localstorageenabled']
 
-          attrs   = OCCI::Core::Attributes.new
-          attrs.displaytext           = available_zone['displaytext'] if available_zone['displaytext']
-          attrs.dns1                  = available_zone['dns1'] if available_zone['dns1']
-          attrs.dns2                  = available_zone['dns2'] if available_zone['dns2']
-          attrs.internaldns1          = available_zone['internaldns1'] if available_zone['internaldns1']
-          attrs.internaldns2          = available_zone['internaldns2'] if available_zone['internaldns2']
-          attrs.networktype           = available_zone['networktype'] if available_zone['networktype']
-          attrs.securitygroupsenabled = available_zone['securitygroupsenabled'] if available_zone['securitygroupsenabled']
-          attrs.zonetoken             = available_zone['zonetoken'] if available_zone['zonetoken']
-          attrs.dhcpprovider          = available_zone['dhcpprovider'] if available_zone['dhcpprovider']
-          attrs.localstorageenabled   = available_zone['localstorageenabled'] if available_zone['localstorageenabled']
-
-          mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
+          mixin   = OCCI::Core::Mixin.new(scheme, term, title, nil, related)
 
           @model.register mixin
         end
@@ -170,16 +176,15 @@ module OCCI
 
       def query_async_result(client, jobid)
         result = nil
-        if async
-          OCCI::Log.debug("Async job id: #{jobid}")
 
+        query_result = client.query_async_job_result 'jobid' => "#{jobid}"
+        while query_result['jobstatus'] != 1
+          OCCI::Log.debug("Async job id: #{jobid}")
           query_result = client.query_async_job_result 'jobid' => "#{jobid}"
-          while query_result['jobstatus'] != 1
-            query_result = client.query_async_job_result 'jobid' => "#{jobid}"
-            raise OCCI::BackendError if query_result == 2
-          end
-          result = query_result['jobresult']
+          raise OCCI::BackendError if query_result == 2
+          sleep 3
         end
+        result = query_result['jobresult']
 
         result
       end

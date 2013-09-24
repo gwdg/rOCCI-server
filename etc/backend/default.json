@@ -13,7 +13,7 @@
                                 "password":"password",
                                 "apikey":"MdYAZCSOInYVov2OwcAy9kItydTHK-q_81puVoL6CKZmzhUbwrC24Q8TyN-2GyrvbZFinoq-eiIJ5ULk1Cb3cg",
                                 "secretkey":"uZpb9rpAz_dp3yF77HmHeAP0mqs0iZt8U1LcYgA2Sg_9hlgZIh1kRsA_rg2mMIc4XoPohhRs57cJKCNpNbcImw",
-                                "scheme":"http://cloudstack.occi.service"
+                                "scheme":"http://schemas.ogf.org"
                             }
                         }
                     }

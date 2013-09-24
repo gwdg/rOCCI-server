@@ -20,19 +20,20 @@ module OCCI
           compute.id = id
           compute.title = backend_instance['name']
           
-          compute.attributes.occi!.compute!.account   = backend_instance['account'] if backend_instance['account']
-          compute.attributes.occi!.compute!.domain    = backend_instance['domain'] if backend_instance['domain']
-          compute.attributes.occi!.compute!.cpunumber = backend_instance['cpunumber'] if backend_instance['cpunumber']
-          compute.attributes.occi!.compute!.cpuspeed  = backend_instance['cpuspeed'] if backend_instance['cpuspeed']
-          compute.attributes.occi!.compute!.cpuused   = backend_instance['cpuused'] if backend_instance['cpuused']
-          compute.attributes.occi!.compute!.memory    = backend_instance['memory'] if backend_instance['memory']
-          compute.attributes.occi!.compute!.haenable  = backend_instance['passwordenabled'] if backend_instance['passwordenabled']
+          compute.attributes.org!.apache!.cloudstack!.compute!.account   = backend_instance['account'] if backend_instance['account']
+          compute.attributes.org!.apache!.cloudstack!.compute!.domain    = backend_instance['domain'] if backend_instance['domain']
+          compute.attributes.org!.apache!.cloudstack!.compute!.cpunumber = backend_instance['cpunumber'] if backend_instance['cpunumber']
+          compute.attributes.org!.apache!.cloudstack!.compute!.cpuspeed  = backend_instance['cpuspeed'] if backend_instance['cpuspeed']
+          compute.attributes.org!.apache!.cloudstack!.compute!.cpuused   = backend_instance['cpuused'] if backend_instance['cpuused']
+          compute.attributes.org!.apache!.cloudstack!.compute!.memory    = backend_instance['memory'] if backend_instance['memory']
+          compute.attributes.org!.apache!.cloudstack!.compute!.haenable  = backend_instance['passwordenabled'] if backend_instance['passwordenabled']
+          compute.attributes.org!.apache!.cloudstack!.compute!.state     = backend_instance['state'] if backend_instance['state']
 
-          compute.mixins << client.list_service_offerings('id'=>"#{backend_instance['serviceofferingid']}").reject!{ |k| k == 'count'  } if backend_instance['serviceofferingid']
+          # compute.mixins << client.list_service_offerings('id'=>"#{backend_instance['serviceofferingid']}").reject!{ |k| k == 'count'  } if backend_instance['serviceofferingid']
 
-          compute.mixins << client.list_templates('templatefilter'=>'featured', 'id'=>"#{backend_instance['templateid']}").reject!{ |k| k == 'count'  } if backend_instance['templateid']
+          # compute.mixins << client.list_templates('templatefilter'=>'featured', 'id'=>"#{backend_instance['templateid']}").reject!{ |k| k == 'count'  } if backend_instance['templateid']
 
-          compute.mixins << client.list_zones('id'=>"#{backend_instance['zoneid']}").reject!{ |k| k == 'count'  } if backend_instance['zoneid']
+          # compute.mixins << client.list_zones('id'=>"#{backend_instance['zoneid']}").reject!{ |k| k == 'count'  } if backend_instance['zoneid']
 
           compute.mixins.uniq!
 
@@ -49,10 +50,10 @@ module OCCI
           OCCI::Log.debug("current VM state is: #{backend_instance['state']}")
           case backend_instance['state']
           when 'Running' then
-            compute.attributes.occi!.compute!.state = backend_instance['state']
+            compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
             compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
           when 'Stopped'
-            compute.attributes.occi!.compute!.state = backend_instance['state']
+            compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
             compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
           else
           end
@@ -60,9 +61,6 @@ module OCCI
 
         def compute_deploy(client, compute)
           OCCI::Log.debug "Deploying CloudStack instance : #{compute.inspect}"
-
-          os_tpl = "" # FIXME: fallback os template
-          service_offering = "" # FIXME: fallback service offering
 
           os_tpl = compute.mixins.select { |mixin|
             OCCI::Log.debug "Compute deploy found mixin: #{mixin}"
@@ -73,7 +71,7 @@ module OCCI
             mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#os_tpl" if mixin
           }.compact.first
 
-          service_offering = compute.mixins.select { |mixin|
+          compute_offering = compute.mixins.select { |mixin|
             OCCI::Log.debug "Compute deploy found mixin: #{mixin}"
             if mixin.kind_of? String
               mixin = @model.get_by_id(mixin)
@@ -81,6 +79,8 @@ module OCCI
 
             mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#compute_offering" if mixin
           }.compact.first
+
+          puts "Test Test : #{os_tpl.inspect}"
 
           available_zone = compute.mixins.select { |mixin|
             OCCI::Log.debug "Compute deploy found mixin: #{mixin}"
@@ -91,9 +91,17 @@ module OCCI
             mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#available_zone" if mixin
           }.compact.first
 
-          async_job = client.deploy 'serviceofferingid'=>"#{service_offering.term}",
-                                    'templateid'       =>"#{os_tpl.term}",
-                                    'zoneid'           =>"#{available_zone.term}"
+          available_zone   ||= @default_available_zone
+          compute_offering ||= @default_compute_offering
+          os_tpl           ||= @default_os_template
+
+          os_tpl           = @model.get_by_id(os_tpl)
+          available_zone   = @model.get_by_id(available_zone)
+          compute_offering = @model.get_by_id(compute_offering)
+
+          async_job = client.deploy_virtual_machine 'serviceofferingid' => "#{compute_offering.term}",
+                                                    'templateid'        => "#{os_tpl.term}",
+                                                    'zoneid'            => "#{available_zone.term}"
 
           result = query_async_result client, async_job['jobid']
 

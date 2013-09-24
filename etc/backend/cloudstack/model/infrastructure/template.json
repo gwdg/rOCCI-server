@@ -1,0 +1,29 @@
+{
+    "mixins":[
+        {
+            "term":"os_tpl",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure#",
+            "title":"os template",
+            "attributes":{
+                "org":{
+                    "apache":{
+                        "cloudstack":{
+                            "os_tpl":{
+                                "displaytext":{
+                                    "Description":"Display text of the os template"
+                                },
+                                "ispublic":{
+                                    "Description":"Determine if the template is public"
+                                },
+                                "format":{
+                                    "Description":"The format of template"
+                                }
+                            }
+                        } 
+                    }
+
+                }
+            }
+        }
+    ]
+}
