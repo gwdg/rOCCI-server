@@ -31,6 +31,12 @@ module OCCI
           compute.attributes.org!.apache!.cloudstack!.compute!.haenable  = backend_instance['passwordenabled'] if backend_instance['passwordenabled']
           compute.attributes.org!.apache!.cloudstack!.compute!.state     = backend_instance['state'] if backend_instance['state']
 
+          compute.mixins << @model.get_by_id(self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/os_tpl##{backend_instance['templateid']}").as_json
+
+          compute.mixins << @model.get_by_id(self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/resource_tpl##{backend_instance['serviceofferingid']}").as_json
+
+          compute.mixins << @model.get_by_id(self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/available_zone##{backend_instance['zoneid']}").as_json
+
           # compute.mixins << client.list_service_offerings('id'=>"#{backend_instance['serviceofferingid']}").reject!{ |k| k == 'count'  } if backend_instance['serviceofferingid']
 
           # compute.mixins << client.list_templates('templatefilter'=>'featured', 'id'=>"#{backend_instance['templateid']}").reject!{ |k| k == 'count'  } if backend_instance['templateid']
@@ -52,10 +58,12 @@ module OCCI
           OCCI::Log.debug("current VM state is: #{backend_instance['state']}")
           case backend_instance['state']
           when 'Running' then
-            compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
+            compute.attributes.occi!.compute!.state = "active"
+            # compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
             compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
           when 'Stopped'
-            compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
+            compute.attributes.occi!.compute!.state = "inactive"
+            # compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
             compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
           else
           end
