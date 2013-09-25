@@ -95,9 +95,9 @@ module OCCI
           resource_tpl   ||= @default_compute_offering
           os_tpl         ||= @default_os_template
 
-          os_tpl         = @model.get_by_id(os_tpl)
           available_zone = @model.get_by_id(available_zone)
           resource_tpl   = @model.get_by_id(resource_tpl)
+          os_tpl         = @model.get_by_id(os_tpl)
 
           async_job = client.deploy_virtual_machine 'serviceofferingid' => "#{resource_tpl.term}",
                                                     'templateid'        => "#{os_tpl.term}",

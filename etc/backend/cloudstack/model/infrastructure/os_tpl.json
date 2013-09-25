@@ -1,0 +1,100 @@
+{
+    "mixins":[
+        {
+            "term":"os_tpl",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure#",
+            "title":"os template",
+            "attributes":{
+                "org":{
+                    "apache":{
+                        "cloudstack":{
+                            "os_tpl":{
+                                "displaytext":{
+                                    "Description":"Display text of the os template"
+                                },
+                                "ispublic":{
+                                    "Description":"Determine if the template is public",
+                                    "Type":"boolean",
+                                    "Default":true
+                                },
+                                "isready":{
+                                    "Description":"Determine if the template is ready",
+                                    "Type":"boolean",
+                                    "Default":false
+                                },
+                                "passwordenabled":{
+                                    "Description":"Determine if the template is passwordenabled",
+                                    "Type":"boolean",
+                                    "Default":false
+                                },
+                                "format":{
+                                    "Description":"The format of the template"
+                                },
+                                "isfeatured":{
+                                    "Description":"Determine if the template is featured",
+                                    "Type":"boolean"
+                                },
+                                "crossZones":{
+                                    "Description":"Determine if the template is cross zones",
+                                    "Type":"boolean"
+                                },
+                                "ostypeid":{
+                                    "Description":"The os type id of the template"
+                                },
+                                "ostypename":{
+                                    "Description":"The os type name of the template"
+                                },
+                                "account":{
+                                    "Description":"The owner account of the template"
+                                },
+                                "zoneid":{
+                                    "Description":"The zone id of the template"
+                                },
+                                "zonename":{
+                                    "Description":"The zone name of the template"
+                                },
+                                "zonename":{
+                                    "Description":"The zone name of the template"
+                                },
+                                "status":{
+                                    "Description":"The status of the template"
+                                },
+                                "size":{
+                                    "Description":"The size of the template",
+                                    "Type":"number"
+                                },
+                                "templatetype":{
+                                    "Description":"The type of the template"
+                                },
+                                "hypervisor":{
+                                    "Description":"The hypervisor type of the template"
+                                },
+                                "domain":{
+                                    "Description":"The domain of the template"
+                                },
+                                "domainid":{
+                                    "Description":"The domain id of the template"
+                                },
+                                "isextractable":{
+                                    "Description":"Determine if the template is extractable",
+                                    "Type":"boolean"
+                                },
+                                "checksum":{
+                                    "Description":"The checksum of the template"
+                                },
+                                "tags":{
+                                    "Description":"The tags of the template"
+                                },
+                                "sshkeyenabled":{
+                                    "Description":"Determine if the template is sshkeyenabled",
+                                    "Type":"boolean"
+                                }
+                            }
+                        } 
+                    }
+
+                }
+            }
+        }
+    ]
+}

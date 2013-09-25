@@ -13,28 +13,39 @@
                                     "Description":"Display text of the compute offering"
                                 },
                                 "cpunumber":{
-                                    "Description":"CPU number of the compute offering"
+                                    "Description":"CPU number of the compute offering",
+                                    "Type":"number"
                                 },
                                 "cpuspeed":{
-                                    "Description":"CPU speed of the compute offering"
+                                    "Description":"CPU speed of the compute offering",
+                                    "Type":"number"
                                 },
                                 "memory":{
-                                    "Description":"Meory size of the compute offering"
+                                    "Description":"Meory size of the compute offering",
+                                    "Type":"number"
+                                },
+                                "storagetype":{
+                                    "Description":"Storage type of the compute offering"
                                 },
                                 "offerha":{
-                                    "Description":"Determine if the compute offering offers HA"
+                                    "Description":"Determine if the compute offering offers HA",
+                                    "Type":"boolean",
+                                    "Default":false
                                 },
                                 "limitcpuuse":{
-                                    "Description":"Limit CPU use"
-                                },
-                                "isvolatile":{
-                                    "Description":"Determine if the compute offering is volatile"
+                                    "Description":"Limit CPU use",
+                                    "Type":"boolean",
+                                    "Default":false
                                 },
                                 "issystem":{
-                                    "Description":"Determine if the compute offering is a system offering"
+                                    "Description":"Determine if the compute offering is a system offering",
+                                    "Type":"boolean",
+                                    "Default":false
                                 },
                                 "defaultuse":{
-                                    "Description":"Default use"
+                                    "Description":"Default use",
+                                    "Type":"boolean",
+                                    "Default":false
                                 }
                             }
                         } 

@@ -10,7 +10,10 @@
                         "cloudstack":{
                             "available_zone":{
                                 "displaytext":{
-                                    "Description":"Display text of this zone"
+                                    "Description":"The display text of this zone"
+                                },
+                                "description":{
+                                    "Description":"The descriptionof this zone"
                                 },
                                 "dns1":{
                                     "Description":"The first domain name server ip in this zone"
@@ -28,7 +31,8 @@
                                     "Description":"The network type of this zone"
                                 },
                                 "securitygroupsenabled":{
-                                    "Description":"Determine if the security group is enabled in this zone"
+                                    "Description":"Determine if the security group is enabled in this zone",
+                                    "Type":"boolean"
                                 },
                                 "zonetoken":{
                                     "Description":"Token of this zone"
@@ -37,7 +41,23 @@
                                     "Description":"DHCP provider"
                                 },
                                 "localstorageenabled":{
-                                    "Description":"Determine if the local storage is enabled in this zone"
+                                    "Description":"Determine if the local storage is enabled in this zone",
+                                    "Type":"boolean"
+                                },
+                                "zonetoken":{
+                                    "Description":"Zone token"
+                                },
+                                "allocationstate":{
+                                    "Description":"The allocation state of the zone"
+                                },
+                                "domain":{
+                                    "Description":"The domain of the zone"
+                                },
+                                "domainid":{
+                                    "Description":"The domainid of the zone"
+                                },
+                                "domainname":{
+                                    "Description":"The domain name of the zone"
                                 }
                             }
                         }
