@@ -73,7 +73,7 @@ module OCCI
         template_register(client)
         compute_offering_register(client)
         available_zone_register(client)
-        # compute_register_all_instances(client)
+        compute_register_all_instances(client)
       end
 
       def template_register(client)
@@ -88,13 +88,12 @@ module OCCI
 
           @default_os_template = "#{scheme+term}" if idx == 0
 
-          # FIXME: attributes
-          # attrs   = OCCI::Core::Attributes.new
-          # # attrs.org!.apache!.cloudstack!.template!.id          = templ['id']
-          # attrs.org!.apache!.cloudstack!.os_tpl!.displaytext = templ['displaytext'] if templ['displaytext']
-          # attrs.org!.apache!.cloudstack!.os_tpl!.ispublic    = templ['ispublic'] if templ['ispublic']
-          # attrs.org!.apache!.cloudstack!.os_tpl!.format      = templ['format'] if templ['format']
-          mixin   = OCCI::Core::Mixin.new(scheme, term, title, nil, related)
+          attrs   = OCCI::Core::Attributes.new
+          # attrs.org!.apache!.cloudstack!.template!.id          = templ['id']
+          # attrs.org!.apache!.cloudstack!.template!.displaytext = templ['displaytext'] if templ['displaytext']
+          # attrs.ispublic    = templ['ispublic'] if templ['ispublic']
+          # attrs.format      = templ['format'] if templ['format']
+          mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
           @model.register mixin
         end
       end
@@ -104,33 +103,18 @@ module OCCI
                                                           'issystem' => 'false'
 
         compute_offerings['serviceoffering'].each_with_index do |compute_offer, idx|
-          related = %w|http://schemas.ogf.org/occi/infrastructure#compute_offering|
+          related = %w|http://schemas.ogf.org/occi/infrastructure#resource_tpl|
           term    = compute_offer['id']
-          scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/compute_offering#"
+          scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/resource_tpl##"
           title   = compute_offer['name']
 
           @default_compute_offering = "#{scheme+term}" if idx == 0
-
-          # FIXME: attributes
-          # attrs   = OCCI::Core::Attributes.new
-          # # attrs.org!.apache!.cloudstack!.template!.id          = compute_offer['id']
-          # attrs.org!.apache!.cloudstack!.compute_offeing!.displaytext = compute_offer['displaytext'] if compute_offer['displaytext']   
-          # attrs.org!.apache!.cloudstack!.compute_offeing!.cpunumber   = compute_offer['cpunumber'] if compute_offer['cpunumber']
-          # attrs.org!.apache!.cloudstack!.compute_offeing!.cpuspeed    = compute_offer['cpuspeed'] if  compute_offer['cpuspeed']
-          # attrs.org!.apache!.cloudstack!.compute_offeing!.memory      = compute_offer['memory'] if  compute_offer['memory']
-          # attrs.org!.apache!.cloudstack!.compute_offeing!.offerha     = compute_offer['offerha'] if compute_offer['offerha']
-          # attrs.org!.apache!.cloudstack!.compute_offeing!.limitcpuuse = compute_offer['limitcpuuse'] if compute_offer['limitcpuuse']
-          # attrs.org!.apache!.cloudstack!.compute_offeing!.isvolatile  = compute_offer['isvolatile'] if compute_offer['isvolatile']
-          # attrs.org!.apache!.cloudstack!.compute_offeing!.issystem    = compute_offer['issystem'] if compute_offer['issystem']
-          # attrs.org!.apache!.cloudstack!.compute_offeing!.defaultuse  = compute_offer['defaultuse'] if compute_offer['defaultuse']
-
           mixin   = OCCI::Core::Mixin.new(scheme, term, title, nil, related)
           @model.register mixin
         end
       end
 
       def available_zone_register(client)
-        # FIXME: Fix the argument here
         available_zones = client.list_zones
 
         available_zones['zone'].each_with_index do |available_zone, idx|
@@ -140,19 +124,6 @@ module OCCI
           title   = available_zone['name']
           
           @default_available_zone = "#{scheme+term}" if idx == 0
-          # FIXME: attributes
-          # attrs   = OCCI::Core::Attributes.new
-          # attrs.org!.apache!.cloudstack!.available_zone!.displaytext           = available_zone['displaytext'] if available_zone['displaytext']
-          # attrs.org!.apache!.cloudstack!.available_zone!.dns1                  = available_zone['dns1'] if available_zone['dns1']
-          # attrs.org!.apache!.cloudstack!.available_zone!.dns2                  = available_zone['dns2'] if available_zone['dns2']
-          # attrs.org!.apache!.cloudstack!.available_zone!.internaldns1          = available_zone['internaldns1'] if available_zone['internaldns1']
-          # attrs.org!.apache!.cloudstack!.available_zone!.internaldns2          = available_zone['internaldns2'] if available_zone['internaldns2']
-          # attrs.org!.apache!.cloudstack!.available_zone!.networktype           = available_zone['networktype'] if available_zone['networktype']
-          # attrs.org!.apache!.cloudstack!.available_zone!.securitygroupsenabled = available_zone['securitygroupsenabled'] if available_zone['securitygroupsenabled']
-          # attrs.org!.apache!.cloudstack!.available_zone!.zonetoken             = available_zone['zonetoken'] if available_zone['zonetoken']
-          # attrs.org!.apache!.cloudstack!.available_zone!.dhcpprovider          = available_zone['dhcpprovider'] if available_zone['dhcpprovider']
-          # attrs.org!.apache!.cloudstack!.available_zone!.localstorageenabled   = available_zone['localstorageenabled'] if available_zone['localstorageenabled']
-
           mixin   = OCCI::Core::Mixin.new(scheme, term, title, nil, related)
 
           @model.register mixin
@@ -179,10 +150,10 @@ module OCCI
 
         query_result = client.query_async_job_result 'jobid' => "#{jobid}"
         while query_result['jobstatus'] != 1
+          raise OCCI::BackendError if query_result['jobstatus'] == 2
           OCCI::Log.debug("Async job id: #{jobid}")
           query_result = client.query_async_job_result 'jobid' => "#{jobid}"
-          raise OCCI::BackendError if query_result == 2
-          sleep 3
+          sleep 3 unless query_result['jobstatus'] == 1
         end
         result = query_result['jobresult']
 

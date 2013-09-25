@@ -1,14 +1,14 @@
 {
     "mixins":[
         {
-            "term":"compute_offering",
+            "term":"resource_tpl",
             "scheme":"http://schemas.ogf.org/occi/infrastructure#",
             "title":"CloudStack specific Compute Offering attributes",
             "attributes":{
                 "org":{
                     "apache":{
                         "cloudstack":{
-                            "compute_offering":{
+                            "resource_tpl":{
                                 "displaytext":{
                                     "Description":"Display text of the compute offering"
                                 },

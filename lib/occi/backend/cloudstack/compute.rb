@@ -6,8 +6,10 @@ module OCCI
           # FIXME: Fix the argument
           backend_instance_objects = client.list_virtual_machines 'listall'=>'true'
 
-          backend_instance_objects['virtualmachine'].each do |instance|
-            compute_parse_backend_instances client, instance
+          if backend_instance_objects['virtualmachine']
+            backend_instance_objects['virtualmachine'].each do |instance|
+              compute_parse_backend_instances client, instance
+            end
           end
         end
 
@@ -71,16 +73,14 @@ module OCCI
             mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#os_tpl" if mixin
           }.compact.first
 
-          compute_offering = compute.mixins.select { |mixin|
+          resource_tpl = compute.mixins.select { |mixin|
             OCCI::Log.debug "Compute deploy found mixin: #{mixin}"
             if mixin.kind_of? String
               mixin = @model.get_by_id(mixin)
             end
 
-            mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#compute_offering" if mixin
+            mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#resource_tpl" if mixin
           }.compact.first
-
-          puts "Test Test : #{os_tpl.inspect}"
 
           available_zone = compute.mixins.select { |mixin|
             OCCI::Log.debug "Compute deploy found mixin: #{mixin}"
@@ -91,15 +91,15 @@ module OCCI
             mixin.related_to? "http://schemas.ogf.org/occi/infrastructure#available_zone" if mixin
           }.compact.first
 
-          available_zone   ||= @default_available_zone
-          compute_offering ||= @default_compute_offering
-          os_tpl           ||= @default_os_template
+          available_zone ||= @default_available_zone
+          resource_tpl   ||= @default_compute_offering
+          os_tpl         ||= @default_os_template
 
-          os_tpl           = @model.get_by_id(os_tpl)
-          available_zone   = @model.get_by_id(available_zone)
-          compute_offering = @model.get_by_id(compute_offering)
+          os_tpl         = @model.get_by_id(os_tpl)
+          available_zone = @model.get_by_id(available_zone)
+          resource_tpl   = @model.get_by_id(resource_tpl)
 
-          async_job = client.deploy_virtual_machine 'serviceofferingid' => "#{compute_offering.term}",
+          async_job = client.deploy_virtual_machine 'serviceofferingid' => "#{resource_tpl.term}",
                                                     'templateid'        => "#{os_tpl.term}",
                                                     'zoneid'            => "#{available_zone.term}"
 
