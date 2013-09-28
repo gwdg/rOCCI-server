@@ -207,8 +207,6 @@ module OCCI
       }
 
       def query_async_result(client, jobid)
-        result = nil
-
         query_result = client.query_async_job_result 'jobid' => "#{jobid}"
         while query_result['jobstatus'] != 1
           raise OCCI::BackendError if query_result['jobstatus'] == 2
@@ -216,9 +214,7 @@ module OCCI
           query_result = client.query_async_job_result 'jobid' => "#{jobid}"
           sleep 3 unless query_result['jobstatus'] == 1
         end
-        result = query_result['jobresult']
-
-        result
+        query_result['jobresult']
       end
 
       def check_result(result)
