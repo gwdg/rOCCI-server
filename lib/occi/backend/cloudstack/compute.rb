@@ -8,7 +8,7 @@ module OCCI
 
           if backend_instance_objects['virtualmachine']
             backend_instance_objects['virtualmachine'].each do |instance|
-              compute_parse_backend_instances client, instance
+              compute_parse_backend_instances client, instance unless instance['state'] == 'Destroyed'
             end
           end
         end
@@ -39,8 +39,6 @@ module OCCI
 
           compute.mixins << @model.get_by_id(self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/available_zone##{backend_instance['zoneid']}").as_json
 
-          # compute.mixins << client.list_service_offerings('id'=>"#{backend_instance['serviceofferingid']}").reject!{ |k| k == 'count'  } if backend_instance['serviceofferingid']
-
           # compute.mixins << client.list_templates('templatefilter'=>'featured', 'id'=>"#{backend_instance['templateid']}").reject!{ |k| k == 'count'  } if backend_instance['templateid']
 
           # compute.mixins << client.list_zones('id'=>"#{backend_instance['zoneid']}").reject!{ |k| k == 'count'  } if backend_instance['zoneid']
@@ -62,7 +60,7 @@ module OCCI
           when 'Running' then
             compute.attributes.occi!.compute!.state = "active"
             # compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
-            compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop|
+            compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
           when 'Stopped'
             compute.attributes.occi!.compute!.state = "inactive"
             # compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
@@ -76,6 +74,7 @@ module OCCI
 
           os_tpl = compute.mixins.select { |mixin|
             OCCI::Log.debug "Compute deploy found mixin: #{mixin}"
+            if mixin.kind_of? String
               mixin = @model.get_by_id(mixin)
             end
 
@@ -120,9 +119,9 @@ module OCCI
 
           compute_set_state result['virtualmachine'], compute
 
-          compute_parse_links client, compute, backend_instance
+          # compute_parse_links client, compute, backend_instance
 
-          compute_kind.entities << compute unless compute_kind.entities.select { |entity| entity.id == compute.id }.any?
+          # compute_kind.entities << compute unless compute_kind.entities.select { |entity| entity.id == compute.id }.any?
 
           OCCI::Log.debug "CloudStack automatically triggers action start for Virtual Machines"
 
@@ -139,6 +138,15 @@ module OCCI
 
         def compute_delete(client, compute)
           OCCI::Log.debug "Deleting CloudStack instance."
+          backend_instance = get_backend_instance client, compute
+
+          async_job = client.destroy_virtual_machine 'id' => "#{backend_instance['id']}"
+
+          result = query_async_result client, async_job['jobid']
+
+          compute_set_state result['virtualmachine'], compute
+
+          OCCI::Log.debug "Changing state to destroyed"
         end
 
         def compute_start(client, compute, parameters)
@@ -172,7 +180,7 @@ module OCCI
           OCCI::Log.debug "Restarting CloudStack instance."
           backend_instance = get_backend_instance client, compute
 
-          async_job = client.reboot_virtual_machine 'id'=>"#{backend_instance['id']}"
+          async_job = client.reboot_virtual_machine 'id' => "#{backend_instance['id']}"
 
           result = query_async_result client, async_job['jobid']
 
