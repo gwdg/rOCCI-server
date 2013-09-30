@@ -13,7 +13,7 @@
                                     "Description":"The display text of this zone"
                                 },
                                 "description":{
-                                    "Description":"The descriptionof this zone"
+                                    "Description":"The description of this zone"
                                 },
                                 "dns1":{
                                     "Description":"The first domain name server ip in this zone"

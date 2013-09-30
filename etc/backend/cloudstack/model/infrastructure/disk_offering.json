@@ -1,0 +1,37 @@
+{
+    "mixins":[
+        {
+            "term":"disk_offering",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure#",
+            "title":"CloudStack specific disk offering attributes",
+            "attributes":{
+                "org":{
+                    "apache":{
+                        "cloudstack":{
+                            "disk_offering":{
+                                "name":{
+                                    "Description":"The name of the disk offer"
+                                },
+                                "displaytext":{
+                                    "Description":"The display text of the disk offer"
+                                },
+                                "disksize":{
+                                    "Description":"The disk size of the disk offer",
+                                    "Type":"number"
+                                },
+                                "iscustomized":{
+                                    "Description":"Determine if the disk offer is customizable",
+                                    "Type":"boolean"
+                                },
+                                "storagetype":{
+                                    "Description":"The type of the disk offer"
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+    ]
+}

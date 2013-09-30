@@ -10,7 +10,11 @@ module OCCI
   module Backend
     class CloudStack < OCCI::Core::Resource
 
-      attr_reader :model, :default_available_zone, :default_compute_offering, :default_os_template
+      attr_reader :model,
+                  :default_available_zone,
+                  :default_compute_offering,
+                  :default_os_template,
+                  :default_disk_offering
 
       def self.kind_definition
         kind = OCCI::Core::Kind.new('http://rocci.info/server/backend#', 'cloudstack')
@@ -73,6 +77,7 @@ module OCCI
         template_register(client)
         compute_offering_register(client)
         available_zone_register(client)
+        disk_offering_register(client)
         compute_register_all_instances(client)
       end
 
@@ -185,6 +190,30 @@ module OCCI
           attrs.org!.apache!.cloudstack!.available_zone!.securitygroupsenabled!.Type    = "boolean"
           attrs.org!.apache!.cloudstack!.available_zone!.allocationstate!.Default       = available_zone['allocationstate'] if available_zone['allocationstate']
           attrs.org!.apache!.cloudstack!.available_zone!.localstorageenabled!.Type      = "boolean"
+
+          mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
+          @model.register mixin
+        end
+      end
+
+      def disk_offering_register(client)
+        disk_offerings = client.list_disk_offerings 'listAll' => 'true'
+        
+        disk_offerings['diskoffering'].each_with_index do |disk_offer, idx|
+          related = %w|http://schemas.ogf.org/occi/infrastructure#disk_offering|
+          term    = disk_offer['id']
+          scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/disk_offering#"
+          title   = disk_offer['name']
+
+          @default_disk_offering = "#{scheme+term}" if idx == 0
+
+          attrs   = OCCI::Core::Attributes.new
+          attrs.org!.apache!.cloudstack!.disk_offering!.displaytext!.Default  = disk_offer['displaytext'] if disk_offer['displaytext']
+          attrs.org!.apache!.cloudstack!.disk_offering!.disksize!.Default     = disk_offer['disksize'] if disk_offer['size']
+          attrs.org!.apache!.cloudstack!.disk_offering!.disksize!.Type        = "number"
+          attrs.org!.apache!.cloudstack!.disk_offering!.storagetype!.Default  = disk_offer['storagetype'] if disk_offer['storagetype']
+          attrs.org!.apache!.cloudstack!.disk_offering!.iscustomized!.Default = disk_offer['iscustomized'] if disk_offer['iscustomized']
+          attrs.org!.apache!.cloudstack!.disk_offering!.iscustomized!.Type    = "boolean"
 
           mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
           @model.register mixin
