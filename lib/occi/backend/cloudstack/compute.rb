@@ -103,9 +103,9 @@ module OCCI
           resource_tpl   ||= @default_compute_offering
           os_tpl         ||= @default_os_template
 
-          available_zone = @model.get_by_id(available_zone)
-          resource_tpl   = @model.get_by_id(resource_tpl)
-          os_tpl         = @model.get_by_id(os_tpl)
+          available_zone = @model.get_by_id available_zone
+          resource_tpl   = @model.get_by_id resource_tpl
+          os_tpl         = @model.get_by_id os_tpl
 
           async_job = client.deploy_virtual_machine 'serviceofferingid' => "#{resource_tpl.term}",
                                                     'templateid'        => "#{os_tpl.term}",
@@ -113,7 +113,7 @@ module OCCI
 
           result = query_async_result client, async_job['jobid']
 
-          OCCI::Log.debug "Return code from CloudStack #{result}" if result != nil
+          OCCI::Log.debug "Return code from CloudStack #{result['jobresultcode']}" if result['jobresultcode']
 
           OCCI::Log.debug "OCCI Compute resource #{result['virtualmachine']}"
 

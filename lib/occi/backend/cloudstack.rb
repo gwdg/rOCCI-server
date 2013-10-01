@@ -1,5 +1,6 @@
 ['rubygems',
- 'uuidtools',
+ #'uuidtools',
+ 'SecureRandom',
  'cloudstack_ruby_client',
  'occi/model',
  'occi/backend/manager'].each do |package|
@@ -70,8 +71,10 @@ module OCCI
       end
 
       require 'occi/backend/cloudstack/compute'
+      require 'occi/backend/cloudstack/storage'
 
       include OCCI::Backend::CloudStack::Compute
+      include OCCI::Backend::CloudStack::Storage
 
       def register_existing_resources(client)
         template_register(client)
@@ -79,6 +82,7 @@ module OCCI
         available_zone_register(client)
         disk_offering_register(client)
         compute_register_all_instances(client)
+        storage_register_all_instances(client)
       end
 
       def template_register(client)
@@ -232,7 +236,20 @@ module OCCI
           # Compute specific resource operations
           :start        => :compute_start,
           :stop         => :compute_stop,
-          :restart      => :compute_restart,
+          :restart      => :compute_restart
+      }
+      OPERATIONS["http://schemas.ogf.org/occi/infrastructure#storage"] = {
+
+          # Generic resource operations
+          :deploy       => :storage_deploy,
+          :delete       => :storage_delete
+
+          # Network specific resource operations
+          # :online       => :storage_online,
+          # :offline      => :storage_offline,
+          # :backup       => :storage_backup,
+          # :snapshot     => :storage_snapshot,
+          # :resize       => :storage_resize
       }
 
       def query_async_result(client, jobid)
