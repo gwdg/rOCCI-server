@@ -72,17 +72,23 @@ module OCCI
 
       require 'occi/backend/cloudstack/compute'
       require 'occi/backend/cloudstack/storage'
+      require 'occi/backend/cloudstack/network'
 
       include OCCI::Backend::CloudStack::Compute
       include OCCI::Backend::CloudStack::Storage
+      include OCCI::Backend::CloudStack::Network
 
       def register_existing_resources(client)
+        # mixins registering
         template_register(client)
         compute_offering_register(client)
         available_zone_register(client)
         disk_offering_register(client)
-        compute_register_all_instances(client)
+
+        # resources registering
+        network_register_all_instances(client)
         storage_register_all_instances(client)
+        compute_register_all_instances(client)
       end
 
       def template_register(client)
@@ -242,14 +248,12 @@ module OCCI
 
           # Generic resource operations
           :deploy       => :storage_deploy,
-          :delete       => :storage_delete
+          :delete       => :storage_delete,
 
-          # Network specific resource operations
-          # :online       => :storage_online,
-          # :offline      => :storage_offline,
-          # :backup       => :storage_backup,
-          # :snapshot     => :storage_snapshot,
-          # :resize       => :storage_resize
+          # Storage specific resource operations
+          :attach       => :storage_attach,
+          :detach       => :storage_detach,
+          :snapshot     => :storage_snapshot
       }
 
       def query_async_result(client, jobid)

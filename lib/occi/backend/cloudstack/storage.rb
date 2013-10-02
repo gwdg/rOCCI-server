@@ -7,17 +7,16 @@ module OCCI
 
           if backend_storage_objects['volume']
             backend_storage_objects['volume'].each do |storage|
-              storage_parse_backend_instances client, storage
+              storage_parse_backend_object client, storage
             end
           end
         end
 
-        def storage_parse_backend_instances(client, backend_storage)
-          id           = backend_storage['id']
-          storage_kind = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage")
-          storage = OCCI::Core::Resource.new(storage_kind.type_identifier)
-          storage.id = id
-          storage.title = backend_storage['name']
+        def storage_parse_backend_object(client, backend_storage)
+          storage_kind    = @model.get_by_id("http://schemas.ogf.org/occi/infrastructure#storage")
+          storage         = OCCI::Core::Resource.new(storage_kind.type_identifier)
+          storage.id      = backend_storage['id']
+          storage.title   = backend_storage['name']
           storage.summary = backend_storage['name']
 
           storage.attributes.org!.apache!.cloudstack!.storage!.zoneid = backend_storage['zoneid'] if backend_storage['zoneid']
@@ -50,12 +49,7 @@ module OCCI
           
           storage_set_state backend_storage, storage
 
-          storage_parse_links client, storage, backend_storage 
-
           storage_kind.entities << storage unless storage_kind.entities.select {|entity| entity.id == storage.id}.any?
-        end
-
-        def storage_parse_links(client, backend_object, storage)
         end
 
         def storage_set_state(backend_object, storage)
@@ -63,7 +57,12 @@ module OCCI
           case backend_object['state']
           when 'Ready', 'Allocated' then
             storage.attributes.occi!.storage!.state = "online"
-            storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#detach http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot http://schemas.ogf.org/occi/infrastructure/storage/action#resize|
+            if backend_object['attached']
+              storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#detach|
+            else
+              storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#attach|
+            end
+            storage.actions << "http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot"
           else
             storage.attributes.occi!.storage!.state = "degraded"
           end
@@ -127,6 +126,21 @@ module OCCI
           check_result result
 
           OCCI::Log.debug "Disk has been removed"
+        end
+
+        def storage_attach(client, storage, parameters)
+          # FIXME: not implemented yet
+          OCCI::Log.debug "Not yet implemented"
+        end
+
+        def storage_detach(client, storage, parameters)
+          # FIXME: not implemented yet
+          OCCI::Log.debug "Not yet implemented"
+        end
+
+        def storage_snapshot(client, storage, parameters)
+          # FIXME: not implemented yet
+          OCCI::Log.debug "Not yet implemented"
         end
       end
     end

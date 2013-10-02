@@ -23,6 +23,8 @@ module OCCI
           compute.title = backend_instance['name']
 
           # FIXME: Fix occi core model attributes here
+          compute.attributes.occi!.compute!.cores  = backend_instance['cpunumber'].to_i if backend_instance['cpunumber']
+          compute.attributes.occi!.compute!.memory = backend_instance['memory'].to_f/1000 if backend_instance['memory']
           
           compute.attributes.org!.apache!.cloudstack!.compute!.account   = backend_instance['account'] if backend_instance['account']
           compute.attributes.org!.apache!.cloudstack!.compute!.domain    = backend_instance['domain'] if backend_instance['domain']
@@ -47,9 +49,11 @@ module OCCI
 
           compute.check @model
 
-          compute_set_state backend_instance, compute
+          compute_parse_storage_links client, compute, backend_instance
 
-          compute_parse_links client, compute, backend_instance
+          compute_parse_network_links client, compute, backend_instance
+
+          compute_set_state backend_instance, compute
 
           compute_kind.entities << compute unless compute_kind.entities.select { |entity| entity.id == compute.id }.any?
         end
@@ -119,9 +123,9 @@ module OCCI
 
           compute_set_state result['virtualmachine'], compute
 
-          # compute_parse_links client, compute, backend_instance
+          # compute_parse_storage_links client, compute, result['virtualmachine']
 
-          # compute_kind.entities << compute unless compute_kind.entities.select { |entity| entity.id == compute.id }.any?
+          # compute_parse_network_links client, compute, result['virtualmachine']
 
           OCCI::Log.debug "CloudStack automatically triggers action start for Virtual Machines"
 
@@ -190,24 +194,69 @@ module OCCI
         end
 
         def get_backend_instance(client, compute)
-          backend_instance = client.list_virtual_machines 'id'=>"#{compute.attributes.occi.core.id}"
+          backend_instance = client.list_virtual_machines 'id' => "#{compute.attributes.occi.core.id}"
 
           raise OCCI::BackendError, "No backend instance be found" if !backend_instance
 
           backend_instance['virtualmachine'].first
         end
 
-        def compute_parse_links(client, compute, backend_instance)
-          # FIXME: create links for all storage instances
-          # create links for all network instances
-          # backend_instance['nic'].each do |nic|
-          #   OCCI::Log.debug("Network Backend ID: #{nic['NETWORK_ID']}")
-          #   networkinterface_kind = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#networkinterface')
-          #   link                  = OCCI::Core::Link.new(networkinterface_kind.type_identifier)
-          #   link.id               = nic['id']
-          #   network_kind          = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#network')
-          #   network_id            = nic['networkid']
-          # end
+        def compute_parse_storage_links(client, compute, backend_instance)
+          storage_kind     = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#storage')
+          storagelink_kind = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#storagelink')
+
+          associated_volumes = client.list_volumes 'virtualmachineid' => "#{compute.attributes.occi.core.id}",
+                                                   'type'             => 'DATADISK'
+
+          if associated_volumes['volume']
+            associated_volumes['volume'].each_with_index do |volume, idx|
+              target     = storage_kind.entities.select { |entity| entity.id == "#{volume['id']}" }.first
+              link       = OCCI::Core::Link.new(storagelink_kind.type_identifier)
+              link.id    = "#{SecureRandom.uuid}"
+              link.mixins << 'http://schemas.ogf.org/occi/infrastructure#storagelink'
+              link.target = target.location
+              link.rel    = target.kind
+              link.title  = target.title unless target.title.nil?
+              link.source = compute.location
+              link.attributes.occi!.storagelink!.state = "active"
+              link.check @model
+              compute.links << link
+              storagelink_kind.entities << link
+            end
+          end
+        end
+
+        def compute_parse_network_links(client, compute, backend_object)
+          network_kind          = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#network')
+          networkinterface_kind = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#networkinterface')
+
+          associated_networks = client.list_networks 'virtualmachineid' => "#{compute.attributes.occi.core.id}"
+
+          if associated_networks['network']
+            associated_networks['network'].each_with_index do |network, idx|
+              target = network_kind.entities.select { |entity| entity.id == "#{network['id']}" }.first
+              link        = OCCI::Core::Link.new(network_kind.type_identifier)
+              link.id     = "#{SecureRandom.uuid}"
+              link.target = target.location
+              link.rel    = target.kind
+              link.title  = target.title unless target.title.nil?
+              link.source = compute.location
+
+              link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
+              link.mixins << 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
+              link.mixins.uniq!
+
+              nic = backend_object['nic'].first
+              link.attributes.occi!.networkinterface!.address = nic['ipaddress'] if nic['ipaddress']
+              link.attributes.occi!.networkinterface!.mac = nic['macaddress'] if nic['macaddress']
+              link.attributes.occi!.networkinterface!.interface = nic['id'] if nic['id']
+              link.attributes.occi!.networkinterface!.state = "active"
+
+              link.check @model
+              compute.links << link
+              networkinterface_kind.entities << link
+            end
+          end
         end
       end
     end
