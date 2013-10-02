@@ -100,6 +100,11 @@ module OCCI
 
         def network_deploy(client, network)
           # Not implemented in CloudStack with basic zone
+          OCCI::Log.debug "Not yet implemented"
+        end
+
+        def network_delete(client, network)
+          OCCI::Log.debug "Not yet implemented"
         end
       end
     end

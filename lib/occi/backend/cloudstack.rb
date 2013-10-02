@@ -244,6 +244,7 @@ module OCCI
           :stop         => :compute_stop,
           :restart      => :compute_restart
       }
+
       OPERATIONS["http://schemas.ogf.org/occi/infrastructure#storage"] = {
 
           # Generic resource operations
@@ -254,6 +255,17 @@ module OCCI
           :attach       => :storage_attach,
           :detach       => :storage_detach,
           :snapshot     => :storage_snapshot
+      }
+
+      OPERATIONS["http://schemas.ogf.org/occi/infrastructure#network"] = {
+          # Generic resource operations
+          :deploy       => :network_deploy,
+          :update_state => :network_update_state,
+          :delete       => :network_delete,
+
+          # Network specific resource operations
+          :up           => :network_up,
+          :down         => :network_down
       }
 
       def query_async_result(client, jobid)
