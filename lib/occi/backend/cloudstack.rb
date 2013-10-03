@@ -95,47 +95,49 @@ module OCCI
         # FIXME: Only implement the featured templates
         templates = client.list_templates 'templatefilter' => 'featured'
 
-        templates['template'].each_with_index do |templ, idx|
-          related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
-          term    = templ['id']
-          scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/os_tpl#"
-          title   = templ['name']
+        if templates['template']
+          templates['template'].each_with_index do |templ, idx|
+            related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
+            term    = templ['id']
+            scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/os_tpl#"
+            title   = templ['name']
 
-          @default_os_template = "#{scheme+term}" if idx == 0
+            @default_os_template = "#{scheme+term}" if idx == 0
 
-          attrs   = OCCI::Core::Attributes.new
-          attrs.org!.apache!.cloudstack!.os_tpl!.displaytext!.Default     = templ['displaytext'] if templ['displaytext']
-          attrs.org!.apache!.cloudstack!.os_tpl!.ispublic!.Default        = templ['ispublic'] if templ['ispublic']
-          attrs.org!.apache!.cloudstack!.os_tpl!.ispublic!.Type           = "boolean"
-          attrs.org!.apache!.cloudstack!.os_tpl!.isready!.Default         = templ['isready'] if templ['isready']
-          attrs.org!.apache!.cloudstack!.os_tpl!.isready!.Type            = "boolean"
-          attrs.org!.apache!.cloudstack!.os_tpl!.passwordenabled!.Default = templ['passwordenabled'] if templ['passwordenabled']
-          attrs.org!.apache!.cloudstack!.os_tpl!.passwordenabled!.Type    = "boolean"
-          attrs.org!.apache!.cloudstack!.os_tpl!.format!.Default          = templ['format'] if templ['format']
-          attrs.org!.apache!.cloudstack!.os_tpl!.isfeatured!.Default      = templ['isfeatured'] if templ['isfeatured']
-          attrs.org!.apache!.cloudstack!.os_tpl!.isfeatured!.Type         = "boolean"
-          attrs.org!.apache!.cloudstack!.os_tpl!.crossZones!.Default      = templ['crossZones'] if templ['crossZones']
-          attrs.org!.apache!.cloudstack!.os_tpl!.crossZones!.Type         = "boolean"
-          attrs.org!.apache!.cloudstack!.os_tpl!.ostypeid!.Default        = templ['ostypeid'] if templ['ostypeid']
-          attrs.org!.apache!.cloudstack!.os_tpl!.ostypename!.Default      = templ['ostypename'] if templ['ostypename']
-          attrs.org!.apache!.cloudstack!.os_tpl!.account!.Default         = templ['account'] if templ['account']
-          attrs.org!.apache!.cloudstack!.os_tpl!.zoneid!.Default          = templ['zoneid'] if templ['zoneid']
-          attrs.org!.apache!.cloudstack!.os_tpl!.zonename!.Default        = templ['zonename'] if templ['zonename']
-          attrs.org!.apache!.cloudstack!.os_tpl!.status!.Default          = templ['status'] if templ['status']
-          attrs.org!.apache!.cloudstack!.os_tpl!.size!.Default            = templ['size'] if templ['size']
-          attrs.org!.apache!.cloudstack!.os_tpl!.size!.Type               = "number"
-          attrs.org!.apache!.cloudstack!.os_tpl!.templatetype!.Default    = templ['templatetype'] if templ['templatetype']
-          attrs.org!.apache!.cloudstack!.os_tpl!.hypervisor!.Default      = templ['hypervisor'] if templ['hypervisor']
-          attrs.org!.apache!.cloudstack!.os_tpl!.domain!.Default          = templ['domain'] if templ['domain']
-          attrs.org!.apache!.cloudstack!.os_tpl!.domainid!.Default        = templ['domainid'] if templ['domainid']
-          attrs.org!.apache!.cloudstack!.os_tpl!.isextractable!.Default   = templ['isextractable'] if templ['isextractable']
-          attrs.org!.apache!.cloudstack!.os_tpl!.isextractable!.Type      = "boolean"
-          attrs.org!.apache!.cloudstack!.os_tpl!.checksum!.Default        = templ['checksum'] if templ['checksum']
-          attrs.org!.apache!.cloudstack!.os_tpl!.tags!.Default            = templ['tags'].to_s if templ['tags']
-          attrs.org!.apache!.cloudstack!.os_tpl!.sshkeyenabled!.Default   = templ['sshkeyenabled'] if templ['sshkeyenabled']
-          attrs.org!.apache!.cloudstack!.os_tpl!.sshkeyenabled!.Type      = "boolean"
-          mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
-          @model.register mixin
+            attrs   = OCCI::Core::Attributes.new
+            attrs.org!.apache!.cloudstack!.os_tpl!.displaytext!.Default     = templ['displaytext'] if templ['displaytext']
+            attrs.org!.apache!.cloudstack!.os_tpl!.ispublic!.Default        = templ['ispublic'] if templ['ispublic']
+            attrs.org!.apache!.cloudstack!.os_tpl!.ispublic!.Type           = "boolean"
+            attrs.org!.apache!.cloudstack!.os_tpl!.isready!.Default         = templ['isready'] if templ['isready']
+            attrs.org!.apache!.cloudstack!.os_tpl!.isready!.Type            = "boolean"
+            attrs.org!.apache!.cloudstack!.os_tpl!.passwordenabled!.Default = templ['passwordenabled'] if templ['passwordenabled']
+            attrs.org!.apache!.cloudstack!.os_tpl!.passwordenabled!.Type    = "boolean"
+            attrs.org!.apache!.cloudstack!.os_tpl!.format!.Default          = templ['format'] if templ['format']
+            attrs.org!.apache!.cloudstack!.os_tpl!.isfeatured!.Default      = templ['isfeatured'] if templ['isfeatured']
+            attrs.org!.apache!.cloudstack!.os_tpl!.isfeatured!.Type         = "boolean"
+            attrs.org!.apache!.cloudstack!.os_tpl!.crossZones!.Default      = templ['crossZones'] if templ['crossZones']
+            attrs.org!.apache!.cloudstack!.os_tpl!.crossZones!.Type         = "boolean"
+            attrs.org!.apache!.cloudstack!.os_tpl!.ostypeid!.Default        = templ['ostypeid'] if templ['ostypeid']
+            attrs.org!.apache!.cloudstack!.os_tpl!.ostypename!.Default      = templ['ostypename'] if templ['ostypename']
+            attrs.org!.apache!.cloudstack!.os_tpl!.account!.Default         = templ['account'] if templ['account']
+            attrs.org!.apache!.cloudstack!.os_tpl!.zoneid!.Default          = templ['zoneid'] if templ['zoneid']
+            attrs.org!.apache!.cloudstack!.os_tpl!.zonename!.Default        = templ['zonename'] if templ['zonename']
+            attrs.org!.apache!.cloudstack!.os_tpl!.status!.Default          = templ['status'] if templ['status']
+            attrs.org!.apache!.cloudstack!.os_tpl!.size!.Default            = templ['size'] if templ['size']
+            attrs.org!.apache!.cloudstack!.os_tpl!.size!.Type               = "number"
+            attrs.org!.apache!.cloudstack!.os_tpl!.templatetype!.Default    = templ['templatetype'] if templ['templatetype']
+            attrs.org!.apache!.cloudstack!.os_tpl!.hypervisor!.Default      = templ['hypervisor'] if templ['hypervisor']
+            attrs.org!.apache!.cloudstack!.os_tpl!.domain!.Default          = templ['domain'] if templ['domain']
+            attrs.org!.apache!.cloudstack!.os_tpl!.domainid!.Default        = templ['domainid'] if templ['domainid']
+            attrs.org!.apache!.cloudstack!.os_tpl!.isextractable!.Default   = templ['isextractable'] if templ['isextractable']
+            attrs.org!.apache!.cloudstack!.os_tpl!.isextractable!.Type      = "boolean"
+            attrs.org!.apache!.cloudstack!.os_tpl!.checksum!.Default        = templ['checksum'] if templ['checksum']
+            attrs.org!.apache!.cloudstack!.os_tpl!.tags!.Default            = templ['tags'].to_s if templ['tags']
+            attrs.org!.apache!.cloudstack!.os_tpl!.sshkeyenabled!.Default   = templ['sshkeyenabled'] if templ['sshkeyenabled']
+            attrs.org!.apache!.cloudstack!.os_tpl!.sshkeyenabled!.Type      = "boolean"
+            mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
+            @model.register mixin
+          end
         end
       end
 
@@ -143,90 +145,96 @@ module OCCI
         compute_offerings = client.list_service_offerings 'listall'  => 'true',
                                                           'issystem' => 'false'
 
-        compute_offerings['serviceoffering'].each_with_index do |compute_offer, idx|
-          related = %w|http://schemas.ogf.org/occi/infrastructure#resource_tpl|
-          term    = compute_offer['id']
-          scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/resource_tpl##"
-          title   = compute_offer['name']
+        if compute_offerings['serviceoffering']
+          compute_offerings['serviceoffering'].each_with_index do |compute_offer, idx|
+            related = %w|http://schemas.ogf.org/occi/infrastructure#resource_tpl|
+            term    = compute_offer['id']
+            scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/resource_tpl##"
+            title   = compute_offer['name']
 
-          @default_compute_offering = "#{scheme+term}" if idx == 0
+            @default_compute_offering = "#{scheme+term}" if idx == 0
 
-          attrs   = OCCI::Core::Attributes.new
-          attrs.org!.apache!.cloudstack!.resource_tpl!.displaytext!.Default = compute_offer['displaytext'] if compute_offer['displaytext']
-          attrs.org!.apache!.cloudstack!.resource_tpl!.cpunumber!.Default   = compute_offer['cpunumber'] if compute_offer['cpunumber']
-          attrs.org!.apache!.cloudstack!.resource_tpl!.cpunumber!.Type      = "number"
-          attrs.org!.apache!.cloudstack!.resource_tpl!.cpuspeed!.Default    = compute_offer['cpuspeed'] if compute_offer['cpuspeed']
-          attrs.org!.apache!.cloudstack!.resource_tpl!.cpuspeed!.Type       = "number"
-          attrs.org!.apache!.cloudstack!.resource_tpl!.memory!.Default      = compute_offer['memory'] if compute_offer['memory']
-          attrs.org!.apache!.cloudstack!.resource_tpl!.memory!.Type         = "number"
-          attrs.org!.apache!.cloudstack!.resource_tpl!.storagetype!.Default = compute_offer['storagetype'] if compute_offer['storagetype']
-          attrs.org!.apache!.cloudstack!.resource_tpl!.offerha!.Default     = compute_offer['offerha'] if compute_offer['offerha']
-          attrs.org!.apache!.cloudstack!.resource_tpl!.offerha!.Type        = "boolean"
-          attrs.org!.apache!.cloudstack!.resource_tpl!.limitcpuuse!.Default = compute_offer['limitcpuuse'] if compute_offer['limitcpuuse']
-          attrs.org!.apache!.cloudstack!.resource_tpl!.limitcpuuse!.Type    = "boolean"
-          attrs.org!.apache!.cloudstack!.resource_tpl!.issystem!.Default    = compute_offer['issystem'] if compute_offer['issystem']
-          attrs.org!.apache!.cloudstack!.resource_tpl!.issystem!.Type       = "boolean"
-          attrs.org!.apache!.cloudstack!.resource_tpl!.defaultuse!.Default  = compute_offer['defaultuse'] if compute_offer['defaultuse']
-          attrs.org!.apache!.cloudstack!.resource_tpl!.defaultuse!.Type     = "boolean"
-          mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
-          @model.register mixin
+            attrs   = OCCI::Core::Attributes.new
+            attrs.org!.apache!.cloudstack!.resource_tpl!.displaytext!.Default = compute_offer['displaytext'] if compute_offer['displaytext']
+            attrs.org!.apache!.cloudstack!.resource_tpl!.cpunumber!.Default   = compute_offer['cpunumber'] if compute_offer['cpunumber']
+            attrs.org!.apache!.cloudstack!.resource_tpl!.cpunumber!.Type      = "number"
+            attrs.org!.apache!.cloudstack!.resource_tpl!.cpuspeed!.Default    = compute_offer['cpuspeed'] if compute_offer['cpuspeed']
+            attrs.org!.apache!.cloudstack!.resource_tpl!.cpuspeed!.Type       = "number"
+            attrs.org!.apache!.cloudstack!.resource_tpl!.memory!.Default      = compute_offer['memory'] if compute_offer['memory']
+            attrs.org!.apache!.cloudstack!.resource_tpl!.memory!.Type         = "number"
+            attrs.org!.apache!.cloudstack!.resource_tpl!.storagetype!.Default = compute_offer['storagetype'] if compute_offer['storagetype']
+            attrs.org!.apache!.cloudstack!.resource_tpl!.offerha!.Default     = compute_offer['offerha'] if compute_offer['offerha']
+            attrs.org!.apache!.cloudstack!.resource_tpl!.offerha!.Type        = "boolean"
+            attrs.org!.apache!.cloudstack!.resource_tpl!.limitcpuuse!.Default = compute_offer['limitcpuuse'] if compute_offer['limitcpuuse']
+            attrs.org!.apache!.cloudstack!.resource_tpl!.limitcpuuse!.Type    = "boolean"
+            attrs.org!.apache!.cloudstack!.resource_tpl!.issystem!.Default    = compute_offer['issystem'] if compute_offer['issystem']
+            attrs.org!.apache!.cloudstack!.resource_tpl!.issystem!.Type       = "boolean"
+            attrs.org!.apache!.cloudstack!.resource_tpl!.defaultuse!.Default  = compute_offer['defaultuse'] if compute_offer['defaultuse']
+            attrs.org!.apache!.cloudstack!.resource_tpl!.defaultuse!.Type     = "boolean"
+            mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
+            @model.register mixin
+          end
         end
       end
 
       def available_zone_register(client)
         available_zones = client.list_zones
 
-        available_zones['zone'].each_with_index do |available_zone, idx|
-          related = %w|http://schemas.ogf.org/occi/infrastructure#available_zone|
-          term    = available_zone['id']
-          scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/available_zone#"
-          title   = available_zone['name']
-          
-          @default_available_zone = "#{scheme+term}" if idx == 0
-          attrs   = OCCI::Core::Attributes.new
-          attrs.org!.apache!.cloudstack!.available_zone!.displaytext!.Default           = available_zone['displaytext'] if available_zone['displaytext']
-          attrs.org!.apache!.cloudstack!.available_zone!.dns1!.Default                  = available_zone['dns1'] if available_zone['dns1']
-          attrs.org!.apache!.cloudstack!.available_zone!.dns2!.Default                  = available_zone['dns2'] if available_zone['dns2']
-          attrs.org!.apache!.cloudstack!.available_zone!.internaldns1!.Default          = available_zone['internaldns1'] if available_zone['internaldns1']
-          attrs.org!.apache!.cloudstack!.available_zone!.internaldns2!.Default          = available_zone['internaldns2'] if available_zone['internaldns2']
-          attrs.org!.apache!.cloudstack!.available_zone!.description!.Default           = available_zone['description'] if available_zone['description']
-          attrs.org!.apache!.cloudstack!.available_zone!.dhcpprovider!.Default          = available_zone['dhcpprovider'] if available_zone['dhcpprovider']
-          attrs.org!.apache!.cloudstack!.available_zone!.domain!.Default                = available_zone['domain'] if available_zone['domain']
-          attrs.org!.apache!.cloudstack!.available_zone!.domainid!.Default              = available_zone['domainid'] if available_zone['domainid']
-          attrs.org!.apache!.cloudstack!.available_zone!.domainname!.Default            = available_zone['domainname'] if available_zone['domainname']
-          attrs.org!.apache!.cloudstack!.available_zone!.networktype!.Default           = available_zone['networktype'] if available_zone['networktype']
-          attrs.org!.apache!.cloudstack!.available_zone!.zonetoken!.Default             = available_zone['zonetoken'] if available_zone['zonetoken']
-          attrs.org!.apache!.cloudstack!.available_zone!.securitygroupsenabled!.Default = available_zone['securitygroupsenabled'] if available_zone['securitygroupsenabled']
-          attrs.org!.apache!.cloudstack!.available_zone!.securitygroupsenabled!.Type    = "boolean"
-          attrs.org!.apache!.cloudstack!.available_zone!.allocationstate!.Default       = available_zone['allocationstate'] if available_zone['allocationstate']
-          attrs.org!.apache!.cloudstack!.available_zone!.localstorageenabled!.Type      = "boolean"
+        if available_zones['zone']
+          available_zones['zone'].each_with_index do |available_zone, idx|
+            related = %w|http://schemas.ogf.org/occi/infrastructure#available_zone|
+            term    = available_zone['id']
+            scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/available_zone#"
+            title   = available_zone['name']
+            
+            @default_available_zone = "#{scheme+term}" if idx == 0
+            attrs   = OCCI::Core::Attributes.new
+            attrs.org!.apache!.cloudstack!.available_zone!.displaytext!.Default           = available_zone['displaytext'] if available_zone['displaytext']
+            attrs.org!.apache!.cloudstack!.available_zone!.dns1!.Default                  = available_zone['dns1'] if available_zone['dns1']
+            attrs.org!.apache!.cloudstack!.available_zone!.dns2!.Default                  = available_zone['dns2'] if available_zone['dns2']
+            attrs.org!.apache!.cloudstack!.available_zone!.internaldns1!.Default          = available_zone['internaldns1'] if available_zone['internaldns1']
+            attrs.org!.apache!.cloudstack!.available_zone!.internaldns2!.Default          = available_zone['internaldns2'] if available_zone['internaldns2']
+            attrs.org!.apache!.cloudstack!.available_zone!.description!.Default           = available_zone['description'] if available_zone['description']
+            attrs.org!.apache!.cloudstack!.available_zone!.dhcpprovider!.Default          = available_zone['dhcpprovider'] if available_zone['dhcpprovider']
+            attrs.org!.apache!.cloudstack!.available_zone!.domain!.Default                = available_zone['domain'] if available_zone['domain']
+            attrs.org!.apache!.cloudstack!.available_zone!.domainid!.Default              = available_zone['domainid'] if available_zone['domainid']
+            attrs.org!.apache!.cloudstack!.available_zone!.domainname!.Default            = available_zone['domainname'] if available_zone['domainname']
+            attrs.org!.apache!.cloudstack!.available_zone!.networktype!.Default           = available_zone['networktype'] if available_zone['networktype']
+            attrs.org!.apache!.cloudstack!.available_zone!.zonetoken!.Default             = available_zone['zonetoken'] if available_zone['zonetoken']
+            attrs.org!.apache!.cloudstack!.available_zone!.securitygroupsenabled!.Default = available_zone['securitygroupsenabled'] if available_zone['securitygroupsenabled']
+            attrs.org!.apache!.cloudstack!.available_zone!.securitygroupsenabled!.Type    = "boolean"
+            attrs.org!.apache!.cloudstack!.available_zone!.allocationstate!.Default       = available_zone['allocationstate'] if available_zone['allocationstate']
+            attrs.org!.apache!.cloudstack!.available_zone!.localstorageenabled!.Type      = "boolean"
 
-          mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
-          @model.register mixin
+            mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
+            @model.register mixin
+          end
         end
       end
 
       def disk_offering_register(client)
         disk_offerings = client.list_disk_offerings 'listAll' => 'true'
         
-        disk_offerings['diskoffering'].each_with_index do |disk_offer, idx|
-          related = %w|http://schemas.ogf.org/occi/infrastructure#disk_offering|
-          term    = disk_offer['id']
-          scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/disk_offering#"
-          title   = disk_offer['name']
+        if disk_offerings['diskoffering']
+          disk_offerings['diskoffering'].each_with_index do |disk_offer, idx|
+            related = %w|http://schemas.ogf.org/occi/infrastructure#disk_offering|
+            term    = disk_offer['id']
+            scheme  = self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/disk_offering#"
+            title   = disk_offer['name']
 
-          @default_disk_offering = "#{scheme+term}" if idx == 0
+            @default_disk_offering = "#{scheme+term}" if idx == 0
 
-          attrs   = OCCI::Core::Attributes.new
-          attrs.org!.apache!.cloudstack!.disk_offering!.displaytext!.Default  = disk_offer['displaytext'] if disk_offer['displaytext']
-          attrs.org!.apache!.cloudstack!.disk_offering!.disksize!.Default     = disk_offer['disksize'] if disk_offer['size']
-          attrs.org!.apache!.cloudstack!.disk_offering!.disksize!.Type        = "number"
-          attrs.org!.apache!.cloudstack!.disk_offering!.storagetype!.Default  = disk_offer['storagetype'] if disk_offer['storagetype']
-          attrs.org!.apache!.cloudstack!.disk_offering!.iscustomized!.Default = disk_offer['iscustomized'] if disk_offer['iscustomized']
-          attrs.org!.apache!.cloudstack!.disk_offering!.iscustomized!.Type    = "boolean"
+            attrs   = OCCI::Core::Attributes.new
+            attrs.org!.apache!.cloudstack!.disk_offering!.displaytext!.Default  = disk_offer['displaytext'] if disk_offer['displaytext']
+            attrs.org!.apache!.cloudstack!.disk_offering!.disksize!.Default     = disk_offer['disksize'] if disk_offer['size']
+            attrs.org!.apache!.cloudstack!.disk_offering!.disksize!.Type        = "number"
+            attrs.org!.apache!.cloudstack!.disk_offering!.storagetype!.Default  = disk_offer['storagetype'] if disk_offer['storagetype']
+            attrs.org!.apache!.cloudstack!.disk_offering!.iscustomized!.Default = disk_offer['iscustomized'] if disk_offer['iscustomized']
+            attrs.org!.apache!.cloudstack!.disk_offering!.iscustomized!.Type    = "boolean"
 
-          mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
-          @model.register mixin
+            mixin   = OCCI::Core::Mixin.new(scheme, term, title, attrs, related)
+            @model.register mixin
+          end
         end
       end
 

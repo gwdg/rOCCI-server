@@ -56,7 +56,7 @@ module OCCI
           OCCI::Log.debug("current data disk state is: #{backend_object['state']}")
           case backend_object['state']
           when 'Ready', 'Allocated' then
-            storage.attributes.occi!.storage!.state = "online"
+            storage.attributes.occi!.storage!.state = "active"
             if backend_object['attached']
               storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#detach|
             else
@@ -64,7 +64,7 @@ module OCCI
             end
             storage.actions << "http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot"
           else
-            storage.attributes.occi!.storage!.state = "degraded"
+            storage.attributes.occi!.storage!.state = "inactive"
           end
         end
 
@@ -129,13 +129,27 @@ module OCCI
         end
 
         def storage_attach(client, storage, parameters)
-          # FIXME: not implemented yet
-          OCCI::Log.debug "Not yet implemented"
+          OCCI::Log.debug "Attaching CloudStack disk instance: #{storage.inspect}"
+          compute_id   = parameters['resources'].first['attributes']['occi']['core']['id']
+          async_job = client.attach_volume 'id'               => "#{storage.attributes.occi.core.id}",
+                                           'virtualmachineid' => "#{compute_id}"
+
+          result = query_async_result client, async_job['jobid']
+
+          storage_set_state result['volume'], storage
+
+          OCCI::Log.debug "Changing storage state"
         end
 
         def storage_detach(client, storage, parameters)
-          # FIXME: not implemented yet
-          OCCI::Log.debug "Not yet implemented"
+          OCCI::Log.debug "Detaching CloudStack disk instance: #{storage.inspect}"
+          async_job = client.attach_volume 'id' => "#{storage.attributes.occi.core.id}"
+
+          result = query_async_result client, async_job['jobid']
+
+          storage_set_state result['volume'], storage
+
+          OCCI::Log.debug "Changing storage state"
         end
 
         def storage_snapshot(client, storage, parameters)
