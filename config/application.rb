@@ -2,7 +2,6 @@ require File.expand_path('../boot', __FILE__)
 
 #require 'rails/all'
 require 'rails'
-require 'dm-rails/railtie'
 require 'action_controller/railtie'
 require 'action_mailer/railtie'
 require 'rails/test_unit/railtie'
@@ -31,6 +30,7 @@ module ROCCIServer
       generate.assets false
       generate.view_specs false
       generate.resource_route false
+      generate.orm :mongo_mapper
     end
   end
 end
