@@ -61,5 +61,7 @@ gem 'hirb', group: :development
 gem 'mongo_mapper', :git => "git://github.com/mongomapper/mongomapper.git", :branch => "master"
 gem 'bson_ext'
 
+gem 'warden'
+
 # Use occi-core for OCCI stuff
 gem 'occi-core', '~> 4.1.0'

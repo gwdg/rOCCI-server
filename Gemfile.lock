@@ -199,6 +199,8 @@ GEM
       polyglot (>= 0.3.1)
     tzinfo (0.3.37)
     uuidtools (2.1.4)
+    warden (1.2.1)
+      rack (>= 1.0)
     whenever (0.8.4)
       activesupport (>= 2.3.4)
       chronic (>= 0.6.3)
@@ -227,4 +229,5 @@ DEPENDENCIES
   rvm-capistrano
   sdoc
   simplecov
+  warden
   whenever

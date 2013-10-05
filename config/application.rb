@@ -32,5 +32,10 @@ module ROCCIServer
       generate.resource_route false
       generate.orm :mongo_mapper
     end
+
+    config.middleware.insert_after ActionDispatch::Flash, Warden::Manager do |manager|
+      manager.default_strategies :dummy
+      manager.failure_app = UnauthorizedController
+    end
   end
 end
