@@ -55,15 +55,17 @@ gem 'libnotify', group: :development
 # Hirb.enable
 #
 # Or type it in the current irb session.
-
 gem 'bond', group: :development
 gem 'hirb', group: :development
 
+# MongoDB integration
 gem 'mongo_mapper', :git => "git://github.com/mongomapper/mongomapper.git", :branch => "master"
 gem 'bson_ext'
 
+# AuthN middleware
 gem 'warden', :git =>"git://github.com/hassox/warden.git", :branch => "master"
 
+# Sensible logging with LogStash support
 gem 'logstasher', :git => "git://github.com/shadabahmed/logstasher.git", :branch => "master"
 
 # Use occi-core for OCCI stuff
