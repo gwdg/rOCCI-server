@@ -1,11 +1,12 @@
 require File.expand_path('../boot', __FILE__)
 
 #require 'rails/all'
-require 'rails'
+
+#require "active_record/railtie"
 require 'action_controller/railtie'
-require 'action_mailer/railtie'
+#require 'action_mailer/railtie'
 require 'rails/test_unit/railtie'
-require 'sprockets/railtie'
+#require 'sprockets/railtie'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -25,17 +26,14 @@ module ROCCIServer
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
 
+    config.assets.enabled = false
+
     config.generators do |generate|
       generate.helper false
       generate.assets false
       generate.view_specs false
       generate.resource_route false
       generate.orm :mongo_mapper
-    end
-
-    config.middleware.insert_after ActionDispatch::Flash, Warden::Manager do |manager|
-      manager.default_strategies :dummy
-      manager.failure_app = UnauthorizedController
     end
   end
 end

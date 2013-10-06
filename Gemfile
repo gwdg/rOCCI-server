@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 4.0.0'
+gem 'rails-api', '~> 0.1.0'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 1.2'
@@ -61,7 +62,9 @@ gem 'hirb', group: :development
 gem 'mongo_mapper', :git => "git://github.com/mongomapper/mongomapper.git", :branch => "master"
 gem 'bson_ext'
 
-gem 'warden'
+gem 'warden', :git =>"git://github.com/hassox/warden.git", :branch => "master"
+
+gem 'logstasher', :git => "git://github.com/shadabahmed/logstasher.git", :branch => "master"
 
 # Use occi-core for OCCI stuff
 gem 'occi-core', '~> 4.1.0'

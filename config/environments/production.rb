@@ -77,4 +77,11 @@ ROCCIServer::Application.configure do
 
   # Use default logging formatter so that PID and timestamp are not suppressed.
   config.log_formatter = ::Logger::Formatter.new
+
+  # LogStasher
+  # Enable the logstasher logs for the current environment
+  config.logstasher.enabled = true
+
+  # This line is optional if you do not want to suppress app logs in your <environment>.log
+  config.logstasher.suppress_app_log = false
 end

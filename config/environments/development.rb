@@ -14,7 +14,7 @@ ROCCIServer::Application.configure do
   config.action_controller.perform_caching = false
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  #config.action_mailer.raise_delivery_errors = false
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
@@ -29,4 +29,11 @@ ROCCIServer::Application.configure do
 
   # DM compatibility
   config.reload_classes_only_on_change = false
+
+  # LogStasher
+  # Enable the logstasher logs for the current environment
+  config.logstasher.enabled = true
+
+  # This line is optional if you do not want to suppress app logs in your <environment>.log
+  config.logstasher.suppress_app_log = false
 end
