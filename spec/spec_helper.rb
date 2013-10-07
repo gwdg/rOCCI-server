@@ -12,6 +12,9 @@ require 'rspec/autorun'
 # in spec/support/ and its subdirectories.
 Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 
+## Requires spec_helper extensions
+Dir[Rails.root.join("spec/spec_helper/*.rb")].each { |f| require f }
+
 RSpec.configure do |config|
   # ## Mock Framework
   #
@@ -21,6 +24,12 @@ RSpec.configure do |config|
   # config.mock_with :flexmock
   # config.mock_with :rr
   config.mock_with :rspec
+
+  # Mock Warden stuff
+  config.include Warden::Test::ControllerHelpers, type: :controller
+  def sign_in(user)
+    warden.set_user(user)
+  end
 
   # If true, the base class of anonymous controllers will be inferred
   # automatically. This will be the default behavior in future versions of
