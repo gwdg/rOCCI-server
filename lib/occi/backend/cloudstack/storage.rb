@@ -56,15 +56,17 @@ module OCCI
           OCCI::Log.debug("current data disk state is: #{backend_object['state']}")
           case backend_object['state']
           when 'Ready', 'Allocated' then
-            storage.attributes.occi!.storage!.state = "active"
+            # storage.attributes.occi!.storage!.state = "online"
             if backend_object['attached']
+              storage.attributes.occi!.storage!.state = "attached"
               storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#detach|
             else
+              storage.attributes.occi!.storage!.state = "ready"
               storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#attach|
             end
             storage.actions << "http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot"
           else
-            storage.attributes.occi!.storage!.state = "inactive"
+            storage.attributes.occi!.storage!.state = "degarded"
           end
         end
 
@@ -143,7 +145,7 @@ module OCCI
 
         def storage_detach(client, storage, parameters)
           OCCI::Log.debug "Detaching CloudStack disk instance: #{storage.inspect}"
-          async_job = client.attach_volume 'id' => "#{storage.attributes.occi.core.id}"
+          async_job = client.detach_volume 'id' => "#{storage.attributes.occi.core.id}"
 
           result = query_async_result client, async_job['jobid']
 

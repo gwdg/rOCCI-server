@@ -205,6 +205,101 @@ describe OCCI::Server do
     end
   end
 
+  describe "POST /storage/$uuid?action=X" do
+    it "triggers applicable action on a previously created storage resource" do
+      header "Content-type", ''
+      header "Accept", "text/uri-list"
+      get '/storage/'
+      last_response.should be_http_ok
+      storage_location = URI.parse(last_response.body.lines.to_a.last)
+      header "Accept", "application/occi+json"
+      for i in 1..120
+        get storage_location.path
+        last_response.should be_http_ok
+        collection = Hashie::Mash.new(JSON.parse(last_response.body))
+        break if collection.resources.first.attributes.occi.storage.state == "ready"
+        sleep 1
+      end
+      storage_resource = collection.resources.first
+      storage_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/storage/action#attach'
+
+      header "Content-type", ''
+      header "Accept", "text/uri-list"
+      get '/compute/'
+      last_response.should be_http_ok
+      compute_location = URI.parse(last_response.body.lines.to_a.first)
+      header "Accept", "application/occi+json"
+      for i in 1..120
+        get compute_location.path
+        last_response.should be_http_ok
+        collection = Hashie::Mash.new(JSON.parse(last_response.body))
+        break if collection.resources.first.attributes.occi.compute.state == "active"
+        sleep 1
+      end
+      compute_resource = collection.resources.first
+      compute_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop'
+
+      action_location = storage_location.path + '?action=attach'
+      body = JSON.parse(%Q|{"resources":[{"attributes":{"occi":{"core":{"id":"#{compute_resource.attributes.occi.core.id}"}}},"kind":"http://schemas.ogf.org/occi/infrastructure#compute"}]}|)
+      post action_location, body
+      last_response.should be_http_ok
+      for i in 1..120
+        get storage_location.path
+        last_response.should be_http_ok
+        collection = Hashie::Mash.new(JSON.parse(last_response.body))
+        resource = collection.resources.first
+        break if resource.attributes.occi.storage.state == "attached"
+        sleep 1
+      end
+      resource.attributes.occi.storage.state.should == "attached"
+    end
+
+    it "triggers applicable action on a previously created storage resource" do
+      header "Content-type", ''
+      header "Accept", "text/uri-list"
+      get '/storage/'
+      last_response.should be_http_ok
+      storage_location = URI.parse(last_response.body.lines.to_a.last)
+      header "Accept", "application/occi+json"
+      for i in 1..120
+        get storage_location.path
+        last_response.should be_http_ok
+        collection = Hashie::Mash.new(JSON.parse(last_response.body))
+        break if collection.resources.first.attributes.occi.storage.state == "attached"
+        sleep 1
+      end
+      storage_resource = collection.resources.first
+      storage_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/storage/action#detach'
+
+      action_location = storage_location.path + '?action=detach'
+      post action_location
+      last_response.should be_http_ok
+      for i in 1..120
+        get storage_location.path
+        last_response.should be_http_ok
+        collection = Hashie::Mash.new(JSON.parse(last_response.body))
+        resource = collection.resources.first
+        break if resource.attributes.occi.storage.state == "ready"
+        sleep 1
+      end
+      resource.attributes.occi.storage.state.should == "ready"
+    end
+  end
+
+  describe "DELETE /storage/" do
+    it "deletes all storage resources" do
+      sleep 5
+      header "Content-type", ''
+      delete '/storage/'
+      last_response.should be_http_ok
+      header "Accept", "text/uri-list"
+      sleep 5
+      get '/storage/'
+      last_response.should be_http_ok
+      last_response.body.strip.should be_empty
+    end
+  end
+
   describe "DELETE /compute/" do
     it "deletes all compute resources" do
       sleep 5

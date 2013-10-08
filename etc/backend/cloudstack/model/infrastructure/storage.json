@@ -19,7 +19,7 @@
                             "Mutable":false,
                             "Required":false,
                             "Type":"string",
-                            "Pattern":"online|offline|backup|snapshot|resize|degraded",
+                            "Pattern":"online|offline|backup|snapshot|resize|degraded|ready|attached",
                             "Default":"offline"
                         }
                     }
@@ -74,6 +74,11 @@
             "term":"attach",
             "scheme":"http://schemas.ogf.org/occi/infrastructure/storage/action#",
             "title":"Attach storage"
+        },
+        {
+            "term":"detach",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure/storage/action#",
+            "title":"Detach storage"
         }
     ]
 }
