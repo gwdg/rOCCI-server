@@ -254,36 +254,37 @@ describe OCCI::Server do
       resource.attributes.occi.storage.state.should == "attached"
     end
 
-    it "triggers applicable action on a previously created storage resource" do
-      header "Content-type", ''
-      header "Accept", "text/uri-list"
-      get '/storage/'
-      last_response.should be_http_ok
-      storage_location = URI.parse(last_response.body.lines.to_a.last)
-      header "Accept", "application/occi+json"
-      for i in 1..120
-        get storage_location.path
-        last_response.should be_http_ok
-        collection = Hashie::Mash.new(JSON.parse(last_response.body))
-        break if collection.resources.first.attributes.occi.storage.state == "attached"
-        sleep 1
-      end
-      storage_resource = collection.resources.first
-      storage_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/storage/action#detach'
+    # For CloudStack Testing only, uncomment this testcase if you're testing CloudStack
+    # it "triggers applicable action on a previously created storage resource" do
+    #   header "Content-type", ''
+    #   header "Accept", "text/uri-list"
+    #   get '/storage/'
+    #   last_response.should be_http_ok
+    #   storage_location = URI.parse(last_response.body.lines.to_a.last)
+    #   header "Accept", "application/occi+json"
+    #   for i in 1..120
+    #     get storage_location.path
+    #     last_response.should be_http_ok
+    #     collection = Hashie::Mash.new(JSON.parse(last_response.body))
+    #     break if collection.resources.first.attributes.occi.storage.state == "attached"
+    #     sleep 1
+    #   end
+    #   storage_resource = collection.resources.first
+    #   storage_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/storage/action#detach'
 
-      action_location = storage_location.path + '?action=detach'
-      post action_location
-      last_response.should be_http_ok
-      for i in 1..120
-        get storage_location.path
-        last_response.should be_http_ok
-        collection = Hashie::Mash.new(JSON.parse(last_response.body))
-        resource = collection.resources.first
-        break if resource.attributes.occi.storage.state == "ready"
-        sleep 1
-      end
-      resource.attributes.occi.storage.state.should == "ready"
-    end
+    #   action_location = storage_location.path + '?action=detach'
+    #   post action_location
+    #   last_response.should be_http_ok
+    #   for i in 1..120
+    #     get storage_location.path
+    #     last_response.should be_http_ok
+    #     collection = Hashie::Mash.new(JSON.parse(last_response.body))
+    #     resource = collection.resources.first
+    #     break if resource.attributes.occi.storage.state == "ready"
+    #     sleep 1
+    #   end
+    #   resource.attributes.occi.storage.state.should == "ready"
+    # end
   end
 
   describe "DELETE /storage/" do
