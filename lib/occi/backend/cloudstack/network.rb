@@ -96,6 +96,7 @@ module OCCI
 
         def network_set_state(backend_object, network)
           network.attributes.occi!.network!.state = "active"
+          network.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/network/action#restart|
         end
 
         def network_deploy(client, network)
@@ -105,6 +106,18 @@ module OCCI
 
         def network_delete(client, network)
           OCCI::Log.debug "Not yet implemented"
+        end
+
+        def network_restart(client, network, parameters)
+          OCCI::Log.debug "Restarting network: #{network.inspect}"
+          
+          async_job = client.restart_network 'id' => "#{network.attributes.occi.core.id}"
+
+          result = query_async_result client, async_job['jobid']
+
+          raise OCCI::BackendError "Restarting network error" unless result['success']
+
+          OCCI::Log.debug "Changing state to active"
         end
       end
     end
