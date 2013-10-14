@@ -1,0 +1,12 @@
+# General configuration
+defaults: &default
+  hostname: localhost
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

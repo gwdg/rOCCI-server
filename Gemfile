@@ -68,5 +68,8 @@ gem 'warden', :git =>"git://github.com/hassox/warden.git", :branch => "master"
 # Sensible logging with LogStash support
 gem 'logstasher', :git => "git://github.com/shadabahmed/logstasher.git", :branch => "master"
 
+# Use Hashie::Mash to simplify hash-related stuff
+gem 'hashie'
+
 # Use occi-core for OCCI stuff
 gem 'occi-core', '~> 4.1.0'

@@ -1,4 +1,4 @@
-Rails.configuration.middleware.use Warden::Manager do |manager|
+Rails.configuration.middleware.insert_before Rack::Head, Warden::Manager do |manager|
   manager.default_strategies :dummy
   manager.failure_app = UnauthorizedController
   manager.scope_defaults :default, :store => false
