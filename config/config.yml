@@ -1,6 +1,15 @@
 # General configuration
 defaults: &default
   hostname: localhost
+  port: 3000
+  authn:
+    - dummy
+  hooks:
+    - dummy
+  backend: dummy
+  log_level: debug
+  tempdir: /tmp
+  force_ssl: false
 
 development:
   <<: *default
@@ -10,3 +19,14 @@ test:
 
 production:
   <<: *default
+  hostname: your.host.org
+  port: 11443
+  authn:
+    - basic
+    - x509
+    - voms
+  hooks:
+    - autocreate_user
+  backend: opennebula
+  log_level: warn
+  force_ssl: true

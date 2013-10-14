@@ -1,4 +1,8 @@
 class ApplicationController < ActionController::API
+  include ActionController::UrlFor
+  include ActionController::Redirecting
+  include ActionController::Rendering
+  include ActionController::Renderers::All
   include ActionController::MimeResponds
 
   before_action :authenticate!
