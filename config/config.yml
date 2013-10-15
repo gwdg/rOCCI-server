@@ -20,7 +20,7 @@ test:
 production:
   <<: *default
   hostname: your.host.org
-  port: 11443
+  port: 443
   authn:
     - basic
     - x509
