@@ -1,2 +1,20 @@
 # Hook-specific configuration goes here;
 # hooks should be enabled in 'config/config.yml'
+defaults: &default
+  dummy:
+    argument: "dummy_argument"
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  autocreate_user:
+    opennebula:
+      xmlrpc_endpoint: <%= ENV['ONE_XMLRPC'] %>
+      username: <%= ENV['ONE_ROCCI_USER'] %>
+      password: <%= ENV['ONE_ROCCI_PASSWD'] %>
+  blacklist_user:
+    list: <%= Rails.root.join('config', 'blacklist.yml') %>

@@ -1,2 +1,17 @@
 # Backend-specific configuration goes here;
 # backend should be enabled in 'config/config.yml'
+defaults: &default
+  dummy:
+    argument: "dummy_argument"
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  opennebula:
+    xmlrpc_endpoint: <%= ENV['ONE_XMLRPC'] %>
+    username: <%= ENV['ONE_ROCCI_USER'] %>
+    password: <%= ENV['ONE_ROCCI_PASSWD'] %>
