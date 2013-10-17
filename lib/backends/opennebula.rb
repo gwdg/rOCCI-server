@@ -1,3 +1,3 @@
 module Backends
-  module Opennebula; end
+  class Opennebula; end
 end
