@@ -2,7 +2,7 @@
 defaults: &default
   hostname: localhost
   port: 3000
-  authn:
+  authn_strategies:
     - dummy
   hooks:
     - dummy
@@ -21,7 +21,7 @@ production:
   <<: *default
   hostname: your.host.org
   port: 443
-  authn:
+  authn_strategies:
     - basic
     - x509
     - voms

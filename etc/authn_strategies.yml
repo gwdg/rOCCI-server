@@ -1,5 +1,5 @@
 # AuthN-specific configuration goes here;
-# authn modules should be enabled in 'etc/config.yml'
+# authn modules should be enabled in 'etc/common.yml'
 defaults: &default
   dummy:
     argument: "dummy_argument"

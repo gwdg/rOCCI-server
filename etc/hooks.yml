@@ -1,5 +1,5 @@
 # Hook-specific configuration goes here;
-# hooks should be enabled in 'etc/config.yml'
+# hooks should be enabled in 'etc/common.yml'
 defaults: &default
   dummy:
     argument: "dummy_argument"
