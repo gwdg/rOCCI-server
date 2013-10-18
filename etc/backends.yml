@@ -1,5 +1,5 @@
 # Backend-specific configuration goes here;
-# backend should be enabled in 'config/config.yml'
+# backend should be enabled in 'etc/config.yml'
 defaults: &default
   dummy:
     argument: "dummy_argument"

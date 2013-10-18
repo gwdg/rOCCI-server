@@ -13,11 +13,14 @@ def get_yaml_config(path, env = Rails.env)
 end
 private :get_yaml_config
 
-# Load general configuration from 'config/config.yml'
-ROCCI_SERVER_CONFIG.common = get_yaml_config(Rails.root.join('config', 'config.yml'))
+# Load general configuration from 'etc/config.yml'
+ROCCI_SERVER_CONFIG.common = get_yaml_config(Rails.root.join('etc', 'config.yml'))
 
-# Load hook configuration from 'config/hooks.yml'
-ROCCI_SERVER_CONFIG.hooks = get_yaml_config(Rails.root.join('config', 'hooks.yml'))
+# Load hook configuration from 'etc/hooks.yml'
+ROCCI_SERVER_CONFIG.hooks = get_yaml_config(Rails.root.join('etc', 'hooks.yml'))
 
-# Load backend configuration from 'config/backends.yml'
-ROCCI_SERVER_CONFIG.backends = get_yaml_config(Rails.root.join('config', 'backends.yml'))
+# Load backend configuration from 'etc/backends.yml'
+ROCCI_SERVER_CONFIG.backends = get_yaml_config(Rails.root.join('etc', 'backends.yml'))
+
+# Load backend configuration from 'etc/authn.yml'
+ROCCI_SERVER_CONFIG.authn = get_yaml_config(Rails.root.join('etc', 'authn.yml'))

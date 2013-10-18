@@ -1,5 +1,5 @@
 # Hook-specific configuration goes here;
-# hooks should be enabled in 'config/config.yml'
+# hooks should be enabled in 'etc/config.yml'
 defaults: &default
   dummy:
     argument: "dummy_argument"
@@ -17,4 +17,4 @@ production:
       username: <%= ENV['ONE_ROCCI_USER'] %>
       password: <%= ENV['ONE_ROCCI_PASSWD'] %>
   blacklist_user:
-    list: <%= Rails.root.join('config', 'blacklist.yml') %>
+    list: <%= Rails.root.join('etc', 'blacklist.yml') %>

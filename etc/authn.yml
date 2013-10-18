@@ -1,0 +1,17 @@
+# AuthN-specific configuration goes here;
+# authn modules should be enabled in 'etc/config.yml'
+defaults: &default
+  dummy:
+    argument: "dummy_argument"
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  basic: false
+  x509: false
+  voms:
+    vo_list: <%= Rails.root.join('etc', 'vo_list.yml') %>
