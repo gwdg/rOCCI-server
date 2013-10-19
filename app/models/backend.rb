@@ -12,7 +12,7 @@ class Backend
     @server_properties = server_properties.freeze
 
     @backend_class = Backend.backend_class
-    @backend_instance = Backend.backend_class.new(
+    @backend_instance = @backend_class.new(
       @options, @credentials, @server_properties
     )
 
