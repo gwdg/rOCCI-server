@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe Compute do
+describe Backend do
   pending "add some examples to (or delete) #{__FILE__}"
 end

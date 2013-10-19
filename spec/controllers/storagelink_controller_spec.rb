@@ -7,7 +7,7 @@ describe StoragelinkController do
   describe "GET 'show'" do
    it "returns http success" do
      get 'show', { id: 'df45ad6f4adf-daf4d5f6a4d-adf54ad5f6ad' }
-     response.should be_success
+     expect(response).to be_success
    end
   end
 

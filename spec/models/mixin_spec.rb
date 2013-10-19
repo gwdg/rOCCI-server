@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe Storagelink do
+describe Mixin do
   pending "add some examples to (or delete) #{__FILE__}"
 end

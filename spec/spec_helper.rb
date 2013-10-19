@@ -16,13 +16,12 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 Dir[Rails.root.join("spec/spec_helper/*.rb")].each { |f| require f }
 
 RSpec.configure do |config|
-  # ## Mock Framework
-  #
-  # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
-  #
-  # config.mock_with :mocha
-  # config.mock_with :flexmock
-  # config.mock_with :rr
+  config.expect_with :rspec do |c|
+    # Disable the 'should' sytax
+    c.syntax = :expect
+  end
+
+  # Mock Framework
   config.mock_with :rspec
 
   # Mock Warden stuff
