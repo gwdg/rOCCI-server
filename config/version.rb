@@ -1,0 +1,3 @@
+VERSION = "0.0.1.alpha"
+BACKEND_API_VERSION = "0.0.1.alpha"
+ROCCI_VERSION = Occi::VERSION

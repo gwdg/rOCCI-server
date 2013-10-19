@@ -1,10 +1,10 @@
 module Backends
   class Dummy
 
-    def initialize(options = {}, credentials = {}, extension = {})
+    def initialize(options = {}, credentials = {}, extensions = {})
       @options = options
       @credentials = credentials
-      @extension = extension
+      @extensions = extensions
     end
 
     include Backends::Compute::Dummy

@@ -38,5 +38,7 @@ module ROCCIServer
       generate.resource_route false
       generate.orm :mongo_mapper
     end
+
+    require File.expand_path('../version', __FILE__)
   end
 end
