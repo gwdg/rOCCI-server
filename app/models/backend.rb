@@ -11,6 +11,8 @@ class Backend
     @credentials = credentials.freeze
     @server_properties = server_properties.freeze
 
+    raise Errors::BackendClassNotSetError, 'No backend class has been defined!' unless Backend.backend_class
+
     @backend_class = Backend.backend_class
     @backend_instance = @backend_class.new(
       @options, @credentials, @server_properties
@@ -20,7 +22,7 @@ class Backend
   end
 
   def method_missing(m, *args, &block)
-    raise Backends::Errors::MethodNotImplemented, "Method is not implemented in the backend model! [#{m}]"
+    raise Errors::MethodNotImplementedError, "Method is not implemented in the backend model! [#{m}]"
   end
 
   include BackendApi::Compute
