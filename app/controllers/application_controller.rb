@@ -3,6 +3,7 @@ class ApplicationController < ActionController::API
   include ActionController::Redirecting
   include ActionController::Rendering
   include ActionController::Renderers::All
+  include ActionController::ImplicitRender
   include ActionController::MimeResponds
 
   before_action :authenticate!
@@ -19,5 +20,9 @@ class ApplicationController < ActionController::API
 
   def authenticate!
     warden.authenticate!
+  end
+
+  def request_occi_collection
+    env["rocci_server.request.collection"]
   end
 end
