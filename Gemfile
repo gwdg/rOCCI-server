@@ -59,17 +59,17 @@ gem 'bond', group: :development
 gem 'hirb', group: :development
 
 # MongoDB integration
-gem 'mongo_mapper', :git => "git://github.com/mongomapper/mongomapper.git", :branch => "master"
+gem 'mongo_mapper', git: "git://github.com/mongomapper/mongomapper.git", branch: "master"
 gem 'bson_ext'
 
 # AuthN middleware
-gem 'warden', :git =>"git://github.com/hassox/warden.git", :branch => "master"
+gem 'warden', git: "git://github.com/hassox/warden.git", branch: "master"
 
 # Sensible logging with LogStash support
-gem 'logstasher', :git => "git://github.com/shadabahmed/logstasher.git", :branch => "master"
+gem 'logstasher', git: "git://github.com/shadabahmed/logstasher.git", branch: "master"
 
 # Use Hashie::Mash to simplify hash-related stuff
 gem 'hashie'
 
 # Use occi-core for OCCI stuff
-gem 'occi-core', '~> 4.1.0'
+gem 'occi-core', git: "git://github.com/gwdg/rOCCI-core.git", branch: "master"

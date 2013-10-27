@@ -1,4 +1,17 @@
 GIT
+  remote: git://github.com/gwdg/rOCCI-core.git
+  revision: c51cccc3a7dc1bd86483a5abd1fef3dcada79db8
+  branch: master
+  specs:
+    occi-core (4.1.2)
+      activesupport (~> 4.0.0)
+      hashie
+      json
+      nokogiri (~> 1.6.0)
+      settingslogic
+      uuidtools (>= 2.1.3)
+
+GIT
   remote: git://github.com/hassox/warden.git
   revision: 15f5dfe7444422a82ef17877d69368cb50344803
   branch: master
@@ -130,13 +143,6 @@ GEM
       net-ssh (>= 2.6.5)
     nokogiri (1.6.0)
       mini_portile (~> 0.5.0)
-    occi-core (4.1.2)
-      activesupport (~> 4.0.0)
-      hashie
-      json
-      nokogiri (~> 1.6.0)
-      settingslogic
-      uuidtools (>= 2.1.3)
     passenger (4.0.21)
       daemon_controller (>= 1.1.0)
       rack
@@ -242,7 +248,7 @@ DEPENDENCIES
   libnotify
   logstasher!
   mongo_mapper!
-  occi-core (~> 4.1.0)
+  occi-core!
   passenger
   rails (~> 4.0.0)
   rails-api (~> 0.1.0)

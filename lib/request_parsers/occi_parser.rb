@@ -23,7 +23,6 @@ module RequestParsers
       # TODO: get data from request, body & headers
       # TODO: parse OCCI messages into Occi::Collection
       collection = Occi::Collection.new
-      collection.resources << Occi::Infrastructure::Compute.new
 
       collection
     end
