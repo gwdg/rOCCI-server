@@ -1,7 +1,7 @@
 class ModelController < ApplicationController
 
   def index
-    #respond_with(request_occi_collection)
+    respond_with(request_occi_collection)
   end
 
   def show

@@ -7,8 +7,8 @@ class ApplicationController < ActionController::API
   include ActionController::MimeResponds
 
   before_action :authenticate!
-  helper_method :warden, :current_user
-  respond_to :html, :xml, :json, :text, :occi, :occi_json, :occi_xml
+  helper_method :warden, :current_user, :request_occi_collection
+  respond_to :html, :xml, :json, :text, :occi_xml, :occi_json, :occi_header
 
   def current_user
     warden.user
