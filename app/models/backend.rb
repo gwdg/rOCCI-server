@@ -25,6 +25,7 @@ class Backend
     raise Errors::MethodNotImplementedError, "Method is not implemented in the backend model! [#{m}]"
   end
 
+  include BackendApi::Model
   include BackendApi::Compute
   include BackendApi::Network
   include BackendApi::Storage

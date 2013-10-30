@@ -1,11 +1,11 @@
 class ModelController < ApplicationController
 
   def index
-    respond_with(Model.collection)
   end
 
   def show
-    respond_with(Model.collection)
+    model = Model.collection.get(request_occi_collection)
+    respond_with(model)
   end
 
   def create
@@ -13,4 +13,5 @@ class ModelController < ApplicationController
 
   def delete
   end
+
 end

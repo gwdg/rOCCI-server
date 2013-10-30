@@ -1,6 +1,6 @@
 module Occi
   module Extensions
-    module Collection
+    module Rendering
 
       def to_occi_header(*args)
         self.to_header
