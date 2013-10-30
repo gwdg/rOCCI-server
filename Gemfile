@@ -32,7 +32,7 @@ gem 'passenger'
 gem 'simplecov', group: [:development, :test]
 
 # Use RSpec for unit tests
-gem 'rspec-rails', '~> 2.0', group: [:development, :test]
+gem 'rspec-rails', group: [:development, :test]
 gem 'fuubar', group: [:development, :test]
 
 # Use guard to speed-up devel process
@@ -41,7 +41,7 @@ gem 'guard-test', group: :development
 gem 'guard-rails', group: :development
 
 # Use notification libs to integrate guard with pop-ups
-gem 'rb-inotify', '~> 0.8.8', require: false, group: :development
+gem 'rb-inotify', require: false, group: :development
 gem 'libnotify', group: :development
 
 # Use bond+hirb to extend irb
