@@ -7,7 +7,7 @@ end
 
 # Enable strategies selected in Rails.root/etc/common.yml
 ROCCI_SERVER_CONFIG.common.authn_strategies.each do |authn_strategy|
-  authn_strategy = "#{authn_strategy.classify}Strategy"
+  authn_strategy = "#{authn_strategy.camelize}Strategy"
   Rails.logger.info "AuthN subsystem: Registering AuthenticationStrategies::#{authn_strategy}."
 
   begin
