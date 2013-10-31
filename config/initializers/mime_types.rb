@@ -6,3 +6,4 @@
 Mime::Type.register "text/occi", :occi_header
 Mime::Type.register "application/occi+json", :occi_json
 Mime::Type.register "application/occi+xml", :occi_xml
+Mime::Type.register "text/uri-list", :uri_list

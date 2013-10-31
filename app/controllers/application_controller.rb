@@ -10,7 +10,7 @@ class ApplicationController < ActionController::API
   before_action :authenticate!
 
   helper_method :warden, :current_user, :request_occi_collection
-  respond_to :html, :xml, :json, :text, :occi_xml, :occi_json, :occi_header
+  respond_to :html, :xml, :json, :text, :occi_xml, :occi_json, :occi_header, :uri_list
 
   def current_user
     warden.user
