@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/gwdg/rOCCI-core.git
-  revision: 1960f255fadce33610e0b8c563af30a8865c6427
+  revision: 3cabc729c72a4479c1ef4186c402d0c8d1f242ba
   branch: master
   specs:
     occi-core (4.1.2)
@@ -148,7 +148,7 @@ GEM
       net-ssh (>= 2.6.5)
     nokogiri (1.6.0)
       mini_portile (~> 0.5.0)
-    passenger (4.0.21)
+    passenger (4.0.23)
       daemon_controller (>= 1.1.0)
       rack
       rake (>= 0.8.1)
