@@ -34,12 +34,13 @@ class ApplicationController < ActionController::API
     http_request_header_keys = request.headers.env.keys.select { |header_name| header_name.match("^HTTP.*") }
     http_request_headers = request.headers.select { |header_name, header_value| http_request_header_keys.index(header_name) }
     logger.debug "Processing with headers #{http_request_headers.inspect} and params #{params.inspect}"
-    logger.debug "Processing with body #{request.body.string.inspect}"
+    logger.debug "Processing with body #{request.body.string.inspect}" if request.body.respond_to?(:string)
+    logger.debug "Processing with body #{request.body.read.inspect}" if request.body.respond_to?(:read)
     logger.debug "Processing with parsed OCCI message #{request_occi_collection.inspect}"
     begin
       yield
     ensure
-      logger.debug "Responding with #{response.status.inspect} => #{response.body.inspect}"
+      logger.debug "Responding with body #{response.body.inspect}"
     end
   end
 end
