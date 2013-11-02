@@ -1,0 +1,44 @@
+{
+  "mixins":[
+    {
+      "term":"storage",
+      "scheme":"http://opennebula.org/occi/infrastructure#",
+      "title":"OpenNebula specific Storage attributes",
+      "attributes":{
+        "org":{
+          "opennebula":{
+            "storage":{
+              "id":{
+                 "Description":"ID of the storage element"
+              },
+              "type":{
+                "Description":"Type of the image. If omitted, the default value is the one defined in oned.conf (install default is OS).",
+                "Pattern": "OS|CDROM|DATABLOCK"
+              },
+              "persistent":{
+                "Description":"Persistence of the image. If omitted, the default value is NO.",
+                "Pattern": "YES|NO",
+                "Default":"NO"
+              },
+              "dev_prefix":{
+                "Description":"Prefix for the emulated device this image will be mounted at. For instance, “hd”, “sd”. If omitted, the default value is the one defined in oned.conf (installation default is “hd”)."
+              },
+              "bus":{
+                "Description":"Type of disk device to emulate.",
+                "Pattern": "ide|IDE|scsi|SCSI|virtio"
+              },
+              "driver":{
+                "Description":"Specific image mapping driver. VMware is unsupported",
+                "Pattern": "raw|qcow2|tap2:tapdisk:aio:|tap:aio:|file:"
+              },
+              "fstype":{
+                "Description":"Type of file system to be built. This can be any value understood by mkfs unix command."
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
+
