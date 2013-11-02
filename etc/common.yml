@@ -29,4 +29,3 @@ production:
     - autocreate_user
   backend: opennebula
   log_level: warn
-  force_ssl: true
