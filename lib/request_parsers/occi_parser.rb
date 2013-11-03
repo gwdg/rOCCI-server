@@ -38,9 +38,13 @@ module RequestParsers
       raise ::Errors::UnsupportedMediaTypeError, "Media type '#{request.media_type}' is not supported by the RequestParser" unless AVAILABLE_PARSERS.key?(request.media_type)
 
       body = request.body.respond_to?(:read) ? request.body.read : request.body.string
-      collection = AVAILABLE_PARSERS[request.media_type].parse(request.media_type, body, request.headers, request.fullpath)
+      collection = AVAILABLE_PARSERS[request.media_type].parse(request.media_type, body, sanitize_request_headers(request.headers), request.fullpath)
 
       collection
+    end
+
+    def sanitize_request_headers(headers)
+      headers.select { |_, v| v.kind_of?(String) }
     end
 
   end

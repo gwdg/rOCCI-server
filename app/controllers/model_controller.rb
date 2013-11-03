@@ -4,7 +4,7 @@ class ModelController < ApplicationController
   end
 
   def show
-    model = Model.collection.get(request_occi_collection)
+    model = Model.get_filtered(request_occi_collection)
     respond_with(model)
   end
 
