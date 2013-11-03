@@ -17,11 +17,15 @@ module RequestParsers
     end
     
     def call(env)
+      request = ::ActionDispatch::Request.new(env)
+
       begin
-        env["rocci_server.request.collection"] = parse_occi_messages(env)
+        env["rocci_server.request.collection"] = parse_occi_messages(request)
       rescue ::Errors::UnsupportedMediaTypeError => merr
+        Rails.logger.warn "Request from #{request.remote_ip} refused with: #{merr.message}"
         return [406, {}, ["Not Acceptable > Unsupported Content Type"]]
       rescue ::Occi::Errors::ParserInputError => perr
+        Rails.logger.warn "Request from #{request.remote_ip} refused with: #{perr.message}"
         return [400, {}, ["Bad Request > Malformed Message"]]
       end
 
@@ -30,10 +34,8 @@ module RequestParsers
 
     private
 
-    def parse_occi_messages(env)
-      request = ::ActionDispatch::Request.new(env)
-
-      raise ::Errors::UnsupportedMediaTypeError, "Media type #{request.media_type} is not supported by the RequestParser" unless AVAILABLE_PARSERS.key?(request.media_type)
+    def parse_occi_messages(request)
+      raise ::Errors::UnsupportedMediaTypeError, "Media type '#{request.media_type}' is not supported by the RequestParser" unless AVAILABLE_PARSERS.key?(request.media_type)
 
       body = request.body.respond_to?(:read) ? request.body.read : request.body.string
       collection = AVAILABLE_PARSERS[request.media_type].parse(request.media_type, body, request.headers, request.fullpath)
