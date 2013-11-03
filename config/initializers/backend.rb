@@ -7,11 +7,14 @@ unless backend && !backend.blank?
   raise ArgumentError, message
 end
 
+backend_sym = backend.to_sym
 backend = "#{backend.classify}"
 Rails.logger.info "[Backend] Registering Backends::#{backend}."
 
 begin
   Backend.backend_class = Backends.const_get("#{backend}")
+  Backend.options = ROCCI_SERVER_CONFIG.backends.send(backend_sym)
+  Backend.server_properties = ROCCI_SERVER_CONFIG.common
 rescue NameError => err
   message = "There is no such backend available! [Backends::#{backend}]"
   Rails.logger.error "[Backend] #{message}"

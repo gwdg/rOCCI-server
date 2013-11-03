@@ -1,21 +1,16 @@
 class Backend
 
-  cattr_accessor :backend_class
-  attr_reader :backend_class, :backend_instance, :options, :server_properties
+  include Singleton
 
-  def initialize(options = {},
-                 credentials = {},
-                 server_properties = {})
+  cattr_accessor :backend_class, :options, :server_properties
 
-    @options = options.freeze
-    @credentials = credentials.freeze
-    @server_properties = server_properties.freeze
-
+  def initialize
     raise Errors::BackendClassNotSetError, 'No backend class has been defined!' unless Backend.backend_class
+    raise Errors::BackendClassNotSetError, 'No backend options have been defined!' unless Backend.options
+    raise Errors::BackendClassNotSetError, 'No backend server properties have been defined!' unless Backend.server_properties
 
-    @backend_class = Backend.backend_class
-    @backend_instance = @backend_class.new(
-      @options, @credentials, @server_properties
+    @backend_instance = Backend.backend_class.new(
+      Backend.options, Backend.server_properties
     )
 
     @backend_instance.extend(Backends::Helpers::MethodMissingHelper) unless @backend_instance.respond_to? :method_missing
