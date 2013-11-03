@@ -5,6 +5,8 @@ class ActiveSupport::Logger::SimpleFormatter
   USE_HUMOROUS_SEVERITIES = Rails.env.development?
  
   def call(severity, time, progname, msg)
+    return if msg.strip.blank?
+
     if USE_HUMOROUS_SEVERITIES
       formatted_severity = sprintf("%-3s",SEVERITY_TO_TAG_MAP[severity])
     else

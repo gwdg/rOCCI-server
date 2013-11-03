@@ -3,11 +3,11 @@ ROCCI_SERVER_CONFIG = Hashie::Mash.new
 
 def get_yaml_config(path, env = Rails.env)
   begin
-    Rails.logger.info "Loading configuration from #{path} for ENV #{env}."
+    Rails.logger.info "[Configuration] Loading configuration from #{path} for ENV #{env}."
     YAML.load(ERB.new(File.read(path)).result)[env]
   rescue Exception => err
     message = "Failed to parse a configuration file! [#{path}]: #{err.message}"
-    Rails.logger.error message
+    Rails.logger.error "[Configuration] #{message}"
     raise Errors::ConfigurationParsingError, message
   end
 end

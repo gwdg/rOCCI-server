@@ -22,10 +22,10 @@ module RequestParsers
       begin
         env["rocci_server.request.collection"] = parse_occi_messages(request)
       rescue ::Errors::UnsupportedMediaTypeError => merr
-        Rails.logger.warn "Request from #{request.remote_ip} refused with: #{merr.message}"
+        Rails.logger.warn "[Parser] [#{self.class}] Request from #{request.remote_ip} refused with: #{merr.message}"
         return [406, {}, ["Not Acceptable > Unsupported Content Type"]]
       rescue ::Occi::Errors::ParserInputError => perr
-        Rails.logger.warn "Request from #{request.remote_ip} refused with: #{perr.message}"
+        Rails.logger.warn "[Parser] [#{self.class}] Request from #{request.remote_ip} refused with: #{perr.message}"
         return [400, {}, ["Bad Request > Malformed Message"]]
       end
 
