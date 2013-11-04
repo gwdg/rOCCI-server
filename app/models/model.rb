@@ -18,8 +18,7 @@ class Model
       model.register_infrastructure
 
       if with_extensions
-        # TODO: get stuff from MongoDB and the backend
-        #model.register_files
+        model.register_collection(Backend.instance.model_get_extensions)
       end
 
       model

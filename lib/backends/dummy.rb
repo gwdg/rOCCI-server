@@ -6,6 +6,7 @@ module Backends
       @server_properties = server_properties
     end
 
+    include Backends::Model::Dummy
     include Backends::Compute::Dummy
     include Backends::Network::Dummy
     include Backends::Storage::Dummy

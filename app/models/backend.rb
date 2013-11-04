@@ -5,9 +5,11 @@ class Backend
   cattr_accessor :backend_class, :options, :server_properties
 
   def initialize
-    raise Errors::BackendClassNotSetError, 'No backend class has been defined!' unless Backend.backend_class
-    raise Errors::BackendClassNotSetError, 'No backend options have been defined!' unless Backend.options
-    raise Errors::BackendClassNotSetError, 'No backend server properties have been defined!' unless Backend.server_properties
+    backend_name = ROCCI_SERVER_CONFIG.common.backend
+
+    Backend.backend_class = Backend.load_backend_class(backend_name)
+    Backend.options = ROCCI_SERVER_CONFIG.backends.send(backend_name.to_sym)
+    Backend.server_properties = ROCCI_SERVER_CONFIG.common
 
     @backend_instance = Backend.backend_class.new(
       Backend.options, Backend.server_properties
@@ -18,6 +20,21 @@ class Backend
 
   def method_missing(m, *args, &block)
     raise Errors::MethodNotImplementedError, "Method is not implemented in the backend model! [#{m}]"
+  end
+
+  def self.load_backend_class(backend_name)
+    backend_name = "#{backend_name.classify}"
+    Rails.logger.info "[Backend] Loading Backends::#{backend_name}."
+
+    begin
+      backend_class = Backends.const_get("#{backend_name}")
+    rescue NameError => err
+      message = "There is no such backend available! [Backends::#{backend_name}]"
+      Rails.logger.error "[Backend] #{message}"
+      raise ArgumentError, message
+    end
+
+    backend_class
   end
 
   include BackendApi::Model
