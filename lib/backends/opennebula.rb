@@ -6,5 +6,8 @@ module Backends
       @server_properties = server_properties
     end
 
+    #include Backends::Model::Opennebula
+    include Backends::Model::Dummy
+
   end
 end
