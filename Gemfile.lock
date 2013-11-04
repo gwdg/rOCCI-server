@@ -236,6 +236,7 @@ GEM
     whenever (0.8.4)
       activesupport (>= 2.3.4)
       chronic (>= 0.6.3)
+    yard (0.8.7.3)
 
 PLATFORMS
   ruby
@@ -266,3 +267,4 @@ DEPENDENCIES
   simplecov
   warden!
   whenever
+  yard

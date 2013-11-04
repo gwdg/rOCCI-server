@@ -44,6 +44,9 @@ gem 'guard-rails', group: :development
 gem 'rb-inotify', require: false, group: :development
 gem 'libnotify', group: :development
 
+# Use YARD for documentation
+gem 'yard', group: :development
+
 # Use bond+hirb to extend irb
 #
 # Add the following to your ~/.irbrc:
