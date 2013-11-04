@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Backend do
 
-  describe '#method_missing' do
+  context '#method_missing' do
 
     it 'raises a MethodNotImplementedError' do
       expect { Backend.instance.does_not_exist }.to raise_error(Errors::MethodNotImplementedError)
@@ -19,7 +19,19 @@ describe Backend do
 
   end
 
-  describe 'class attribute accessors' do
+  context '#load_backend_class' do
+
+    it 'raises a NameError for non-existent backend' do
+      expect { Backend.load_backend_class 'nope' }.to raise_error(ArgumentError)
+    end
+
+    it 'returns matching backend class' do
+      expect(Backend.load_backend_class 'dummy').to eq Backends::Dummy
+    end
+
+  end
+
+  context 'class attribute accessors' do
 
     it 'has a backend_class reader' do
       expect(Backend).to respond_to(:backend_class)

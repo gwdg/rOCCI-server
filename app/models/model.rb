@@ -10,7 +10,7 @@ class Model
     # Instantiates Occi::Model and registers necessary extensions.
     #
     # @example
-    #    Model.get #=> Occi::Model
+    #    Model.get #=> #<Occi::Model>
     #
     # @return [Occi::Model] an Occi::Model instance ready to use
     def get
