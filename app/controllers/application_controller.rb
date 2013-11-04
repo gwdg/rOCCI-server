@@ -29,20 +29,30 @@ class ApplicationController < ActionController::API
     warden.user
   end
 
+  # Provides access to a lazy authN object from Warden.
+  #
+  # @return [Warden::Manager]
   def warden
     request.env['warden']
   end
 
+  # Performs authentication with Warden. Warden will raise
+  # an exception and redirect to UnauthorizedController.
   def authenticate!
     warden.authenticate!
   end
 
+  # Provides access to a request collection prepared
+  # by the RequestParser.
+  #
+  # @return [Occi::Collection] collection containig parsed OCCI request
   def request_occi_collection
     env["rocci_server.request.collection"]
   end
 
   private
 
+  # Action wrapper providing logging capabilities, mostly for debugging purposes.
   def global_request_logging
     http_request_header_keys = request.headers.env.keys.select { |header_name| header_name.match("^HTTP.*") }
     http_request_headers = request.headers.select { |header_name, header_value| http_request_header_keys.index(header_name) }
