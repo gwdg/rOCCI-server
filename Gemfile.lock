@@ -185,6 +185,7 @@ GEM
       ffi (>= 0.5.0)
     rdoc (3.12.2)
       json (~> 1.4)
+    redcarpet (3.0.0)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
@@ -261,6 +262,7 @@ DEPENDENCIES
   rails (~> 4.0.0)
   rails-api (~> 0.1.0)
   rb-inotify
+  redcarpet
   rspec-rails
   rvm-capistrano
   sdoc

@@ -46,6 +46,7 @@ gem 'libnotify', group: :development
 
 # Use YARD for documentation
 gem 'yard', group: :development
+gem 'redcarpet', group: :development
 
 # Use bond+hirb to extend irb
 #

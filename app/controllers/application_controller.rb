@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::API
+
+  # Include some stuff present in the full ActionController
   include ActionController::UrlFor
   include ActionController::Redirecting
   include ActionController::Rendering
@@ -6,12 +8,23 @@ class ApplicationController < ActionController::API
   include ActionController::ImplicitRender
   include ActionController::MimeResponds
 
+  # Wrap actions in a request logger, only in non-production envs
   around_filter :global_request_logging unless Rails.env.production?
+
+  # Force authentication, if not already authenticated
   before_action :authenticate!
 
+  # Expose chosen methods in views
   helper_method :warden, :current_user, :request_occi_collection
+
+  # Register supported MIME formats
+  # @see 'config/initializers/mime_types.rb' for details
   respond_to :html, :xml, :json, :text, :occi_xml, :occi_json, :occi_header, :uri_list
 
+  # Provides access to a structure containing authentication data
+  # intended for delegation to the backend.
+  #
+  # @return [Hashie::Mash] a hash containing authentication data
   def current_user
     warden.user
   end
