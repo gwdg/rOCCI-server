@@ -98,7 +98,7 @@ GEM
       rspec (~> 2.0)
       rspec-instafail (~> 0.2.0)
       ruby-progressbar (~> 1.0)
-    guard (2.2.2)
+    guard (2.2.3)
       formatador (>= 0.2.4)
       listen (~> 2.1)
       lumberjack (~> 1.0)
