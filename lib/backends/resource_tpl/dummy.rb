@@ -21,7 +21,7 @@ module Backends
           coll = Occi::Collection.new(parsed)
 
           collection.merge! coll
-        end
+        end if @options.model_extensions_dir
 
         collection
       end
