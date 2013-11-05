@@ -47,7 +47,7 @@ class ApplicationController < ActionController::API
   #
   # @return [Occi::Collection] collection containig parsed OCCI request
   def request_occi_collection
-    env["rocci_server.request.collection"]
+    env["rocci_server.request.collection"] || Occi::Collection.new
   end
 
   private

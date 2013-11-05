@@ -8,19 +8,18 @@ class Backend
 
   include Singleton
 
-  # Exposing a few attributes as class attributes since
-  # this is a singleton
-  cattr_accessor :backend_class, :options, :server_properties
+  # Exposing a few attributes
+  attr_reader :backend_name, :backend_class, :options, :server_properties
 
   def initialize
-    backend_name = ROCCI_SERVER_CONFIG.common.backend
+    @backend_name = ROCCI_SERVER_CONFIG.common.backend
 
-    Backend.backend_class = Backend.load_backend_class(backend_name)
-    Backend.options = ROCCI_SERVER_CONFIG.backends.send(backend_name.to_sym)
-    Backend.server_properties = ROCCI_SERVER_CONFIG.common
+    @backend_class = Backend.load_backend_class(@backend_name)
+    @options = ROCCI_SERVER_CONFIG.backends.send(@backend_name.to_sym).freeze
+    @server_properties = ROCCI_SERVER_CONFIG.common.freeze
 
-    @backend_instance = Backend.backend_class.new(
-      Backend.options, Backend.server_properties
+    @backend_instance = @backend_class.new(
+      @options, @server_properties
     )
 
     @backend_instance.extend(Backends::Helpers::MethodMissingHelper) unless @backend_instance.respond_to? :method_missing
@@ -59,7 +58,6 @@ class Backend
     backend_class
   end
 
-  include BackendApi::Model
   include BackendApi::Compute
   include BackendApi::Network
   include BackendApi::Storage

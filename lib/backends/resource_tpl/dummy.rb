@@ -16,7 +16,7 @@ module Backends
 
         # Load all JSON files in the given directory, these contain
         # JSON rendering of OCCI mixin definitions
-        Dir.glob(File.join(@options.model, 'infrastructure', 'resource_tpl', '*.json')) do |file|
+        Dir.glob(File.join(@options.model_extensions_dir, 'infrastructure', 'resource_tpl', '*.json')) do |file|
           parsed = JSON.parse(File.read(file))
           coll = Occi::Collection.new(parsed)
 
@@ -27,9 +27,6 @@ module Backends
       end
 
       def resource_tpl_get; end
-      def resource_tpl_create; end
-      def resource_tpl_delete; end
-      def resource_tpl_update; end
 
     end
   end

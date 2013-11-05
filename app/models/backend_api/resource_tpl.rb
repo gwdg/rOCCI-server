@@ -14,9 +14,6 @@ module BackendApi
     end
 
     def resource_tpl_get; end
-    def resource_tpl_create; end
-    def resource_tpl_delete; end
-    def resource_tpl_update; end
 
   end
 end

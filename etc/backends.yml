@@ -2,7 +2,7 @@
 # backend should be enabled in 'etc/common.yml'
 defaults: &default
   dummy:
-    model: <%= Rails.root.join('etc', 'backends', 'dummy', 'model') %>
+    model_extensions_dir: <%= Rails.root.join('etc', 'backends', 'dummy', 'model') %>
 
 development:
   <<: *default
@@ -12,7 +12,7 @@ test:
 
 production:
   opennebula:
-    model: <%= Rails.root.join('etc', 'backends', 'opennebula', 'model') %>
+    model_extensions_dir: <%= Rails.root.join('etc', 'backends', 'opennebula', 'model') %>
     xmlrpc_endpoint: <%= ENV['ONE_XMLRPC'] %>
     username: <%= ENV['ONE_ROCCI_USER'] %>
     password: <%= ENV['ONE_ROCCI_PASSWD'] %>

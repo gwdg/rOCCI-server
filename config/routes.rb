@@ -2,17 +2,17 @@ ROCCIServer::Application.routes.draw do
   ####################################################
   ## Discovery interface
   ####################################################
-  get '/-/', to: 'model#show', as: 'model'
-  get '/.well-known/org/ogf/occi/-/', to: 'model#show'
+  get '/-/', to: 'occi_model#show', as: 'occi_model'
+  get '/.well-known/org/ogf/occi/-/', to: 'occi_model#show'
 
-  post '/-/', to: 'model#create', as: 'add_mixin'
-  post '/.well-known/org/ogf/occi/-/', to: 'model#create'
+  post '/-/', to: 'occi_model#create', as: 'add_mixin'
+  post '/.well-known/org/ogf/occi/-/', to: 'occi_model#create'
 
   #put '/-/' is undefined in GFD-P-R.185
   #put '/.well-known/org/ogf/occi/-/' is undefined in GFD-P-R.185
   
-  delete '/-/', to: 'model#delete', as: 'delete_mixin'
-  delete '/.well-known/org/ogf/occi/-/', to: 'model#delete'
+  delete '/-/', to: 'occi_model#delete', as: 'delete_mixin'
+  delete '/.well-known/org/ogf/occi/-/', to: 'occi_model#delete'
 
   ####################################################
   ## Occi::Infrastructure::Compute
@@ -114,5 +114,5 @@ ROCCIServer::Application.routes.draw do
   ####################################################
   ## Default route
   ####################################################
-  root 'model#index'
+  root 'occi_model#index'
 end

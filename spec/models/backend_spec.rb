@@ -31,30 +31,22 @@ describe Backend do
 
   end
 
-  context 'class attribute accessors' do
+  context 'attribute accessors' do
 
     it 'has a backend_class reader' do
-      expect(Backend).to respond_to(:backend_class)
-    end
-
-    it 'has a backend_class writer' do
-      expect(Backend).to respond_to(:backend_class=)
+      expect(Backend.instance).to respond_to(:backend_class)
     end
 
     it 'has a options reader' do
-      expect(Backend).to respond_to(:options)
-    end
-
-    it 'has a options writer' do
-      expect(Backend).to respond_to(:options=)
+      expect(Backend.instance).to respond_to(:options)
     end
 
     it 'has a server_properties reader' do
-      expect(Backend).to respond_to(:server_properties)
+      expect(Backend.instance).to respond_to(:server_properties)
     end
 
-    it 'has a server_properties writer' do
-      expect(Backend).to respond_to(:server_properties=)
+    it 'has a backend_name reader' do
+      expect(Backend.instance).to respond_to(:backend_name)
     end
 
   end
