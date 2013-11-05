@@ -33,7 +33,8 @@ class Model
     private
 
     # Instantiates Occi::Model and registers necessary extensions
-    # according to `with_extensions`.
+    # according to `with_extensions`. Extensions inlcude `resource_tpl`
+    # and `os_tpl` mixins, new kinds and actions etc.
     #
     # @param with_extensions [true, false] flag allowing backend-specific extensions
     # @return [Occi::Model] an Occi::Model instance ready to use
@@ -43,6 +44,8 @@ class Model
 
       if with_extensions
         model.register_collection(Backend.instance.model_get_extensions)
+        model.register_collection(Backend.instance.os_tpl_get_all)
+        model.register_collection(Backend.instance.resource_tpl_get_all)
       end
 
       model

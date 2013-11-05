@@ -1,0 +1,29 @@
+{
+  "mixins":[
+    {
+      "term":"67b18960-4609-11e3-bdfa-089e012d9027",
+      "scheme":"/occi/infrastructure/os_tpl#",
+      "title":"debian",
+      "related":[
+        "http://schemas.ogf.org/occi/infrastructure#os_tpl"
+      ],
+      "attributes":{
+        "eu":{
+          "egi":{
+            "fedcloud":{
+              "appdb":{
+                "uuid":{
+                  "Mutable":false,
+                  "Required":true,
+                  "Type":"string",
+                  "Pattern":".*",
+                  "Default":"appdb:uuid:67b18960-4609-11e3-bdfa-089e012d9027"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

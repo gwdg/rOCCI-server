@@ -1,0 +1,29 @@
+{
+  "mixins":[
+    {
+      "term":"959b41e6-4608-11e3-9380-089e012d9027",
+      "scheme":"/occi/infrastructure/os_tpl#",
+      "title":"monitoring",
+      "related":[
+        "http://schemas.ogf.org/occi/infrastructure#os_tpl"
+      ],
+      "attributes":{
+        "eu":{
+          "egi":{
+            "fedcloud":{
+              "appdb":{
+                "uuid":{
+                  "Mutable":false,
+                  "Required":true,
+                  "Type":"string",
+                  "Pattern":".*",
+                  "Default":"appdb:uuid:959b41e6-4608-11e3-9380-089e012d9027"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
