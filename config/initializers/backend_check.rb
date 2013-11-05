@@ -7,4 +7,5 @@ unless backend && !backend.blank?
   raise ArgumentError, message
 end
 
-# TODO: check backend's compliance with the current API version
+# check backend's compliance with the current API version
+Backend.check_version(ROCCI_SERVER_CONFIG.common.backend)

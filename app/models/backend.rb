@@ -8,6 +8,9 @@ class Backend
 
   include Singleton
 
+  # Expose API_VERSION
+  API_VERSION = "0.0.1"
+
   # Exposing a few attributes
   attr_reader :backend_name, :backend_class, :options, :server_properties
 
@@ -56,6 +59,28 @@ class Backend
     end
 
     backend_class
+  end
+
+  def self.check_version(backend_name)
+    s_major, s_minor, s_fix = Backend::API_VERSION.split('.')
+
+    b_class = Backend.load_backend_class(ROCCI_SERVER_CONFIG.common.backend)
+    unless b_class.const_defined?(:API_VERSION)
+      message = "#{b_class} does not expose API_VERSION and cannot be loaded"
+      Rails.logger.error "[Backend] #{message}"
+      raise ArgumentError, message
+    end
+
+    b_major, b_minor, b_fix = b_class::API_VERSION.split('.')
+    unless s_major == b_major
+      message = "#{b_class} reports API_VERSION=#{b_class::API_VERSION} and cannot be loaded => SERVER_API_VERSION=#{Backend::API_VERSION}"
+      Rails.logger.error "[Backend] #{message}"
+      raise Errors::BackendApiVersionMismatchError, message
+    end
+
+    unless s_minor == b_minor
+      Rails.logger.warn "[Backend] #{b_class} reports API_VERSION=#{b_class::API_VERSION} and SERVER_API_VERSION=#{Backend::API_VERSION}"
+    end
   end
 
   include BackendApi::Compute
