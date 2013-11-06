@@ -26,8 +26,6 @@ module Backends
         collection
       end
 
-      def os_tpl_get; end
-
     end
   end
 end

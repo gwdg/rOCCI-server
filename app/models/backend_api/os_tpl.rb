@@ -1,7 +1,7 @@
 module BackendApi
   module OsTpl
 
-    # Gets platform- or backend-specific `os_tpl` mixins which should be merged
+    # Gets backend-specific `os_tpl` mixins which should be merged
     # into Occi::Model of the server.
     #
     # @example
@@ -12,8 +12,6 @@ module BackendApi
     def os_tpl_get_all
       @backend_instance.os_tpl_get_all
     end
-
-    def os_tpl_get; end
 
   end
 end

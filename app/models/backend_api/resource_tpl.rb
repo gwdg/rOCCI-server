@@ -13,7 +13,5 @@ module BackendApi
       @backend_instance.resource_tpl_get_all
     end
 
-    def resource_tpl_get; end
-
   end
 end
