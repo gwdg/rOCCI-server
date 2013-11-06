@@ -18,8 +18,8 @@ class Backend
     @backend_name = ROCCI_SERVER_CONFIG.common.backend
 
     @backend_class = Backend.load_backend_class(@backend_name)
-    @options = ROCCI_SERVER_CONFIG.backends.send(@backend_name.to_sym).freeze
-    @server_properties = ROCCI_SERVER_CONFIG.common.freeze
+    @options = ROCCI_SERVER_CONFIG.backends.send(@backend_name.to_sym)
+    @server_properties = ROCCI_SERVER_CONFIG.common
 
     @backend_instance = @backend_class.new(
       @options, @server_properties
