@@ -14,13 +14,13 @@ end
 private :get_yaml_config
 
 # Load general configuration from 'etc/common.yml'
-ROCCI_SERVER_CONFIG.common = get_yaml_config(Rails.root.join('etc', 'common.yml'))
+ROCCI_SERVER_CONFIG.common = get_yaml_config(Rails.root.join('etc', 'common.yml')).deep_freeze
 
 # Load hook configuration from 'etc/hooks.yml'
-ROCCI_SERVER_CONFIG.hooks = get_yaml_config(Rails.root.join('etc', 'hooks.yml'))
+ROCCI_SERVER_CONFIG.hooks = get_yaml_config(Rails.root.join('etc', 'hooks.yml')).deep_freeze
 
 # Load backend configuration from 'etc/backends.yml'
-ROCCI_SERVER_CONFIG.backends = get_yaml_config(Rails.root.join('etc', 'backends.yml'))
+ROCCI_SERVER_CONFIG.backends = get_yaml_config(Rails.root.join('etc', 'backends.yml')).deep_freeze
 
 # Load backend configuration from 'etc/authn_strategies.yml'
-ROCCI_SERVER_CONFIG.authn_strategies = get_yaml_config(Rails.root.join('etc', 'authn_strategies.yml'))
+ROCCI_SERVER_CONFIG.authn_strategies = get_yaml_config(Rails.root.join('etc', 'authn_strategies.yml')).deep_freeze

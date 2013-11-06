@@ -75,5 +75,8 @@ gem 'logstasher', git: "git://github.com/shadabahmed/logstasher.git", branch: "m
 # Use Hashie::Mash to simplify hash-related stuff
 gem 'hashie'
 
+# Use IceNine to deep-freeze objects
+gem 'ice_nine'
+
 # Use occi-core for OCCI stuff
 gem 'occi-core', git: "git://github.com/gwdg/rOCCI-core.git", branch: "master"

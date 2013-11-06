@@ -117,6 +117,7 @@ GEM
     hike (1.2.3)
     hirb (0.7.1)
     i18n (0.6.5)
+    ice_nine (0.10.0)
     jbuilder (1.5.2)
       activesupport (>= 3.0.0)
       multi_json (>= 1.2.0)
@@ -253,6 +254,7 @@ DEPENDENCIES
   guard-test
   hashie
   hirb
+  ice_nine
   jbuilder (~> 1.2)
   libnotify
   logstasher!
