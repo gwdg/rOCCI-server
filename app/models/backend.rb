@@ -22,7 +22,7 @@ class Backend
     @server_properties = ROCCI_SERVER_CONFIG.common
 
     @backend_instance = @backend_class.new(
-      @options, @server_properties
+      @options, @server_properties, Rails.logger
     )
 
     @backend_instance.extend(Backends::Helpers::MethodMissingHelper) unless @backend_instance.respond_to? :method_missing
