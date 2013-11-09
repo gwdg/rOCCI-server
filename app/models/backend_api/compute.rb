@@ -130,7 +130,7 @@ module BackendApi
     #
     # @example
     #    storagelink = Occi::Infrastructure::Storagelink.new
-    #    compute_attach_storage(storagelink) #=> ""
+    #    compute_attach_storage(storagelink) #=> "65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf"
     #
     # @param storagelink [Occi::Infrastructure::Storagelink] SL instance containing necessary attributes
     # @return [String] final identifier of the new storage link
@@ -167,6 +167,26 @@ module BackendApi
     def compute_dettach_storage(storagelink_id)
       raise ArgumentError, '\'storagelink_id\' is a mandatory argument' if storagelink_id.blank?
       @backend_instance.compute_dettach_storage(storagelink_id)
+    end
+
+    # Triggers an action on all existing compute instance, instances must be filtered
+    # by the specified filter, filter (if set) must contain an Occi::Core::Mixins instance,
+    # action is identified by the action.term attribute of the action instance passed as an argument.
+    # If the requested action cannot be triggered, an error describing the
+    # problem must be raised, @see Backends::Errors.
+    #
+    # @example
+    #    action_instance = Occi::Core::ActionInstance.new
+    #    mixins = Occi::Core::Mixins.new << Occi::Core::Mixin.new
+    #    compute_trigger_action_on_all(action_instance, mixin) #=> true
+    #
+    # @param action_instance [Occi::Core::ActionInstance] action to be triggered
+    # @param mixins [Occi::Core::Mixins] a filter containing mixins
+    # @return [true, false] result of the operation
+    def compute_trigger_action_on_all(action_instance, mixins = nil)
+      raise ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
+      mixins = mixins.deep_freeze if mixins
+      @backend_instance.compute_trigger_action_on_all(action_instance.deep_freeze, mixins)
     end
 
     # Triggers an action on an existing compute instance, the compute instance in question
