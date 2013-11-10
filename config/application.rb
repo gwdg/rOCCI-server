@@ -40,6 +40,7 @@ module ROCCIServer
       generate.view_specs false
       generate.resource_route false
       generate.orm :mongo_mapper
+      generate.test_framework :rspec
     end
 
     require File.expand_path('../version', __FILE__)
