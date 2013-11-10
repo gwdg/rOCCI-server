@@ -18,8 +18,7 @@ module BackendApi
     # @return [Occi::Collection] a collection of storage instances
     def storage_get_all(mixins = nil)
       mixins = mixins.deep_freeze if mixins
-      collection = @backend_instance.storage_get_all(mixins) || Occi::Collection.new
-      collection.deep_freeze
+      @backend_instance.storage_get_all(mixins) || Occi::Collection.new
     end
 
     # Gets a specific storage instance as Occi::Infrastructure::Storage.
@@ -35,8 +34,7 @@ module BackendApi
     # @return [Occi::Infrastructure::Storage, nil] a storage instance or `nil`
     def storage_get(storage_id)
       raise ArgumentError, '\'storage_id\' is a mandatory argument' if storage_id.blank?
-      storage = @backend_instance.storage_get(storage_id)
-      storage.deep_freeze if storage
+      @backend_instance.storage_get(storage_id)
     end
 
     # Instantiates a new storage instance from Occi::Infrastructure::Storage.

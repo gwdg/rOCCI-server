@@ -18,8 +18,7 @@ module BackendApi
     # @return [Occi::Collection] a collection of network instances
     def network_get_all(mixins = nil)
       mixins = mixins.deep_freeze if mixins
-      collection = @backend_instance.network_get_all(mixins) || Occi::Collection.new
-      collection.deep_freeze
+      @backend_instance.network_get_all(mixins) || Occi::Collection.new
     end
 
     # Gets a specific network instance as Occi::Infrastructure::Network.
@@ -35,8 +34,7 @@ module BackendApi
     # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
     def network_get(network_id)
       raise ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
-      network = @backend_instance.network_get(network_id)
-      network.deep_freeze if network
+      @backend_instance.network_get(network_id)
     end
 
     # Instantiates a new network instance from Occi::Infrastructure::Network.

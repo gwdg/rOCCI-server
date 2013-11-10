@@ -18,8 +18,7 @@ module BackendApi
     # @return [Occi::Collection] a collection of compute instances
     def compute_get_all(mixins = nil)
       mixins = mixins.deep_freeze if mixins
-      collection = @backend_instance.compute_get_all(mixins) || Occi::Collection.new
-      collection.deep_freeze
+      @backend_instance.compute_get_all(mixins) || Occi::Collection.new
     end
 
     # Gets a specific compute instance as Occi::Infrastructure::Compute.
@@ -35,8 +34,7 @@ module BackendApi
     # @return [Occi::Infrastructure::Compute, nil] a compute instance or `nil`
     def compute_get(compute_id)
       raise ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
-      compute = @backend_instance.compute_get(compute_id)
-      compute.deep_freeze if compute
+      @backend_instance.compute_get(compute_id)
     end
 
     # Instantiates a new compute instance from Occi::Infrastructure::Compute.

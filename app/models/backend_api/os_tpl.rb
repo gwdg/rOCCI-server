@@ -10,8 +10,7 @@ module BackendApi
     #
     # @return [Occi::Collection] a collection of mixins
     def os_tpl_get_all
-      collection = @backend_instance.os_tpl_get_all || Occi::Collection.new
-      collection.deep_freeze
+      @backend_instance.os_tpl_get_all || Occi::Collection.new
     end
 
   end
