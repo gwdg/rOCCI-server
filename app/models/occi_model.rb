@@ -28,6 +28,8 @@ class OcciModel
     # @return [Occi::Model] an Occi::Model instance ready to use
     def get_filtered(filter)
       raise ArgumentError, 'Filter must not be nil!' unless filter
+
+      Rails.logger.debug "[#{self}] Building OCCI model with filter: #{filter.inspect}"
       filter = filter.kinds.first if filter.respond_to?(:kinds)
       model_factory.get(filter)
     end
@@ -43,6 +45,7 @@ class OcciModel
       model.register_infrastructure
 
       if with_extensions
+        Rails.logger.debug "[#{self}] Building OCCI model with extensions"
         model.register_collection(get_extensions)
         model.register_collection(Backend.instance.os_tpl_get_all)
         model.register_collection(Backend.instance.resource_tpl_get_all)
@@ -50,7 +53,6 @@ class OcciModel
 
       model
     end
-    private_class_method :model_factory
 
     # Gets backend-specific extensions which should be merged
     # into Occi::Model of the server.
@@ -68,7 +70,9 @@ class OcciModel
       # Load all JSON files in the given directory, these contain
       # JSON rendering of OCCI kind/mixin/action definitions
       path = Rails.root.join('etc', 'backends', Backend.instance.backend_name, 'model')
+      Rails.logger.debug "[#{self}] Getting extensions from #{path}"
       Dir.glob(File.join(path, '**', '*.json')) do |file|
+        Rails.logger.debug "[#{self}] Reading #{file}"
         parsed = JSON.parse(File.read(file))
         coll = Occi::Collection.new(parsed)
 
@@ -77,8 +81,10 @@ class OcciModel
 
       collection
     end
-    private_class_method :get_extensions
 
   end
+
+  private_class_method :model_factory
+  private_class_method :get_extensions
 
 end

@@ -48,13 +48,13 @@ class Backend
   # @return [Class] a class of the given backend
   def self.load_backend_class(backend_name)
     backend_name = "#{backend_name.camelize}"
-    Rails.logger.info "[Backend] Loading Backends::#{backend_name}."
+    Rails.logger.info "[#{self}] Loading Backends::#{backend_name}"
 
     begin
       backend_class = Backends.const_get("#{backend_name}")
     rescue NameError => err
       message = "There is no such backend available! [Backends::#{backend_name}]"
-      Rails.logger.error "[Backend] #{message}"
+      Rails.logger.error "[#{self}] #{message}"
       raise ArgumentError, message
     end
 
@@ -67,19 +67,19 @@ class Backend
     b_class = Backend.load_backend_class(ROCCI_SERVER_CONFIG.common.backend)
     unless b_class.const_defined?(:API_VERSION)
       message = "#{b_class} does not expose API_VERSION and cannot be loaded"
-      Rails.logger.error "[Backend] #{message}"
+      Rails.logger.error "[#{self}] #{message}"
       raise ArgumentError, message
     end
 
     b_major, b_minor, b_fix = b_class::API_VERSION.split('.')
     unless s_major == b_major
       message = "#{b_class} reports API_VERSION=#{b_class::API_VERSION} and cannot be loaded => SERVER_API_VERSION=#{Backend::API_VERSION}"
-      Rails.logger.error "[Backend] #{message}"
+      Rails.logger.error "[#{self}] #{message}"
       raise Errors::BackendApiVersionMismatchError, message
     end
 
     unless s_minor == b_minor
-      Rails.logger.warn "[Backend] #{b_class} reports API_VERSION=#{b_class::API_VERSION} and SERVER_API_VERSION=#{Backend::API_VERSION}"
+      Rails.logger.warn "[#{self}] #{b_class} reports API_VERSION=#{b_class::API_VERSION} and SERVER_API_VERSION=#{Backend::API_VERSION}"
     end
   end
 
