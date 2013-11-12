@@ -15,24 +15,23 @@ module BackendApi
       @backend_instance.network_get_all_ids || []
     end
 
-    # Gets all network instances in an Occi::Collection, instances must be filtered
+    # Gets all network instances, instances must be filtered
     # by the specified filter, filter (if set) must contain an Occi::Core::Mixins instance.
     # Returned collection must contain Occi::Infrastructure::Network instances
     # wrapped in Occi::Core::Resources.
     #
     # @example
-    #    collection = network_get_all #=> #<Occi::Collection>
-    #    collection.resources  #=> #<Occi::Core::Resources>
-    #    collection.resources.first #=> #<Occi::Infrastructure::Network>
+    #    networks = network_get_all #=> #<Occi::Core::Resources>
+    #    networks.first #=> #<Occi::Infrastructure::Network>
     #
     #    mixins = Occi::Core::Mixins.new << Occi::Core::Mixin.new
-    #    collection = network_get_all(mixins) #=> #<Occi::Collection>
+    #    networks = network_get_all(mixins) #=> #<Occi::Core::Resources>
     #
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
-    # @return [Occi::Collection] a collection of network instances
+    # @return [Occi::Core::Resources] a collection of network instances
     def network_get_all(mixins = nil)
       mixins = mixins.deep_freeze if mixins
-      @backend_instance.network_get_all(mixins) || Occi::Collection.new
+      @backend_instance.network_get_all(mixins) || Occi::Core::Resources.new
     end
 
     # Gets a specific network instance as Occi::Infrastructure::Network.

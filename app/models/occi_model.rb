@@ -47,8 +47,8 @@ class OcciModel
       if with_extensions
         Rails.logger.debug "[#{self}] Building OCCI model with extensions"
         model.register_collection(get_extensions)
-        model.register_collection(Backend.instance.os_tpl_get_all)
-        model.register_collection(Backend.instance.resource_tpl_get_all)
+        model.register_collection(mixins_as_a_coll(Backend.instance.os_tpl_get_all))
+        model.register_collection(mixins_as_a_coll(Backend.instance.resource_tpl_get_all))
       end
 
       model
@@ -82,9 +82,27 @@ class OcciModel
       collection
     end
 
+    # Wraps given collection of mixins in an Occi::Collection instance
+    #
+    # @example
+    #    mixins = Occi::Core::Mixins.new
+    #    coll = mixins_as_a_coll(mixins) #=> #<Occi::Collection>
+    #    coll.mixins == mixins #=> true
+    #
+    # @param mixins [Occi::Core::Mixins]
+    # @return [Occi::Collection]
+    def mixins_as_a_coll(mixins)
+      raise ArgumentError, 'Mixins is a mandatory argument!' unless mixins
+      collection = Occi::Collection.new
+      collection.mixins = mixins
+
+      collection
+    end
+
   end
 
   private_class_method :model_factory
   private_class_method :get_extensions
+  private_class_method :mixins_as_a_coll
 
 end

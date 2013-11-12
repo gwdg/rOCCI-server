@@ -2,15 +2,14 @@ module Backends
   module OsTpl
     module Dummy
 
-      # Gets platform- or backend-specific `os_tpl` mixins which should be merged
-      # into Occi::Model of the server. Mixins are identified by their scheme and term,
-      # duplicities will be automatically ignored (i.e. will NOT replace existing mixins).
+      # Gets backend-specific `os_tpl` mixins which should be merged
+      # into Occi::Model of the server.
       #
       # @example
-      #    collection = os_tpl_get_all #=> #<Occi::Collection>
-      #    collection.mixins  #=> #<Occi::Core::Mixins>
+      #    mixins = os_tpl_get_all #=> #<Occi::Core::Mixins>
+      #    mixins.first #=> #<Occi::Core::Mixin>
       #
-      # @return [Occi::Collection] a collection of `os_tpl` mixins
+      # @return [Occi::Core::Mixins] a collection of mixins
       def os_tpl_get_all
         collection = Occi::Collection.new
 
@@ -23,7 +22,7 @@ module Backends
           collection.merge! coll
         end if @options.model_extensions_dir
 
-        collection
+        collection.mixins
       end
 
     end

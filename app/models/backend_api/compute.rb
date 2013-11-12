@@ -15,24 +15,23 @@ module BackendApi
       @backend_instance.compute_get_all_ids || []
     end
 
-    # Gets all compute instances in an Occi::Collection, instances must be filtered
+    # Gets all compute instances, instances must be filtered
     # by the specified filter, filter (if set) must contain an Occi::Core::Mixins instance.
     # Returned collection must contain Occi::Infrastructure::Compute instances
     # wrapped in Occi::Core::Resources.
     #
     # @example
-    #    collection = compute_get_all #=> #<Occi::Collection>
-    #    collection.resources  #=> #<Occi::Core::Resources>
-    #    collection.resources.first #=> #<Occi::Infrastructure::Compute>
+    #    computes = compute_get_all #=> #<Occi::Core::Resources>
+    #    computes.first #=> #<Occi::Infrastructure::Compute>
     #
     #    mixins = Occi::Core::Mixins.new << Occi::Core::Mixin.new
-    #    collection = compute_get_all(mixins) #=> #<Occi::Collection>
+    #    computes = compute_get_all(mixins) #=> #<Occi::Core::Resources>
     #
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
-    # @return [Occi::Collection] a collection of compute instances
+    # @return [Occi::Core::Resources] a collection of compute instances
     def compute_get_all(mixins = nil)
       mixins = mixins.deep_freeze if mixins
-      @backend_instance.compute_get_all(mixins) || Occi::Collection.new
+      @backend_instance.compute_get_all(mixins) || Occi::Core::Resources.new
     end
 
     # Gets a specific compute instance as Occi::Infrastructure::Compute.
