@@ -35,6 +35,11 @@ gem 'simplecov', group: [:development, :test]
 gem 'rspec-rails', group: [:development, :test]
 gem 'fuubar', group: [:development, :test]
 
+# Use Pry for debugging
+gem 'pry-rails', group: [:development, :test]
+gem 'pry-rescue', group: [:development, :test]
+gem 'pry-stack_explorer', group: [:development, :test]
+
 # Use guard to speed-up devel process
 gem 'guard-bundler', group: :development
 gem 'guard-test', group: :development
