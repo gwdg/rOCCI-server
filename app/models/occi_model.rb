@@ -12,9 +12,10 @@ class OcciModel
     # @example
     #    OcciModel.get #=> #<Occi::Model>
     #
+    # @param filter [Occi::Collection, Occi::Core::Category, String] filtration parameters
     # @return [Occi::Model] an Occi::Model instance ready to use
-    def get
-      model_factory
+    def get(filter = nil)
+      filter ? get_filtered(filter) : model_factory
     end
 
     # Instantiates Occi::Model, registers necessary extensions
@@ -26,11 +27,10 @@ class OcciModel
     # @param filter [Occi::Collection, Occi::Core::Category, String] filtration parameters
     # @return [Occi::Model] an Occi::Model instance ready to use
     def get_filtered(filter)
+      raise ArgumentError, 'Filter must not be nil!' unless filter
       filter = filter.kinds.first if filter.respond_to?(:kinds)
       model_factory.get(filter)
     end
-
-    private
 
     # Instantiates Occi::Model and registers necessary extensions
     # according to `with_extensions`. Extensions inlcude `resource_tpl`
@@ -50,6 +50,7 @@ class OcciModel
 
       model
     end
+    private_class_method :model_factory
 
     # Gets backend-specific extensions which should be merged
     # into Occi::Model of the server.
@@ -76,6 +77,7 @@ class OcciModel
 
       collection
     end
+    private_class_method :get_extensions
 
   end
 
