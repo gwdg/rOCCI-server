@@ -1,6 +1,20 @@
 module BackendApi
   module Compute
 
+    # Gets all compute instance IDs, no details, no duplicates. Returned
+    # identifiers must corespond to those found in the occi.core.id
+    # attribute of Occi::Infrastructure::Compute instances.
+    #
+    # @example
+    #    compute_get_all_ids #=> []
+    #    compute_get_all_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
+    #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
+    #
+    # @return [Set<String>] a set of IDs for all available compute instances
+    def compute_get_all_ids
+      @backend_instance.compute_get_all_ids || []
+    end
+
     # Gets all compute instances in an Occi::Collection, instances must be filtered
     # by the specified filter, filter (if set) must contain an Occi::Core::Mixins instance.
     # Returned collection must contain Occi::Infrastructure::Compute instances

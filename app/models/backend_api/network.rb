@@ -1,6 +1,20 @@
 module BackendApi
   module Network
 
+    # Gets all network instance IDs, no details, no duplicates. Returned
+    # identifiers must corespond to those found in the occi.core.id
+    # attribute of Occi::Infrastructure::Network instances.
+    #
+    # @example
+    #    network_get_all_ids #=> []
+    #    network_get_all_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
+    #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
+    #
+    # @return [Set<String>] a set of IDs for all available network instances
+    def network_get_all_ids
+      @backend_instance.network_get_all_ids || []
+    end
+
     # Gets all network instances in an Occi::Collection, instances must be filtered
     # by the specified filter, filter (if set) must contain an Occi::Core::Mixins instance.
     # Returned collection must contain Occi::Infrastructure::Network instances
