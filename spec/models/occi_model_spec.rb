@@ -17,8 +17,8 @@ describe OcciModel do
       expect(OcciModel.get_filtered(Occi::Collection.new)).to be_kind_of(Occi::Model)
     end
 
-    it 'return non-empty Occi::Model' do
-      expect(OcciModel.get_filtered(nil)).not_to be_empty
+    it 'raises an exception without a filter' do
+      expect { OcciModel.get_filtered(nil) }.to raise_error(ArgumentError)
     end
   end
 

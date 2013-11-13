@@ -4,14 +4,14 @@ describe Backends::Dummy do
   let(:dummy) { Backends::Dummy.new nil, nil, nil }
   let(:dummy_w_opts) {
     opts = Hashie::Mash.new
-    opts.model_extensions_dir = Rails.root.join('etc', 'backends', 'dummy', 'model')
+    opts.fixtures_dir = Rails.root.join('etc', 'backends', 'dummy', 'fixtures')
     Backends::Dummy.new opts, nil, nil
   }
 
   context 'os_tpl_*' do
     describe '#os_tpl_get_all' do
-      it 'returns an Occi::Collection' do
-        expect(dummy_w_opts.os_tpl_get_all).to be_kind_of(Occi::Collection)
+      it 'returns an Occi::Core::Mixins instance' do
+        expect(dummy_w_opts.os_tpl_get_all).to be_kind_of(Occi::Core::Mixins)
       end
 
       it 'returns a non-empty collection' do\
@@ -26,8 +26,8 @@ describe Backends::Dummy do
 
   context 'resource_tpl_*' do
     describe '#resource_tpl_get_all' do
-      it 'returns an Occi::Collection' do
-        expect(dummy_w_opts.resource_tpl_get_all).to be_kind_of(Occi::Collection)
+      it 'returns an Occi::Core::Mixins instance' do
+        expect(dummy_w_opts.resource_tpl_get_all).to be_kind_of(Occi::Core::Mixins)
       end
 
       it 'returns a non-empty collection' do\
