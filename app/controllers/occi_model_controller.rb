@@ -1,6 +1,13 @@
 class OcciModelController < ApplicationController
 
   def index
+    resources = Occi::Core::Resources.new
+
+    resources.merge Backend.instance.compute_get_all
+    resources.merge Backend.instance.network_get_all
+    resources.merge Backend.instance.storage_get_all
+
+    respond_with(resources)
   end
 
   def show
