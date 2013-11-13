@@ -19,7 +19,10 @@ class ApplicationController < ActionController::API
 
   # Register supported MIME formats
   # @see 'config/initializers/mime_types.rb' for details
-  respond_to :html, :xml, :json, :text, :occi_xml, :occi_json, :occi_header, :uri_list
+  respond_to :xml, :json, :occi_xml, :occi_json
+  respond_to :occi_header, :text, :except => [ :index ]
+  respond_to :uri_list, :only => [ :index ]
+  respond_to :html, :only => [ :index, :show ]
 
   # Provides access to a structure containing authentication data
   # intended for delegation to the backend.
