@@ -10,7 +10,7 @@ module BackendApi
     #    network_get_all_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
     #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
     #
-    # @return [Set<String>] a set of IDs for all available network instances
+    # @return [Array<String>] IDs for all available network instances
     def network_get_all_ids
       @backend_instance.network_get_all_ids || []
     end
