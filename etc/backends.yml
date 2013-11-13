@@ -3,6 +3,7 @@
 defaults: &default
   dummy:
     model_extensions_dir: <%= Rails.root.join('etc', 'backends', 'dummy', 'model') %>
+    fixtures_dir: <%= Rails.root.join('etc', 'backends', 'dummy', 'fixtures') %>
 
 development:
   <<: *default

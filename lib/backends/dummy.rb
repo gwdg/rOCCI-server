@@ -9,7 +9,7 @@ module Backends
       @server_properties = server_properties || Hashie::Mash.new
       @logger = logger || Rails.logger
 
-      path = Rails.root.join('etc', 'backends', 'dummy', 'fixtures')
+      path = @options.fixtures_dir || ""
       read_fixtures(path)
     end
 
