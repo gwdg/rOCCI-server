@@ -1,8 +1,8 @@
 class ApplicationController < ActionController::API
 
   # Include some stuff present in the full ActionController
-  include ActionController::UrlFor
-  include ActionController::Redirecting
+  #include ActionController::UrlFor
+  #include ActionController::Redirecting
   include ActionController::Rendering
   include ActionController::Renderers::All
   include ActionController::ImplicitRender
