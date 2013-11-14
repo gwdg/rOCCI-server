@@ -155,7 +155,7 @@ GEM
       net-ssh (>= 2.6.5)
     nokogiri (1.6.0)
       mini_portile (~> 0.5.0)
-    passenger (4.0.23)
+    passenger (4.0.24)
       daemon_controller (>= 1.1.0)
       rack
       rake (>= 0.8.1)
@@ -230,7 +230,7 @@ GEM
       multi_json
       simplecov-html (~> 0.8.0)
     simplecov-html (0.8.0)
-    slop (3.4.6)
+    slop (3.4.7)
     sprockets (2.10.0)
       hike (~> 1.2)
       multi_json (~> 1.0)
