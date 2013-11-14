@@ -1,21 +1,43 @@
 class ActionController::Responder
   def to_occi_header
-    controller.render :occi_header => @resource
+    options = {}
+    options.merge!(@options)
+    options[:occi_header] = @resource
+
+    controller.render options
   end
 
-  def to_occi_json
-    controller.render :occi_json => @resource
+  def to_text
+    options = {}
+    options.merge!(@options)
+    options[:text] = @resource
+
+    controller.render options
   end
+
+  def to_json
+    options = {}
+    options.merge!(@options)
+    options[:occi_json] = @resource
+
+    controller.render options
+  end
+  alias_method :to_occi_json, :to_json
 
   def to_xml
-    controller.render :occi_xml => @resource
-  end
+    options = {}
+    options.merge!(@options)
+    options[:occi_xml] = @resource
 
-  def to_occi_xml
-    controller.render :occi_xml => @resource
+    controller.render options
   end
+  alias_method :to_occi_xml, :to_xml
 
   def to_uri_list
-    controller.render :uri_list => @resource
+    options = {}
+    options.merge!(@options)
+    options[:uri_list] = @resource
+
+    controller.render options
   end
 end
