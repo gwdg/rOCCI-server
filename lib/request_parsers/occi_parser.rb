@@ -7,7 +7,7 @@ module RequestParsers
       'application/occi+json' => ::RequestParsers::Occi::JSON,
       'application/json' => ::RequestParsers::Occi::JSON,
       'text/occi' => ::RequestParsers::Occi::Text,
-      'plain/text' => ::RequestParsers::Occi::Text,
+      'text/plain' => ::RequestParsers::Occi::Text,
       'application/occi+xml' => ::RequestParsers::Occi::XML,
       'application/xml' => ::RequestParsers::Occi::XML
     }.freeze
