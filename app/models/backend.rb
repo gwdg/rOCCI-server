@@ -36,6 +36,16 @@ class Backend
     raise Errors::MethodNotImplementedError, "Method is not implemented in the backend model! [#{m}]"
   end
 
+  # Performs deep cloning on given Object. Returned
+  # instance is completely independent.
+  #
+  # @param object [Object] instance to be cloned
+  # @return [Object] a deep clone
+  def deep_clone(object)
+    # TODO: too expensive?
+    Marshal.load(Marshal.dump(object))
+  end
+
   # Matches the given backend name with the real backend class.
   # Raises an exception if such a backend does not exist.
   #
