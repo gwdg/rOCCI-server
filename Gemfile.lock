@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/gwdg/rOCCI-core.git
-  revision: 2bbe57eef70881dfc89b994314db1c92ed92d278
+  revision: 89e0a89efb7748e67abc6f11b45b7cb5a30bc45f
   branch: master
   specs:
     occi-core (4.1.2)
@@ -32,7 +32,7 @@ GIT
 
 GIT
   remote: git://github.com/shadabahmed/logstasher.git
-  revision: 2b8b934399a790066493e99bbb4947aa19402cdb
+  revision: 4bd45be598578e79e1906b3b58e55200e138992a
   branch: master
   specs:
     logstasher (0.3.0)
