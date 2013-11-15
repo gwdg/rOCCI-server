@@ -53,6 +53,13 @@ class ApplicationController < ActionController::API
     env["rocci_server.request.collection"] || Occi::Collection.new
   end
 
+  protected
+
+  # Provides access to and caching for the active backend instance.
+  def backend_instance
+    @backend_instance ||= Backend.new(current_user)
+  end
+
   private
 
   # Action wrapper providing logging capabilities, mostly for debugging purposes.

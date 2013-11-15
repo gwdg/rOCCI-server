@@ -3,9 +3,10 @@ module Backends
 
     API_VERSION = "0.0.1"
 
-    def initialize(options, server_properties, logger)
-      @options = options || Hashie::Mash.new
-      @server_properties = server_properties || Hashie::Mash.new
+    def initialize(delegated_user, options, server_properties, logger)
+      @delegated_user = Hashie::Mash.new(delegated_user)
+      @options = Hashie::Mash.new(options)
+      @server_properties = Hashie::Mash.new(server_properties)
       @logger = logger || Rails.logger
     end
 

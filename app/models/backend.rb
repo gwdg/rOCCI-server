@@ -1,12 +1,7 @@
 # Provides access to the real backend which is loaded
-# at runtime. This class is a Singleton.
-#
-# @example
-#    Backend.instance #=> #<Backend>
-#
+# at runtime. All API calls will be automatically wrapped
+# and delegated to the real backend.
 class Backend
-
-  include Singleton
 
   # Expose API_VERSION
   API_VERSION = "0.0.1"
@@ -14,15 +9,18 @@ class Backend
   # Exposing a few attributes
   attr_reader :backend_name, :backend_class, :options, :server_properties
 
-  def initialize
-    @backend_name = ROCCI_SERVER_CONFIG.common.backend
+  def initialize(delegated_user = nil, backend_name = nil, options = nil, server_properties = nil)
+    @backend_name = backend_name || ROCCI_SERVER_CONFIG.common.backend
 
     @backend_class = Backend.load_backend_class(@backend_name)
-    @options = ROCCI_SERVER_CONFIG.backends.send(@backend_name.to_sym)
-    @server_properties = ROCCI_SERVER_CONFIG.common
+    @options = options || ROCCI_SERVER_CONFIG.backends.send(@backend_name.to_sym)
+    @server_properties = server_properties || ROCCI_SERVER_CONFIG.common
 
+    Rails.logger.debug "[#{self}] Instantiating Backends::#{@backend_name} " <<
+                       "for delegated_user=#{delegated_user.inspect} " <<
+                       "with options=#{@options} and server_properties=#{@server_properties}"
     @backend_instance = @backend_class.new(
-      @options, @server_properties, Rails.logger
+      delegated_user, @options, @server_properties, Rails.logger
     )
 
     @backend_instance.extend(Backends::Helpers::MethodMissingHelper) unless @backend_instance.respond_to? :method_missing
@@ -61,14 +59,20 @@ class Backend
     backend_class
   end
 
-  def self.check_version(backend_name)
+  # Checks backend version against the declared API version.
+  #
+  # @example
+  #    Backend.check_version(Backends::Dummy)
+  #
+  # @param b_class [Class] class of the backend
+  # @return [true, false] result of the check or raised exception
+  def self.check_version(b_class)
     s_major, s_minor, s_fix = Backend::API_VERSION.split('.')
 
-    b_class = Backend.load_backend_class(ROCCI_SERVER_CONFIG.common.backend)
     unless b_class.const_defined?(:API_VERSION)
       message = "#{b_class} does not expose API_VERSION and cannot be loaded"
       Rails.logger.error "[#{self}] #{message}"
-      raise ArgumentError, message
+      raise Errors::BackendApiVersionMissingError, message
     end
 
     b_major, b_minor, b_fix = b_class::API_VERSION.split('.')
@@ -81,6 +85,8 @@ class Backend
     unless s_minor == b_minor
       Rails.logger.warn "[#{self}] #{b_class} reports API_VERSION=#{b_class::API_VERSION} and SERVER_API_VERSION=#{Backend::API_VERSION}"
     end
+
+    true
   end
 
   include BackendApi::Compute
