@@ -30,7 +30,7 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [Occi::Core::Resources] a collection of network instances
     def network_get_all(mixins = nil)
-      mixins = mixins.deep_freeze if mixins
+      mixins = deep_clone(mixins).deep_freeze if mixins
       @backend_instance.network_get_all(mixins) || Occi::Core::Resources.new
     end
 
@@ -65,7 +65,7 @@ module BackendApi
     # @return [String] final identifier of the new network instance
     def network_create(network)
       raise ArgumentError, '\'network\' is a mandatory argument' if network.blank?
-      @backend_instance.network_create(network.deep_freeze)
+      @backend_instance.network_create(deep_clone(network).deep_freeze)
     end
 
     # Deletes all network instances, instances to be deleted must be filtered
@@ -82,7 +82,7 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [true, false] result of the operation
     def network_delete_all(mixins = nil)
-      mixins = mixins.deep_freeze if mixins
+      mixins = deep_clone(mixins).deep_freeze if mixins
       @backend_instance.network_delete_all(mixins)
     end
 
@@ -115,7 +115,7 @@ module BackendApi
     # @return [true, false] result of the operation
     def network_update(network)
       raise ArgumentError, '\'network\' is a mandatory argument' if network.blank?
-      @backend_instance.network_update(network.deep_freeze)
+      @backend_instance.network_update(deep_clone(network).deep_freeze)
     end
 
     # Triggers an action on all existing network instance, instances must be filtered
@@ -134,8 +134,8 @@ module BackendApi
     # @return [true, false] result of the operation
     def network_trigger_action_on_all(action_instance, mixins = nil)
       raise ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
-      mixins = mixins.deep_freeze if mixins
-      @backend_instance.network_trigger_action_on_all(action_instance.deep_freeze, mixins)
+      mixins = deep_clone(mixins).deep_freeze if mixins
+      @backend_instance.network_trigger_action_on_all(deep_clone(action_instance).deep_freeze, mixins)
     end
 
     # Triggers an action on an existing network instance, the network instance in question
@@ -155,7 +155,7 @@ module BackendApi
     def network_trigger_action(network_id, action_instance)
       raise ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
       raise ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
-      @backend_instance.network_trigger_action(network_id, action_instance.deep_freeze)
+      @backend_instance.network_trigger_action(network_id, deep_clone(action_instance).deep_freeze)
     end
 
   end

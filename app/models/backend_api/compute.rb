@@ -30,7 +30,7 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [Occi::Core::Resources] a collection of compute instances
     def compute_get_all(mixins = nil)
-      mixins = mixins.deep_freeze if mixins
+      mixins = deep_clone(mixins).deep_freeze if mixins
       @backend_instance.compute_get_all(mixins) || Occi::Core::Resources.new
     end
 
@@ -65,7 +65,7 @@ module BackendApi
     # @return [String] final identifier of the new compute instance
     def compute_create(compute)
       raise ArgumentError, '\'compute\' is a mandatory argument' if compute.blank?
-      @backend_instance.compute_create(compute.deep_freeze)
+      @backend_instance.compute_create(deep_clone(compute).deep_freeze)
     end
 
     # Deletes all compute instances, instances to be deleted must be filtered
@@ -82,7 +82,7 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [true, false] result of the operation
     def compute_delete_all(mixins = nil)
-      mixins = mixins.deep_freeze if mixins
+      mixins = deep_clone(mixins).deep_freeze if mixins
       @backend_instance.compute_delete_all(mixins)
     end
 
@@ -115,7 +115,7 @@ module BackendApi
     # @return [true, false] result of the operation
     def compute_update(compute)
       raise ArgumentError, '\'compute\' is a mandatory argument' if compute.blank?
-      @backend_instance.compute_update(compute.deep_freeze)
+      @backend_instance.compute_update(deep_clone(compute).deep_freeze)
     end
 
     # Attaches a network to an existing compute instance, compute instance and network
@@ -131,7 +131,7 @@ module BackendApi
     # @return [String] final identifier of the new network interface
     def compute_attach_network(networkinterface)
       raise ArgumentError, '\'networkinterface\' is a mandatory argument' if networkinterface.blank?
-      @backend_instance.compute_attach_network(networkinterface.deep_freeze)
+      @backend_instance.compute_attach_network(deep_clone(networkinterface).deep_freeze)
     end
 
     # Attaches a storage to an existing compute instance, compute instance and storage
@@ -147,7 +147,7 @@ module BackendApi
     # @return [String] final identifier of the new storage link
     def compute_attach_storage(storagelink)
       raise ArgumentError, '\'storagelink\' is a mandatory argument' if storagelink.blank?
-      @backend_instance.compute_attach_storage(storagelink.deep_freeze)
+      @backend_instance.compute_attach_storage(deep_clone(storagelink).deep_freeze)
     end
 
     # Dettaches a network from an existing compute instance, the compute instance in question
@@ -196,8 +196,8 @@ module BackendApi
     # @return [true, false] result of the operation
     def compute_trigger_action_on_all(action_instance, mixins = nil)
       raise ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
-      mixins = mixins.deep_freeze if mixins
-      @backend_instance.compute_trigger_action_on_all(action_instance.deep_freeze, mixins)
+      mixins = deep_clone(mixins).deep_freeze if mixins
+      @backend_instance.compute_trigger_action_on_all(deep_clone(action_instance).deep_freeze, mixins)
     end
 
     # Triggers an action on an existing compute instance, the compute instance in question
@@ -217,7 +217,7 @@ module BackendApi
     def compute_trigger_action(compute_id, action_instance)
       raise ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
       raise ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
-      @backend_instance.compute_trigger_action(compute_id, action_instance.deep_freeze)
+      @backend_instance.compute_trigger_action(compute_id, deep_clone(action_instance).deep_freeze)
     end
 
   end
