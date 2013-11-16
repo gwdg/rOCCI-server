@@ -16,7 +16,7 @@ class Backend
     @options = options || ROCCI_SERVER_CONFIG.backends.send(@backend_name.to_sym)
     @server_properties = server_properties || ROCCI_SERVER_CONFIG.common
 
-    Rails.logger.debug "[#{self}] Instantiating Backends::#{@backend_name} " <<
+    Rails.logger.debug "[#{self}] Instantiating #{@backend_class} " <<
                        "for delegated_user=#{delegated_user.inspect} " <<
                        "with options=#{@options} and server_properties=#{@server_properties}"
     @backend_instance = @backend_class.new(
@@ -104,5 +104,7 @@ class Backend
   include BackendApi::Storage
   include BackendApi::OsTpl
   include BackendApi::ResourceTpl
+
+  include MethodLoggerHelper unless Rails.env.production?
 
 end
