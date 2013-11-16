@@ -12,6 +12,7 @@ test:
   <<: *default
 
 production:
+  <<: *default
   opennebula:
     model_extensions_dir: <%= Rails.root.join('etc', 'backends', 'opennebula', 'model') %>
     xmlrpc_endpoint: <%= ENV['ONE_XMLRPC'] %>

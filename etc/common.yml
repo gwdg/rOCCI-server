@@ -8,7 +8,7 @@ defaults: &default
     - dummy
   backend: dummy
   log_level: debug
-  tempdir: /tmp
+  tempdir: /tmp/rocci_server
   force_ssl: false
 
 development:
@@ -27,5 +27,5 @@ production:
     - voms
   hooks:
     - autocreate_user
-  backend: opennebula
+  backend: dummy
   log_level: warn
