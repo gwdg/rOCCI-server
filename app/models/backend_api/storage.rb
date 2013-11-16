@@ -46,7 +46,7 @@ module BackendApi
     # @param storage_id [String] OCCI identifier of the requested storage instance
     # @return [Occi::Infrastructure::Storage, nil] a storage instance or `nil`
     def storage_get(storage_id)
-      raise ArgumentError, '\'storage_id\' is a mandatory argument' if storage_id.blank?
+      raise Errors::ArgumentError, '\'storage_id\' is a mandatory argument' if storage_id.blank?
       @backend_instance.storage_get(storage_id)
     end
 
@@ -64,7 +64,8 @@ module BackendApi
     # @param storage [Occi::Infrastructure::Storage] storage instance containing necessary attributes
     # @return [String] final identifier of the new storage instance
     def storage_create(storage)
-      raise ArgumentError, '\'storage\' is a mandatory argument' if storage.blank?
+      raise Errors::ArgumentError, '\'storage\' is a mandatory argument' if storage.blank?
+      raise Errors::ArgumentTypeMismatchError, 'Action requires a storage instance!' unless storage.kind_of? Occi::Infrastructure::Storage
       @backend_instance.storage_create(deep_clone(storage).deep_freeze)
     end
 
@@ -98,7 +99,7 @@ module BackendApi
     # @param storage_id [String] an identifier of a storage instance to be deleted
     # @return [true, false] result of the operation
     def storage_delete(storage_id)
-      raise ArgumentError, '\'storage_id\' is a mandatory argument' if storage_id.blank?
+      raise Errors::ArgumentError, '\'storage_id\' is a mandatory argument' if storage_id.blank?
       @backend_instance.storage_delete(storage_id)
     end
 
@@ -114,7 +115,7 @@ module BackendApi
     # @param storage [Occi::Infrastructure::Storage] instance containing updated information
     # @return [true, false] result of the operation
     def storage_update(storage)
-      raise ArgumentError, '\'storage\' is a mandatory argument' if storage.blank?
+      raise Errors::ArgumentError, '\'storage\' is a mandatory argument' if storage.blank?
       @backend_instance.storage_update(deep_clone(storage).deep_freeze)
     end
 
@@ -133,7 +134,8 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [true, false] result of the operation
     def storage_trigger_action_on_all(action_instance, mixins = nil)
-      raise ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
+      raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
+      raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
       mixins = deep_clone(mixins).deep_freeze if mixins
       @backend_instance.storage_trigger_action_on_all(deep_clone(action_instance).deep_freeze, mixins)
     end
@@ -153,8 +155,9 @@ module BackendApi
     # @param action_instance [Occi::Core::ActionInstance] action to be triggered
     # @return [true, false] result of the operation
     def storage_trigger_action(storage_id, action_instance)
-      raise ArgumentError, '\'storage_id\' is a mandatory argument' if storage_id.blank?
-      raise ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
+      raise Errors::ArgumentError, '\'storage_id\' is a mandatory argument' if storage_id.blank?
+      raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
+      raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
       @backend_instance.storage_trigger_action(storage_id, deep_clone(action_instance).deep_freeze)
     end
 
