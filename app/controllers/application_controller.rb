@@ -8,9 +8,13 @@ class ApplicationController < ActionController::API
   include ActionController::ImplicitRender
   include ActionController::MimeResponds
 
-  # handle known exceptions
+  # Handle known exceptions
   rescue_from ::Errors::UnsupportedMediaTypeError, :with => :handle_parser_type_err
   rescue_from ::Occi::Errors::ParserInputError, :with => :handle_parser_input_err
+  rescue_from ::Backends::Errors::MethodNotImplementedError, :with => :handle_not_impl_err
+  rescue_from ::Errors::ArgumentTypeMismatchError, :with => :handle_wrong_args_err
+  rescue_from ::Errors::ArgumentError, :with => :handle_wrong_args_err
+  rescue_from ::Backends::Errors::StubError, :with => :handle_not_impl_err
 
   # Wrap actions in a request logger, only in non-production envs
   around_filter :global_request_logging unless Rails.env.production?
@@ -88,12 +92,22 @@ class ApplicationController < ActionController::API
   end
 
   def handle_parser_type_err(exception)
-    logger.warn "[Parser] [#{self.class}] Request from #{request.remote_ip} refused with: #{exception.message}"
+    logger.warn "[Parser] Request from #{request.remote_ip} refused with: #{exception.message}"
     render text: exception.message, status: 406
   end
 
   def handle_parser_input_err(exception)
-    logger.warn "[Parser] [#{self.class}] Request from #{request.remote_ip} refused with: #{exception.message}"
+    logger.warn "[Parser] Request from #{request.remote_ip} refused with: #{exception.message}"
+    render text: exception.message, status: 400
+  end
+
+  def handle_not_impl_err(exception)
+    logger.error "[Backend] Active backend does not implement requested method: #{exception.message}"
+    render text: exception.message, status: 501
+  end
+
+  def handle_wrong_args_err(exception)
+    logger.warn "[Backend] User did not provide necessary arguments to execute an action: #{exception.message}"
     render text: exception.message, status: 400
   end
 end
