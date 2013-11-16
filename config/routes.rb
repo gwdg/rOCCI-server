@@ -86,18 +86,16 @@ ROCCIServer::Application.routes.draw do
   ####################################################
   ## Occi::Infrastructure::OsTpl
   ####################################################
-  get '/mixin/os_tpl/:term/', to: 'os_tpl#show', as: 'os_tpl'
-  get '/mixin/os_tpl/', to: 'os_tpl#index', as: 'os_tpls'
+  get '/mixin/os_tpl/*term/', to: 'os_tpl#index', as: 'os_tpl'
 
-  post '/mixin/os_tpl/:term/', to: 'os_tpl#trigger', constraints: { query_string: /^\?action=/ }
+  post '/mixin/os_tpl/*term/', to: 'os_tpl#trigger', constraints: { query_string: /^\?action=/ }
 
   ####################################################
   ## Occi::Infrastructure::ResourceTpl
   ####################################################
-  get '/mixin/resource_tpl/:term/', to: 'resource_tpl#show', as: 'resource_tpl'
-  get '/mixin/resource_tpl/', to: 'resource_tpl#index', as: 'resource_tpls'
+  get '/mixin/resource_tpl/*term/', to: 'resource_tpl#index', as: 'resource_tpl'
 
-  post '/mixin/resource_tpl/:term/', to: 'resource_tpl#trigger', constraints: { query_string: /^\?action=/ }
+  post '/mixin/resource_tpl/*term/', to: 'resource_tpl#trigger', constraints: { query_string: /^\?action=/ }
 
   ####################################################
   ## Occi::Core::Mixin (user-defined mixins)
