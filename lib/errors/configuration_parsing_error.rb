@@ -1,3 +1,3 @@
 module Errors
-  class ConfigurationParsingError < ArgumentError; end
+  class ConfigurationParsingError < ::ArgumentError; end
 end

@@ -1,3 +1,3 @@
 module Errors
-    class MethodNotImplementedError < StandardError; end
+    class MethodNotImplementedError < ::StandardError; end
 end

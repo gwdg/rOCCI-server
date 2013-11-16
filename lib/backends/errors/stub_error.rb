@@ -1,5 +1,5 @@
 module Backends
   module Errors
-    class StubError < StandardError; end
+    class StubError < ::StandardError; end
   end
 end

@@ -1,3 +1,3 @@
 module Errors
-  class BackendClassNotSetError < ArgumentError; end
+  class BackendClassNotSetError < ::ArgumentError; end
 end

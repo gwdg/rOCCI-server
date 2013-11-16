@@ -1,3 +1,3 @@
 module Errors
-  class UnsupportedMediaTypeError < ArgumentError; end
+  class UnsupportedMediaTypeError < ::ArgumentError; end
 end

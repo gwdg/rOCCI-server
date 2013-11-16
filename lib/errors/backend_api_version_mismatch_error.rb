@@ -1,3 +1,3 @@
 module Errors
-  class BackendApiVersionMismatchError < ArgumentError; end
+  class BackendApiVersionMismatchError < ::ArgumentError; end
 end
