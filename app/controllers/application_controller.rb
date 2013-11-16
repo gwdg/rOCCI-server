@@ -8,6 +8,10 @@ class ApplicationController < ActionController::API
   include ActionController::ImplicitRender
   include ActionController::MimeResponds
 
+  # handle known exceptions
+  rescue_from ::Errors::UnsupportedMediaTypeError, :with => :handle_parser_type_err
+  rescue_from ::Occi::Errors::ParserInputError, :with => :handle_parser_input_err
+
   # Wrap actions in a request logger, only in non-production envs
   around_filter :global_request_logging unless Rails.env.production?
 
@@ -50,7 +54,8 @@ class ApplicationController < ActionController::API
   #
   # @return [Occi::Collection] collection containig parsed OCCI request
   def request_occi_collection
-    env["rocci_server.request.collection"] || Occi::Collection.new
+    parse_request unless @request_collection
+    @request_collection || Occi::Collection.new
   end
 
   protected
@@ -58,6 +63,11 @@ class ApplicationController < ActionController::API
   # Provides access to and caching for the active backend instance.
   def backend_instance
     @backend_instance ||= Backend.new(current_user)
+  end
+
+  # Provides access to a lazy parser object
+  def parse_request
+    @request_collection = env["rocci_server.request.parser"].parse_occi_messages
   end
 
   private
@@ -68,11 +78,22 @@ class ApplicationController < ActionController::API
     http_request_headers = request.headers.select { |header_name, header_value| http_request_header_keys.index(header_name) }
     logger.debug "[ApplicationController] Processing with params #{params.inspect}"
     logger.debug "[ApplicationController] Processing with body #{request.body.read.inspect}" if request.body.respond_to?(:read)
-    logger.debug "[ApplicationController] Processing with parsed OCCI message #{request_occi_collection.inspect}"
+    #logger.debug "[ApplicationController] Processing with parsed OCCI message #{request_occi_collection.inspect}"
     begin
       yield
     ensure
+      logger.debug "[ApplicationController] Responding with headers #{response.headers.inspect}"
       logger.debug "[ApplicationController] Responding with body #{response.body.inspect}"
     end
+  end
+
+  def handle_parser_type_err(exception)
+    logger.warn "[Parser] [#{self.class}] Request from #{request.remote_ip} refused with: #{exception.message}"
+    render text: exception.message, status: 406
+  end
+
+  def handle_parser_input_err(exception)
+    logger.warn "[Parser] [#{self.class}] Request from #{request.remote_ip} refused with: #{exception.message}"
+    render text: exception.message, status: 400
   end
 end

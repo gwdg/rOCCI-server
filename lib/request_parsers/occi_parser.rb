@@ -19,26 +19,24 @@ module RequestParsers
     def call(env)
       request = ::ActionDispatch::Request.new(env)
 
-      begin
-        env["rocci_server.request.collection"] = parse_occi_messages(request)
-      rescue ::Errors::UnsupportedMediaTypeError => merr
-        Rails.logger.warn "[Parser] [#{self.class}] Request from #{request.remote_ip} refused with: #{merr.message}"
-        return [406, {}, ["Not Acceptable > Unsupported Content Type"]]
-      rescue ::Occi::Errors::ParserInputError => perr
-        Rails.logger.warn "[Parser] [#{self.class}] Request from #{request.remote_ip} refused with: #{perr.message}"
-        return [400, {}, ["Bad Request > Malformed Message"]]
-      end
+      # make a copy of the request body
+      @body = request.body.respond_to?(:read) ? request.body.read : request.body.string
+      @body = Marshal.load(Marshal.dump(@body))
 
+      # save copy some additional information
+      @media_type = request.media_type.to_s
+      @headers = sanitize_request_headers(request.headers)
+      @fullpath = request.fullpath.to_s
+
+      env["rocci_server.request.parser"] = self
       @app.call(env)
     end
 
-    private
+    def parse_occi_messages
+      raise ::Errors::UnsupportedMediaTypeError, "Media type '#{@media_type}' is not supported by the RequestParser" unless AVAILABLE_PARSERS.key?(@media_type)
 
-    def parse_occi_messages(request)
-      raise ::Errors::UnsupportedMediaTypeError, "Media type '#{request.media_type}' is not supported by the RequestParser" unless AVAILABLE_PARSERS.key?(request.media_type)
-
-      body = request.body.respond_to?(:read) ? request.body.read : request.body.string
-      collection = AVAILABLE_PARSERS[request.media_type].parse(request.media_type, body, sanitize_request_headers(request.headers), request.fullpath)
+      collection = AVAILABLE_PARSERS[@media_type].parse(@media_type, @body, @headers, @fullpath)
+      Rails.logger.debug "[Parser] [#{self.class}] Parsed request into coll=#{collection.inspect}"
 
       collection
     end
@@ -46,6 +44,7 @@ module RequestParsers
     def sanitize_request_headers(headers)
       headers.select { |_, v| v.kind_of?(String) }
     end
+    private :sanitize_request_headers
 
   end
 end
