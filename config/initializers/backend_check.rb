@@ -4,7 +4,14 @@ backend = ROCCI_SERVER_CONFIG.common.backend
 if backend.blank?
   message = "You have not specified a backend!"
   Rails.logger.error "[Backend] #{message}"
-  raise ArgumentError, message
+  raise Errors::BackendClassNotSetError, message
+end
+
+# hashes or arrays with multiple backends are not supported
+unless backend.kind_of? String
+  message = "You have to specify a single backend!"
+  Rails.logger.error "[Backend] #{message}"
+  raise Errors::BackendClassNotSetError, message
 end
 
 # check backend's compliance with the current API version

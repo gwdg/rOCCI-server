@@ -12,6 +12,7 @@ test:
 
 production:
   autocreate_user:
+    required_backend: "opennebula"
     opennebula:
       xmlrpc_endpoint: <%= ENV['ONE_XMLRPC'] %>
       username: <%= ENV['ONE_ROCCI_USER'] %>
