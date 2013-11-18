@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/gwdg/rOCCI-core.git
-  revision: 89e0a89efb7748e67abc6f11b45b7cb5a30bc45f
+  revision: 38759d4e811141b48abdc2a8fedc6708c2f4158f
   branch: master
   specs:
     occi-core (4.1.2)
@@ -102,7 +102,7 @@ GEM
       rspec (~> 2.0)
       rspec-instafail (~> 0.2.0)
       ruby-progressbar (~> 1.0)
-    guard (2.2.3)
+    guard (2.2.4)
       formatador (>= 0.2.4)
       listen (~> 2.1)
       lumberjack (~> 1.0)
