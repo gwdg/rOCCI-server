@@ -17,4 +17,11 @@ end
 # check backend's compliance with the current API version
 Rails.logger.info "[Backend] Checking backend API version"
 b_class = Backend.load_backend_class(ROCCI_SERVER_CONFIG.common.backend)
-Backend.check_version(b_class)
+
+unless b_class.const_defined?(:API_VERSION)
+  message = "#{b_class} does not expose API_VERSION and cannot be loaded"
+  Rails.logger.error "[Backend] #{message}"
+  raise Errors::BackendApiVersionMissingError, message
+end
+
+Backend.check_version(Backend::API_VERSION, b_class::API_VERSION)

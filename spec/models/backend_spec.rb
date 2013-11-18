@@ -32,31 +32,16 @@ describe Backend do
   end
 
   context 'self.check_version' do
-    let(:backend_class_match) {
-      backend_class = 'Backends::Test'.split('::').inject(Object) {|o,c| o.const_get c}
-      backend_class.const_set('API_VERSION', Backend::API_VERSION)
-      backend_class
-    }
-    let(:backend_class_nover) {
-      backend_class = 'Backends::Test'.split('::').inject(Object) {|o,c| o.const_get c}
-      backend_class
-    }
-    let(:backend_class_mismatch) {
-      backend_class = 'Backends::Test'.split('::').inject(Object) {|o,c| o.const_get c}
-      backend_class.const_set('API_VERSION', '666.666.666')
-      backend_class
-    }
-
     it 'reports missing API version' do
-      expect { Backend.check_version(backend_class_nover) }.to raise_error(Errors::BackendApiVersionMissingError)
+      expect { Backend.check_version('1.0.0', '') }.to raise_error(Errors::BackendApiVersionMismatchError)
     end
 
     it 'fails on mismatch' do
-      expect { Backend.check_version(backend_class_mismatch) }.to raise_error(Errors::BackendApiVersionMismatchError)
+      expect { Backend.check_version('2.0', '1.0') }.to raise_error(Errors::BackendApiVersionMismatchError)
     end
 
     it 'reports success on match' do
-      expect(Backend.check_version(backend_class_match)).to be_true
+      expect(Backend.check_version('2.1', '2.1')).to be_true
     end
   end
 

@@ -72,28 +72,23 @@ class Backend
   # Checks backend version against the declared API version.
   #
   # @example
-  #    Backend.check_version(Backends::Dummy)
+  #    Backend.check_version('1.0', '2.5')
   #
-  # @param b_class [Class] class of the backend
+  # @param api_version [String] current API version of the server
+  # @param backend_version [String] API version of the backend
   # @return [true, false] result of the check or raised exception
-  def self.check_version(b_class)
-    s_major, s_minor, s_fix = Backend::API_VERSION.split('.')
+  def self.check_version(api_version, backend_version)
+    s_major, s_minor, s_fix = api_version.split('.')
+    b_major, b_minor, b_fix = backend_version.split('.')
 
-    unless b_class.const_defined?(:API_VERSION)
-      message = "#{b_class} does not expose API_VERSION and cannot be loaded"
-      Rails.logger.error "[#{self}] #{message}"
-      raise Errors::BackendApiVersionMissingError, message
-    end
-
-    b_major, b_minor, b_fix = b_class::API_VERSION.split('.')
     unless s_major == b_major
-      message = "#{b_class} reports API_VERSION=#{b_class::API_VERSION} and cannot be loaded => SERVER_API_VERSION=#{Backend::API_VERSION}"
+      message = "Backend reports API_VERSION=#{backend_version} and cannot be loaded because SERVER_API_VERSION=#{api_version}"
       Rails.logger.error "[#{self}] #{message}"
       raise Errors::BackendApiVersionMismatchError, message
     end
 
     unless s_minor == b_minor
-      Rails.logger.warn "[#{self}] #{b_class} reports API_VERSION=#{b_class::API_VERSION} and SERVER_API_VERSION=#{Backend::API_VERSION}"
+      Rails.logger.warn "[#{self}] Backend reports API_VERSION=#{backend_version} and SERVER_API_VERSION=#{api_version}"
     end
 
     true
