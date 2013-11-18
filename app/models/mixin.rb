@@ -4,7 +4,7 @@ class Mixin
   key :term,      String
   key :scheme,    String
   key :title,     String
-  key :instances, Set
+  key :resources, Set
   key :owner,     String
 
   timestamps!
