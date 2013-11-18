@@ -2,7 +2,7 @@ class NetworkController < ApplicationController
 
   # GET /network/
   def index
-    networks = backend_instance.network_get_all
+    networks = backend_instance.network_list
     respond_with(networks)
   end
 

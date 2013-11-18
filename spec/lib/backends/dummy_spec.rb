@@ -9,33 +9,33 @@ describe Backends::Dummy do
   }
 
   context 'os_tpl_*' do
-    describe '#os_tpl_get_all' do
+    describe '#os_tpl_list' do
       it 'returns an Occi::Core::Mixins instance' do
-        expect(dummy_w_opts.os_tpl_get_all).to be_kind_of(Occi::Core::Mixins)
+        expect(dummy_w_opts.os_tpl_list).to be_kind_of(Occi::Core::Mixins)
       end
 
       it 'returns a non-empty collection' do\
-        expect(dummy_w_opts.os_tpl_get_all).not_to be_empty
+        expect(dummy_w_opts.os_tpl_list).not_to be_empty
       end
 
       it 'returns an empty collection without model_extensions_dir' do
-        expect(dummy.os_tpl_get_all).to be_empty
+        expect(dummy.os_tpl_list).to be_empty
       end
     end
   end
 
   context 'resource_tpl_*' do
-    describe '#resource_tpl_get_all' do
+    describe '#resource_tpl_list' do
       it 'returns an Occi::Core::Mixins instance' do
-        expect(dummy_w_opts.resource_tpl_get_all).to be_kind_of(Occi::Core::Mixins)
+        expect(dummy_w_opts.resource_tpl_list).to be_kind_of(Occi::Core::Mixins)
       end
 
       it 'returns a non-empty collection' do\
-        expect(dummy_w_opts.resource_tpl_get_all).not_to be_empty
+        expect(dummy_w_opts.resource_tpl_list).not_to be_empty
       end
 
       it 'returns an empty collection without model_extensions_dir' do
-        expect(dummy.resource_tpl_get_all).to be_empty
+        expect(dummy.resource_tpl_list).to be_empty
       end
     end
   end

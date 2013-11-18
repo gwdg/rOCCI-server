@@ -2,7 +2,7 @@ class StorageController < ApplicationController
 
   # GET /storage/
   def index
-    storages = backend_instance.storage_get_all
+    storages = backend_instance.storage_list
     respond_with(storages)
   end
 

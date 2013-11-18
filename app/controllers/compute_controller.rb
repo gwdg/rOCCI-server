@@ -2,7 +2,7 @@ class ComputeController < ApplicationController
 
   # GET /compute/
   def index
-    computes = backend_instance.compute_get_all
+    computes = backend_instance.compute_list
     respond_with(computes)
   end
 

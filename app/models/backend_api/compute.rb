@@ -6,13 +6,13 @@ module BackendApi
     # attribute of Occi::Infrastructure::Compute instances.
     #
     # @example
-    #    compute_get_all_ids #=> []
-    #    compute_get_all_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
+    #    compute_list_ids #=> []
+    #    compute_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
     #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
     #
     # @return [Array<String>] IDs for all available compute instances
-    def compute_get_all_ids
-      @backend_instance.compute_get_all_ids || []
+    def compute_list_ids
+      @backend_instance.compute_list_ids || []
     end
 
     # Gets all compute instances, instances must be filtered
@@ -21,17 +21,17 @@ module BackendApi
     # wrapped in Occi::Core::Resources.
     #
     # @example
-    #    computes = compute_get_all #=> #<Occi::Core::Resources>
+    #    computes = compute_list #=> #<Occi::Core::Resources>
     #    computes.first #=> #<Occi::Infrastructure::Compute>
     #
     #    mixins = Occi::Core::Mixins.new << Occi::Core::Mixin.new
-    #    computes = compute_get_all(mixins) #=> #<Occi::Core::Resources>
+    #    computes = compute_list(mixins) #=> #<Occi::Core::Resources>
     #
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [Occi::Core::Resources] a collection of compute instances
-    def compute_get_all(mixins = nil)
+    def compute_list(mixins = nil)
       mixins = deep_clone(mixins).deep_freeze if mixins
-      @backend_instance.compute_get_all(mixins) || Occi::Core::Resources.new
+      @backend_instance.compute_list(mixins) || Occi::Core::Resources.new
     end
 
     # Gets a specific compute instance as Occi::Infrastructure::Compute.

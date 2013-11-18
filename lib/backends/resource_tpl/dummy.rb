@@ -6,11 +6,11 @@ module Backends
       # into Occi::Model of the server.
       #
       # @example
-      #    mixins = resource_tpl_get_all #=> #<Occi::Core::Mixins>
+      #    mixins = resource_tpl_list #=> #<Occi::Core::Mixins>
       #    mixins.first  #=> #<Occi::Core::Mixin>
       #
       # @return [Occi::Core::Mixins] a collection of mixins
-      def resource_tpl_get_all
+      def resource_tpl_list
         @resource_tpl
       end
 

@@ -54,8 +54,8 @@ class OcciModel
       if with_extensions
         Rails.logger.debug "[#{self}] Building OCCI model with extensions"
         model.register_collection(get_extensions(backend))
-        model.register_collection(mixins_as_a_coll(backend.os_tpl_get_all))
-        model.register_collection(mixins_as_a_coll(backend.resource_tpl_get_all))
+        model.register_collection(mixins_as_a_coll(backend.os_tpl_list))
+        model.register_collection(mixins_as_a_coll(backend.resource_tpl_list))
       end
 
       model

@@ -6,13 +6,13 @@ module BackendApi
     # attribute of Occi::Infrastructure::Network instances.
     #
     # @example
-    #    network_get_all_ids #=> []
-    #    network_get_all_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
+    #    network_list_ids #=> []
+    #    network_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
     #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
     #
     # @return [Array<String>] IDs for all available network instances
-    def network_get_all_ids
-      @backend_instance.network_get_all_ids || []
+    def network_list_ids
+      @backend_instance.network_list_ids || []
     end
 
     # Gets all network instances, instances must be filtered
@@ -21,17 +21,17 @@ module BackendApi
     # wrapped in Occi::Core::Resources.
     #
     # @example
-    #    networks = network_get_all #=> #<Occi::Core::Resources>
+    #    networks = network_list #=> #<Occi::Core::Resources>
     #    networks.first #=> #<Occi::Infrastructure::Network>
     #
     #    mixins = Occi::Core::Mixins.new << Occi::Core::Mixin.new
-    #    networks = network_get_all(mixins) #=> #<Occi::Core::Resources>
+    #    networks = network_list(mixins) #=> #<Occi::Core::Resources>
     #
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [Occi::Core::Resources] a collection of network instances
-    def network_get_all(mixins = nil)
+    def network_list(mixins = nil)
       mixins = deep_clone(mixins).deep_freeze if mixins
-      @backend_instance.network_get_all(mixins) || Occi::Core::Resources.new
+      @backend_instance.network_list(mixins) || Occi::Core::Resources.new
     end
 
     # Gets a specific network instance as Occi::Infrastructure::Network.

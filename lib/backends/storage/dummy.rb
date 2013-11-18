@@ -7,12 +7,12 @@ module Backends
       # attribute of Occi::Infrastructure::Storage instances.
       #
       # @example
-      #    storage_get_all_ids #=> []
-      #    storage_get_all_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
+      #    storage_list_ids #=> []
+      #    storage_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
       #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
       #
       # @return [Array<String>] IDs for all available storage instances
-      def storage_get_all_ids
+      def storage_list_ids
         @storage.to_a.collect { |s| s.id }
       end
 
@@ -22,15 +22,15 @@ module Backends
       # wrapped in Occi::Core::Resources.
       #
       # @example
-      #    storages = storage_get_all #=> #<Occi::Core::Resources>
+      #    storages = storage_list #=> #<Occi::Core::Resources>
       #    storages.first #=> #<Occi::Infrastructure::Storage>
       #
       #    mixins = Occi::Core::Mixins.new << Occi::Core::Mixin.new
-      #    storages = storage_get_all(mixins) #=> #<Occi::Core::Resources>
+      #    storages = storage_list(mixins) #=> #<Occi::Core::Resources>
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of storage instances
-      def storage_get_all(mixins = nil)
+      def storage_list(mixins = nil)
         # TODO: impl filtering
         @storage
       end

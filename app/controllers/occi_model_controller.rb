@@ -4,9 +4,9 @@ class OcciModelController < ApplicationController
   def index
     resources = Occi::Core::Resources.new
 
-    resources.merge backend_instance.compute_get_all
-    resources.merge backend_instance.network_get_all
-    resources.merge backend_instance.storage_get_all
+    resources.merge backend_instance.compute_list
+    resources.merge backend_instance.network_list
+    resources.merge backend_instance.storage_list
 
     respond_with(resources)
   end

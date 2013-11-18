@@ -4,7 +4,7 @@ class OsTplController < ApplicationController
   def index
     # TODO: work with :term*
     mixins = Occi::Core::Mixins.new << Occi::Infrastructure::OsTpl.mixin
-    computes = backend_instance.compute_get_all(mixins)
+    computes = backend_instance.compute_list(mixins)
     respond_with(computes)
   end
 
