@@ -14,6 +14,25 @@ module Backends
         @os_tpl
       end
 
+      # Gets a specific os_tpl mixin instance as Occi::Core::Mixin.
+      # Term given as an argument must match the term inside
+      # the returned Occi::Core::Mixin instance.
+      #
+      # @example
+      #    os_tpl = os_tpl_get('65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf')
+      #        #=> #<Occi::Core::Mixin>
+      #
+      # @param term [String] OCCI term of the requested os_tpl mixin instance
+      # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
+      def os_tpl_get(term)
+        ###
+        # See #os_tpl_list for details on how to create Occi::Core::Mixin instances.
+        # Here you simply select a specific instance with a matching term.
+        # Since terms must be unique, you should always return at most one instance.
+        ###
+        os_tpl_list.to_a.select { |m| m.term == term }.first
+      end
+
     end
   end
 end

@@ -22,6 +22,16 @@ describe Backends::Dummy do
         expect(dummy.os_tpl_list).to be_empty
       end
     end
+
+    describe '#os_tpl_get' do
+      it 'returns an Occi::Core::Mixin instance' do
+        expect(dummy_w_opts.os_tpl_get(dummy_w_opts.os_tpl_list.first.term)).to be_kind_of(Occi::Core::Mixin)
+      end
+
+      it 'returns nil when such mixin does not exist' do
+        expect(dummy_w_opts.os_tpl_get('my_dummy_non_existent')).to be_nil
+      end
+    end
   end
 
   context 'resource_tpl_*' do
@@ -36,6 +46,16 @@ describe Backends::Dummy do
 
       it 'returns an empty collection without model_extensions_dir' do
         expect(dummy.resource_tpl_list).to be_empty
+      end
+    end
+
+    describe '#resource_tpl_get' do
+      it 'returns an Occi::Core::Mixin instance' do
+        expect(dummy_w_opts.resource_tpl_get(dummy_w_opts.resource_tpl_list.first.term)).to be_kind_of(Occi::Core::Mixin)
+      end
+
+      it 'returns nil when such mixin does not exist' do
+        expect(dummy_w_opts.resource_tpl_get('my_dummy_non_existent')).to be_nil
       end
     end
   end

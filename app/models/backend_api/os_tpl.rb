@@ -13,5 +13,20 @@ module BackendApi
       @backend_instance.os_tpl_list || Occi::Core::Mixins.new
     end
 
+    # Gets a specific os_tpl mixin instance as Occi::Core::Mixin.
+    # Term given as an argument must match the term inside
+    # the returned Occi::Core::Mixin instance.
+    #
+    # @example
+    #    os_tpl = os_tpl_get('65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf')
+    #        #=> #<Occi::Core::Mixin>
+    #
+    # @param term [String] OCCI term of the requested os_tpl mixin instance
+    # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
+    def os_tpl_get(term)
+      raise Errors::ArgumentError, '\'term\' is a mandatory argument' if term.blank?
+      @backend_instance.os_tpl_get(term)
+    end
+
   end
 end
