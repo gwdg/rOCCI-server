@@ -1,10 +1,10 @@
 module RequestParsers
   module Occi
-    class XML
+    class Dummy
 
       def self.parse(media_type, body, headers, path)
         Rails.logger.debug "[Parser] [#{self}] Parsing media_type='#{media_type}' body='#{body}' headers=#{headers.inspect} path='#{path}'"
-        ::Occi::Parser.parse('application/xml', body, path.include?('-/'), ::Occi::Core::Resource, headers)
+        ::Occi::Collection.new
       end
 
     end
