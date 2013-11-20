@@ -67,6 +67,10 @@ gem 'redcarpet', group: :development
 gem 'bond', group: :development
 gem 'hirb', group: :development
 
+# Caching stuff
+gem 'dalli'
+gem 'kgio'
+
 # MongoDB integration
 gem 'mongo_mapper', git: "git://github.com/mongomapper/mongomapper.git", branch: "master"
 gem 'bson_ext'

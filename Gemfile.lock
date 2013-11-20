@@ -86,6 +86,7 @@ GEM
     coderay (1.1.0)
     columnize (0.3.6)
     daemon_controller (1.1.7)
+    dalli (2.6.4)
     debug_inspector (0.0.2)
     debugger (1.6.2)
       columnize (>= 0.3.1)
@@ -127,6 +128,7 @@ GEM
       activesupport (>= 3.0.0)
       multi_json (>= 1.2.0)
     json (1.8.1)
+    kgio (2.8.1)
     libnotify (0.8.2)
       ffi (>= 1.0.11)
     listen (2.2.0)
@@ -263,6 +265,7 @@ DEPENDENCIES
   bond
   bson_ext
   capistrano
+  dalli
   debugger
   fuubar
   guard-bundler
@@ -272,6 +275,7 @@ DEPENDENCIES
   hirb
   ice_nine
   jbuilder (~> 1.2)
+  kgio
   libnotify
   logstasher!
   mongo_mapper!
