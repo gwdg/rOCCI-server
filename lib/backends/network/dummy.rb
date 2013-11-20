@@ -31,8 +31,12 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of network instances
       def network_list(mixins = nil)
-        # TODO: impl filtering
-        @network
+        if mixins.blank?
+          @network
+        else
+          filtered_networks = @network.to_a.select { |n| (n.mixins & mixins).any? }
+          Occi::Core::Resources.new filtered_networks
+        end
       end
 
       # Gets a specific network instance as Occi::Infrastructure::Network.
@@ -65,7 +69,7 @@ module Backends
       # @return [String] final identifier of the new network instance
       def network_create(network)
         @network << network
-        network.attributes['occi.core.id']
+        network.id
       end
 
       # Deletes all network instances, instances to be deleted must be filtered
@@ -82,8 +86,14 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def network_delete_all(mixins = nil)
-        @network = Occi::Core::Resources.new
-        @network.empty?
+        if mixins.blank?
+          @network = Occi::Core::Resources.new
+          @network.empty?
+        else
+          old_count = @network.count
+          @network.delete_if { |n| (n.mixins & mixins).any? }
+          old_count != @network.count
+        end
       end
 
       # Deletes a specific network instance, instance to be deleted is
@@ -115,7 +125,7 @@ module Backends
       # @return [true, false] result of the operation
       def network_update(network)
         @network << network
-        network_get(network.attributes['occi.core.id']) == network
+        network_get(network.id) == network
       end
 
       # Triggers an action on all existing network instance, instances must be filtered

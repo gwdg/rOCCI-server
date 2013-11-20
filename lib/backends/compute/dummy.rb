@@ -129,7 +129,7 @@ module Backends
         # Given Occi::Infrastructure::Compute instance is frozen and unmodifiable!
         ###
         @compute << compute
-        compute.attributes['occi.core.id']
+        compute.id
       end
 
       # Deletes all compute instances, instances to be deleted must be filtered
@@ -201,7 +201,7 @@ module Backends
         # Occi::Infrastructure::Compute instance.
         ###
         @compute << compute
-        compute_get(compute.attributes['occi.core.id']) == compute
+        compute_get(compute.id) == compute
       end
 
       # Attaches a network to an existing compute instance, compute instance and network

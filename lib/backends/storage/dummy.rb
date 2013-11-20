@@ -31,8 +31,12 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of storage instances
       def storage_list(mixins = nil)
-        # TODO: impl filtering
-        @storage
+        if mixins.blank?
+          @storage
+        else
+          filtered_storages = @storage.to_a.select { |s| (s.mixins & mixins).any? }
+          Occi::Core::Resources.new filtered_storages
+        end
       end
 
       # Gets a specific storage instance as Occi::Infrastructure::Storage.
@@ -65,7 +69,7 @@ module Backends
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
         @storage << storage
-        storage.attributes['occi.core.id']
+        storage.id
       end
 
       # Deletes all storage instances, instances to be deleted must be filtered
@@ -82,8 +86,14 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def storage_delete_all(mixins = nil)
-        @storage = Occi::Core::Resources.new
-        @storage.empty?
+        if mixins.blank?
+          @storage = Occi::Core::Resources.new
+          @storage.empty?
+        else
+          old_count = @storage.count
+          @storage.delete_if { |s| (s.mixins & mixins).any? }
+          old_count != @storage.count
+        end
       end
 
       # Deletes a specific storage instance, instance to be deleted is
@@ -115,7 +125,7 @@ module Backends
       # @return [true, false] result of the operation
       def storage_update(storage)
         @storage << storage
-        storage_get(storage.attributes['occi.core.id']) == storage
+        storage_get(storage.id) == storage
       end
 
       # Triggers an action on all existing storage instance, instances must be filtered
