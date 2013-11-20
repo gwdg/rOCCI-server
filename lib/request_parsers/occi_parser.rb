@@ -10,7 +10,8 @@ module RequestParsers
       'text/plain' => ::RequestParsers::Occi::Text,
       'application/occi+xml' => ::RequestParsers::Occi::XML,
       'application/xml' => ::RequestParsers::Occi::XML,
-      'text/html' => ::RequestParsers::Occi::Dummy
+      'text/html' => ::RequestParsers::Occi::Dummy,
+      '' => ::RequestParsers::Occi::Dummy
     }.freeze
 
     def initialize(app)
