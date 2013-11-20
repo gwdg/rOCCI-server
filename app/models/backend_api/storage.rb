@@ -30,7 +30,7 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [Occi::Core::Resources] a collection of storage instances
     def storage_list(mixins = nil)
-      mixins = deep_clone(mixins).deep_freeze if mixins
+      mixins = deep_clone(mixins) if mixins
       @backend_instance.storage_list(mixins) || Occi::Core::Resources.new
     end
 
@@ -66,7 +66,7 @@ module BackendApi
     def storage_create(storage)
       raise Errors::ArgumentError, '\'storage\' is a mandatory argument' if storage.blank?
       raise Errors::ArgumentTypeMismatchError, 'Action requires a storage instance!' unless storage.kind_of? Occi::Infrastructure::Storage
-      @backend_instance.storage_create(deep_clone(storage).deep_freeze)
+      @backend_instance.storage_create(deep_clone(storage))
     end
 
     # Deletes all storage instances, instances to be deleted must be filtered
@@ -83,7 +83,7 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [true, false] result of the operation
     def storage_delete_all(mixins = nil)
-      mixins = deep_clone(mixins).deep_freeze if mixins
+      mixins = deep_clone(mixins) if mixins
       @backend_instance.storage_delete_all(mixins)
     end
 
@@ -116,7 +116,7 @@ module BackendApi
     # @return [true, false] result of the operation
     def storage_update(storage)
       raise Errors::ArgumentError, '\'storage\' is a mandatory argument' if storage.blank?
-      @backend_instance.storage_update(deep_clone(storage).deep_freeze)
+      @backend_instance.storage_update(deep_clone(storage))
     end
 
     # Triggers an action on all existing storage instance, instances must be filtered
@@ -136,8 +136,8 @@ module BackendApi
     def storage_trigger_action_on_all(action_instance, mixins = nil)
       raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
       raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
-      mixins = deep_clone(mixins).deep_freeze if mixins
-      @backend_instance.storage_trigger_action_on_all(deep_clone(action_instance).deep_freeze, mixins)
+      mixins = deep_clone(mixins) if mixins
+      @backend_instance.storage_trigger_action_on_all(deep_clone(action_instance), mixins)
     end
 
     # Triggers an action on an existing storage instance, the storage instance in question
@@ -158,7 +158,7 @@ module BackendApi
       raise Errors::ArgumentError, '\'storage_id\' is a mandatory argument' if storage_id.blank?
       raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
       raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
-      @backend_instance.storage_trigger_action(storage_id, deep_clone(action_instance).deep_freeze)
+      @backend_instance.storage_trigger_action(storage_id, deep_clone(action_instance))
     end
 
   end

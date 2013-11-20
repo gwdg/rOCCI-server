@@ -30,7 +30,7 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [Occi::Core::Resources] a collection of compute instances
     def compute_list(mixins = nil)
-      mixins = deep_clone(mixins).deep_freeze if mixins
+      mixins = deep_clone(mixins) if mixins
       @backend_instance.compute_list(mixins) || Occi::Core::Resources.new
     end
 
@@ -66,7 +66,7 @@ module BackendApi
     def compute_create(compute)
       raise Errors::ArgumentError, '\'compute\' is a mandatory argument' if compute.blank?
       raise Errors::ArgumentTypeMismatchError, 'Action requires a compute instance!' unless compute.kind_of? Occi::Infrastructure::Compute
-      @backend_instance.compute_create(deep_clone(compute).deep_freeze)
+      @backend_instance.compute_create(deep_clone(compute))
     end
 
     # Deletes all compute instances, instances to be deleted must be filtered
@@ -83,7 +83,7 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [true, false] result of the operation
     def compute_delete_all(mixins = nil)
-      mixins = deep_clone(mixins).deep_freeze if mixins
+      mixins = deep_clone(mixins) if mixins
       @backend_instance.compute_delete_all(mixins)
     end
 
@@ -117,7 +117,7 @@ module BackendApi
     def compute_update(compute)
       raise Errors::ArgumentError, '\'compute\' is a mandatory argument' if compute.blank?
       raise Errors::ArgumentTypeMismatchError, 'Action requires a compute instance!' unless compute.kind_of? Occi::Infrastructure::Compute
-      @backend_instance.compute_update(deep_clone(compute).deep_freeze)
+      @backend_instance.compute_update(deep_clone(compute))
     end
 
     # Attaches a network to an existing compute instance, compute instance and network
@@ -134,7 +134,7 @@ module BackendApi
     def compute_attach_network(networkinterface)
       raise Errors::ArgumentError, '\'networkinterface\' is a mandatory argument' if networkinterface.blank?
       raise Errors::ArgumentTypeMismatchError, 'Action requires a networkinterface instance!' unless networkinterface.kind_of? Occi::Infrastructure::Networkinterface
-      @backend_instance.compute_attach_network(deep_clone(networkinterface).deep_freeze)
+      @backend_instance.compute_attach_network(deep_clone(networkinterface))
     end
 
     # Attaches a storage to an existing compute instance, compute instance and storage
@@ -151,7 +151,7 @@ module BackendApi
     def compute_attach_storage(storagelink)
       raise Errors::ArgumentError, '\'storagelink\' is a mandatory argument' if storagelink.blank?
       raise Errors::ArgumentTypeMismatchError, 'Action requires a storagelink instance!' unless storagelink.kind_of? Occi::Infrastructure::Storagelink
-      @backend_instance.compute_attach_storage(deep_clone(storagelink).deep_freeze)
+      @backend_instance.compute_attach_storage(deep_clone(storagelink))
     end
 
     # Dettaches a network from an existing compute instance, the compute instance in question
@@ -201,8 +201,8 @@ module BackendApi
     def compute_trigger_action_on_all(action_instance, mixins = nil)
       raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
       raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
-      mixins = deep_clone(mixins).deep_freeze if mixins
-      @backend_instance.compute_trigger_action_on_all(deep_clone(action_instance).deep_freeze, mixins)
+      mixins = deep_clone(mixins) if mixins
+      @backend_instance.compute_trigger_action_on_all(deep_clone(action_instance), mixins)
     end
 
     # Triggers an action on an existing compute instance, the compute instance in question
@@ -223,7 +223,7 @@ module BackendApi
       raise Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
       raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
       raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
-      @backend_instance.compute_trigger_action(compute_id, deep_clone(action_instance).deep_freeze)
+      @backend_instance.compute_trigger_action(compute_id, deep_clone(action_instance))
     end
 
   end
