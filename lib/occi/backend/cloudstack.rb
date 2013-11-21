@@ -1,6 +1,6 @@
 ['rubygems',
  #'uuidtools',
- 'SecureRandom',
+ #'SecureRandom',
  'cloudstack_ruby_client',
  'occi/model',
  'occi/backend/manager'].each do |package|
@@ -273,7 +273,8 @@ module OCCI
 
           # Network specific resource operations
           :up           => :network_up,
-          :down         => :network_down
+          :down         => :network_down,
+          :restart      => :network_restart
       }
 
       def query_async_result(client, jobid)

@@ -123,6 +123,7 @@ describe OCCI::Server do
       last_response.body.lines.count.should >= 4
     end
   end
+  
 
   describe "GET /compute/$uuid" do
     it "gets specific compute resource in text/plain format" do
@@ -183,6 +184,59 @@ describe OCCI::Server do
     end
   end
 
+  ################################################################################
+  # For CloudStack Testing, uncomment this testcase if you're testing CloudStack #
+  ################################################################################
+
+  # For CloudStack Testing, uncomment this testcase if you're testing CloudStack
+  # 
+  # describe "GET /network/" do
+  #   it "gets all network resources" do
+  #     sleep 10
+  #     header "Accept", "text/uri-list"
+  #     get '/network/'
+  #     last_response.should be_http_ok
+  #     last_response.body.lines.count.should >= 1
+  #   end
+  # end
+  # 
+  # describe "GET /network/$uuid" do
+  #   it "gets specific network resource in application/occi+json format" do
+  #     header "Accept", "text/uri-list"
+  #     get '/network/'
+  #     last_response.should be_http_ok
+  #     location = URI.parse(last_response.body.lines.to_a.last)
+  #     header "Accept", "application/occi+json"
+  #     get location.path
+  #     last_response.should be_http_ok
+  #     collection = Hashie::Mash.new(JSON.parse(last_response.body))
+  #     collection.resources.first.kind.should == 'http://schemas.ogf.org/occi/infrastructure#network'
+  #   end
+  # end
+
+  # describe "POST /network/$uuid?action=X" do
+  #   it "triggers applicable action on a previously existing network resource" do
+  #     header "Content-type", ''
+  #     header "Accept", "text/uri-list"
+  #     get '/network/'
+  #     last_response.should be_http_ok
+  #     location = URI.parse(last_response.body.lines.to_a.last)
+  #     header "Accept", "application/occi+json"
+  #     for i in 1..120
+  #       get location.path
+  #       last_response.should be_http_ok
+  #       collection = Hashie::Mash.new(JSON.parse(last_response.body))
+  #       break if collection.resources.first.attributes.occi.network.state == "active"
+  #       sleep 1
+  #     end
+  #     resource = collection.resources.first
+  #     resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/network/action#restart'
+  #     action_location = location.path + '?action=restart'
+  #     post action_location
+  #     last_response.should be_http_ok
+  #   end
+  # end 
+
   describe "POST /storage/" do
     it "creates a new storage resource with a request in plain text format" do
       sleep 2
@@ -205,87 +259,90 @@ describe OCCI::Server do
     end
   end
 
-  describe "POST /storage/$uuid?action=X" do
-    it "triggers applicable action on a previously created storage resource" do
-      header "Content-type", ''
-      header "Accept", "text/uri-list"
-      get '/storage/'
-      last_response.should be_http_ok
-      storage_location = URI.parse(last_response.body.lines.to_a.last)
-      header "Accept", "application/occi+json"
-      for i in 1..120
-        get storage_location.path
-        last_response.should be_http_ok
-        collection = Hashie::Mash.new(JSON.parse(last_response.body))
-        break if collection.resources.first.attributes.occi.storage.state == "ready"
-        sleep 1
-      end
-      storage_resource = collection.resources.first
-      storage_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/storage/action#attach'
+  ################################################################################
+  # For CloudStack Testing, uncomment this testcase if you're testing CloudStack #
+  ################################################################################
+  
+  # describe "POST /storage/$uuid?action=X" do
+  #   it "triggers applicable action on a previously created storage resource" do
+  #     header "Content-type", ''
+  #     header "Accept", "text/uri-list"
+  #     get '/storage/'
+  #     last_response.should be_http_ok
+  #     storage_location = URI.parse(last_response.body.lines.to_a.last)
+  #     header "Accept", "application/occi+json"
+  #     for i in 1..120
+  #       get storage_location.path
+  #       last_response.should be_http_ok
+  #       collection = Hashie::Mash.new(JSON.parse(last_response.body))
+  #       break if collection.resources.first.attributes.occi.storage.state == "ready"
+  #       sleep 1
+  #     end
+  #     storage_resource = collection.resources.first
+  #     storage_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/storage/action#attach'
 
-      header "Content-type", ''
-      header "Accept", "text/uri-list"
-      get '/compute/'
-      last_response.should be_http_ok
-      compute_location = URI.parse(last_response.body.lines.to_a.first)
-      header "Accept", "application/occi+json"
-      for i in 1..120
-        get compute_location.path
-        last_response.should be_http_ok
-        collection = Hashie::Mash.new(JSON.parse(last_response.body))
-        break if collection.resources.first.attributes.occi.compute.state == "active"
-        sleep 1
-      end
-      compute_resource = collection.resources.first
-      compute_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop'
+  #     header "Content-type", ''
+  #     header "Accept", "text/uri-list"
+  #     get '/compute/'
+  #     last_response.should be_http_ok
+  #     compute_location = URI.parse(last_response.body.lines.to_a.first)
+  #     header "Accept", "application/occi+json"
+  #     for i in 1..120
+  #       get compute_location.path
+  #       last_response.should be_http_ok
+  #       collection = Hashie::Mash.new(JSON.parse(last_response.body))
+  #       break if collection.resources.first.attributes.occi.compute.state == "active"
+  #       sleep 1
+  #     end
+  #     compute_resource = collection.resources.first
+  #     compute_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop'
 
-      action_location = storage_location.path + '?action=attach'
-      body = JSON.parse(%Q|{"resources":[{"attributes":{"occi":{"core":{"id":"#{compute_resource.attributes.occi.core.id}"}}},"kind":"http://schemas.ogf.org/occi/infrastructure#compute"}]}|)
-      post action_location, body
-      last_response.should be_http_ok
-      for i in 1..120
-        get storage_location.path
-        last_response.should be_http_ok
-        collection = Hashie::Mash.new(JSON.parse(last_response.body))
-        resource = collection.resources.first
-        break if resource.attributes.occi.storage.state == "attached"
-        sleep 1
-      end
-      resource.attributes.occi.storage.state.should == "attached"
-    end
+  #     action_location = storage_location.path + '?action=attach'
+  #     body = JSON.parse(%Q|{"resources":[{"attributes":{"occi":{"core":{"id":"#{compute_resource.attributes.occi.core.id}"}}},"kind":"http://schemas.ogf.org/occi/infrastructure#compute"}]}|)
+  #     post action_location, body
+  #     last_response.should be_http_ok
+  #     for i in 1..120
+  #       get storage_location.path
+  #       last_response.should be_http_ok
+  #       collection = Hashie::Mash.new(JSON.parse(last_response.body))
+  #       resource = collection.resources.first
+  #       break if resource.attributes.occi.storage.state == "attached"
+  #       sleep 1
+  #     end
+  #     resource.attributes.occi.storage.state.should == "attached"
+  #   end
 
-    # For CloudStack Testing only, uncomment this testcase if you're testing CloudStack
-    # it "triggers applicable action on a previously created storage resource" do
-    #   header "Content-type", ''
-    #   header "Accept", "text/uri-list"
-    #   get '/storage/'
-    #   last_response.should be_http_ok
-    #   storage_location = URI.parse(last_response.body.lines.to_a.last)
-    #   header "Accept", "application/occi+json"
-    #   for i in 1..120
-    #     get storage_location.path
-    #     last_response.should be_http_ok
-    #     collection = Hashie::Mash.new(JSON.parse(last_response.body))
-    #     break if collection.resources.first.attributes.occi.storage.state == "attached"
-    #     sleep 1
-    #   end
-    #   storage_resource = collection.resources.first
-    #   storage_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/storage/action#detach'
+  #   it "triggers applicable action on a previously created storage resource" do
+  #     header "Content-type", ''
+  #     header "Accept", "text/uri-list"
+  #     get '/storage/'
+  #     last_response.should be_http_ok
+  #     storage_location = URI.parse(last_response.body.lines.to_a.last)
+  #     header "Accept", "application/occi+json"
+  #     for i in 1..120
+  #       get storage_location.path
+  #       last_response.should be_http_ok
+  #       collection = Hashie::Mash.new(JSON.parse(last_response.body))
+  #       break if collection.resources.first.attributes.occi.storage.state == "attached"
+  #       sleep 1
+  #     end
+  #     storage_resource = collection.resources.first
+  #     storage_resource.actions.should include 'http://schemas.ogf.org/occi/infrastructure/storage/action#detach'
 
-    #   action_location = storage_location.path + '?action=detach'
-    #   post action_location
-    #   last_response.should be_http_ok
-    #   for i in 1..120
-    #     get storage_location.path
-    #     last_response.should be_http_ok
-    #     collection = Hashie::Mash.new(JSON.parse(last_response.body))
-    #     resource = collection.resources.first
-    #     break if resource.attributes.occi.storage.state == "ready"
-    #     sleep 1
-    #   end
-    #   resource.attributes.occi.storage.state.should == "ready"
-    # end
-  end
+  #     action_location = storage_location.path + '?action=detach'
+  #     post action_location
+  #     last_response.should be_http_ok
+  #     for i in 1..120
+  #       get storage_location.path
+  #       last_response.should be_http_ok
+  #       collection = Hashie::Mash.new(JSON.parse(last_response.body))
+  #       resource = collection.resources.first
+  #       break if resource.attributes.occi.storage.state == "ready"
+  #       sleep 1
+  #     end
+  #     resource.attributes.occi.storage.state.should == "ready"
+  #   end
+  # end
 
   describe "DELETE /storage/" do
     it "deletes all storage resources" do
