@@ -68,6 +68,8 @@ module Backends
       # @param network [Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
       def network_create(network)
+        raise Backends::Errors::IdentifierConflictError, "Instance with ID #{network.id} already exists!" if network_list_ids.include?(network.id)
+
         @network << network
         network.id
       end
@@ -124,6 +126,8 @@ module Backends
       # @param network [Occi::Infrastructure::Network] instance containing updated information
       # @return [true, false] result of the operation
       def network_update(network)
+        raise Backends::Errors::IdentifierNotValidError, "Instance with ID #{network.id} does not exist!" unless network_list_ids.include?(network.id)
+
         @network << network
         network_get(network.id) == network
       end

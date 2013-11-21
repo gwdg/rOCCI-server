@@ -15,6 +15,10 @@ class ApplicationController < ActionController::API
   rescue_from ::Errors::ArgumentTypeMismatchError, :with => :handle_wrong_args_err
   rescue_from ::Errors::ArgumentError, :with => :handle_wrong_args_err
   rescue_from ::Backends::Errors::StubError, :with => :handle_not_impl_err
+  rescue_from ::Backends::Errors::IdentifierConflictError, :with => :handle_invalid_resource_err
+  rescue_from ::Backends::Errors::IdentifierNotValidError, :with => :handle_resource_not_found_err
+  rescue_from ::Backends::Errors::ResourceNotFoundError, :with => :handle_resource_not_found_err
+  rescue_from ::Backends::Errors::ResourceNotValidError, :with => :handle_invalid_resource_err
 
   # Wrap actions in a request logger, only in non-production envs
   around_filter :global_request_logging unless Rails.env.production?
@@ -109,5 +113,15 @@ class ApplicationController < ActionController::API
   def handle_wrong_args_err(exception)
     logger.warn "[Backend] User did not provide necessary arguments to execute an action: #{exception.message}"
     render text: exception.message, status: 400
+  end
+
+  def handle_invalid_resource_err(exception)
+    logger.warn "[Backend] User did not provide a valid resource instance: #{exception.message}"
+    render text: exception.message, status: 409
+  end
+
+  def handle_resource_not_found_err(exception)
+    logger.warn "[Backend] User referenced a non-existent resource instance: #{exception.message}"
+    render text: exception.message, status: 404
   end
 end

@@ -128,6 +128,8 @@ module Backends
         #
         # Given Occi::Infrastructure::Compute instance is frozen and unmodifiable!
         ###
+        raise Backends::Errors::IdentifierConflictError, "Instance with ID #{compute.id} already exists!" if compute_list_ids.include?(compute.id)
+
         @compute << compute
         compute.id
       end
@@ -200,6 +202,8 @@ module Backends
         # decided internally based on attributes set in the given
         # Occi::Infrastructure::Compute instance.
         ###
+        raise Backends::Errors::IdentifierNotValidError, "Instance with ID #{compute.id} does not exist!" unless compute_list_ids.include?(compute.id)
+
         @compute << compute
         compute_get(compute.id) == compute
       end

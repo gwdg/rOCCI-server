@@ -68,6 +68,8 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] storage instance containing necessary attributes
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
+        raise Backends::Errors::IdentifierConflictError, "Instance with ID #{storage.id} already exists!" if storage_list_ids.include?(storage.id)
+
         @storage << storage
         storage.id
       end
@@ -124,6 +126,8 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] instance containing updated information
       # @return [true, false] result of the operation
       def storage_update(storage)
+        raise Backends::Errors::IdentifierNotValidError, "Instance with ID #{storage.id} does not exist!" unless storage_list_ids.include?(storage.id)
+
         @storage << storage
         storage_get(storage.id) == storage
       end
