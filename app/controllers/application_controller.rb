@@ -81,6 +81,10 @@ class ApplicationController < ActionController::API
   # Provides access to a lazy parser object
   def parse_request
     @request_collection = env["rocci_server.request.parser"].parse_occi_messages
+
+    # TODO: fix rOCCI-core; attributes not in definitions break Attributes#check_wrt_definitions
+    #@request_collection.model = OcciModel.get(backend_instance)
+    #@request_collection.check
   end
 
   private
