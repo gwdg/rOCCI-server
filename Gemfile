@@ -76,7 +76,7 @@ gem 'mongo_mapper', git: "git://github.com/mongomapper/mongomapper.git", branch:
 gem 'bson_ext'
 
 # AuthN middleware
-gem 'warden', git: "git://github.com/hassox/warden.git", branch: "master"
+gem 'warden'
 
 # Sensible logging with LogStash support
 gem 'logstasher', git: "git://github.com/shadabahmed/logstasher.git", branch: "master"
