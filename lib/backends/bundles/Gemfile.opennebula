@@ -1,0 +1,2 @@
+# Deps for the OpenNebula backend
+gem "opennebula", ">= 4.3.90.rc1"
