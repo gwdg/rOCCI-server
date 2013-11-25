@@ -13,7 +13,7 @@ GIT
 
 GIT
   remote: git://github.com/hassox/warden.git
-  revision: 15f5dfe7444422a82ef17877d69368cb50344803
+  revision: e31e72f4078206529856bfa9ea98db4cd9bdc707
   branch: master
   specs:
     warden (1.2.3)
@@ -141,7 +141,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     method_source (0.8.2)
-    mime-types (1.25)
+    mime-types (1.25.1)
     mini_portile (0.5.2)
     minitest (4.7.5)
     mongo (1.9.2)
@@ -163,7 +163,7 @@ GEM
     plucky (0.6.6)
       mongo (~> 1.5)
     polyglot (0.3.3)
-    pry (0.9.12.3)
+    pry (0.9.12.4)
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
@@ -231,7 +231,7 @@ GEM
       simplecov-html (~> 0.8.0)
     simplecov-html (0.8.0)
     slop (3.4.7)
-    sprockets (2.10.0)
+    sprockets (2.10.1)
       hike (~> 1.2)
       multi_json (~> 1.0)
       rack (~> 1.0)
