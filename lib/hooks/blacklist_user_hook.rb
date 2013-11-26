@@ -1,5 +1,5 @@
 module Hooks
-  class BlacklistUser
+  class BlacklistUserHook
 
     def initialize(app, options)
       @app = app

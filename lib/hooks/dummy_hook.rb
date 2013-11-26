@@ -1,5 +1,5 @@
 module Hooks
-  class Dummy
+  class DummyHook
 
     def initialize(app, options)
       @app = app

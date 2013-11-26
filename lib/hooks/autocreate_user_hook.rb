@@ -1,5 +1,5 @@
 module Hooks
-  class AutocreateUser
+  class AutocreateUserHook
 
     def initialize(app, options)
       @app = app
