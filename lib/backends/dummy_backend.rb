@@ -1,5 +1,5 @@
 module Backends
-  class Dummy
+  class DummyBackend
 
     API_VERSION = "0.0.1"
     FIXTURES = [:compute, :network, :storage, :os_tpl, :resource_tpl].freeze
@@ -61,11 +61,11 @@ module Backends
     private :read_from_json
 
     # load API implementation
-    include Backends::Compute::Dummy
-    include Backends::Network::Dummy
-    include Backends::Storage::Dummy
-    include Backends::OsTpl::Dummy
-    include Backends::ResourceTpl::Dummy
+    include Backends::Dummy::Compute
+    include Backends::Dummy::Network
+    include Backends::Dummy::Storage
+    include Backends::Dummy::OsTpl
+    include Backends::Dummy::ResourceTpl
 
   end
 end

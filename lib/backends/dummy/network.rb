@@ -1,6 +1,6 @@
 module Backends
-  module Network
-    module Dummy
+  module Dummy
+    module Network
 
       # Gets all network instance IDs, no details, no duplicates. Returned
       # identifiers must corespond to those found in the occi.core.id

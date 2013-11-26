@@ -1,6 +1,6 @@
 module Backends
-  module ResourceTpl
-    module Dummy
+  module Dummy
+    module ResourceTpl
 
       # Gets platform- or backend-specific `resource_tpl` mixins which should be merged
       # into Occi::Model of the server.

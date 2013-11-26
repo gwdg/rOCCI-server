@@ -26,7 +26,7 @@ describe Backend do
     end
 
     it 'returns matching backend class' do
-      expect(Backend.load_backend_class 'dummy').to eq Backends::Dummy
+      expect(Backend.load_backend_class 'dummy').to eq Backends::DummyBackend
     end
 
   end

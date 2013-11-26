@@ -1,6 +1,6 @@
 module Backends
-  module Storage
-    module Dummy
+  module Dummy
+    module Storage
 
       # Gets all storage instance IDs, no details, no duplicates. Returned
       # identifiers must corespond to those found in the occi.core.id

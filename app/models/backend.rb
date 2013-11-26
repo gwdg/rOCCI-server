@@ -55,11 +55,11 @@ class Backend
   # @param backend_name [String] name of the chosen backend
   # @return [Class] a class of the given backend
   def self.load_backend_class(backend_name)
-    backend_name = "#{backend_name.camelize}"
+    backend_name = "#{backend_name.camelize}Backend"
     Rails.logger.info "[#{self}] Loading Backends::#{backend_name}"
 
     begin
-      backend_class = Backends.const_get("#{backend_name}")
+      backend_class = Backends.const_get(backend_name)
     rescue NameError => err
       message = "There is no such backend available! [Backends::#{backend_name}]"
       Rails.logger.error "[#{self}] #{message}"

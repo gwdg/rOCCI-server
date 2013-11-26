@@ -1,6 +1,6 @@
 module Backends
-  module OsTpl
-    module Dummy
+  module Dummy
+    module OsTpl
 
       # Gets backend-specific `os_tpl` mixins which should be merged
       # into Occi::Model of the server.

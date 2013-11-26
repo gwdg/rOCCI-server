@@ -1,5 +1,5 @@
 module Backends
-  class Opennebula
+  class OpennebulaBackend
 
     API_VERSION = "0.0.1"
 

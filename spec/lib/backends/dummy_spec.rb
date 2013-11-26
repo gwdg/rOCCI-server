@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe Backends::Dummy do
-  let(:dummy) { Backends::Dummy.new nil, nil, nil, nil }
+describe Backends::DummyBackend do
+  let(:dummy) { Backends::DummyBackend.new nil, nil, nil, nil }
   let(:dummy_w_opts) {
     opts = Hashie::Mash.new
     opts.fixtures_dir = Rails.root.join('etc', 'backends', 'dummy', 'fixtures')
-    Backends::Dummy.new nil, opts, nil, nil
+    Backends::DummyBackend.new nil, opts, nil, nil
   }
 
   context 'os_tpl_*' do
