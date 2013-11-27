@@ -1,0 +1,10 @@
+hostname: localhost
+port: 3000
+authn_strategies:
+  - dummy
+hooks:
+  - dummy
+backend: dummy
+log_level: debug
+tempdir: /tmp/rocci_server
+force_ssl: false

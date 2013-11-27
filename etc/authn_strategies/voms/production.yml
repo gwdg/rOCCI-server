@@ -1,0 +1,1 @@
+vo_lists: <%= Rails.root.join('etc', 'authn_strategies', 'voms', 'vo_lists') %>

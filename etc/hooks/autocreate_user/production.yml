@@ -1,0 +1,5 @@
+#required_backend: "opennebula"
+opennebula:
+  xmlrpc_endpoint: <%= ENV['ONE_XMLRPC'] %>
+  username: <%= ENV['ONE_ROCCI_USER'] %>
+  password: <%= ENV['ONE_ROCCI_PASSWD'] %>

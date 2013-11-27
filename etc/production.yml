@@ -1,0 +1,12 @@
+hostname: localhost
+port: 3000
+authn_strategies:
+  - basic
+  - x509
+  - voms
+hooks:
+  - autocreate_user
+backend: dummy
+log_level: debug
+tempdir: /tmp/rocci_server
+force_ssl: false

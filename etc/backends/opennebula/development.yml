@@ -1,0 +1,4 @@
+model_extensions_dir: <%= Rails.root.join('etc', 'backends', 'opennebula', 'model') %>
+xmlrpc_endpoint: <%= ENV['ONE_XMLRPC'] %>
+username: <%= ENV['ONE_ROCCI_USER'] %>
+password: <%= ENV['ONE_ROCCI_PASSWD'] %>
