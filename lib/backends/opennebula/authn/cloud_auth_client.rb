@@ -45,8 +45,6 @@ module Backends::Opennebula::Authn
     # The user pool will be updated every EXPIRE_USER_CACHE seconds.
     EXPIRE_USER_CACHE = 60
 
-    attr_reader :client, :token
-
     # conf a hash with the configuration attributes as symbols
     def initialize(conf)
       @conf   = conf
@@ -57,15 +55,15 @@ module Backends::Opennebula::Authn
 
       if AUTH_MODULES.include?(@conf[:auth])
         extend Backends::Opennebula::Authn::CloudAuth.const_get(AUTH_MODULES[@conf[:auth]])
-        self.initialize_auth if self.method_defined?(:initialize_auth)
+        self.class.initialize_auth if self.class.method_defined?(:initialize_auth)
       else
         raise Backends::Errors::AuthenticationError, "Auth module not specified"
       end
 
       # TODO: support other core authN methods than server_cipher
-      core_auth = AUTH_CORE_MODULES["cipher"]
+      core_auth = AUTH_CORE_MODULES[conf[:srv_auth]]
       begin
-        @server_auth = Backends::Opennebula::Authn::CloudAuth.const_get(core_auth).new_client
+        @server_auth = Backends::Opennebula::Authn::CloudAuth.const_get(core_auth).new(@conf[:srv_user], @conf[:srv_passwd])
       rescue => e
         raise Backends::Errors::AuthenticationError, e.message
       end

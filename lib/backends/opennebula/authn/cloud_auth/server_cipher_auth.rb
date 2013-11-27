@@ -35,7 +35,7 @@ module Backends::Opennebula::Authn::CloudAuth
       @srv_user   = srv_user
       @srv_passwd = srv_passwd 
 
-      if !srv_passwd.empty?
+      if !srv_passwd.blank?
           @key = ::Digest::SHA1.hexdigest(@srv_passwd)
       else
           @key = ""

@@ -18,7 +18,7 @@ module Backends::Opennebula::Authn::CloudAuth
 
   module BasicCloudAuth
     def do_auth(params={})
-      raise Backends::Errors::AuthenticationError, "Credentials for Basic not set!" unless params[:username] && params[:password]
+      raise Backends::Errors::AuthenticationError, "Credentials for Basic not set!" unless params && params[:username] && params[:password]
 
       one_pass = get_password(params[:username], 'core')
       return nil if one_pass.blank?
