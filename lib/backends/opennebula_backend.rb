@@ -60,6 +60,7 @@ module Backends
     include Backends::Opennebula::OsTpl
     include Backends::Opennebula::ResourceTpl
 
+    # TODO: does not work!
     before(*instance_methods) {
       unless @client
         username = @cloud_auth_client.auth(@delegated_user.auth_.credentials)
