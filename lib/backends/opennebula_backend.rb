@@ -19,6 +19,9 @@ module Backends
 
       @cloud_auth_client = Backends::Opennebula::Authn::CloudAuthClient.new(conf)
       @client = nil
+
+      path = @options.fixtures_dir || ""
+      read_resource_tpl_fixtures(path)
     end
 
     def self.before(*names)
@@ -37,6 +40,19 @@ module Backends
       name.to_s.match /compute_|network_|os_tpl_|resource_tpl_|storage_/
     end
 
+    def read_resource_tpl_fixtures(base_path)
+      path = File.join(base_path, "resource_tpl", "*.json")
+      @resource_tpl = Occi::Core::Mixins.new
+
+      Dir.glob(path) do |json_file|
+        @resource_tpl.merge(read_from_json(json_file).mixins) if File.readable?(json_file)
+      end
+    end
+    private :read_resource_tpl_fixtures
+
+    # load helpers for JSON -> Collection conversion
+    include Backends::Helpers::JsonCollectionHelper
+
     # load API implementation
     include Backends::Opennebula::Compute
     include Backends::Opennebula::Network
@@ -50,6 +66,7 @@ module Backends
         raise Backends::Errors::AuthenticationError, "User could not be authenticated!" if username.blank?
 
         @client = @cloud_auth_client.client(username)
+        raise Backends::Errors::AuthenticationError, "Could not get a client for the current user!" unless @client
       end
     }
 
