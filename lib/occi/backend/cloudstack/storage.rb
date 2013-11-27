@@ -3,7 +3,8 @@ module OCCI
     class CloudStack
       module Storage
         def storage_register_all_instances(client)
-          backend_storage_objects = client.list_volumes 'listall' => true, 'type' => 'DATADISK'
+          backend_storage_objects = client.list_volumes 'listall' => true,
+                                                        'type' => 'DATADISK'
 
           if backend_storage_objects['volume']
             backend_storage_objects['volume'].each do |storage|
@@ -56,17 +57,16 @@ module OCCI
           OCCI::Log.debug("current data disk state is: #{backend_object['state']}")
           case backend_object['state']
           when 'Ready', 'Allocated' then
-            # storage.attributes.occi!.storage!.state = "online"
             if backend_object['attached']
-              storage.attributes.occi!.storage!.state = "attached"
+              storage.attributes.org!.occi!.storage!.state = "attached"
               storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#detach|
             else
-              storage.attributes.occi!.storage!.state = "ready"
+              storage.attributes.org!.occi!.storage!.state = "ready"
               storage.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#attach|
             end
             storage.actions << "http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot"
           else
-            storage.attributes.occi!.storage!.state = "degarded"
+            storage.attributes.org!.occi!.storage!.state = "degarded"
           end
         end
 
@@ -155,8 +155,7 @@ module OCCI
         end
 
         def storage_snapshot(client, storage, parameters)
-          # FIXME: not implemented yet
-          OCCI::Log.debug "Not yet implemented"
+          OCCI::Log.debug "Not supported yet"
         end
       end
     end

@@ -1,6 +1,4 @@
 ['rubygems',
- #'uuidtools',
- #'SecureRandom',
  'cloudstack_ruby_client',
  'occi/model',
  'occi/backend/manager'].each do |package|

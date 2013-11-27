@@ -1,24 +1,3 @@
-##############################################################################
-#  Copyright 2011 Service Computing group, TU Dortmund
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-##############################################################################
-
-##############################################################################
-# Description: CloudStack Backend
-# Author(s): Isaac Chiang
-##############################################################################
-
 module OCCI
   module Backend
     class CloudStack
@@ -30,7 +9,6 @@ module OCCI
           if backend_network_objects['network']
             backend_network_objects['network'].each do |network|
               backend_vlan_objects = client.list_vlan_ip_ranges 'networkid' => "#{network['id']}"
-              # FIXME: Possible not work in advance zone here
               network_parse_backend_object client, network, backend_vlan_objects['vlaniprange'].first
             end
           end
@@ -43,10 +21,10 @@ module OCCI
           network.title   = backend_object['name']
           network.summary = backend_object['displaytext']
 
-          network.attributes.occi!.network!.address = (IPAddr.new(vlan['gateway']) & IPAddr.new(vlan['netmask'])).to_s + 
+          network.attributes.org!.occi!.network!.address = (IPAddr.new(vlan['gateway']) & IPAddr.new(vlan['netmask'])).to_s + 
                                                       "/#{IPAddr.new(vlan['netmask']).to_i.to_s(2).count("1")}"
-          network.attributes.occi!.network!.gateway = vlan['gateway']
-          network.attributes.occi!.network!.vlan = vlan['vlan'] if vlan['vlan'] && vlan['vlan'] != "untagged"
+          network.attributes.org!.occi!.network!.gateway = vlan['gateway']
+          network.attributes.org!.occi!.network!.vlan = vlan['vlan'] if vlan['vlan'] && vlan['vlan'] != "untagged"
 
           network.attributes.org!.apache!.cloudstack!.network!.id = backend_object['id']
           network.attributes.org!.apache!.cloudstack!.network!.broadcastdomaintype = backend_object['broadcastdomaintype'] if backend_object['broadcastdomaintype']
@@ -95,17 +73,17 @@ module OCCI
         end
 
         def network_set_state(backend_object, network)
-          network.attributes.occi!.network!.state = "active"
-          network.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/network/action#restart|
+          network.attributes.org!.occi!.network!.state = "active"
+          network.actions                              = %w|http://schemas.ogf.org/occi/infrastructure/network/action#restart|
         end
 
         def network_deploy(client, network)
           # Not implemented in CloudStack with basic zone
-          OCCI::Log.debug "Not yet implemented"
+          OCCI::Log.debug "Not supported in ACS basic zone"
         end
 
         def network_delete(client, network)
-          OCCI::Log.debug "Not yet implemented"
+          OCCI::Log.debug "Not supported in ACS basic zone"
         end
 
         def network_restart(client, network, parameters)

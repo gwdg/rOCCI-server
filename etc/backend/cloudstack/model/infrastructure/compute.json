@@ -8,43 +8,45 @@
                 "http://schemas.ogf.org/occi/core#resource"
             ],
             "attributes":{
-                "occi":{
-                    "compute":{
-                        "architecture":{
-                            "Mutable":true,
-                            "Required":false,
-                            "Type":"string",
-                            "Pattern":"x86|x64"
-                        },
-                        "cores":{
-                            "Mutable":true,
-                            "Required":false,
-                            "Type":"number"
-                        },
-                        "hostname":{
-                            "Mutable":true,
-                            "Required":false,
-                            "Type":"string",
-                            "Pattern":"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*"
-                        },
-                        "speed":{
-                            "Mutable":true,
-                            "Required":false,
-                            "Type":"number"
-                        },
-                        "memory":{
-                            "Mutable":true,
-                            "Required":false,
-                            "Type":"number"
-                        },
-                        "state":{
-                            "Mutable":false,
-                            "Required":false,
-                            "Type":"string",
-                            "Pattern":"inactive|active|suspended|error",
-                            "Default":"inactive"
+                "org":{ 
+                    "occi":{
+                        "compute":{
+                            "architecture":{
+                                "Mutable":true,
+                                "Required":false,
+                                "Type":"string",
+                                "Pattern":"x86|x64"
+                            },
+                            "cores":{
+                                "Mutable":true,
+                                "Required":false,
+                                "Type":"number"
+                            },
+                            "hostname":{
+                                "Mutable":true,
+                                "Required":false,
+                                "Type":"string",
+                                "Pattern":"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*"
+                            },
+                            "speed":{
+                                "Mutable":true,
+                                "Required":false,
+                                "Type":"number"
+                            },
+                            "memory":{
+                                "Mutable":true,
+                                "Required":false,
+                                "Type":"number"
+                            },
+                            "state":{
+                                "Mutable":false,
+                                "Required":false,
+                                "Type":"string",
+                                "Pattern":"inactive|active|suspended|error",
+                                "Default":"inactive"
+                            }
                         }
-                    }
+                    } 
                 }
             },
             "actions":[

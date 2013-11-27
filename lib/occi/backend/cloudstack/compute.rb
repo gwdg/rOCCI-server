@@ -23,8 +23,10 @@ module OCCI
           compute.title = backend_instance['name']
 
           # FIXME: Fix occi core model attributes here
-          compute.attributes.occi!.compute!.cores  = backend_instance['cpunumber'].to_i if backend_instance['cpunumber']
-          compute.attributes.occi!.compute!.memory = backend_instance['memory'].to_f/1000 if backend_instance['memory']
+          compute.attributes.org!.occi!.compute!.cores  = backend_instance['cpunumber'].to_i if backend_instance['cpunumber']
+          compute.attributes.org!.occi!.compute!.memory = backend_instance['memory'].to_f/1000 if backend_instance['memory']
+          compute.attributes.org!.occi!.compute!.hostname = backend_instance['name'] if backend_instance['name']
+          compute.attributes.org!.occi!.compute!.spped    = backend_instance['cpuspeed'].to_i if backend_instance['cpuspeed']
           
           compute.attributes.org!.apache!.cloudstack!.compute!.account   = backend_instance['account'] if backend_instance['account']
           compute.attributes.org!.apache!.cloudstack!.compute!.domain    = backend_instance['domain'] if backend_instance['domain']
@@ -41,9 +43,6 @@ module OCCI
 
           compute.mixins << @model.get_by_id(self.attributes.info.rocci.backend.cloudstack.scheme + "/occi/infrastructure/available_zone##{backend_instance['zoneid']}").as_json
 
-          # compute.mixins << client.list_templates('templatefilter'=>'featured', 'id'=>"#{backend_instance['templateid']}").reject!{ |k| k == 'count'  } if backend_instance['templateid']
-
-          # compute.mixins << client.list_zones('id'=>"#{backend_instance['zoneid']}").reject!{ |k| k == 'count'  } if backend_instance['zoneid']
 
           compute.mixins.uniq!
 
@@ -62,11 +61,11 @@ module OCCI
           OCCI::Log.debug("current VM state is: #{backend_instance['state']}")
           case backend_instance['state']
           when 'Running' then
-            compute.attributes.occi!.compute!.state = "active"
+            compute.attributes.org!.occi!.compute!.state = "active"
             # compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
             compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
           when 'Stopped'
-            compute.attributes.occi!.compute!.state = "inactive"
+            compute.attributes.org!.occi!.compute!.state = "inactive"
             # compute.attributes.org!.apache!.cloudstack!.compute!.state = backend_instance['state']
             compute.actions                         = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
           else
@@ -123,9 +122,9 @@ module OCCI
 
           compute_set_state result['virtualmachine'], compute
 
-          # compute_parse_storage_links client, compute, result['virtualmachine']
+          compute_parse_storage_links client, compute, result['virtualmachine']
 
-          # compute_parse_network_links client, compute, result['virtualmachine']
+          compute_parse_network_links client, compute, result['virtualmachine']
 
           OCCI::Log.debug "CloudStack automatically triggers action start for Virtual Machines"
 
@@ -206,19 +205,20 @@ module OCCI
           storagelink_kind = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#storagelink')
 
           associated_volumes = client.list_volumes 'virtualmachineid' => "#{compute.attributes.occi.core.id}",
-                                                   'type'             => 'DATADISK'
+                                                   'type'          => 'DATADISK'
 
           if associated_volumes['volume']
             associated_volumes['volume'].each_with_index do |volume, idx|
               target     = storage_kind.entities.select { |entity| entity.id == "#{volume['id']}" }.first
-              link       = OCCI::Core::Link.new(storagelink_kind.type_identifier)
-              link.id    = "#{SecureRandom.uuid}"
+              link        = OCCI::Core::Link.new(storagelink_kind.type_identifier)
+              link.id     = target.id
               link.mixins << 'http://schemas.ogf.org/occi/infrastructure#storagelink'
               link.target = target.location
               link.rel    = target.kind
               link.title  = target.title unless target.title.nil?
               link.source = compute.location
-              link.attributes.occi!.storagelink!.state = "active"
+              link.attributes.org!.occi!.storagelink!.state = "active"
+              link.attributes.org!.occi!.storagelink!.type  = "DATADISK"
               link.check @model
               compute.links << link
               storagelink_kind.entities << link
@@ -228,33 +228,33 @@ module OCCI
 
         def compute_parse_network_links(client, compute, backend_object)
           network_kind          = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#network')
-          networkinterface_kind = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#networkinterface')
+          networklink_kind = @model.get_by_id('http://schemas.ogf.org/occi/infrastructure#networklink')
 
-          associated_networks = client.list_networks 'virtualmachineid' => "#{compute.attributes.occi.core.id}"
+          associated_networks = client.list_networks 'id' => "#{backend_object['nic'].first['networkid']}"
+        
 
           if associated_networks['network']
             associated_networks['network'].each_with_index do |network, idx|
               target = network_kind.entities.select { |entity| entity.id == "#{network['id']}" }.first
-              link        = OCCI::Core::Link.new(network_kind.type_identifier)
-              link.id     = "#{SecureRandom.uuid}"
+              link        = OCCI::Core::Link.new(networklink_kind.type_identifier)
+              link.id     = target.id
               link.target = target.location
               link.rel    = target.kind
               link.title  = target.title unless target.title.nil?
               link.source = compute.location
 
-              link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
-              link.mixins << 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
+              link.mixins << 'http://schemas.ogf.org/occi/infrastructure#networklink'
               link.mixins.uniq!
 
               nic = backend_object['nic'].first
-              link.attributes.occi!.networkinterface!.address = nic['ipaddress'] if nic['ipaddress']
-              link.attributes.occi!.networkinterface!.mac = nic['macaddress'] if nic['macaddress']
-              link.attributes.occi!.networkinterface!.interface = nic['id'] if nic['id']
-              link.attributes.occi!.networkinterface!.state = "active"
+              link.attributes.org!.occi!.networkinterface!.address = nic['ipaddress'] if nic['ipaddress']
+              link.attributes.org!.occi!.networkinterface!.mac = nic['macaddress'] if nic['macaddress']
+              link.attributes.org!.occi!.networkinterface!.interface = nic['id'] if nic['id']
+              link.attributes.org!.occi!.networkinterface!.state = "active"
 
               link.check @model
               compute.links << link
-              networkinterface_kind.entities << link
+              networklink_kind.entities << link
             end
           end
         end

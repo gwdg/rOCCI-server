@@ -1,0 +1,21 @@
+{
+    "mixins":[
+        {
+            "term":"storagelink",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure#",
+            "title":"CloudStack specific storage link attributes",
+            "attributes":{
+                "org":{
+                    "occi":{
+                        "storagelink":{
+                            "type":{
+                                "Description":"The storage link type",
+                                "Pattern":"DATADISK|ROOT"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

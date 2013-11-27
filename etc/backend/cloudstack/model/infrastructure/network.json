@@ -8,29 +8,31 @@
                 "http://schemas.ogf.org/occi/core#resource"
             ],
             "attributes":{
-                "occi":{
-                    "network":{
-                        "vlan":{
-                            "Mutable":true,
-                            "Required":false,
-                            "Type":"number",
-                            "Minimum":0,
-                            "Maximum":4095
-                        },
-                        "label":{
-                            "Mutable":true,
-                            "Required":false,
-                            "Type":"string",
-                            "Pattern":".*"
-                        },
-                        "state":{
-                            "Mutable":false,
-                            "Required":false,
-                            "Type":"string",
-                            "Pattern":"active|inactive|error",
-                            "Default":"inactive"
+                "org":{ 
+                    "occi":{
+                        "network":{
+                            "vlan":{
+                                "Mutable":true,
+                                "Required":false,
+                                "Type":"number",
+                                "Minimum":0,
+                                "Maximum":4095
+                            },
+                            "label":{
+                                "Mutable":true,
+                                "Required":false,
+                                "Type":"string",
+                                "Pattern":".*"
+                            },
+                            "state":{
+                                "Mutable":false,
+                                "Required":false,
+                                "Type":"string",
+                                "Pattern":"active|inactive|error",
+                                "Default":"inactive"
+                            }
                         }
-                    }
+                    } 
                 }
             },
             "actions":[

@@ -8,19 +8,21 @@
                 "http://schemas.ogf.org/occi/core#resource"
             ],
             "attributes":{
-                "occi":{
-                    "storage":{
-                        "size":{
-                            "Mutable":true,
-                            "Required":false,
-                            "Type":"number"
-                        },
-                        "state":{
-                            "Mutable":false,
-                            "Required":false,
-                            "Type":"string",
-                            "Pattern":"online|offline|backup|snapshot|resize|degraded|ready|attached",
-                            "Default":"offline"
+                "org":{ 
+                    "occi":{
+                        "storage":{
+                            "size":{
+                                "Mutable":true,
+                                "Required":false,
+                                "Type":"number"
+                            },
+                            "state":{
+                                "Mutable":false,
+                                "Required":false,
+                                "Type":"string",
+                                "Pattern":"online|offline|backup|snapshot|resize|degraded|ready|attached",
+                                "Default":"offline"
+                            }
                         }
                     }
                 }
