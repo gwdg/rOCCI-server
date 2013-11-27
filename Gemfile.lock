@@ -11,6 +11,7 @@ GEM
       uuidtools (~> 2.1)
     backports (3.3.3)
     builder (3.2.2)
+    cloudstack_ruby_client (0.2.0)
     daemon_controller (1.1.5)
     diff-lcs (1.2.4)
     erubis (2.7.0)
@@ -90,6 +91,7 @@ DEPENDENCIES
   antlr3
   aws-sdk
   builder
+  cloudstack_ruby_client (~> 0.2.0)
   erubis
   hashie (~> 1.2.0)
   json

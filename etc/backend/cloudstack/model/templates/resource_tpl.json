@@ -1,0 +1,58 @@
+{
+    "mixins":[
+        {
+            "term":"resource_tpl",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure#",
+            "title":"CloudStack specific Compute Offering attributes",
+            "attributes":{
+                "org":{
+                    "apache":{
+                        "cloudstack":{
+                            "resource_tpl":{
+                                "displaytext":{
+                                    "Description":"Display text of the compute offering"
+                                },
+                                "cpunumber":{
+                                    "Description":"CPU number of the compute offering",
+                                    "Type":"number"
+                                },
+                                "cpuspeed":{
+                                    "Description":"CPU speed of the compute offering",
+                                    "Type":"number"
+                                },
+                                "memory":{
+                                    "Description":"Meory size of the compute offering",
+                                    "Type":"number"
+                                },
+                                "storagetype":{
+                                    "Description":"Storage type of the compute offering"
+                                },
+                                "offerha":{
+                                    "Description":"Determine if the compute offering offers HA",
+                                    "Type":"boolean",
+                                    "Default":false
+                                },
+                                "limitcpuuse":{
+                                    "Description":"Limit CPU use",
+                                    "Type":"boolean",
+                                    "Default":false
+                                },
+                                "issystem":{
+                                    "Description":"Determine if the compute offering is a system offering",
+                                    "Type":"boolean",
+                                    "Default":false
+                                },
+                                "defaultuse":{
+                                    "Description":"Default use",
+                                    "Type":"boolean",
+                                    "Default":false
+                                }
+                            }
+                        } 
+                    }
+
+                }
+            }
+        }
+    ]
+}

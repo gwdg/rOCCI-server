@@ -1,0 +1,24 @@
+{
+    "resources":[
+        {
+            "kind": "http://rocci.info/server/backend#cloudstack",
+            "attributes":{
+                "info":{
+                    "rocci":{
+                        "backend":{
+                            "cloudstack":{
+                                "endpoint":"http://10.1.192.92:8080/client/api",
+                                "type":"basic",
+                                "admin":"admin",
+                                "password":"password",
+                                "apikey":"MdYAZCSOInYVov2OwcAy9kItydTHK-q_81puVoL6CKZmzhUbwrC24Q8TyN-2GyrvbZFinoq-eiIJ5ULk1Cb3cg",
+                                "secretkey":"uZpb9rpAz_dp3yF77HmHeAP0mqs0iZt8U1LcYgA2Sg_9hlgZIh1kRsA_rg2mMIc4XoPohhRs57cJKCNpNbcImw",
+                                "scheme":"http://schemas.ogf.org"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

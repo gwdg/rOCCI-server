@@ -1,0 +1,70 @@
+{
+    "mixins":[
+        {
+            "term":"available_zone",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure#",
+            "title":"CloudStack specific Available Zone attributes",
+            "attributes":{
+                "org":{
+                    "apache":{
+                        "cloudstack":{
+                            "available_zone":{
+                                "displaytext":{
+                                    "Description":"The display text of this zone"
+                                },
+                                "description":{
+                                    "Description":"The description of this zone"
+                                },
+                                "dns1":{
+                                    "Description":"The first domain name server ip in this zone"
+                                },
+                                "dns2":{
+                                    "Description":"The second domain name server ip in this zone"
+                                },
+                                "internaldns1":{
+                                    "Description":"The first internal domain name server ip in this zone"
+                                },
+                                "internaldns2":{
+                                    "Description":"The second internal domain name server ip in this zone"
+                                },
+                                "networktype":{
+                                    "Description":"The network type of this zone"
+                                },
+                                "securitygroupsenabled":{
+                                    "Description":"Determine if the security group is enabled in this zone",
+                                    "Type":"boolean"
+                                },
+                                "zonetoken":{
+                                    "Description":"Token of this zone"
+                                },
+                                "dhcpprovider":{
+                                    "Description":"DHCP provider"
+                                },
+                                "localstorageenabled":{
+                                    "Description":"Determine if the local storage is enabled in this zone",
+                                    "Type":"boolean"
+                                },
+                                "zonetoken":{
+                                    "Description":"Zone token"
+                                },
+                                "allocationstate":{
+                                    "Description":"The allocation state of the zone"
+                                },
+                                "domain":{
+                                    "Description":"The domain of the zone"
+                                },
+                                "domainid":{
+                                    "Description":"The domainid of the zone"
+                                },
+                                "domainname":{
+                                    "Description":"The domain name of the zone"
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+    ]
+}

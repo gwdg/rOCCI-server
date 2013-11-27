@@ -52,7 +52,6 @@ module OCCI
 
           id = backend_object['TEMPLATE/OCCI_ID']
           id ||= backend_object['USER_TEMPLATE/OCCI_ID']
-          id ||= self.generate_occi_id(compute_kind, backend_object.id.to_s)
 
           @@location_cache[id] = backend_object.id.to_s
 

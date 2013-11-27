@@ -7,4 +7,4 @@ coverage
 vendor
 doc
 collection
-etc/default.json
+default.json

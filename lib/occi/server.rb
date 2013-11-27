@@ -59,6 +59,12 @@ module OCCI
         @backend.check(@model)
         OCCI::Log.debug('EC2 backend initialized')
         #@backend = OCCI::Backend::EC2.new(backend.kind,backend.mixins,backend.attributes,backend.links)
+      when 'http://rocci.info/server/backend#cloudstack'
+        require 'occi/backend/cloudstack'
+        @model.register(OCCI::Backend::CloudStack.kind_definition)
+        @backend = OCCI::Backend::CloudStack.new(backend.kind, backend.mixins, backend.attributes, backend.links)
+        @backend.check(@model)
+        OCCI::Log.debug('Cloudstack backend initialized')
       else
         raise "Backend #{backend.kind} unknown"
       end

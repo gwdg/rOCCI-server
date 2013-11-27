@@ -1,0 +1,20 @@
+{
+    "mixins":[
+        {
+            "term":"networklink",
+            "scheme":"http://schemas.ogf.org/occi/infrastructure#",
+            "title":"CloudStack specific network link attributes",
+            "attributes":{
+                "org":{
+                    "occi":{
+                        "networklink":{
+                          "type":{
+                            "Description":"The network link type"
+                          } 
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
