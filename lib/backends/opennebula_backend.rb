@@ -41,6 +41,11 @@ module Backends
     end
     private :init_connection
 
+    def check_retval(rc, e_klass)
+      raise e_klass, rc.message if ::OpenNebula.is_error?(rc)
+    end
+    private :check_retval
+
     # load helpers for JSON -> Collection conversion
     include Backends::Helpers::JsonCollectionHelper
 
