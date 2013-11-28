@@ -10,7 +10,9 @@ module BackendApi
     #
     # @return [Occi::Core::Mixins] a collection of mixins
     def resource_tpl_list
-      @backend_instance.resource_tpl_list || Occi::Core::Mixins.new
+      resource_tpl = @backend_instance.resource_tpl_list || Occi::Core::Mixins.new
+      resource_tpl.each { |m| m.location = "/mixin/resource_tpl/#{m.term}/" }
+      resource_tpl
     end
 
     # Gets a specific resource_tpl mixin instance as Occi::Core::Mixin.
@@ -25,7 +27,9 @@ module BackendApi
     # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
     def resource_tpl_get(term)
       raise Errors::ArgumentError, '\'term\' is a mandatory argument' if term.blank?
-      @backend_instance.resource_tpl_get(term)
+      resource_tpl = @backend_instance.resource_tpl_get(term)
+      resource_tpl.location = "/mixin/resource_tpl/#{resource_tpl.term}/" if resource_tpl
+      resource_tpl
     end
 
   end
