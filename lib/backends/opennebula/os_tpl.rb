@@ -14,14 +14,16 @@ module Backends
       # @return [Occi::Core::Mixins] a collection of mixins
       def os_tpl_list
         os_tpl = Occi::Core::Mixins.new
-        backend_tpl_pool= ::OpenNebula::TemplatePool.new(@client)
+        backend_tpl_pool = ::OpenNebula::TemplatePool.new(@client)
         backend_tpl_pool.info_all
+        check_retval(backend_tpl_pool, Backends::Errors::ResourceRetrievalError)
 
         backend_tpl_pool.each do |backend_tpl|
           related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
           term    = "#{OS_TPL_TERM_PREFIX}#{backend_tpl['ID']}"
           scheme  = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
           title   = backend_tpl['NAME']
+
           os_tpl << Occi::Core::Mixin.new(scheme, term, title, nil, related)
         end
 
