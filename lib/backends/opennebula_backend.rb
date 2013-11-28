@@ -18,29 +18,6 @@ module Backends
       read_resource_tpl_fixtures(path)
     end
 
-    def self.auth_before(*names)
-      names.each do |name|
-        next unless needs_auth?(name)
-
-        m = instance_method(name)
-        define_method(name) do |*args, &block|
-          unless @client
-            username = @cloud_auth_client.auth(@delegated_user.auth_.credentials)
-            raise Backends::Errors::AuthenticationError, "User could not be authenticated!" if username.blank?
-
-            @client = @cloud_auth_client.client(username)
-            raise Backends::Errors::AuthenticationError, "Could not get a client for the current user!" unless @client
-          end
-
-          m.bind(self).(*args, &block)
-        end
-      end
-    end
-
-    def self.needs_auth?(name)
-      name.to_s.match /compute_|network_|os_tpl_|resource_tpl_|storage_/
-    end
-
     def read_resource_tpl_fixtures(base_path)
       path = File.join(base_path, "resource_tpl", "*.json")
       @resource_tpl = Occi::Core::Mixins.new
@@ -75,7 +52,20 @@ module Backends
     include Backends::Opennebula::ResourceTpl
 
     # run authN code before every method
-    auth_before(*instance_methods)
+    extend Backends::Helpers::RunBeforeHelper::ClassMethods
+
+    def run_authn
+      return if @client
+
+      username = @cloud_auth_client.auth(@delegated_user.auth_.credentials)
+      raise Backends::Errors::AuthenticationError, "User could not be authenticated!" if username.blank?
+
+      @client = @cloud_auth_client.client(username)
+      raise Backends::Errors::AuthenticationError, "Could not get a client for the current user!" unless @client
+    end
+    private :run_authn
+
+    run_before(instance_methods, :run_authn, true)
 
   end
 end
