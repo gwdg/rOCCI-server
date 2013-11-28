@@ -2,6 +2,8 @@ module Backends
   module Opennebula
     module OsTpl
 
+      OS_TPL_TERM_PREFIX = "uuid_"
+
       # Gets backend-specific `os_tpl` mixins which should be merged
       # into Occi::Model of the server.
       #
@@ -11,8 +13,19 @@ module Backends
       #
       # @return [Occi::Core::Mixins] a collection of mixins
       def os_tpl_list
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        os_tpl = Occi::Core::Mixins.new
+        backend_tpl_pool= ::OpenNebula::TemplatePool.new(@client)
+        backend_tpl_pool.info_all
+
+        backend_tpl_pool.each do |backend_tpl|
+          related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
+          term    = "#{OS_TPL_TERM_PREFIX}#{backend_tpl['ID']}"
+          scheme  = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
+          title   = backend_tpl['NAME']
+          os_tpl << Occi::Core::Mixin.new(scheme, term, title, nil, related)
+        end
+
+        os_tpl
       end
 
       # Gets a specific os_tpl mixin instance as Occi::Core::Mixin.
@@ -26,8 +39,8 @@ module Backends
       # @param term [String] OCCI term of the requested os_tpl mixin instance
       # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
       def os_tpl_get(term)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: make it more efficient!
+        os_tpl_list.to_a.select { |m| m.term == term }.first
       end
 
     end

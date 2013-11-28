@@ -9,16 +9,10 @@ module Backends
       @server_properties = Hashie::Mash.new(server_properties)
       @logger = logger || Rails.logger
 
-      conf = Hashie::Mash.new
-      conf.auth = @delegated_user.auth_.type
-      conf.one_xmlrpc = @options.xmlrpc_endpoint
-
-      conf.srv_auth = "cipher"
-      conf.srv_user = @options.username
-      conf.srv_passwd = @options.password
-
-      @cloud_auth_client = Backends::Opennebula::Authn::CloudAuthClient.new(conf)
+      @cloud_auth_client = init_connection(@delegated_user, @options)
       @client = nil
+
+      @options.backend_scheme ||= "http://occi.#{@server_properties.hostname || 'localhost'}"
 
       path = @options.fixtures_dir || ""
       read_resource_tpl_fixtures(path)
@@ -56,6 +50,19 @@ module Backends
       end
     end
     private :read_resource_tpl_fixtures
+
+    def init_connection(delegated_user, options)
+      conf = Hashie::Mash.new
+      conf.auth = delegated_user.auth_.type
+      conf.one_xmlrpc = options.xmlrpc_endpoint
+
+      conf.srv_auth = "cipher"
+      conf.srv_user = options.username
+      conf.srv_passwd = options.password
+
+      Backends::Opennebula::Authn::CloudAuthClient.new(conf)
+    end
+    private :init_connection
 
     # load helpers for JSON -> Collection conversion
     include Backends::Helpers::JsonCollectionHelper
