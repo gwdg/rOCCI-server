@@ -145,7 +145,7 @@ module Backends::Opennebula::Authn
           @user_pool = ::OpenNebula::UserPool.new(oneadmin_client)
 
           rc = @user_pool.info
-          raise rc.message if ::OpenNebula.is_error?(rc)
+          raise Backends::Errors::AuthenticationError, rc.message if ::OpenNebula.is_error?(rc)
 
           @upool_expiration_time = ::Time.now.to_i + EXPIRE_USER_CACHE
         end

@@ -67,7 +67,7 @@ module Backends
     include Backends::Opennebula::OsTpl
     include Backends::Opennebula::ResourceTpl
 
-    # TODO: does not work!
+    # run authN code before every method
     auth_before(*instance_methods)
 
   end
