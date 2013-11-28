@@ -32,5 +32,10 @@ module Mixins
       render text: exception.message, status: 404
     end
 
+    def handle_internal_backend_err(exception)
+      logger.error "[Backend] Failed to execute a backend routine: #{exception.message}"
+      render text: exception.message, status: 500
+    end
+
   end
 end
