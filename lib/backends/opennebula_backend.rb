@@ -24,13 +24,20 @@ module Backends
       read_resource_tpl_fixtures(path)
     end
 
-    def self.before(*names)
+    def self.auth_before(*names)
       names.each do |name|
         next unless needs_auth?(name)
 
         m = instance_method(name)
         define_method(name) do |*args, &block|
-          yield
+          unless @client
+            username = @cloud_auth_client.auth(@delegated_user.auth_.credentials)
+            raise Backends::Errors::AuthenticationError, "User could not be authenticated!" if username.blank?
+
+            @client = @cloud_auth_client.client(username)
+            raise Backends::Errors::AuthenticationError, "Could not get a client for the current user!" unless @client
+          end
+
           m.bind(self).(*args, &block)
         end
       end
@@ -61,15 +68,7 @@ module Backends
     include Backends::Opennebula::ResourceTpl
 
     # TODO: does not work!
-    before(*instance_methods) {
-      unless @client
-        username = @cloud_auth_client.auth(@delegated_user.auth_.credentials)
-        raise Backends::Errors::AuthenticationError, "User could not be authenticated!" if username.blank?
-
-        @client = @cloud_auth_client.client(username)
-        raise Backends::Errors::AuthenticationError, "Could not get a client for the current user!" unless @client
-      end
-    }
+    auth_before(*instance_methods)
 
   end
 end
