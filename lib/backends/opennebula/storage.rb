@@ -13,8 +13,8 @@ module Backends
       #
       # @return [Array<String>] IDs for all available storage instances
       def storage_list_ids
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: make it more efficient!
+        storage_list.to_a.collect { |s| s.id }
       end
 
       # Gets all storage instances, instances must be filtered
@@ -32,8 +32,17 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of storage instances
       def storage_list(mixins = nil)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: impl filtering with mixins
+        storage = Occi::Core::Resources.new
+        backend_storage_pool = ::OpenNebula::ImagePool.new(@client)
+        rc = backend_storage_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        backend_storage_pool.each do |backend_storage|
+          storage << storage_parse_backend_obj(backend_storage)
+        end
+
+        storage
       end
 
       # Gets a specific storage instance as Occi::Infrastructure::Storage.
@@ -48,8 +57,8 @@ module Backends
       # @param storage_id [String] OCCI identifier of the requested storage instance
       # @return [Occi::Infrastructure::Storage, nil] a storage instance or `nil`
       def storage_get(storage_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: make it more efficient!
+        storage_list.to_a.select { |s| s.id == storage_id }.first
       end
 
       # Instantiates a new storage instance from Occi::Infrastructure::Storage.
@@ -156,6 +165,76 @@ module Backends
       def storage_trigger_action(storage_id, action_instance)
         # TODO: impl
         raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+      end
+
+      private
+
+      def storage_parse_backend_obj(backend_storage)
+        storage = Occi::Infrastructure::Storage.new
+
+        # include some basic mixins
+        storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
+
+        # include mixins stored in ON's VN template
+        unless backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'].blank?
+          backend_storage_mixins = JSON.parse(backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'])
+          backend_storage_mixins.each do |mixin|
+            storage.mixins << mixin unless mixin.blank?
+          end
+        end
+
+        storage.id  = backend_storage['ID']
+        storage.title = backend_storage['NAME'] if backend_storage['NAME']
+        storage.summary = backend_storage['TEMPLATE/DESCRIPTION'] if backend_storage['TEMPLATE/DESCRIPTION']
+
+        storage.size = backend_storage['SIZE'].to_f/1024 if backend_storage['SIZE']
+
+        storage.attributes['org.opennebula.storage.id'] = backend_storage['ID']
+        storage.attributes['org.opennebula.storage.type'] = backend_storage.type_str
+
+        if backend_storage['PERSISTENT'].blank? || backend_storage['PERSISTENT'].to_i == 0
+          storage.attributes['org.opennebula.storage.persistent'] = "no"
+        else
+          storage.attributes['org.opennebula.storage.persistent'] = "yes"
+        end
+
+        storage.attributes['org.opennebula.storage.dev_prefix'] = backend_storage['TEMPLATE/DEV_PREFIX'] if backend_storage['TEMPLATE/DEV_PREFIX']
+        storage.attributes['org.opennebula.storage.bus'] = backend_storage['TEMPLATE/BUS'] if backend_storage['TEMPLATE/BUS']
+        storage.attributes['org.opennebula.storage.driver'] = backend_storage['TEMPLATE/DRIVER'] if backend_storage['TEMPLATE/DRIVER']
+
+        result = storage_parse_set_state(backend_storage)
+        storage.state = result.state
+        result.actions.each { |a| storage.actions << a }
+
+        storage
+      end
+
+      def storage_parse_set_state(backend_storage)
+        result = Hashie::Mash.new
+
+        # In ON 4.4:
+        #    IMAGE_STATES=%w{INIT READY USED DISABLED LOCKED ERROR
+        #                    CLONE DELETE USED_PERS}
+        #
+        case backend_storage.state_str
+        when "READY"
+          result.state = "online"
+          result.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#offline http://schemas.ogf.org/occi/infrastructure/storage/action#backup|
+        when "USED", "CLONE", "USED_PERS"
+          result.state = "online"
+          result.actions = []
+        when "DISABLED"
+          result.state = "offline"
+          result.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online|
+        when "ERROR"
+          result.state = "degraded"
+          result.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online|
+        else
+          result.state = "offline"
+          result.actions = []
+        end
+
+        result
       end
 
     end
