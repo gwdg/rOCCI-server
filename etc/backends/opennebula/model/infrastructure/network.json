@@ -16,8 +16,8 @@
               },
               "vlan":{
                 "Description":"Whether or not to isolate this virtual network using the Virtual Network Manager drivers. If omitted, the default value is NO.",
-                "Pattern": "YES|NO",
-                "Default":"NO"
+                "Pattern": "YES|NO|yes|no|Yes|No",
+                "Default":"no"
               },
               "phydev":{
                 "Description":"Name of the physical network device that will be attached to the bridge. "

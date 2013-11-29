@@ -13,12 +13,12 @@
               },
               "type":{
                 "Description":"Type of the image. If omitted, the default value is the one defined in oned.conf (install default is OS).",
-                "Pattern": "OS|CDROM|DATABLOCK"
+                "Pattern": "OS|CDROM|DATABLOCK|KERNEL|RAMDISK|CONTEXT"
               },
               "persistent":{
                 "Description":"Persistence of the image. If omitted, the default value is NO.",
-                "Pattern": "YES|NO",
-                "Default":"NO"
+                "Pattern": "YES|NO|yes|no|Yes|No",
+                "Default":"no"
               },
               "dev_prefix":{
                 "Description":"Prefix for the emulated device this image will be mounted at. For instance, “hd”, “sd”. If omitted, the default value is the one defined in oned.conf (installation default is “hd”)."
