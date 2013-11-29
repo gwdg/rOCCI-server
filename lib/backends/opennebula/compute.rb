@@ -253,7 +253,7 @@ module Backends
         compute.summary = backend_compute['USER_TEMPLATE/DESCRIPTION'] if backend_compute['USER_TEMPLATE/DESCRIPTION']
 
         compute.cores = (backend_compute['TEMPLATE/VCPU'] || "1").to_i
-        compute.memory = backend_compute['TEMPLATE/MEMORY'].to_f/1000 if backend_compute['TEMPLATE/MEMORY']
+        compute.memory = backend_compute['TEMPLATE/MEMORY'].to_f/1024 if backend_compute['TEMPLATE/MEMORY']
 
         compute.architecture = "x64" if backend_compute['TEMPLATE/OS/ARCH'] == "x86_64"
         compute.architecture = "x86" if backend_compute['TEMPLATE/OS/ARCH'] == "i686"
@@ -269,7 +269,7 @@ module Backends
 
         result = compute_parse_set_state(backend_compute)
         compute.state = result.state
-        compute.actions = result.actions
+        result.actions.each { |a| compute.actions << a }
 
         result = compute_parse_links(backend_compute, compute)
         result.each { |link| compute.links << link }
@@ -280,23 +280,27 @@ module Backends
       def compute_parse_set_state(backend_compute)
         result = Hashie::Mash.new
 
-        # TODO: more states?
         # In ON 4.4:
         #    VM_STATE=%w{INIT PENDING HOLD ACTIVE STOPPED SUSPENDED DONE FAILED
         #       POWEROFF UNDEPLOYED}
         #
         case backend_compute.state_str
         when "ACTIVE"
+          result.state = "active"
           result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
         when "FAILED"
+          result.state = "failed"
           result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
         when "STOPPED", "SUSPENDED", "POWEROFF"
+          result.state = "suspended"
           result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
+        when "PENDING"
+          result.state = "waiting"
+          result.actions = []
         else
+          result.state = "inactive"
           result.actions = []
         end
-
-        result.state ||= backend_compute.state_str.downcase
 
         result
       end
@@ -342,7 +346,7 @@ module Backends
             end if backend_mixins[id]
           end
 
-          link.deviceid = disk['TARGET'] if disk['TARGET']
+          link.deviceid = "/dev/#{disk['TARGET']}" if disk['TARGET']
           link.attributes['org.opennebula.storagelink.bus'] = disk['BUS'] if disk['BUS']
           link.attributes['org.opennebula.storagelink.driver'] = disk['DRIVER'] if disk['TARGET']
 
@@ -393,8 +397,8 @@ module Backends
           link.attributes['org.opennebula.networkinterface.white_ports_tcp'] = nic['WHITE_PORTS_TCP'] if nic['WHITE_PORTS_TCP']
           link.attributes['org.opennebula.networkinterface.black_ports_tcp'] = nic['BLACK_PORTS_TCP'] if nic['BLACK_PORTS_TCP']
           link.attributes['org.opennebula.networkinterface.white_ports_udp'] = nic['WHITE_PORTS_UDP'] if nic['WHITE_PORTS_UDP']
-          link.attributes['org.opennebula.networkinterface.black_ports_udp'] = nic['BLACK_PORTS_UDP'] if nic['BLACK_PORTS_UDP ']
-          link.attributes['org.opennebula.networkinterface.icmp'] = nic['ICMP'] if nic['ICMP ']
+          link.attributes['org.opennebula.networkinterface.black_ports_udp'] = nic['BLACK_PORTS_UDP'] if nic['BLACK_PORTS_UDP']
+          link.attributes['org.opennebula.networkinterface.icmp'] = nic['ICMP'] if nic['ICMP']
 
           result_network_links << link
         end
