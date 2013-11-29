@@ -13,8 +13,8 @@ module Backends
       #
       # @return [Array<String>] IDs for all available network instances
       def network_list_ids
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: make it more efficient!
+        network_list.to_a.collect { |n| n.id }
       end
 
       # Gets all network instances, instances must be filtered
@@ -32,8 +32,17 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of network instances
       def network_list(mixins = nil)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: impl filtering with mixins
+        network = Occi::Core::Resources.new
+        backend_network_pool = ::OpenNebula::VirtualNetworkPool.new(@client)
+        rc = backend_network_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        backend_network_pool.each do |backend_network|
+          network << network_parse_backend_obj(backend_network)
+        end
+
+        network
       end
 
       # Gets a specific network instance as Occi::Infrastructure::Network.
@@ -48,8 +57,8 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
       def network_get(network_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: make it more efficient!
+        network_list.to_a.select { |n| n.id == network_id }.first
       end
 
       # Instantiates a new network instance from Occi::Infrastructure::Network.
@@ -156,6 +165,79 @@ module Backends
       def network_trigger_action(network_id, action_instance)
         # TODO: impl
         raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+      end
+
+      private
+
+      def network_parse_backend_obj(backend_network)
+        network = Occi::Infrastructure::Network.new
+
+        # include some basic mixins
+        network.mixins << 'http://opennebula.org/occi/infrastructure#network'
+
+        # include mixins stored in ON's VN template
+        unless backend_network['TEMPLATE/OCCI_NETWORK_MIXINS'].blank?
+          backend_network_mixins = JSON.parse(backend_network['TEMPLATE/OCCI_NETWORK_MIXINS'])
+          backend_network_mixins.each do |mixin|
+            network.mixins << mixin unless mixin.blank?
+          end
+        end
+
+        network.id    = backend_network['ID']
+        network.title = backend_network['NAME'] if backend_network['NAME']
+        network.summary = backend_network['TEMPLATE/DESCRIPTION'] if backend_network['TEMPLATE/DESCRIPTION']
+
+        network.gateway = backend_network['TEMPLATE/GATEWAY'] if backend_network['TEMPLATE/GATEWAY']
+        network.vlan = backend_network['VLAN_ID'].to_i if backend_network['VLAN_ID']
+        network.allocation = "static" if backend_network['TYPE'].to_i == 1
+        network.allocation = "dynamic" if backend_network['TYPE'].to_i == 0
+
+        unless backend_network['TEMPLATE/NETWORK_ADDRESS'].blank?
+          if backend_network['TEMPLATE/NETWORK_ADDRESS'].include? '/'
+            network.address = backend_network['TEMPLATE/NETWORK_ADDRESS']
+          else
+            unless backend_network['TEMPLATE/NETWORK_MASK'].blank?
+              if backend_network['TEMPLATE/NETWORK_MASK'].include?('.')
+                cidr = IPAddr.new(backend_network['TEMPLATE/NETWORK_MASK']).to_i.to_s(2).count("1")
+                network.address = "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/#{cidr}"
+              else
+                network.address = "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/#{backend_network['TEMPLATE/NETWORK_MASK']}"
+              end
+            end
+          end
+        end
+
+        network.attributes['org.opennebula.network.id'] = backend_network['ID']
+
+        if backend_network['VLAN'].blank? || backend_network['VLAN'].to_i == 0
+          network.attributes['org.opennebula.network.vlan'] = "NO"
+        else
+          network.attributes['org.opennebula.network.vlan'] = "YES"
+        end
+
+        network.attributes['org.opennebula.network.phydev'] = backend_network['PHYDEV'] if backend_network['PHYDEV']
+        network.attributes['org.opennebula.network.bridge'] = backend_network['BRIDGE'] if backend_network['BRIDGE']
+
+        if backend_network['RANGE']
+          network.attributes['org.opennebula.network.ip_start'] = backend_network['RANGE/IP_START'] if backend_network['RANGE/IP_START']
+          network.attributes['org.opennebula.network.ip_end'] = backend_network['RANGE/IP_END'] if backend_network['RANGE/IP_END']
+        end
+
+        result = network_parse_set_state(backend_network)
+        network.state = result.state
+        network.actions = result.actions
+
+        network
+      end
+
+      def network_parse_set_state(backend_network)
+        result = Hashie::Mash.new
+
+        # ON doesn't implement actions on networks
+        result.actions = []
+        result.state = "active"
+
+        result
       end
 
     end
