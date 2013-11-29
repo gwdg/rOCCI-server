@@ -35,6 +35,7 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of compute instances
       def compute_list(mixins = nil)
+        # TODO: impl filtering with mixins
         compute = Occi::Core::Resources.new
         backend_compute_pool = ::OpenNebula::VirtualMachinePool.new(@client)
         rc = backend_compute_pool.info_all
@@ -257,6 +258,7 @@ module Backends
         compute.architecture = "x64" if backend_compute['TEMPLATE/OS/ARCH'] == "x86_64"
         compute.architecture = "x86" if backend_compute['TEMPLATE/OS/ARCH'] == "i686"
 
+        compute.attributes['org.opennebula.compute.id'] = backend_compute['ID']
         compute.attributes['org.opennebula.compute.cpu'] = backend_compute['TEMPLATE/CPU'].to_f if backend_compute['TEMPLATE/CPU']
         compute.attributes['org.opennebula.compute.kernel'] = backend_compute['TEMPLATE/OS/KERNEL'] if backend_compute['TEMPLATE/OS/KERNEL']
         compute.attributes['org.opennebula.compute.initrd'] = backend_compute['TEMPLATE/OS/INITRD'] if backend_compute['TEMPLATE/OS/INITRD']

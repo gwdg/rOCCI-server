@@ -8,6 +8,9 @@
         "org":{
           "opennebula":{
             "compute":{
+              "id":{
+                 "Description":"ID of the compute element"
+              },
               "cpu":{
                 "Description":"Percentage of CPU divided by 100 required for the Virtual Machine, half a processor is written 0.5. This value is used by OpenNebula and the scheduler to guide the host overcommitment.",
                 "Type":"number",
