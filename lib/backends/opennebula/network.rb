@@ -189,8 +189,9 @@ module Backends
 
         network.gateway = backend_network['TEMPLATE/GATEWAY'] if backend_network['TEMPLATE/GATEWAY']
         network.vlan = backend_network['VLAN_ID'].to_i if backend_network['VLAN_ID']
-        network.allocation = "static" if backend_network['TYPE'].to_i == 1
-        network.allocation = "dynamic" if backend_network['TYPE'].to_i == 0
+
+        # TODO: DHCP or not, there is no way to find out here
+        network.allocation = "dynamic"
 
         unless backend_network['TEMPLATE/NETWORK_ADDRESS'].blank?
           if backend_network['TEMPLATE/NETWORK_ADDRESS'].include? '/'
@@ -210,9 +211,9 @@ module Backends
         network.attributes['org.opennebula.network.id'] = backend_network['ID']
 
         if backend_network['VLAN'].blank? || backend_network['VLAN'].to_i == 0
-          network.attributes['org.opennebula.network.vlan'] = "NO"
+          network.attributes['org.opennebula.network.vlan'] = "no"
         else
-          network.attributes['org.opennebula.network.vlan'] = "YES"
+          network.attributes['org.opennebula.network.vlan'] = "yes"
         end
 
         network.attributes['org.opennebula.network.phydev'] = backend_network['PHYDEV'] if backend_network['PHYDEV']
@@ -225,7 +226,7 @@ module Backends
 
         result = network_parse_set_state(backend_network)
         network.state = result.state
-        network.actions = result.actions
+        result.actions.each { |a| network.actions << a }
 
         network
       end
