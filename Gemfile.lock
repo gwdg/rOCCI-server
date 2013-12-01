@@ -24,10 +24,10 @@ GIT
 
 GIT
   remote: git://github.com/shadabahmed/logstasher.git
-  revision: 4bd45be598578e79e1906b3b58e55200e138992a
+  revision: fba44cbf907d2e11d67cf59653bac21a7c912011
   branch: master
   specs:
-    logstasher (0.3.0)
+    logstasher (0.3.1)
       logstash-event (~> 1.1.0)
 
 GEM
@@ -80,14 +80,14 @@ GEM
     daemon_controller (1.1.7)
     dalli (2.6.4)
     debug_inspector (0.0.2)
-    debugger (1.6.2)
+    debugger (1.6.3)
       columnize (>= 0.3.1)
       debugger-linecache (~> 1.2.0)
-      debugger-ruby_core_source (~> 1.2.3)
+      debugger-ruby_core_source (~> 1.2.4)
     debugger-linecache (1.2.0)
     debugger-ruby_core_source (1.2.4)
     diff-lcs (1.2.5)
-    docile (1.1.0)
+    docile (1.1.1)
     erubis (2.7.0)
     ffi (1.9.3)
     formatador (0.2.4)
@@ -151,7 +151,7 @@ GEM
     opennebula (4.3.90.rc1)
       json
       nokogiri
-    passenger (4.0.25)
+    passenger (4.0.26)
       daemon_controller (>= 1.1.0)
       rack
       rake (>= 0.8.1)
