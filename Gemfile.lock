@@ -148,7 +148,7 @@ GEM
       net-ssh (>= 2.6.5)
     nokogiri (1.6.0)
       mini_portile (~> 0.5.0)
-    opennebula (4.3.90.rc1)
+    opennebula (4.4.0)
       json
       nokogiri
     passenger (4.0.26)
