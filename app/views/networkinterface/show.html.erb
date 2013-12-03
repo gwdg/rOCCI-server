@@ -1,2 +1,10 @@
-<h1>Networkinterface#show</h1>
-<p>Find me in app/views/networkinterface/show.html.erb</p>
+<%= render template: "shared/header" %>
+
+<h1>Networkinterface#<%= @networkinterface.id %></h1>
+<% @local_resource = @networkinterface %>
+<%= render template: "shared/resource_table" %>
+
+<br/>
+<a href="/networkinterface/">&laquo; Back</a>
+
+<%= render template: "shared/footer" %>

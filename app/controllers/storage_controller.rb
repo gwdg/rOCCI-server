@@ -2,16 +2,16 @@ class StorageController < ApplicationController
 
   # GET /storage/
   def index
-    storages = backend_instance.storage_list
-    respond_with(storages)
+    @storages = backend_instance.storage_list
+    respond_with(@storages)
   end
 
   # GET /storage/:id
   def show
-    storage = backend_instance.storage_get(params[:id])
+    @storage = backend_instance.storage_get(params[:id])
 
-    if storage
-      respond_with(storage)
+    if @storage
+      respond_with(@storage)
     else
       respond_with(Occi::Collection.new, status: 404)
     end

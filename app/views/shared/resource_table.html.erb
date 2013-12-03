@@ -1,0 +1,15 @@
+<table width="100%" style="border: solid 1px; text-align: left">
+	<thead style="text-align: center">
+		<tr>
+			<th colspan="2">[<%= @local_resource.kind.type_identifier %>]</th>
+		</tr>
+	</thead>
+	<tbody>
+		<% @local_resource.attributes.names.each_pair do |attribute, value| %>
+		<tr>
+			<td style="font-weight: bold" width="20%"><%= attribute %></td>
+			<td><%= value %></td>
+		</tr>
+		<% end %>
+	</tbody>
+</table>

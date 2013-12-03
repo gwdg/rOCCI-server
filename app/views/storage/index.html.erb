@@ -1,2 +1,7 @@
-<h1>Storage#index</h1>
-<p>Find me in app/views/storage/index.html.erb</p>
+<%= render template: "shared/header" %>
+
+<h1>Storage</h1>
+<% @local_resources = @storages %>
+<%= render template: "shared/resources_table" %>
+
+<%= render template: "shared/footer" %>

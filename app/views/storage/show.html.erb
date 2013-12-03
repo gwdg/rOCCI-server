@@ -1,2 +1,10 @@
-<h1>Storage#show</h1>
-<p>Find me in app/views/storage/show.html.erb</p>
+<%= render template: "shared/header" %>
+
+<h1>Storage#<%= @storage.id %></h1>
+<% @local_resource = @storage %>
+<%= render template: "shared/resource_table" %>
+
+<br/>
+<a href="/storage/">&laquo; Back</a>
+
+<%= render template: "shared/footer" %>

@@ -2,16 +2,16 @@ class NetworkController < ApplicationController
 
   # GET /network/
   def index
-    networks = backend_instance.network_list
-    respond_with(networks)
+    @networks = backend_instance.network_list
+    respond_with(@networks)
   end
 
   # GET /network/:id
   def show
-    network = backend_instance.network_get(params[:id])
+    @network = backend_instance.network_get(params[:id])
 
-    if network
-      respond_with(network)
+    if @network
+      respond_with(@network)
     else
       respond_with(Occi::Collection.new, status: 404)
     end

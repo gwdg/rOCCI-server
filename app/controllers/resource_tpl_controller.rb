@@ -4,8 +4,8 @@ class ResourceTplController < ApplicationController
   def index
     # TODO: work with :term*
     mixins = Occi::Core::Mixins.new << Occi::Infrastructure::ResourceTpl.mixin
-    computes = backend_instance.compute_list(mixins)
-    respond_with(computes)
+    @computes = backend_instance.compute_list(mixins)
+    respond_with(@computes)
   end
 
   # POST /mixin/resource_tpl/:term*/?action=:action

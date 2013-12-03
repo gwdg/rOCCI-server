@@ -1,0 +1,18 @@
+<table width="100%" style="border: solid 1px; text-align: center">
+	<thead>
+		<tr>
+			<th width="20%">ID</th>
+			<th>Title</th>
+			<th width="20%">Link</th>
+		</tr>
+	</thead>
+	<tbody>
+		<% @local_resources.each do |resource| %>
+		<tr>
+			<td><%= resource.id %></td>
+			<td style="text-align: left"><%= resource.title %></td>
+			<td><a href="<%= resource.location %>" target="_blank"><%= resource.location %></a></td>
+		</tr>
+		<% end %>
+	</tbody>
+</table>

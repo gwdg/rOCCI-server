@@ -3,8 +3,8 @@ class NetworkinterfaceController < ApplicationController
   # GET /link/networkinterface/:id
   def show
     # TODO: impl
-    collection = Occi::Collection.new
-    respond_with(collection, status: 501)
+    @networkinterface = Occi::Infrastructure::Networkinterface.new
+    respond_with(@networkinterface, status: 501)
   end
 
   # POST /link/networkinterface/

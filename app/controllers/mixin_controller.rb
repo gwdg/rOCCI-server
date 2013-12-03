@@ -3,8 +3,8 @@ class MixinController < ApplicationController
   # GET /mixin/:term*/
   def index
     # TODO: impl
-    collection = Occi::Collection.new
-    respond_with(collection, status: 501)
+    @resources = Occi::Collection.new.resources
+    respond_with(@resources, status: 501)
   end
 
   # POST /mixin/:term*/?action=:action

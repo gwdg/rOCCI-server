@@ -3,8 +3,8 @@ class StoragelinkController < ApplicationController
   # GET /link/storagelink/:id
   def show
     # TODO: impl
-    collection = Occi::Collection.new
-    respond_with(collection, status: 501)
+    @storagelink = Occi::Infrastructure::Storagelink.new
+    respond_with(@storagelink, status: 501)
   end
 
   # POST /link/storagelink/

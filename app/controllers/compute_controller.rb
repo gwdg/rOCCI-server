@@ -2,16 +2,16 @@ class ComputeController < ApplicationController
 
   # GET /compute/
   def index
-    computes = backend_instance.compute_list
-    respond_with(computes)
+    @computes = backend_instance.compute_list
+    respond_with(@computes)
   end
 
   # GET /compute/:id
   def show
-    compute = backend_instance.compute_get(params[:id])
+    @compute = backend_instance.compute_get(params[:id])
 
-    if compute
-      respond_with(compute)
+    if @compute
+      respond_with(@compute)
     else
       respond_with(Occi::Collection.new, status: 404)
     end

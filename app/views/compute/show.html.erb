@@ -1,2 +1,10 @@
-<h1>Compute#show</h1>
-<p>Find me in app/views/compute/show.html.erb</p>
+<%= render template: "shared/header" %>
+
+<h1>Compute#<%= @compute.id %></h1>
+<% @local_resource = @compute %>
+<%= render template: "shared/resource_table" %>
+
+<br/>
+<a href="/compute/">&laquo; Back</a>
+
+<%= render template: "shared/footer" %>
