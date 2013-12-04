@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"extra_large",
-      "scheme":"/occi/infrastructure/resource_tpl#",
+      "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
       "title":"Extra Large Instance",
       "related":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
@@ -36,7 +36,7 @@
     },
     {
       "term":"large",
-      "scheme":"/occi/infrastructure/resource_tpl#",
+      "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
       "title":"Large Instance",
       "related":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
@@ -70,7 +70,7 @@
     },
     {
       "term":"medium",
-      "scheme":"/occi/infrastructure/resource_tpl#",
+      "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
       "title":"Medium Instance",
       "related":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
@@ -106,7 +106,7 @@
     },
     {
       "term":"small",
-      "scheme":"/occi/infrastructure/resource_tpl#",
+      "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
       "title":"Small Instance",
       "related":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"

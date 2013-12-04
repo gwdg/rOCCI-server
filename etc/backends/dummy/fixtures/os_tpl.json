@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"67b18960-4609-11e3-bdfa-089e012d9027",
-      "scheme":"/occi/infrastructure/os_tpl#",
+      "scheme":"http://occi.example.org/occi/infrastructure/os_tpl#",
       "title":"debian",
       "related":[
         "http://schemas.ogf.org/occi/infrastructure#os_tpl"
@@ -27,7 +27,7 @@
     },
     {
       "term":"959b41e6-4608-11e3-9380-089e012d9027",
-      "scheme":"/occi/infrastructure/os_tpl#",
+      "scheme":"http://occi.example.org/occi/infrastructure/os_tpl#",
       "title":"monitoring",
       "related":[
         "http://schemas.ogf.org/occi/infrastructure#os_tpl"
