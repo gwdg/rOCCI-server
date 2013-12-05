@@ -275,7 +275,7 @@ DEPENDENCIES
   logstasher!
   mongo_mapper!
   occi-core!
-  opennebula (>= 4.3.90.rc1)
+  opennebula (~> 4.4.0)
   passenger
   pry-rails
   pry-rescue
