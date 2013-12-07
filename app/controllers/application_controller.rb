@@ -23,6 +23,7 @@ class ApplicationController < ActionController::API
   rescue_from ::Occi::Errors::AttributeNotDefinedError, :with => :handle_parser_input_err
   rescue_from ::Occi::Errors::AttributeTypeError, :with => :handle_parser_input_err
   rescue_from ::Backends::Errors::ResourceRetrievalError, :with => :handle_internal_backend_err
+  rescue_from ::Backends::Errors::ResourceCreationError, :with => :handle_wrong_args_err
   rescue_from ::Backends::Errors::ServiceUnavailableError, :with => :handle_internal_backend_err
 
   include Mixins::ErrorHandling

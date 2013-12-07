@@ -2,7 +2,7 @@ module Backends
   module Opennebula
     module OsTpl
 
-      OS_TPL_TERM_PREFIX = "uuid_"
+      OS_TPL_TERM_PREFIX = "uuid"
 
       # Gets backend-specific `os_tpl` mixins which should be merged
       # into Occi::Model of the server.
@@ -20,7 +20,7 @@ module Backends
 
         backend_tpl_pool.each do |backend_tpl|
           related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
-          term    = "#{OS_TPL_TERM_PREFIX}#{backend_tpl['ID']}"
+          term    = os_tpl_list_tpl_to_term(backend_tpl)
           scheme  = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
           title   = backend_tpl['NAME']
 
@@ -43,6 +43,23 @@ module Backends
       def os_tpl_get(term)
         # TODO: make it more efficient!
         os_tpl_list.to_a.select { |m| m.term == term }.first
+      end
+
+      private
+
+      def os_tpl_list_tpl_to_term(tpl)
+        fixed = tpl['NAME'].downcase.gsub(/[^0-9a-z]/i, '_')
+        fixed = fixed.gsub(/_+/, '_').chomp('_').reverse.chomp('_').reverse
+        "#{OS_TPL_TERM_PREFIX}_#{fixed}_#{tpl['ID']}"
+      end
+
+      def os_tpl_list_term_to_id(term)
+        matched = term.match(/^.+_(?<id>\d+)$/)
+
+        raise Backends::Errors::IdentifierNotValidError,
+              "OsTpl term is invalid! #{term.inspect}" unless matched
+
+        matched[:id].to_i
       end
 
     end
