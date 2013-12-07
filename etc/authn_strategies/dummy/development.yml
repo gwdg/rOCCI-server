@@ -1,3 +1,4 @@
+fake_type: "basic"
 fake_username: "dummy_user"
 fake_password: "dummy_password"
 block_all: false
