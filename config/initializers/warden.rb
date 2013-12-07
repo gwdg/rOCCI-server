@@ -9,10 +9,15 @@ end
 ROCCI_SERVER_CONFIG.common.authn_strategies.each do |authn_strategy|
   authn_strategy_sym = authn_strategy.to_sym
   authn_strategy = "#{authn_strategy.camelize}Strategy"
-  Rails.logger.info "[AuthN] Registering AuthenticationStrategies::#{authn_strategy}."
+  Rails.logger.info "[AuthN] Registering AuthenticationStrategies::#{authn_strategy}"
 
+  strategy_config = ROCCI_SERVER_CONFIG.authn_strategies[authn_strategy_sym]
+  Rails.logger.debug "[AuthN] with options: #{strategy_config.inspect}"
   begin
-    Warden::Strategies.add(authn_strategy_sym, AuthenticationStrategies.const_get("#{authn_strategy}"))
+    Warden::Strategies.add(
+      authn_strategy_sym,
+      AuthenticationStrategies.const_get("#{authn_strategy}")
+    ) { OPTIONS = strategy_config }
   rescue NameError => err
     message = "There is no such authentication strategy available! [AuthenticationStrategies::#{authn_strategy}]"
     Rails.logger.error "[AuthN] #{message}"
