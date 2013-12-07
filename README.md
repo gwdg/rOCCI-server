@@ -58,7 +58,7 @@ Install dependencies
 
 Configuration
 -------------
-** CONFIGURATION MANUAL IS STILL NOT COMPLETE **
+**CONFIGURATION MANUAL IS STILL NOT COMPLETE**
 
 rOCCI-server comes with different backends. Check the `etc` folder for available backends (e.g. dummy, opennebula). Each backend has an example configuration in a directory with the name of the backend, e.g. `etc/backends/$BACKEND/`.
 
@@ -78,7 +78,7 @@ Make sure that the user is member of the oneadmin group
 
     oneuser chgrp rocci oneadmin
 
-** DO NOT FORGET TO UPDATE CREDENTIALS IN THE CONFIGURATION FILE! **
+**DO NOT FORGET TO UPDATE CREDENTIALS IN THE CONFIGURATION FILE!**
 
 If you want to use basic or digest authentication for users of rOCCI-server you have to create the users in OpenNebula with the `core` auth driver. For a user named `john` the command may look like this
 
