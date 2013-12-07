@@ -1,10 +1,21 @@
 language: ruby
+
 rvm:
   - 1.9.2
   - 1.9.3
   - 2.0.0
+  - ruby-head
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
 
 branches:
   only:
     - master
-    - 0.5.x
+
+services:
+  - mongodb # will start mongodb-server
+  - memcached # will start memcached
+
+script: "bundle exec rake spec"
