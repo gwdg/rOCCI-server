@@ -23,11 +23,17 @@ module AuthenticationStrategies
 
       # Get user's DN
       proxy_cert_subject = GRST_CRED_REGEXP.match(auth_request.env['GRST_CRED_0'])[5]
-      fail!('Could not extract user\'s DN from credentials!') if proxy_cert_subject.blank?
+      if proxy_cert_subject.blank?
+        fail!('Could not extract user\'s DN from credentials!')
+        return
+      end
 
       # Get VOMS extension attributes
       voms_cert_attrs = self.class.voms_extension_attrs(auth_request)
-      fail!('Could not extract VOMS attributes from user\'s credentials!') if voms_cert_attrs.empty?
+      if voms_cert_attrs.empty?
+        fail!('Could not extract VOMS attributes from user\'s credentials!')
+        return
+      end
 
       user = Hashie::Mash.new
       user.auth!.type = "voms"

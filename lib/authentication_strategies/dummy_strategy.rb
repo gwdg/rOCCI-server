@@ -13,10 +13,15 @@ module AuthenticationStrategies
     def authenticate!
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating ..."
 
+      if OPTIONS.block_all
+        fail! 'BlockAll for DummyStrategy is active!'
+        return
+      end
+
       user = Hashie::Mash.new
       user.auth!.type = "dummy"
-      user.auth!.credentials!.username = "dummy_user"
-      user.auth!.credentials!.password = "dummy_password"
+      user.auth!.credentials!.username = OPTIONS.fake_username || "dummy_user"
+      user.auth!.credentials!.password = OPTIONS.fake_password || "dummy_password"
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
       success! user
