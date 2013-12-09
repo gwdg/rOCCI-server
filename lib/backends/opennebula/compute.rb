@@ -178,30 +178,30 @@ module Backends
 
       # Dettaches a network from an existing compute instance, the compute instance in question
       # must be identifiable using the networkinterface ID passed as an argument.
-      # If the requested link instance cannot be dettached, an error describing the
+      # If the requested link instance cannot be detached, an error describing the
       # problem must be raised, @see Backends::Errors.
       #
       # @example
-      #    compute_dettach_network("65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf") #=> true
+      #    compute_detach_network("65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf") #=> true
       #
       # @param networkinterface_id [String] network interface identifier
       # @return [true, false] result of the operation
-      def compute_dettach_network(networkinterface_id)
+      def compute_detach_network(networkinterface_id)
         # TODO: impl
         raise Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
 
       # Dettaches a storage from an existing compute instance, the compute instance in question
       # must be identifiable using the storagelink ID passed as an argument.
-      # If the requested link instance cannot be dettached, an error describing the
+      # If the requested link instance cannot be detached, an error describing the
       # problem must be raised, @see Backends::Errors.
       #
       # @example
-      #    compute_dettach_storage("65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf") #=> true
+      #    compute_detach_storage("65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf") #=> true
       #
       # @param storagelink_id [String] storage link identifier
       # @return [true, false] result of the operation
-      def compute_dettach_storage(storagelink_id)
+      def compute_detach_storage(storagelink_id)
         # TODO: impl
         raise Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
