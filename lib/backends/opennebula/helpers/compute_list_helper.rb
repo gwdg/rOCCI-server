@@ -164,7 +164,6 @@ module Backends
             link.address = nic['IP'] if nic['IP']
             link.mac = nic['MAC'] if nic['MAC']
             link.interface = "eth#{nic['NIC_ID']}"
-            link.model = nic['MODEL'] if nic['MODEL']
 
             link.attributes['org.opennebula.networkinterface.bridge'] = nic['BRIDGE'] if nic['BRIDGE']
             link.attributes['org.opennebula.networkinterface.white_ports_tcp'] = nic['WHITE_PORTS_TCP'] if nic['WHITE_PORTS_TCP']
@@ -172,6 +171,7 @@ module Backends
             link.attributes['org.opennebula.networkinterface.white_ports_udp'] = nic['WHITE_PORTS_UDP'] if nic['WHITE_PORTS_UDP']
             link.attributes['org.opennebula.networkinterface.black_ports_udp'] = nic['BLACK_PORTS_UDP'] if nic['BLACK_PORTS_UDP']
             link.attributes['org.opennebula.networkinterface.icmp'] = nic['ICMP'] if nic['ICMP']
+            link.attributes['org.opennebula.networkinterface.model'] = nic['MODEL'] if nic['MODEL']
 
             result_network_links << link
           end
