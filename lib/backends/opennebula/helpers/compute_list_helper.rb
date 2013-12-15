@@ -4,6 +4,9 @@ module Backends
 
       module ComputeListHelper
 
+        STORAGE_GENERATED_PREFIX = "generated_"
+        NETWORK_GENERATED_PREFIX = "generated_"
+
         def compute_parse_backend_obj(backend_compute)
           compute = Occi::Infrastructure::Compute.new
 
