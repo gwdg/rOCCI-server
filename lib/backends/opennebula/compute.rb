@@ -2,9 +2,6 @@ module Backends
   module Opennebula
     module Compute
 
-      STORAGE_GENERATED_PREFIX = "generated_"
-      NETWORK_GENERATED_PREFIX = "generated_"
-
       # Gets all compute instance IDs, no details, no duplicates. Returned
       # identifiers must corespond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Compute instances.
