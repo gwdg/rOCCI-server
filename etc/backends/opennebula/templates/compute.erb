@@ -1,0 +1,120 @@
+<%# Template options %>
+<%# Some default values are hypervisor specific %>
+<% hypervisor = :kvm #or :xen %>
+<%# Should we automatically enable VNC? %>
+<% vnc_enable = false #or true %>
+<%# Should we automatically insert CONTEXT? %>
+<% contextualization = false # or true %>
+<%# Reference for your contextualization init.sh script %>
+<%# If you enable contextualization, you HAVE TO provide an init script! %>
+<% context_init = '$FILE[IMAGE="init.sh",IMAGE_UNAME="oneadmin"]' %>
+
+<%# Mandatory settings %>
+OCCI_COMPUTE_MIXINS = "<%= @compute.mixins.to_a.collect { |m| m.type_identifier }.to_s %>"
+
+NAME          = "<%= @compute.title || "one-#{@compute.id}" %>"
+DESCRIPTION   = "<%= @compute.summary || "VM instantiated using rOCCI-server" %>"
+MEMORY        = "<%= @compute.memory ? (@compute.memory.to_f * 1024).to_i : 256 %>"
+VCPU          = "<%= @compute.cores || 1 %>"
+CPU           = "<%= @compute.speed || 1 %>"
+
+<%# Hypervisor specific settings %>
+RAW = [TYPE = "<%= hypervisor %>"]
+OS = [
+   <% if @compute.architecture == "x64" %>
+     ARCH = "x86_64"
+   <% else %>
+     ARCH = "i686"
+  <% end %>
+
+  <% if hypervisor == :xen  %>
+     ,BOOTLOADER = "pygrub"
+  <% else %>
+     ,BOOT = "<%= @compute.attributes.org!.opennebula!.boot || "hd" %>"
+  <% end  %>
+]
+
+<%# Contextualization %>
+<% if contextualization %>
+CONTEXT=[
+  FILES_DS="<%= context_init %>",
+  PUBLIC_IP="$NIC[IP]",
+  <% if @compute.attributes.org!.openstack!.credentials!.publickey!.data%>
+  SSH_KEY="<%= @compute.attributes.org.openstack.credentials.publickey.data %>",
+  SSH_PUBLIC_KEY="<%= @compute.attributes.org.openstack.credentials.publickey.data %>"
+  <% else %>
+  SSH_KEY="$USER[SSH_KEY]",
+  SSH_KEY="$USER[SSH_PUBLIC_KEY]"
+  <% end %>
+  <% if @compute.attributes.org!.openstack!.compute!.user_data %>
+  ,USER_DATA="<%= @compute.attributes.org.openstack.compute.user_data %>"
+  <% end %>
+]
+<% end %>
+
+<%# Links to images %>
+<% @compute.links.to_a.select { |link|
+     link.class.type_identifier == Occi::Infrastructure::Storagelink.type_identifier
+   }.each do |storagelink| %>
+DISK = [
+  IMAGE_ID = storagelink.target.split('/').last
+
+  <% if storagelink.deviceid %>
+  ,TARGET  = "<%= storagelink.deviceid %>"
+  <% end %>
+  <% if storagelink.attributes['org.opennebula.storagelink.bus'] %>
+  ,BUS = "<%= storagelink.attributes['org.opennebula.storagelink.bus'] %>"
+  <% end %>
+  <% if storagelink.attributes['org.opennebula.storagelink.driver'] %>
+  ,DRIVER = "<%= storagelink.attributes['org.opennebula.storagelink.driver'] %>"
+  <% end %>
+]
+<% end %>
+
+<%# Links to networks %>
+<% @compute.links.to_a.select { |link|
+     link.class.type_identifier == Occi::Infrastructure::Networkinterface.type_identifier
+   }.each do |networkinterface| %>
+NIC = [
+  NETWORK_ID = <%= networkinterface.target.split('/').last %>
+
+  <% if networkinferface.address %>
+  ,IP = "<%= networkinferface.address %>"
+  <% end %>
+  <% if networkinferface.mac %>
+  ,MAC = "<%= networkinferface.mac %>"
+  <% end %>
+  <% if networkinferface.interface %>
+  ,TARGET = "<%= networkinferface.interface %>"
+  <% end %>
+  <% if networkinferface.attributes['org.opennebula.networkinterface.bridge'] %>
+  ,BRIDGE = "<%= networkinferface.attributes['org.opennebula.networkinterface.bridge'] %>"
+  <% end %>
+  <% if networkinferface.attributes['org.opennebula.networkinterface.script'] %>
+  ,SCRIPT = "<%= networkinferface.attributes['org.opennebula.networkinterface.script'] %>"
+  <% end %>
+  <% if networkinferface.attributes['org.opennebula.networkinterface.white_ports_tcp'] %>
+  ,WHITE_PORTS_TCP = "<%= networkinferface.attributes['org.opennebula.networkinterface.white_ports_tcp'] %>"
+  <% end %>
+  <% if networkinferface.attributes['org.opennebula.networkinterface.black_ports_tcp'] %>
+  ,BLACK_PORTS_TCP = "<%= networkinferface.attributes['org.opennebula.networkinterface.black_ports_tcp'] %>"
+  <% end %>
+  <% if networkinferface.attributes['org.opennebula.networkinterface.white_ports_udp'] %>
+  ,WHITE_PORTS_UDP = "<%= networkinferface.attributes['org.opennebula.networkinterface.white_ports_udp'] %>"
+  <% end %>
+  <% if networkinferface.attributes['org.opennebula.networkinterface.black_ports_udp'] %>
+  ,BLACK_PORTS_UDP = "<%= networkinferface.attributes['org.opennebula.networkinterface.black_ports_udp'] %>"
+  <% end %>
+  <% if networkinferface.attributes['org.opennebula.networkinterface.icmp'] %>
+  ,ICMP = "<%= networkinferface.attributes['org.opennebula.networkinterface.icmp'] %>"
+  <% end %>
+]
+<% end %>
+
+<%# Custom settings %>
+<% if vnc_enable %>
+GRAPHICS = [
+  TYPE = vnc,
+  LISTEN = 0.0.0.0
+]
+<% end %>
