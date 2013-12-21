@@ -260,6 +260,7 @@ DEPENDENCIES
   capistrano
   dalli
   debugger
+  erubis
   fuubar
   guard-bundler
   guard-rails
