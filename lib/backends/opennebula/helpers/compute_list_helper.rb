@@ -114,9 +114,9 @@ module Backends
 
             unless backend_compute['USER_TEMPLATE/OCCI_STORAGELINK_MIXINS'].blank?
               backend_mixins = JSON.parse(backend_compute['USER_TEMPLATE/OCCI_STORAGELINK_MIXINS'])
-              backend_mixins[id].each do |mixin|
+              backend_mixins[disk['DISK_ID']].each do |mixin|
                 link.mixins << mixin unless mixin.blank?
-              end if backend_mixins[id]
+              end if backend_mixins[disk['DISK_ID']]
             end
 
             link.deviceid = "/dev/#{disk['TARGET']}" if disk['TARGET']
@@ -156,9 +156,9 @@ module Backends
 
             unless backend_compute['USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS'].blank?
               backend_mixins = JSON.parse(backend_compute['USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS'])
-              backend_mixins[id].each do |mixin|
+              backend_mixins[nic['NIC_ID']].each do |mixin|
                 link.mixins << mixin unless mixin.blank?
-              end if backend_mixins[id]
+              end if backend_mixins[nic['NIC_ID']]
             end
 
             link.address = nic['IP'] if nic['IP']

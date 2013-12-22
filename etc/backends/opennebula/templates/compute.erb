@@ -30,7 +30,7 @@ OS = [
   <% if hypervisor == :xen  %>
      ,BOOTLOADER = "pygrub"
   <% else %>
-     ,BOOT = "<%= @compute.attributes.org!.opennebula!.boot || "hd" %>"
+     ,BOOT = "<%= @compute.attributes['org.opennebula.boot'] || "hd" %>"
   <% end  %>
 ]
 
@@ -39,23 +39,22 @@ OS = [
 CONTEXT=[
   FILES_DS="<%= context_init %>",
   PUBLIC_IP="$NIC[IP]",
-  <% if @compute.attributes.org!.openstack!.credentials!.publickey!.data%>
-  SSH_KEY="<%= @compute.attributes.org.openstack.credentials.publickey.data %>",
-  SSH_PUBLIC_KEY="<%= @compute.attributes.org.openstack.credentials.publickey.data %>"
+  <% if @compute.attributes['org.openstack.credentials.publickey.data'] %>
+  SSH_KEY="<%= @compute.attributes['org.openstack.credentials.publickey.data'] %>",
+  SSH_PUBLIC_KEY="<%= @compute.attributes['org.openstack.credentials.publickey.data'] %>"
   <% else %>
   SSH_KEY="$USER[SSH_KEY]",
   SSH_KEY="$USER[SSH_PUBLIC_KEY]"
   <% end %>
-  <% if @compute.attributes.org!.openstack!.compute!.user_data %>
-  ,USER_DATA="<%= @compute.attributes.org.openstack.compute.user_data %>"
+  <% if @compute.attributes['org.openstack.compute.user_data'] %>
+  ,USER_DATA="<%= @compute.attributes['org.openstack.compute.user_data'] %>"
   <% end %>
 ]
 <% end %>
 
 <%# Links to images %>
-<% @compute.links.to_a.select { |link|
-     link.class.type_identifier == Occi::Infrastructure::Storagelink.type_identifier
-   }.each do |storagelink| %>
+<% storagelinks = @compute.links.to_a.select { |link| link.class.type_identifier == Occi::Infrastructure::Storagelink.type_identifier } %>
+<% storagelinks.each do |storagelink| %>
 DISK = [
   IMAGE_ID = storagelink.target.split('/').last
 
@@ -71,10 +70,17 @@ DISK = [
 ]
 <% end %>
 
+<% strlnk_mxns = {} %>
+<% storagelinks.each_index do |strlnk_idx| %>
+  <% strlnk_mxns[strlnk_idx.to_s] = storagelinks[strlnk_idx].mixins.to_a.collect { |m| m.type_identifier } %>
+<% end %>
+<% unless strlnk_mxns.empty? %>
+OCCI_STORAGELINK_MIXINS = "<%= JSON.generate(strlnk_mxns) %>""
+<% end %>
+
 <%# Links to networks %>
-<% @compute.links.to_a.select { |link|
-     link.class.type_identifier == Occi::Infrastructure::Networkinterface.type_identifier
-   }.each do |networkinterface| %>
+<% networkinterfaces = @compute.links.to_a.select { |link| link.class.type_identifier == Occi::Infrastructure::Networkinterface.type_identifier } %>
+<% networkinterfaces.each do |networkinterface| %>
 NIC = [
   NETWORK_ID = <%= networkinterface.target.split('/').last %>
 
@@ -109,6 +115,14 @@ NIC = [
   ,ICMP = "<%= networkinferface.attributes['org.opennebula.networkinterface.icmp'] %>"
   <% end %>
 ]
+<% end %>
+
+<% ntwrkintf_mxns = {} %>
+<% networkinterfaces.each_index do |ntwrkintf_idx| %>
+  <% ntwrkintf_mxns[ntwrkintf_idx.to_s] = networkinterfaces[ntwrkintf_idx].mixins.to_a.collect { |m| m.type_identifier } %>
+<% end %>
+<% unless ntwrkintf_mxns.empty? %>
+OCCI_NETWORKINTERFACE_MIXINS = "<%= JSON.generate(ntwrkintf_mxns) %>""
 <% end %>
 
 <%# Custom settings %>
