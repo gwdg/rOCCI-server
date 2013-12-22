@@ -12,11 +12,11 @@
 <%# Mandatory settings %>
 OCCI_COMPUTE_MIXINS = "<%= @compute.mixins.to_a.collect { |m| m.type_identifier }.to_s %>"
 
-NAME          = "<%= @compute.title || "one-#{@compute.id}" %>"
-DESCRIPTION   = "<%= @compute.summary || "VM instantiated using rOCCI-server" %>"
-MEMORY        = "<%= @compute.memory ? (@compute.memory.to_f * 1024).to_i : 256 %>"
-VCPU          = "<%= @compute.cores || 1 %>"
-CPU           = "<%= @compute.speed || 1 %>"
+NAME = "<%= @compute.title || "one-#{@compute.id}" %>"
+DESCRIPTION = "<%= @compute.summary || "VM instantiated using rOCCI-server" %>"
+MEMORY = "<%= @compute.memory ? (@compute.memory.to_f * 1024).to_i : 256 %>"
+VCPU = "<%= @compute.cores || 1 %>"
+CPU = "<%= @compute.speed || 1 %>"
 
 <%# Hypervisor specific settings %>
 RAW = [TYPE = "<%= hypervisor %>"]
@@ -30,23 +30,23 @@ OS = [
   <% if hypervisor == :xen  %>
      ,BOOTLOADER = "pygrub"
   <% else %>
-     ,BOOT = "<%= @compute.attributes['org.opennebula.boot'] || "hd" %>"
+     ,BOOT = "<%= @compute.attributes.org!.opennebula!.boot || "hd" %>"
   <% end  %>
 ]
 
 <%# Contextualization %>
 <% if contextualization %>
-CONTEXT=[
+CONTEXT = [
   FILES_DS="<%= context_init %>",
   PUBLIC_IP="$NIC[IP]",
-  <% if @compute.attributes['org.openstack.credentials.publickey.data'] %>
+  <% if @compute.attributes.org!.openstack!.credentials!.publickey!.data %>
   SSH_KEY="<%= @compute.attributes['org.openstack.credentials.publickey.data'] %>",
   SSH_PUBLIC_KEY="<%= @compute.attributes['org.openstack.credentials.publickey.data'] %>"
   <% else %>
   SSH_KEY="$USER[SSH_KEY]",
   SSH_KEY="$USER[SSH_PUBLIC_KEY]"
   <% end %>
-  <% if @compute.attributes['org.openstack.compute.user_data'] %>
+  <% if @compute.attributes.org!.openstack!.compute!.user_data %>
   ,USER_DATA="<%= @compute.attributes['org.openstack.compute.user_data'] %>"
   <% end %>
 ]
@@ -56,15 +56,15 @@ CONTEXT=[
 <% storagelinks = @compute.links.to_a.select { |link| link.class.type_identifier == Occi::Infrastructure::Storagelink.type_identifier } %>
 <% storagelinks.each do |storagelink| %>
 DISK = [
-  IMAGE_ID = storagelink.target.split('/').last
+  IMAGE_ID = "<%= storagelink.target.split('/').last %>"
 
   <% if storagelink.deviceid %>
-  ,TARGET  = "<%= storagelink.deviceid %>"
+  ,TARGET  = "<%= storagelink.deviceid.gsub('/dev/', '') %>"
   <% end %>
-  <% if storagelink.attributes['org.opennebula.storagelink.bus'] %>
+  <% if storagelink.attributes.org!.opennebula!.storagelink!.bus %>
   ,BUS = "<%= storagelink.attributes['org.opennebula.storagelink.bus'] %>"
   <% end %>
-  <% if storagelink.attributes['org.opennebula.storagelink.driver'] %>
+  <% if storagelink.attributes.org!.opennebula!.storagelink!.driver %>
   ,DRIVER = "<%= storagelink.attributes['org.opennebula.storagelink.driver'] %>"
   <% end %>
 ]
@@ -75,44 +75,48 @@ DISK = [
   <% strlnk_mxns[strlnk_idx.to_s] = storagelinks[strlnk_idx].mixins.to_a.collect { |m| m.type_identifier } %>
 <% end %>
 <% unless strlnk_mxns.empty? %>
-OCCI_STORAGELINK_MIXINS = "<%= JSON.generate(strlnk_mxns) %>""
+OCCI_STORAGELINK_MIXINS = [
+  <% local_mixins = [] %>
+  <% strlnk_mxns.each_pair { |lnk, mxns| local_mixins << "DISK_#{lnk} = \"#{mxns.to_s}\"" } %>
+  <%= local_mixins.join(',') %>
+]
 <% end %>
 
 <%# Links to networks %>
 <% networkinterfaces = @compute.links.to_a.select { |link| link.class.type_identifier == Occi::Infrastructure::Networkinterface.type_identifier } %>
 <% networkinterfaces.each do |networkinterface| %>
 NIC = [
-  NETWORK_ID = <%= networkinterface.target.split('/').last %>
+  NETWORK_ID = "<%= networkinterface.target.split('/').last %>"
 
-  <% if networkinferface.address %>
-  ,IP = "<%= networkinferface.address %>"
+  <% if networkinterface.address %>
+  ,IP = "<%= networkinterface.address %>"
   <% end %>
-  <% if networkinferface.mac %>
-  ,MAC = "<%= networkinferface.mac %>"
+  <% if networkinterface.mac %>
+  ,MAC = "<%= networkinterface.mac %>"
   <% end %>
-  <% if networkinferface.interface %>
-  ,TARGET = "<%= networkinferface.interface %>"
+  <% if networkinterface.interface %>
+  ,TARGET = "<%= networkinterface.interface %>"
   <% end %>
-  <% if networkinferface.attributes['org.opennebula.networkinterface.bridge'] %>
-  ,BRIDGE = "<%= networkinferface.attributes['org.opennebula.networkinterface.bridge'] %>"
+  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.bridge %>
+  ,BRIDGE = "<%= networkinterface.attributes['org.opennebula.networkinterface.bridge'] %>"
   <% end %>
-  <% if networkinferface.attributes['org.opennebula.networkinterface.script'] %>
-  ,SCRIPT = "<%= networkinferface.attributes['org.opennebula.networkinterface.script'] %>"
+  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.script %>
+  ,SCRIPT = "<%= networkinterface.attributes['org.opennebula.networkinterface.script'] %>"
   <% end %>
-  <% if networkinferface.attributes['org.opennebula.networkinterface.white_ports_tcp'] %>
-  ,WHITE_PORTS_TCP = "<%= networkinferface.attributes['org.opennebula.networkinterface.white_ports_tcp'] %>"
+  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.white_ports_tcp %>
+  ,WHITE_PORTS_TCP = "<%= networkinterface.attributes['org.opennebula.networkinterface.white_ports_tcp'] %>"
   <% end %>
-  <% if networkinferface.attributes['org.opennebula.networkinterface.black_ports_tcp'] %>
-  ,BLACK_PORTS_TCP = "<%= networkinferface.attributes['org.opennebula.networkinterface.black_ports_tcp'] %>"
+  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.black_ports_tcp %>
+  ,BLACK_PORTS_TCP = "<%= networkinterface.attributes['org.opennebula.networkinterface.black_ports_tcp'] %>"
   <% end %>
-  <% if networkinferface.attributes['org.opennebula.networkinterface.white_ports_udp'] %>
-  ,WHITE_PORTS_UDP = "<%= networkinferface.attributes['org.opennebula.networkinterface.white_ports_udp'] %>"
+  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.white_ports_udp %>
+  ,WHITE_PORTS_UDP = "<%= networkinterface.attributes['org.opennebula.networkinterface.white_ports_udp'] %>"
   <% end %>
-  <% if networkinferface.attributes['org.opennebula.networkinterface.black_ports_udp'] %>
-  ,BLACK_PORTS_UDP = "<%= networkinferface.attributes['org.opennebula.networkinterface.black_ports_udp'] %>"
+  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.black_ports_udp %>
+  ,BLACK_PORTS_UDP = "<%= networkinterface.attributes['org.opennebula.networkinterface.black_ports_udp'] %>"
   <% end %>
-  <% if networkinferface.attributes['org.opennebula.networkinterface.icmp'] %>
-  ,ICMP = "<%= networkinferface.attributes['org.opennebula.networkinterface.icmp'] %>"
+  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.icmp %>
+  ,ICMP = "<%= networkinterface.attributes['org.opennebula.networkinterface.icmp'] %>"
   <% end %>
 ]
 <% end %>
@@ -122,7 +126,11 @@ NIC = [
   <% ntwrkintf_mxns[ntwrkintf_idx.to_s] = networkinterfaces[ntwrkintf_idx].mixins.to_a.collect { |m| m.type_identifier } %>
 <% end %>
 <% unless ntwrkintf_mxns.empty? %>
-OCCI_NETWORKINTERFACE_MIXINS = "<%= JSON.generate(ntwrkintf_mxns) %>""
+OCCI_NETWORKINTERFACE_MIXINS = [
+  <% local_mixins = [] %>
+  <% ntwrkintf_mxns.each_pair { |lnk, mxns| local_mixins << " NIC_#{lnk} = \"#{mxns.to_s}\"" } %>
+  <%= local_mixins.join(',') %>
+]
 <% end %>
 
 <%# Custom settings %>
