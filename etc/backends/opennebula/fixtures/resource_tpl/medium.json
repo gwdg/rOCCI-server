@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"medium",
-      "scheme":"/occi/infrastructure/resource_tpl#",
+      "scheme":"http://sitespecific.cesnet.cz/occi/infrastructure/resource_tpl#",
       "title":"Medium Instance",
       "related":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
