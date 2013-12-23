@@ -13,8 +13,16 @@ module Backends
       #
       # @return [Array<String>] IDs for all available compute instances
       def compute_list_ids
-        # TODO: make it more efficient!
-        compute_list.to_a.collect { |c| c.id }
+        backend_compute_pool = ::OpenNebula::VirtualMachinePool.new(@client)
+        rc = backend_compute_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        compute = []
+        backend_compute_pool.each do |backend_compute|
+          compute << backend_compute['ID']
+        end
+
+        compute
       end
 
       # Gets all compute instances, instances must be filtered
@@ -57,8 +65,11 @@ module Backends
       # @param compute_id [String] OCCI identifier of the requested compute instance
       # @return [Occi::Infrastructure::Compute, nil] a compute instance or `nil`
       def compute_get(compute_id)
-        # TODO: make it more efficient!
-        compute_list.to_a.select { |c| c.id == compute_id }.first
+        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute_id), @client)
+        rc = virtual_machine.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        compute_parse_backend_obj(virtual_machine)
       end
 
       # Instantiates a new compute instance from Occi::Infrastructure::Compute.
