@@ -13,8 +13,16 @@ module Backends
       #
       # @return [Array<String>] IDs for all available storage instances
       def storage_list_ids
-        # TODO: make it more efficient!
-        storage_list.to_a.collect { |s| s.id }
+        backend_image_pool = ::OpenNebula::ImagePool.new(@client)
+        rc = backend_image_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        storage = []
+        backend_image_pool.each do |backend_image|
+          storage << backend_image['ID']
+        end
+
+        storage
       end
 
       # Gets all storage instances, instances must be filtered
@@ -57,8 +65,11 @@ module Backends
       # @param storage_id [String] OCCI identifier of the requested storage instance
       # @return [Occi::Infrastructure::Storage, nil] a storage instance or `nil`
       def storage_get(storage_id)
-        # TODO: make it more efficient!
-        storage_list.to_a.select { |s| s.id == storage_id }.first
+        image = ::OpenNebula::Image.new(::OpenNebula::Image.build_xml(storage_id), @client)
+        rc = image.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        storage_parse_backend_obj(image)
       end
 
       # Instantiates a new storage instance from Occi::Infrastructure::Storage.
