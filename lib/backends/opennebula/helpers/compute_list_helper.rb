@@ -112,11 +112,11 @@ module Backends
 
             link.mixins << 'http://opennebula.org/occi/infrastructure#storagelink'
 
-            unless backend_compute['USER_TEMPLATE/OCCI_STORAGELINK_MIXINS'].blank?
-              backend_mixins = JSON.parse(backend_compute['USER_TEMPLATE/OCCI_STORAGELINK_MIXINS'])
-              backend_mixins[id].each do |mixin|
+            unless backend_compute["USER_TEMPLATE/OCCI_STORAGELINK_MIXINS/DISK_#{disk['DISK_ID']}"].blank?
+              backend_mixins = JSON.parse(backend_compute["USER_TEMPLATE/OCCI_STORAGELINK_MIXINS/DISK_#{disk['DISK_ID']}"])
+              backend_mixins.each do |mixin|
                 link.mixins << mixin unless mixin.blank?
-              end if backend_mixins[id]
+              end
             end
 
             link.deviceid = "/dev/#{disk['TARGET']}" if disk['TARGET']
@@ -154,11 +154,11 @@ module Backends
             link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
             link.mixins << 'http://opennebula.org/occi/infrastructure#networkinterface'
 
-            unless backend_compute['USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS'].blank?
-              backend_mixins = JSON.parse(backend_compute['USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS'])
-              backend_mixins[id].each do |mixin|
+            unless backend_compute["USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS/NIC_#{nic['NIC_ID']}"].blank?
+              backend_mixins = JSON.parse(backend_compute["USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS/NIC_#{nic['NIC_ID']}"])
+              backend_mixins.each do |mixin|
                 link.mixins << mixin unless mixin.blank?
-              end if backend_mixins[id]
+              end
             end
 
             link.address = nic['IP'] if nic['IP']

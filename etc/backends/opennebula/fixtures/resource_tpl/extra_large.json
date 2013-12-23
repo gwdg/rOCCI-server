@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"extra_large",
-      "scheme":"/occi/infrastructure/resource_tpl#",
+      "scheme":"http://sitespecific.cesnet.cz/occi/infrastructure/resource_tpl#",
       "title":"Extra Large Instance",
       "related":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"

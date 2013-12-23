@@ -13,8 +13,16 @@ module Backends
       #
       # @return [Array<String>] IDs for all available network instances
       def network_list_ids
-        # TODO: make it more efficient!
-        network_list.to_a.collect { |n| n.id }
+        backend_network_pool = ::OpenNebula::VirtualNetworkPool.new(@client)
+        rc = backend_network_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        network = []
+        backend_network_pool.each do |backend_network|
+          network << backend_network['ID']
+        end
+
+        network
       end
 
       # Gets all network instances, instances must be filtered
@@ -57,8 +65,11 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
       def network_get(network_id)
-        # TODO: make it more efficient!
-        network_list.to_a.select { |n| n.id == network_id }.first
+        virtual_network = ::OpenNebula::VirtualNetwork.new(::OpenNebula::VirtualNetwork.build_xml(network_id), @client)
+        rc = virtual_network.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        network_parse_backend_obj(virtual_network)
       end
 
       # Instantiates a new network instance from Occi::Infrastructure::Network.
