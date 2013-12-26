@@ -2,7 +2,13 @@ class StorageController < ApplicationController
 
   # GET /storage/
   def index
-    @storages = backend_instance.storage_list
+    if request.format == "text/uri-list"
+      @storages = backend_instance.storage_list_ids
+      @storages.map! { |c| "/storage/#{c}" }
+    else
+      @storages = backend_instance.storage_list
+    end
+
     respond_with(@storages)
   end
 

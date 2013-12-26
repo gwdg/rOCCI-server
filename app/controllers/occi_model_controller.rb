@@ -2,11 +2,19 @@ class OcciModelController < ApplicationController
 
   # GET /
   def index
-    @resources = Occi::Core::Resources.new
+    if request.format == "text/uri-list"
+      @resources = []
 
-    @resources.merge backend_instance.compute_list
-    @resources.merge backend_instance.network_list
-    @resources.merge backend_instance.storage_list
+      @resources.concat(backend_instance.compute_list_ids.map { |c| "/compute/#{c}" })
+      @resources.concat(backend_instance.network_list_ids.map { |n| "/network/#{n}" })
+      @resources.concat(backend_instance.storage_list_ids.map { |s| "/storage/#{s}" })
+    else
+      @resources = Occi::Core::Resources.new
+
+      @resources.merge backend_instance.compute_list
+      @resources.merge backend_instance.network_list
+      @resources.merge backend_instance.storage_list
+    end
 
     respond_with(@resources)
   end

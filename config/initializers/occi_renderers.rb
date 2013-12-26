@@ -55,6 +55,8 @@ ActionController::Renderers.add :uri_list do |obj, options|
     obj.resources.to_a.collect { |o| o.location }.to_a.join("\n")
   when obj.kind_of?(Occi::Core::Resources)
     obj.to_a.collect { |o| o.location }.to_a.join("\n")
+  when obj.kind_of?(Array)
+    obj.join("\n")
   else
     ""
   end

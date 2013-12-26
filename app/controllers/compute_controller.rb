@@ -2,7 +2,13 @@ class ComputeController < ApplicationController
 
   # GET /compute/
   def index
-    @computes = backend_instance.compute_list
+    if request.format == "text/uri-list"
+      @computes = backend_instance.compute_list_ids
+      @computes.map! { |c| "/compute/#{c}" }
+    else
+      @computes = backend_instance.compute_list
+    end
+
     respond_with(@computes)
   end
 
