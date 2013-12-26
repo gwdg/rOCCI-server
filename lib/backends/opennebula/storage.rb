@@ -104,8 +104,17 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def storage_delete_all(mixins = nil)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: impl filtering with mixins
+        backend_storage_pool = ::OpenNebula::ImagePool.new(@client)
+        rc = backend_storage_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        backend_storage_pool.each do |backend_storage|
+          rc = backend_storage.delete
+          check_retval(rc, Backends::Errors::ResourceActionError)
+        end
+
+        true
       end
 
       # Deletes a specific storage instance, instance to be deleted is
@@ -120,8 +129,14 @@ module Backends
       # @param storage_id [String] an identifier of a storage instance to be deleted
       # @return [true, false] result of the operation
       def storage_delete(storage_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        storage = ::OpenNebula::Image.new(::OpenNebula::Image.build_xml(storage_id), @client)
+        rc = storage.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        rc = storage.delete
+        check_retval(rc, Backends::Errors::ResourceActionError)
+
+        true
       end
 
       # Updates an existing storage instance, instance to be updated is specified

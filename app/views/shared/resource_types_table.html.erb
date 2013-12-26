@@ -1,6 +1,6 @@
-<table width="100%" style="border: solid 1px; text-align: center">
+<table width="100%" style="border: solid 1px; text-align: left">
 	<thead>
-		<tr>
+		<tr style="text-align: center">
 			<th>Identifier</th>
 			<th width="20%">Link</th>
 		</tr>
@@ -8,8 +8,8 @@
 	<tbody>
 		<% @local_resource_types.each do |resource_type| %>
 		<tr>
-			<td style="text-align: left"><%= resource_type.type_identifier %></td>
-			<td><a href="<%= resource_type.location %>" target="_blank"><%= resource_type.location %></a></td>
+			<td><%= resource_type.type_identifier %></td>
+			<td><a href="<%= resource_type.location %>"><%= resource_type.location %></a></td>
 		</tr>
 		<% end %>
 	</tbody>

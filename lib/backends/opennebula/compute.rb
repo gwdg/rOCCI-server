@@ -116,8 +116,22 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def compute_delete_all(mixins = nil)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: impl filtering with mixins
+        backend_compute_pool = ::OpenNebula::VirtualMachinePool.new(@client)
+        rc = backend_compute_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        backend_compute_pool.each do |backend_compute|
+          if backend_compute.lcm_state_str == 'RUNNING'
+            rc = backend_compute.shutdown
+          else
+            rc = backend_compute.delete
+          end
+
+          check_retval(rc, Backends::Errors::ResourceActionError)
+        end
+
+        true
       end
 
       # Deletes a specific compute instance, instance to be deleted is
@@ -132,8 +146,19 @@ module Backends
       # @param compute_id [String] an identifier of a compute instance to be deleted
       # @return [true, false] result of the operation
       def compute_delete(compute_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute_id), @client)
+        rc = virtual_machine.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        if virtual_machine.lcm_state_str == 'RUNNING'
+          rc = virtual_machine.shutdown
+        else
+          rc = virtual_machine.delete
+        end
+
+        check_retval(rc, Backends::Errors::ResourceActionError)
+
+        true
       end
 
       # Updates an existing compute instance, instance to be updated is specified
