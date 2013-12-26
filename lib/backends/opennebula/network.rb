@@ -104,8 +104,17 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def network_delete_all(mixins = nil)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        # TODO: impl filtering with mixins
+        backend_network_pool = ::OpenNebula::VirtualNetworkPool.new(@client)
+        rc = backend_network_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        backend_network_pool.each do |backend_network|
+          rc = backend_network.delete
+          check_retval(rc, Backends::Errors::ResourceActionError)
+        end
+
+        true
       end
 
       # Deletes a specific network instance, instance to be deleted is
@@ -120,8 +129,14 @@ module Backends
       # @param network_id [String] an identifier of a network instance to be deleted
       # @return [true, false] result of the operation
       def network_delete(network_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        network = ::OpenNebula::VirtualNetwork.new(::OpenNebula::VirtualNetwork.build_xml(network_id), @client)
+        rc = network.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        rc = network.delete
+        check_retval(rc, Backends::Errors::ResourceActionError)
+
+        true
       end
 
       # Updates an existing network instance, instance to be updated is specified
