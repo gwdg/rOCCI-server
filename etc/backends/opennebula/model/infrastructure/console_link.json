@@ -7,7 +7,7 @@
       "related":[
         "http://schemas.ogf.org/occi/core#link"
       ],
-      "location":"/consolelink/"
+      "location":"/link/consolelink/"
     }
   ]
 }

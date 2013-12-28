@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/gwdg/rOCCI-core.git
-  revision: 61428738d30071ad8855080c44c70d95589e03e0
+  revision: e96ec1f79863ac833622210bf07a39e2de648ebe
   branch: master
   specs:
     occi-core (4.2.1)

@@ -1,9 +1,13 @@
 {
   "mixins":[
     {
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#networkinterface"
+      ],
       "term":"networkinterface",
       "scheme":"http://opennebula.org/occi/infrastructure#",
       "title":"OpenNebula specific Networkinterface attributes",
+      "location":"/mixin/networkinterface/",
       "attributes":{
         "org":{
           "opennebula":{
