@@ -86,8 +86,22 @@ module Backends
       # @param network [Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
       def network_create(network)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        @logger.debug "Creating network #{network.inspect}"
+        template_location = File.join(@options.templates_dir, "network.erb")
+        template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :network => network })
+
+        @logger.debug "Template #{template.inspect}"
+
+        vnet_alloc = ::OpenNebula::VirtualNetwork.build_xml
+        backend_object = ::OpenNebula::VirtualNetwork.new(vnet_alloc, @client)
+
+        rc = backend_object.allocate(template)
+        check_retval(rc, Backends::Errors::ResourceCreationError)
+
+        rc = backend_object.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        backend_object['ID']
       end
 
       # Deletes all network instances, instances to be deleted must be filtered

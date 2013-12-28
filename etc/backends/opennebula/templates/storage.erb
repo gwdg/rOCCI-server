@@ -1,0 +1,40 @@
+OCCI_STORAGE_MIXINS = "<%= @storage.mixins.to_a.collect { |m| m.type_identifier }.to_s %>"
+
+NAME = "<%= @storage.title %>"
+DESCRIPTION = "<%= @storage.summary %>"
+
+<% case @storage.attributes.org!.opennebula!.storage!.type %>
+<% when "OS" %>
+TYPE = "OS"
+DISK_TYPE = "BLOCK"
+PATH = "<%= @storage.attributes.org!.opennebula!.storage!.path %>"
+<% when "CDROM" %>
+TYPE = "CDROM"
+DISK_TYPE = "CDROM"
+PATH = "<%= @storage.attributes.org!.opennebula!.storage!.path %>"
+<% when "FILE" %>
+TYPE = "FILE"
+DISK_TYPE = "FILE"
+PATH = "<%= @storage.attributes.org!.opennebula!.storage!.path %>"
+<% else %>
+TYPE = "DATABLOCK"
+FSTYPE = "<%= @storage.attributes.org!.opennebula!.storage!.fstype || "ext3" %>"
+SIZE = "<%= @storage.size ? @storage.size.to_i : 10240 %>"
+DISK_TYPE = "BLOCK"
+<% end %>
+
+<% if @storage.attributes.org!.opennebula!.storage!.persistent %>
+PERSISTENT = "<%= @storage.attributes['org.opennebula.storage.persistent'] %>"
+<% end %>
+
+<% if @storage.attributes.org!.opennebula!.storage!.dev_prefix %>
+DEV_PREFIX = "<%= @storage.attributes['org.opennebula.storage.dev_prefix'] %>"
+<% end %>
+
+<% if @storage.attributes.org!.opennebula!.storage!.bus %>
+BUS = "<%= @storage.attributes['org.opennebula.storage.bus'] %>"
+<% end %>
+
+<% if @storage.attributes.org!.opennebula!.storage!.driver %>
+DRIVER = "<%= @storage.attributes['org.opennebula.storage.driver'] %>"
+<% end %>

@@ -12,7 +12,7 @@
 <%# Mandatory settings %>
 OCCI_COMPUTE_MIXINS = "<%= @compute.mixins.to_a.collect { |m| m.type_identifier }.to_s %>"
 
-NAME = "<%= @compute.title || "one-#{@compute.id}" %>"
+NAME = "<%= @compute.title %>"
 DESCRIPTION = "<%= @compute.summary || "VM instantiated using rOCCI-server" %>"
 MEMORY = "<%= @compute.memory ? (@compute.memory.to_f * 1024).to_i : 256 %>"
 VCPU = "<%= @compute.cores || 1 %>"

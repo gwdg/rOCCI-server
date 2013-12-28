@@ -10,7 +10,7 @@
             "storagelink":{
               "bus":{
                 "Description":"Type of disk device to emulate",
-                "Pattern":"ide|IDE|scsi|SCSI|virtio"
+                "Pattern":"IDE|SCSI|virtio"
               },
               "driver":{
                 "Description":"Specific image mapping driver. For XEN: tap:aio:,file: For KVM: raw, qcow2",

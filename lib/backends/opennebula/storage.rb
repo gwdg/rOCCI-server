@@ -2,6 +2,8 @@ module Backends
   module Opennebula
     module Storage
 
+      DEFAULT_DATASTORE_ID = 1
+
       # Gets all storage instance IDs, no details, no duplicates. Returned
       # identifiers must corespond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Storage instances.
@@ -86,8 +88,22 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] storage instance containing necessary attributes
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        @logger.debug "Creating storage #{storage.inspect}"
+        template_location = File.join(@options.templates_dir, "storage.erb")
+        template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :storage => storage })
+
+        @logger.debug "Template #{template.inspect}"
+
+        image_alloc = ::OpenNebula::Image.build_xml
+        backend_object = ::OpenNebula::Image.new(image_alloc, @client)
+
+        rc = backend_object.allocate(template, DEFAULT_DATASTORE_ID)
+        check_retval(rc, Backends::Errors::ResourceCreationError)
+
+        rc = backend_object.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        backend_object['ID']
       end
 
       # Deletes all storage instances, instances to be deleted must be filtered
