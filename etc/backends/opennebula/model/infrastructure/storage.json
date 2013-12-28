@@ -13,19 +13,19 @@
               },
               "type":{
                 "Description":"Type of the image. If omitted, the default value is the one defined in oned.conf (install default is OS).",
-                "Pattern": "OS|CDROM|DATABLOCK|KERNEL|RAMDISK|CONTEXT"
+                "Pattern": "OS|CDROM|DATABLOCK|FILE"
               },
               "persistent":{
                 "Description":"Persistence of the image. If omitted, the default value is NO.",
-                "Pattern": "YES|NO|yes|no|Yes|No",
-                "Default":"no"
+                "Pattern": "YES|NO",
+                "Default":"NO"
               },
               "dev_prefix":{
                 "Description":"Prefix for the emulated device this image will be mounted at. For instance, “hd”, “sd”. If omitted, the default value is the one defined in oned.conf (installation default is “hd”)."
               },
               "bus":{
                 "Description":"Type of disk device to emulate.",
-                "Pattern": "ide|IDE|scsi|SCSI|virtio"
+                "Pattern": "IDE|SCSI|virtio"
               },
               "driver":{
                 "Description":"Specific image mapping driver. VMware is unsupported",
@@ -33,6 +33,9 @@
               },
               "fstype":{
                 "Description":"Type of file system to be built. This can be any value understood by mkfs unix command."
+              },
+              "path":{
+                "Description":"Path to an image. This can be a path local to the frontend or HTTP(S) URL."
               }
             }
           }

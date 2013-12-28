@@ -1,0 +1,40 @@
+OCCI_NETWORK_MIXINS = "<%= @network.mixins.to_a.collect { |m| m.type_identifier }.to_s %>"
+
+NAME = "<%= @network.title %>"
+DESCRIPTION = "<%= @network.summary || "VNET created using rOCCI-server" %>"
+
+<% if @network.vlan %>
+VLAN = "YES"
+VLAN_ID = "<%= @network.vlan.to_i %>"
+<% else %>
+VLAN = "NO"
+<% end %>
+
+<% if @network.attributes.org!.opennebula!.network!.phydev %>
+PHYDEV = "<%= @network.attributes['org.opennebula.network.phydev'] %>"
+<% end %>
+
+<% if @network.attributes.org!.opennebula!.network!.bridge %>
+BRIDGE = "<%= @network.attributes['org.opennebula.network.bridge'] %>"
+<% end %>
+
+<% if @network.allocation == 'static' %>
+TYPE = "FIXED"
+
+  <% if @network.address %>
+    <% network_range = IPAddr.new(@network.address).to_range %>
+    <% network_range = network_range - IPAddr.new(@network.gateway) if @network.gateway %>
+LEASES = <%= network_range.collect { |addr| addr.to_s }.to_s %>
+  <% end %>
+<% else %>
+TYPE = "RANGED"
+
+  <% if @network.attributes.org!.opennebula!.network!.ip_start && @network.attributes.org!.opennebula!.network!.ip_end %>
+IP_START = "<%= @network.attributes['org.opennebula.network.ip_start'] %>"
+IP_END = "<%= @network.attributes['org.opennebula.network.ip_end'] %>"
+  <% end %>
+<% end %>
+
+<% if @network.gateway %>
+GATEWAY = "<%= @network.gateway %>"
+<% end %>
