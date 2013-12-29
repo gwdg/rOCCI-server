@@ -19,12 +19,14 @@ module Backends
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         backend_tpl_pool.each do |backend_tpl|
-          related = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
-          term    = os_tpl_list_tpl_to_term(backend_tpl)
-          scheme  = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
-          title   = backend_tpl['NAME']
+          depends = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
+          term = os_tpl_list_tpl_to_term(backend_tpl)
+          scheme = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
+          title = backend_tpl['NAME']
+          location = "/mixin/os_tpl/#{term}/"
+          applies = %w|http://schemas.ogf.org/occi/infrastructure#compute|
 
-          os_tpl << Occi::Core::Mixin.new(scheme, term, title, nil, related)
+          os_tpl << Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
         end
 
         os_tpl

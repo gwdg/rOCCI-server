@@ -4,8 +4,12 @@
       "term":"67b18960-4609-11e3-bdfa-089e012d9027",
       "scheme":"http://occi.example.org/occi/infrastructure/os_tpl#",
       "title":"debian",
-      "related":[
+      "location":"/mixin/os_tpl/67b18960-4609-11e3-bdfa-089e012d9027/",
+      "depends":[
         "http://schemas.ogf.org/occi/infrastructure#os_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
       ],
       "attributes":{
         "eu":{
@@ -29,8 +33,12 @@
       "term":"959b41e6-4608-11e3-9380-089e012d9027",
       "scheme":"http://occi.example.org/occi/infrastructure/os_tpl#",
       "title":"monitoring",
-      "related":[
+      "location":"/mixin/os_tpl/959b41e6-4608-11e3-9380-089e012d9027/",
+      "depends":[
         "http://schemas.ogf.org/occi/infrastructure#os_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
       ],
       "attributes":{
         "eu":{

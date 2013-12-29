@@ -4,8 +4,11 @@
       "term":"large",
       "scheme":"http://sitespecific.cesnet.cz/occi/infrastructure/resource_tpl#",
       "title":"Large Instance",
-      "related":[
+      "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
       ],
       "attributes":{
         "occi":{
