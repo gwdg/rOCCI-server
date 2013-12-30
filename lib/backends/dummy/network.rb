@@ -11,9 +11,10 @@ module Backends
       #    network_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
       #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
       #
+      # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available network instances
-      def network_list_ids
-        @network.to_a.collect { |n| n.id }
+      def network_list_ids(mixins = nil)
+        network_list(mixins).to_a.collect { |n| n.id }
       end
 
       # Gets all network instances, instances must be filtered

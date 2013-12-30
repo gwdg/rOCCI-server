@@ -11,8 +11,10 @@ module Backends
       #    network_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
       #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
       #
+      # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available network instances
-      def network_list_ids
+      def network_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
         backend_network_pool = ::OpenNebula::VirtualNetworkPool.new(@client)
         rc = backend_network_pool.info_all
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
@@ -217,7 +219,7 @@ module Backends
 
         # include mixins stored in ON's VN template
         unless backend_network['TEMPLATE/OCCI_NETWORK_MIXINS'].blank?
-          backend_network_mixins = JSON.parse(backend_network['TEMPLATE/OCCI_NETWORK_MIXINS'])
+          backend_network_mixins = backend_network['TEMPLATE/OCCI_NETWORK_MIXINS'].split(' ')
           backend_network_mixins.each do |mixin|
             network.mixins << mixin unless mixin.blank?
           end
@@ -230,10 +232,9 @@ module Backends
         network.gateway = backend_network['TEMPLATE/GATEWAY'] if backend_network['TEMPLATE/GATEWAY']
         network.vlan = backend_network['VLAN_ID'].to_i if backend_network['VLAN_ID']
 
-        # TODO: DHCP or not, there is no way to find out here
-        network.allocation = "dynamic"
-
         unless backend_network['TEMPLATE/NETWORK_ADDRESS'].blank?
+          network.allocation = "dynamic"
+
           if backend_network['TEMPLATE/NETWORK_ADDRESS'].include? '/'
             network.address = backend_network['TEMPLATE/NETWORK_ADDRESS']
           else
@@ -246,18 +247,20 @@ module Backends
               end
             end
           end
+        else
+          network.allocation = "static"
         end
 
         network.attributes['org.opennebula.network.id'] = backend_network['ID']
 
         if backend_network['VLAN'].blank? || backend_network['VLAN'].to_i == 0
-          network.attributes['org.opennebula.network.vlan'] = "no"
+          network.attributes['org.opennebula.network.vlan'] = "NO"
         else
-          network.attributes['org.opennebula.network.vlan'] = "yes"
+          network.attributes['org.opennebula.network.vlan'] = "YES"
         end
 
-        network.attributes['org.opennebula.network.phydev'] = backend_network['PHYDEV'] if backend_network['PHYDEV']
-        network.attributes['org.opennebula.network.bridge'] = backend_network['BRIDGE'] if backend_network['BRIDGE']
+        network.attributes['org.opennebula.network.phydev'] = backend_network['PHYDEV'] unless backend_network['PHYDEV'].blank?
+        network.attributes['org.opennebula.network.bridge'] = backend_network['BRIDGE'] unless backend_network['BRIDGE'].blank?
 
         if backend_network['RANGE']
           network.attributes['org.opennebula.network.ip_start'] = backend_network['RANGE/IP_START'] if backend_network['RANGE/IP_START']

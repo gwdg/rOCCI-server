@@ -11,9 +11,10 @@ module Backends
       #    storage_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
       #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
       #
+      # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available storage instances
-      def storage_list_ids
-        @storage.to_a.collect { |s| s.id }
+      def storage_list_ids(mixins = nil)
+        storage_list(mixins).to_a.collect { |s| s.id }
       end
 
       # Gets all storage instances, instances must be filtered

@@ -1,4 +1,4 @@
-OCCI_STORAGE_MIXINS = "<%= @storage.mixins.to_a.collect { |m| m.type_identifier }.to_s %>"
+OCCI_STORAGE_MIXINS = "<%= @storage.mixins.to_a.collect { |m| m.type_identifier }.join(' ') %>"
 
 NAME = "<%= @storage.title %>"
 DESCRIPTION = "<%= @storage.summary %>"

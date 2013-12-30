@@ -45,10 +45,11 @@ module Backends
             template.add_element('TEMPLATE', { "CPU" => compute.speed.to_f })
           end
 
+          compute_create_check_context(compute)
           compute_create_add_context(compute, template)
 
           mixins = compute.mixins.to_a.collect { |m| m.type_identifier }
-          template.add_element('TEMPLATE', { "OCCI_COMPUTE_MIXINS" => mixins.to_s })
+          template.add_element('TEMPLATE', { "OCCI_COMPUTE_MIXINS" => mixins.join(' ') })
 
           # remove template-specific values
           template.delete_element('ID')
@@ -97,37 +98,34 @@ module Backends
         private
 
         def compute_create_add_context(compute, template)
-          compute_create_check_context(compute)
+          return unless compute.attributes.org!.openstack
 
-          # if compute.attributes.org!.openstack
-          #   template.add_element('TEMPLATE', "CONTEXT" => '')
+          template.add_element('TEMPLATE', "CONTEXT" => '')
 
-          #   if compute.attributes.org.openstack.credentials!.publickey!.data
-          #     template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
-          #     template.add_element('TEMPLATE/CONTEXT', "SSH_KEY" => compute.attributes.org.openstack.credentials.publickey.data)
+          if compute.attributes.org.openstack.credentials!.publickey!.data
+            template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
+            template.add_element('TEMPLATE/CONTEXT', "SSH_KEY" => compute.attributes['org.openstack.credentials.publickey.data'])
 
-          #     template.delete_element('TEMPLATE/CONTEXT/SSH_PUBLIC_KEY')
-          #     template.add_element('TEMPLATE/CONTEXT', "SSH_PUBLIC_KEY" => compute.attributes.org.openstack.credentials.publickey.data)
-          #   end
+            template.delete_element('TEMPLATE/CONTEXT/SSH_PUBLIC_KEY')
+            template.add_element('TEMPLATE/CONTEXT', "SSH_PUBLIC_KEY" => compute.attributes['org.openstack.credentials.publickey.data'])
+          end
 
-          #   if compute.attributes.org.openstack.compute!.user_data
-          #     template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
-          #     template.add_element('TEMPLATE/CONTEXT', "USER_DATA" => compute.attributes.org.openstack.compute.user_data)
-          #   end
-          # end
+          if compute.attributes.org.openstack.compute!.user_data
+            template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
+            template.add_element('TEMPLATE/CONTEXT', "USER_DATA" => compute.attributes['org.openstack.compute.user_data'])
+          end
         end
 
         def compute_create_check_context(compute)
-          # check context vars
-          # if compute.attributes.org!.openstack
-          #   if compute.attributes.org.openstack.credentials!.publickey!.data
-          #     raise Occi::BackendError, 'Public key is invalid!' unless COMPUTE_SSH_REGEXP.match(compute.attributes.org.openstack.credentials.publickey.data)
-          #   end
+          if compute.attributes.org!.openstack!.credentials!.publickey!.data
+            raise Backends::Errors::ResourceNotValidError, 'Public key is invalid!' unless \
+              COMPUTE_SSH_REGEXP.match(compute.attributes['org.openstack.credentials.publickey.data'])
+          end
 
-          #   if compute.attributes.org.openstack.compute!.user_data
-          #     raise Occi::BackendError, 'User data contains invalid characters!' unless COMPUTE_BASE64_REGEXP.match(compute.attributes.org.openstack.compute.user_data.gsub("\n", ''))
-          #   end
-          # end
+          if compute.attributes.org!.openstack!.compute!.user_data
+            raise Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
+              COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
+          end
         end
 
       end

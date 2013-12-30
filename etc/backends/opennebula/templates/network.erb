@@ -1,4 +1,4 @@
-OCCI_NETWORK_MIXINS = "<%= @network.mixins.to_a.collect { |m| m.type_identifier }.to_s %>"
+OCCI_NETWORK_MIXINS = "<%= @network.mixins.to_a.collect { |m| m.type_identifier }.join(' ') %>"
 
 NAME = "<%= @network.title %>"
 DESCRIPTION = "<%= @network.summary || "VNET created using rOCCI-server" %>"
@@ -24,10 +24,16 @@ TYPE = "FIXED"
   <% if @network.address %>
     <% network_range = IPAddr.new(@network.address).to_range %>
     <% network_range = network_range - IPAddr.new(@network.gateway) if @network.gateway %>
-LEASES = <%= network_range.collect { |addr| addr.to_s }.to_s %>
+  <% network_range.each do |lease| %>
+LEASES = [IP = "<%= lease.to_s %>"]
+  <% end %>
   <% end %>
 <% else %>
 TYPE = "RANGED"
+
+  <% addr, net = @network.address.split('/') %>
+NETWORK_ADDRESS = "<%= addr %>"
+NETWORK_SIZE = "<%= case net; when '8'; "A"; when '16'; "B"; when '24'; "C"; end %>"
 
   <% if @network.attributes.org!.opennebula!.network!.ip_start && @network.attributes.org!.opennebula!.network!.ip_end %>
 IP_START = "<%= @network.attributes['org.opennebula.network.ip_start'] %>"

@@ -13,8 +13,10 @@ module Backends
       #    storage_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
       #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
       #
+      # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available storage instances
-      def storage_list_ids
+      def storage_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
         backend_image_pool = ::OpenNebula::ImagePool.new(@client)
         rc = backend_image_pool.info_all
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
@@ -219,7 +221,7 @@ module Backends
 
         # include mixins stored in ON's VN template
         unless backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'].blank?
-          backend_storage_mixins = JSON.parse(backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'])
+          backend_storage_mixins = backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'].split(' ')
           backend_storage_mixins.each do |mixin|
             storage.mixins << mixin unless mixin.blank?
           end
@@ -235,9 +237,9 @@ module Backends
         storage.attributes['org.opennebula.storage.type'] = backend_storage.type_str
 
         if backend_storage['PERSISTENT'].blank? || backend_storage['PERSISTENT'].to_i == 0
-          storage.attributes['org.opennebula.storage.persistent'] = "no"
+          storage.attributes['org.opennebula.storage.persistent'] = "NO"
         else
-          storage.attributes['org.opennebula.storage.persistent'] = "yes"
+          storage.attributes['org.opennebula.storage.persistent'] = "YES"
         end
 
         storage.attributes['org.opennebula.storage.dev_prefix'] = backend_storage['TEMPLATE/DEV_PREFIX'] if backend_storage['TEMPLATE/DEV_PREFIX']
