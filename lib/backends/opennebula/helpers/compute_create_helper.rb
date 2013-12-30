@@ -104,15 +104,15 @@ module Backends
 
           if compute.attributes.org.openstack.credentials!.publickey!.data
             template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
-            template.add_element('TEMPLATE/CONTEXT', "SSH_KEY" => compute.attributes['org.openstack.credentials.publickey.data']
+            template.add_element('TEMPLATE/CONTEXT', "SSH_KEY" => compute.attributes['org.openstack.credentials.publickey.data'])
 
             template.delete_element('TEMPLATE/CONTEXT/SSH_PUBLIC_KEY')
-            template.add_element('TEMPLATE/CONTEXT', "SSH_PUBLIC_KEY" => compute.attributes['org.openstack.credentials.publickey.data']
+            template.add_element('TEMPLATE/CONTEXT', "SSH_PUBLIC_KEY" => compute.attributes['org.openstack.credentials.publickey.data'])
           end
 
           if compute.attributes.org.openstack.compute!.user_data
             template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
-            template.add_element('TEMPLATE/CONTEXT', "USER_DATA" => compute.attributes['org.openstack.compute.user_data']
+            template.add_element('TEMPLATE/CONTEXT', "USER_DATA" => compute.attributes['org.openstack.compute.user_data'])
           end
         end
 
