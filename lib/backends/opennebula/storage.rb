@@ -13,8 +13,10 @@ module Backends
       #    storage_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
       #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
       #
+      # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available storage instances
-      def storage_list_ids
+      def storage_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
         backend_image_pool = ::OpenNebula::ImagePool.new(@client)
         rc = backend_image_pool.info_all
         check_retval(rc, Backends::Errors::ResourceRetrievalError)

@@ -11,8 +11,10 @@ module Backends
       #    compute_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
       #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
       #
+      # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available compute instances
-      def compute_list_ids
+      def compute_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
         backend_compute_pool = ::OpenNebula::VirtualMachinePool.new(@client)
         rc = backend_compute_pool.info_all
         check_retval(rc, Backends::Errors::ResourceRetrievalError)

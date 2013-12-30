@@ -11,8 +11,9 @@ module Backends
       #    compute_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
       #                             "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
       #
+      # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available compute instances
-      def compute_list_ids
+      def compute_list_ids(mixins = nil)
         ###
         # Every Occi::Infrastructure::Compute instance contains an attribute
         # called 'occi.core.id' aliased as the #id method. This must be unique
@@ -25,7 +26,7 @@ module Backends
         # compute.id = 'my_unique_id'
         # compute.location #=> "/compute/my_unique_id"
         ###
-        compute_list.to_a.collect { |c| c.id }
+        compute_list(mixins).to_a.collect { |c| c.id }
       end
 
       # Gets all compute instances, instances must be filtered
