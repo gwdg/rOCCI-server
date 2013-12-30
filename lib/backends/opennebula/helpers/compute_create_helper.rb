@@ -49,7 +49,7 @@ module Backends
           compute_create_add_context(compute, template)
 
           mixins = compute.mixins.to_a.collect { |m| m.type_identifier }
-          template.add_element('TEMPLATE', { "OCCI_COMPUTE_MIXINS" => mixins.to_s })
+          template.add_element('TEMPLATE', { "OCCI_COMPUTE_MIXINS" => mixins.join(' ') })
 
           # remove template-specific values
           template.delete_element('ID')

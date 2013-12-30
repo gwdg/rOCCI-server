@@ -221,7 +221,7 @@ module Backends
 
         # include mixins stored in ON's VN template
         unless backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'].blank?
-          backend_storage_mixins = JSON.parse(backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'])
+          backend_storage_mixins = backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'].split(' ')
           backend_storage_mixins.each do |mixin|
             storage.mixins << mixin unless mixin.blank?
           end
@@ -237,9 +237,9 @@ module Backends
         storage.attributes['org.opennebula.storage.type'] = backend_storage.type_str
 
         if backend_storage['PERSISTENT'].blank? || backend_storage['PERSISTENT'].to_i == 0
-          storage.attributes['org.opennebula.storage.persistent'] = "no"
+          storage.attributes['org.opennebula.storage.persistent'] = "NO"
         else
-          storage.attributes['org.opennebula.storage.persistent'] = "yes"
+          storage.attributes['org.opennebula.storage.persistent'] = "YES"
         end
 
         storage.attributes['org.opennebula.storage.dev_prefix'] = backend_storage['TEMPLATE/DEV_PREFIX'] if backend_storage['TEMPLATE/DEV_PREFIX']

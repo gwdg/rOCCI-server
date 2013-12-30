@@ -10,7 +10,7 @@
 <% context_init = '$FILE[IMAGE="init.sh",IMAGE_UNAME="oneadmin"]' %>
 
 <%# Mandatory settings %>
-OCCI_COMPUTE_MIXINS = "<%= @compute.mixins.to_a.collect { |m| m.type_identifier }.to_s %>"
+OCCI_COMPUTE_MIXINS = "<%= @compute.mixins.to_a.collect { |m| m.type_identifier }.join(' ') %>"
 
 NAME = "<%= @compute.title %>"
 DESCRIPTION = "<%= @compute.summary || "VM instantiated using rOCCI-server" %>"
@@ -77,7 +77,7 @@ DISK = [
 <% unless strlnk_mxns.empty? %>
 OCCI_STORAGELINK_MIXINS = [
   <% local_mixins = [] %>
-  <% strlnk_mxns.each_pair { |lnk, mxns| local_mixins << "DISK_#{lnk} = \"#{mxns.to_s}\"" } %>
+  <% strlnk_mxns.each_pair { |lnk, mxns| local_mixins << "DISK_#{lnk} = \"#{mxns.join(' ')}\"" } %>
   <%= local_mixins.join(',') %>
 ]
 <% end %>
@@ -128,7 +128,7 @@ NIC = [
 <% unless ntwrkintf_mxns.empty? %>
 OCCI_NETWORKINTERFACE_MIXINS = [
   <% local_mixins = [] %>
-  <% ntwrkintf_mxns.each_pair { |lnk, mxns| local_mixins << " NIC_#{lnk} = \"#{mxns.to_s}\"" } %>
+  <% ntwrkintf_mxns.each_pair { |lnk, mxns| local_mixins << " NIC_#{lnk} = \"#{mxns.join(' ')}\"" } %>
   <%= local_mixins.join(',') %>
 ]
 <% end %>
