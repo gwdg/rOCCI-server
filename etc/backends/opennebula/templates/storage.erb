@@ -19,7 +19,7 @@ PATH = "<%= @storage.attributes.org!.opennebula!.storage!.path %>"
 <% else %>
 TYPE = "DATABLOCK"
 FSTYPE = "<%= @storage.attributes.org!.opennebula!.storage!.fstype || "ext3" %>"
-SIZE = "<%= @storage.size ? @storage.size.to_i : 10240 %>"
+SIZE = "<%= @storage.size ? (@storage.size.to_f * 1024).to_i : 10240 %>"
 DISK_TYPE = "BLOCK"
 <% end %>
 
