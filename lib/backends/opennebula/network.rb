@@ -186,8 +186,7 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def network_trigger_action_on_all(action_instance, mixins = nil)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        raise Backends::Errors::MethodNotImplementedError, "Actions on networks are not supported!"
       end
 
       # Triggers an action on an existing network instance, the network instance in question
@@ -205,8 +204,7 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def network_trigger_action(network_id, action_instance)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        raise Backends::Errors::MethodNotImplementedError, "Actions on a network are not supported!"
       end
 
       private

@@ -271,6 +271,38 @@ module Backends
         raise Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
 
+      # Gets a network from an existing compute instance, the compute instance in question
+      # must be identifiable using the networkinterface ID passed as an argument.
+      # If the requested link instance cannot be found, an error describing the
+      # problem must be raised, @see Backends::Errors.
+      #
+      # @example
+      #    compute_get_network("65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf")
+      #        #=> #<Occi::Infrastructure::Networkinterface>
+      #
+      # @param networkinterface_id [String] network interface identifier
+      # @return [Occi::Infrastructure::Networkinterface] instance of the found networkinterface
+      def compute_get_network(networkinterface_id)
+        # TODO: impl
+        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+      end
+
+      # Gets a storage from an existing compute instance, the compute instance in question
+      # must be identifiable using the storagelink ID passed as an argument.
+      # If the requested link instance cannot be detached, an error describing the
+      # problem must be raised, @see Backends::Errors.
+      #
+      # @example
+      #    compute_get_storage("65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf")
+      #        #=> #<Occi::Infrastructure::Storagelink>
+      #
+      # @param storagelink_id [String] storage link identifier
+      # @return [Occi::Infrastructure::Storagelink] instance of the found storagelink
+      def compute_get_storage(storagelink_id)
+        # TODO: impl
+        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+      end
+
       # Triggers an action on all existing compute instance, instances must be filtered
       # by the specified filter, filter (if set) must contain an Occi::Core::Mixins instance,
       # action is identified by the action.term attribute of the action instance passed as an argument.
