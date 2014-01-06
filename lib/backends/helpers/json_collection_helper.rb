@@ -8,7 +8,7 @@ module Backends
 
         # Load all JSON files in the given directory, these contain
         # JSON rendering of OCCI kind/mixin/action definitions
-        @logger.debug "[#{self}] Getting fixtures from #{path}"
+        @logger.debug "[#{self.class}] Getting fixtures from #{path}"
         parsed = JSON.parse(File.read(path))
         collection.merge! Occi::Collection.new(parsed)
 

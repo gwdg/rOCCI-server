@@ -135,7 +135,8 @@ module BackendApi
     # @return [String] final identifier of the new network interface
     def compute_attach_network(networkinterface)
       raise Errors::ArgumentError, '\'networkinterface\' is a mandatory argument' if networkinterface.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a networkinterface instance!' unless networkinterface.kind_of? Occi::Infrastructure::Networkinterface
+      raise Errors::ArgumentTypeMismatchError, 'Action requires a link instance!' unless networkinterface.kind_of? Occi::Core::Link
+      raise Errors::ArgumentTypeMismatchError, 'Action requires a networkinterface instance!' unless networkinterface.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
       @backend_instance.compute_attach_network(deep_clone(networkinterface))
     end
 
@@ -152,7 +153,8 @@ module BackendApi
     # @return [String] final identifier of the new storage link
     def compute_attach_storage(storagelink)
       raise Errors::ArgumentError, '\'storagelink\' is a mandatory argument' if storagelink.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a storagelink instance!' unless storagelink.kind_of? Occi::Infrastructure::Storagelink
+      raise Errors::ArgumentTypeMismatchError, 'Action requires a link instance!' unless storagelink.kind_of? Occi::Core::Link
+      raise Errors::ArgumentTypeMismatchError, 'Action requires a storagelink instance!' unless storagelink.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink'
       @backend_instance.compute_attach_storage(deep_clone(storagelink))
     end
 
