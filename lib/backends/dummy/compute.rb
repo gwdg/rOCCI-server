@@ -203,7 +203,7 @@ module Backends
         # decided internally based on attributes set in the given
         # Occi::Infrastructure::Compute instance.
         ###
-        raise Backends::Errors::IdentifierNotValidError, "Instance with ID #{compute.id} does not exist!" unless compute_list_ids.include?(compute.id)
+        raise Backends::Errors::ResourceNotFoundError, "Instance with ID #{compute.id} does not exist!" unless compute_list_ids.include?(compute.id)
 
         @compute << compute
         compute_get(compute.id) == compute
@@ -221,8 +221,37 @@ module Backends
       # @param networkinterface [Occi::Infrastructure::Networkinterface] NI instance containing necessary attributes
       # @return [String] final identifier of the new network interface
       def compute_attach_network(networkinterface)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        ###
+        # To attach a networkinterface, you should read attributes from
+        # the given link instance. Two important attributes are:
+        #
+        #    'occi.core.source' -- location of a compute instance
+        #    'occi.core.target' -- location of a network instance
+        #
+        # The last part of both URIs (after the last slash) corresponds
+        # with compute and network instance IDs. You can use `compute_get(id)`
+        # or `network_get(id)` to retrieve them.
+        # How you attach the given network to the given compute instance is
+        # completely up to you, but you have to:
+        #
+        #    1.) return a unique identifier which can be used to reference
+        #        this particular link in the future (i.e. it must not change!)
+        #    2.) include information about this link in all subsequent
+        #        instances of Occi::Infrastructure::Compute with a location matching
+        #        'occi.core.source'
+        #
+        # In case a link cannot be created for any reason, you must raise
+        # an error, @see Backends::Errors.
+        ###
+        compute = compute_get(networkinterface.attributes['occi.core.source'].split('/').last)
+        network = network_get(networkinterface.attributes['occi.core.target'].split('/').last)
+
+        raise Backends::Errors::ResourceNotFoundError, "Given compute instance does not exist!" unless compute
+        raise Backends::Errors::ResourceNotFoundError, "Given network instance does not exist!" unless network
+
+        compute.links << networkinterface
+
+        networkinterface.id
       end
 
       # Attaches a storage to an existing compute instance, compute instance and storage
@@ -237,8 +266,37 @@ module Backends
       # @param storagelink [Occi::Infrastructure::Storagelink] SL instance containing necessary attributes
       # @return [String] final identifier of the new storage link
       def compute_attach_storage(storagelink)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        ###
+        # To attach a storagelink, you should read attributes from
+        # the given link instance. Two important attributes are:
+        #
+        #    'occi.core.source' -- location of a compute instance
+        #    'occi.core.target' -- location of a network instance
+        #
+        # The last part of both URIs (after the last slash) corresponds
+        # with compute and storage instance IDs. You can use `compute_get(id)`
+        # or `storage_get(id)` to retrieve them.
+        # How you attach the given storage to the given compute instance is
+        # completely up to you, but you have to:
+        #
+        #    1.) return a unique identifier which can be used to reference
+        #        this particular link in the future (i.e. it must not change!)
+        #    2.) include information about this link in all subsequent
+        #        instances of Occi::Infrastructure::Compute with a location matching
+        #        'occi.core.source'
+        #
+        # In case a link cannot be created for any reason, you must raise
+        # an error, @see Backends::Errors.
+        ###
+        compute = compute_get(storagelink.attributes['occi.core.source'].split('/').last)
+        storage = storage_get(storagelink.attributes['occi.core.target'].split('/').last)
+
+        raise Backends::Errors::ResourceNotFoundError, "Given compute instance does not exist!" unless compute
+        raise Backends::Errors::ResourceNotFoundError, "Given storage instance does not exist!" unless storage
+
+        compute.links << storagelink
+
+        storagelink.id
       end
 
       # Dettaches a network from an existing compute instance, the compute instance in question
@@ -252,8 +310,30 @@ module Backends
       # @param networkinterface_id [String] network interface identifier
       # @return [true, false] result of the operation
       def compute_detach_network(networkinterface_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        ###
+        # Every networkinterface link is uniquely identified by its ID. It must
+        # be possible to look up a link using only this ID.
+        # To detach a link, identify the compute instance in question, identify
+        # the correct interface, disconnect the interface and remove all traces
+        # of the link. It must not appear in any subsequent instances of
+        # Occi::Infrastructure::Compute.
+        # In case a link cannot be detached for any reason, you must raise
+        # an error, @see Backends::Errors.
+        ###
+        compute_list.to_a.each do |compute|
+          next if compute.links.blank?
+          old_size = compute.links.size
+
+          compute.links.delete_if { |l|
+            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#networkinterface"
+                 &&
+            l.id == networkinterface_id
+          }
+
+          break unless old_size == compute.links.size
+        end
+
+        true
       end
 
       # Dettaches a storage from an existing compute instance, the compute instance in question
@@ -267,8 +347,30 @@ module Backends
       # @param storagelink_id [String] storage link identifier
       # @return [true, false] result of the operation
       def compute_detach_storage(storagelink_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        ###
+        # Every storagelink link is uniquely identified by its ID. It must
+        # be possible to look up a link using only this ID.
+        # To detach a link, identify the compute instance in question, identify
+        # the correct device, disconnect the device and remove all traces
+        # of the link. It must not appear in any subsequent instances of
+        # Occi::Infrastructure::Compute.
+        # In case a link cannot be detached for any reason, you must raise
+        # an error, @see Backends::Errors.
+        ###
+        compute_list.to_a.each do |compute|
+          next if compute.links.blank?
+          old_size = compute.links.size
+
+          compute.links.delete_if { |l|
+            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#storagelink"
+                 &&
+            l.id == storagelink_id
+          }
+
+          break unless old_size == compute.links.size
+        end
+
+        true
       end
 
       # Gets a network from an existing compute instance, the compute instance in question
@@ -283,8 +385,27 @@ module Backends
       # @param networkinterface_id [String] network interface identifier
       # @return [Occi::Infrastructure::Networkinterface] instance of the found networkinterface
       def compute_get_network(networkinterface_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        ###
+        # See descriptions in compute_{attach,detach}_network for details. This
+        # method is non-destructive, it simply retrieves information about a link
+        # identified by 'networkinterface_id'.
+        ###
+        found = nil
+        compute_list.to_a.each do |compute|
+          next if compute.links.blank?
+
+          found = compute.links.to_a.select { |l|
+            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#networkinterface"
+                 &&
+            l.id == networkinterface_id
+          }
+
+          break unless found.blank?
+        end
+
+        raise Backends::Errors::ResourceNotFoundError, "Given link instance does not exist!" if found.blank?
+
+        found.first
       end
 
       # Gets a storage from an existing compute instance, the compute instance in question
@@ -299,8 +420,27 @@ module Backends
       # @param storagelink_id [String] storage link identifier
       # @return [Occi::Infrastructure::Storagelink] instance of the found storagelink
       def compute_get_storage(storagelink_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        ###
+        # See descriptions in compute_{attach,detach}_storage for details. This
+        # method is non-destructive, it simply retrieves information about a link
+        # identified by 'storagelink_id'.
+        ###
+        found = nil
+        compute_list.to_a.each do |compute|
+          next if compute.links.blank?
+
+          found = compute.links.to_a.select { |l|
+            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#storagelink"
+                 &&
+            l.id == storagelink_id
+          }
+
+          break unless found.blank?
+        end
+
+        raise Backends::Errors::ResourceNotFoundError, "Given link instance does not exist!" if found.blank?
+
+        found.first
       end
 
       # Triggers an action on all existing compute instance, instances must be filtered

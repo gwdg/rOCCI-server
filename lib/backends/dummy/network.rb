@@ -127,7 +127,7 @@ module Backends
       # @param network [Occi::Infrastructure::Network] instance containing updated information
       # @return [true, false] result of the operation
       def network_update(network)
-        raise Backends::Errors::IdentifierNotValidError, "Instance with ID #{network.id} does not exist!" unless network_list_ids.include?(network.id)
+        raise Backends::Errors::ResourceNotFoundError, "Instance with ID #{network.id} does not exist!" unless network_list_ids.include?(network.id)
 
         @network << network
         network_get(network.id) == network

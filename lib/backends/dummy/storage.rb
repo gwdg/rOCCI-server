@@ -127,7 +127,7 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] instance containing updated information
       # @return [true, false] result of the operation
       def storage_update(storage)
-        raise Backends::Errors::IdentifierNotValidError, "Instance with ID #{storage.id} does not exist!" unless storage_list_ids.include?(storage.id)
+        raise Backends::Errors::ResourceNotFoundError, "Instance with ID #{storage.id} does not exist!" unless storage_list_ids.include?(storage.id)
 
         @storage << storage
         storage_get(storage.id) == storage
