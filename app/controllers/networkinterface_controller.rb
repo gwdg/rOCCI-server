@@ -13,7 +13,7 @@ class NetworkinterfaceController < ApplicationController
 
   # POST /link/networkinterface/
   def create
-    networkinterface = request_occi_collection.links.first
+    networkinterface = request_occi_collection(Occi::Core::Link).links.first
     networkinterface_location = backend_instance.compute_attach_network(networkinterface)
 
     respond_with("/link/networkinterface/#{networkinterface_location}", status: 201, flag: :link_only)

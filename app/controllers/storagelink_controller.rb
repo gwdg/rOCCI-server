@@ -13,7 +13,7 @@ class StoragelinkController < ApplicationController
 
   # POST /link/storagelink/
   def create
-    storagelink = request_occi_collection.links.first
+    storagelink = request_occi_collection(Occi::Core::Link).links.first
     storagelink_location = backend_instance.compute_attach_storage(storagelink)
 
     respond_with("/link/storagelink/#{storagelink_location}", status: 201, flag: :link_only)

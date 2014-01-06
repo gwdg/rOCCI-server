@@ -70,9 +70,10 @@ class ApplicationController < ActionController::API
   # Provides access to a request collection prepared
   # by the RequestParser.
   #
+  # @param expected_entity_type [Object] parameter passed as 'entity_type' to Occi::Parser.parse
   # @return [Occi::Collection] collection containig parsed OCCI request
-  def request_occi_collection
-    parse_request unless @request_collection
+  def request_occi_collection(expected_entity_type = nil)
+    parse_request(expected_entity_type) unless @request_collection
     @request_collection || Occi::Collection.new
   end
 
@@ -84,8 +85,8 @@ class ApplicationController < ActionController::API
   end
 
   # Provides access to a lazy parser object
-  def parse_request
-    @request_collection = env["rocci_server.request.parser"].parse_occi_messages
+  def parse_request(expected_entity_type = nil)
+    @request_collection = env["rocci_server.request.parser"].parse_occi_messages(expected_entity_type)
 
     @request_collection.model = OcciModel.get(backend_instance)
     @request_collection.check
