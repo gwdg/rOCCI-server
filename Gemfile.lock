@@ -1,9 +1,9 @@
 GIT
   remote: git://github.com/gwdg/rOCCI-core.git
-  revision: 76ef814e819d2755377e153ec854e588e182d4b0
+  revision: ae4f4e2f39ef42cde65630fa02ca8b09c445a227
   branch: master
   specs:
-    occi-core (4.2.3)
+    occi-core (4.2.4)
       activesupport (~> 4.0.0)
       hashie
       json
@@ -24,10 +24,10 @@ GIT
 
 GIT
   remote: git://github.com/shadabahmed/logstasher.git
-  revision: a898a5d08ed218e721f6ccaacc6778874b146625
+  revision: a12dfc4b6d013504bc59ef8a2ff8e5900926dea0
   branch: master
   specs:
-    logstasher (0.4.0)
+    logstasher (0.4.1)
       logstash-event (~> 1.1.0)
 
 GEM
@@ -61,7 +61,7 @@ GEM
     atomic (1.1.14)
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
-    bond (0.4.3)
+    bond (0.5.0)
     bson (1.9.2)
     bson_ext (1.9.2)
       bson (~> 1.9.2)
@@ -80,12 +80,12 @@ GEM
     daemon_controller (1.1.8)
     dalli (2.6.4)
     debug_inspector (0.0.2)
-    debugger (1.6.4)
+    debugger (1.6.5)
       columnize (>= 0.3.1)
       debugger-linecache (~> 1.2.0)
-      debugger-ruby_core_source (~> 1.3.0)
+      debugger-ruby_core_source (~> 1.3.1)
     debugger-linecache (1.2.0)
-    debugger-ruby_core_source (1.3.0)
+    debugger-ruby_core_source (1.3.1)
     diff-lcs (1.2.5)
     docile (1.1.1)
     erubis (2.7.0)
@@ -150,7 +150,7 @@ GEM
     opennebula (4.4.0)
       json
       nokogiri
-    passenger (4.0.29)
+    passenger (4.0.33)
       daemon_controller (>= 1.1.0)
       rack
       rake (>= 0.8.1)
@@ -190,7 +190,7 @@ GEM
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
     rake (10.1.1)
-    rb-fsevent (0.9.3)
+    rb-fsevent (0.9.4)
     rb-inotify (0.9.3)
       ffi (>= 0.5.0)
     rdoc (3.12.2)
