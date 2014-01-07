@@ -2,6 +2,9 @@ module Backends
   module Opennebula
     module Compute
 
+      COMPUTE_NINTF_REGEXP = /compute_(?<compute_id>\d+)_nic_(?<compute_nic_id>\d+)/
+      COMPUTE_SLINK_REGEXP = /compute_(?<compute_id>\d+)_disk_(?<compute_disk_id>\d+)/
+
       # Gets all compute instance IDs, no details, no duplicates. Returned
       # identifiers must corespond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Compute instances.
@@ -191,8 +194,24 @@ module Backends
       # @param networkinterface [Occi::Infrastructure::Networkinterface] NI instance containing necessary attributes
       # @return [String] final identifier of the new network interface
       def compute_attach_network(networkinterface)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        compute_id = networkinterface.attributes['occi.core.source'].split('/').last
+
+        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute_id), @client)
+        rc = virtual_machine.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        raise Backends::Errors::ResourceStateError, "Given compute instance is not running!" unless virtual_machine.lcm_state_str == 'RUNNING'
+
+        template_location = File.join(@options.templates_dir, "compute_nic.erb")
+        template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :networkinterface => networkinterface })
+
+        rc = virtual_machine.nic_attach(template)
+        check_retval(rc, Backends::Errors::ResourceCreationError)
+
+        rc = virtual_machine.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        "compute_#{virtual_machine['ID']}_nic_#{virtual_machine['TEMPLATE/NIC[last()]/NIC_ID']}"
       end
 
       # Attaches a storage to an existing compute instance, compute instance and storage
@@ -207,8 +226,24 @@ module Backends
       # @param storagelink [Occi::Infrastructure::Storagelink] SL instance containing necessary attributes
       # @return [String] final identifier of the new storage link
       def compute_attach_storage(storagelink)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        compute_id = storagelink.attributes['occi.core.source'].split('/').last
+
+        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute_id), @client)
+        rc = virtual_machine.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        raise Backends::Errors::ResourceStateError, "Given compute instance is not running!" unless virtual_machine.lcm_state_str == 'RUNNING'
+
+        template_location = File.join(@options.templates_dir, "compute_disk.erb")
+        template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :storagelink => storagelink })
+
+        rc = virtual_machine.nic_attach(template)
+        check_retval(rc, Backends::Errors::ResourceCreationError)
+
+        rc = virtual_machine.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        "compute_#{virtual_machine['ID']}_disk_#{virtual_machine['TEMPLATE/DISK[last()]/DISK_ID']}"
       end
 
       # Dettaches a network from an existing compute instance, the compute instance in question
@@ -222,8 +257,17 @@ module Backends
       # @param networkinterface_id [String] network interface identifier
       # @return [true, false] result of the operation
       def compute_detach_network(networkinterface_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        matched = COMPUTE_NINTF_REGEXP.match(networkinterface_id)
+        raise Backends::Errors::IdentifierNotValidError, "ID of the given networkinterface is not valid!" unless matched
+
+        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(matched[:compute_id]), @client)
+        rc = virtual_machine.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        rc = virtual_machine.nic_detach(matched[:compute_nic_id])
+        check_retval(rc, Backends::Errors::ResourceActionError)
+
+        true
       end
 
       # Dettaches a storage from an existing compute instance, the compute instance in question
@@ -237,8 +281,17 @@ module Backends
       # @param storagelink_id [String] storage link identifier
       # @return [true, false] result of the operation
       def compute_detach_storage(storagelink_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        matched = COMPUTE_SLINK_REGEXP.match(storagelink_id)
+        raise Backends::Errors::IdentifierNotValidError, "ID of the given storagelink is not valid!" unless matched
+
+        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(matched[:compute_id]), @client)
+        rc = virtual_machine.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        rc = virtual_machine.disk_detach(matched[:compute_disk_id])
+        check_retval(rc, Backends::Errors::ResourceActionError)
+
+        true
       end
 
       # Gets a network from an existing compute instance, the compute instance in question
@@ -253,8 +306,13 @@ module Backends
       # @param networkinterface_id [String] network interface identifier
       # @return [Occi::Infrastructure::Networkinterface] instance of the found networkinterface
       def compute_get_network(networkinterface_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        matched = COMPUTE_NINTF_REGEXP.match(networkinterface_id)
+        raise Backends::Errors::IdentifierNotValidError, "ID of the given networkinterface is not valid!" unless matched
+
+        intf = compute_get(matched[:compute_id]).links.to_a.select { |l| l.id == networkinterface_id }
+        raise Backends::Errors::ResourceNotFoundError, "Networkinterface with the given ID does not exist!" if inft.blank?
+
+        inft.first
       end
 
       # Gets a storage from an existing compute instance, the compute instance in question
@@ -269,8 +327,13 @@ module Backends
       # @param storagelink_id [String] storage link identifier
       # @return [Occi::Infrastructure::Storagelink] instance of the found storagelink
       def compute_get_storage(storagelink_id)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        matched = COMPUTE_SLINK_REGEXP.match(storagelink_id)
+        raise Backends::Errors::IdentifierNotValidError, "ID of the given storagelink is not valid!" unless matched
+
+        link = compute_get(matched[:compute_id]).links.to_a.select { |l| l.id == storagelink_id }
+        raise Backends::Errors::ResourceNotFoundError, "Storagelink with the given ID does not exist!" if link.blank?
+
+        link.first
       end
 
       # Triggers an action on all existing compute instance, instances must be filtered
