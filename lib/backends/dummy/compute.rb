@@ -325,8 +325,8 @@ module Backends
           old_size = compute.links.size
 
           compute.links.delete_if { |l|
-            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#networkinterface"
-                 &&
+            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#networkinterface" \
+                 && \
             l.id == networkinterface_id
           }
 
@@ -362,8 +362,8 @@ module Backends
           old_size = compute.links.size
 
           compute.links.delete_if { |l|
-            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#storagelink"
-                 &&
+            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#storagelink" \
+                 && \
             l.id == storagelink_id
           }
 
@@ -395,8 +395,8 @@ module Backends
           next if compute.links.blank?
 
           found = compute.links.to_a.select { |l|
-            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#networkinterface"
-                 &&
+            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#networkinterface" \
+                 && \
             l.id == networkinterface_id
           }
 
@@ -430,8 +430,8 @@ module Backends
           next if compute.links.blank?
 
           found = compute.links.to_a.select { |l|
-            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#storagelink"
-                 &&
+            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#storagelink" \
+                 && \
             l.id == storagelink_id
           }
 
