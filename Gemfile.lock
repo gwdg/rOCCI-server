@@ -150,7 +150,7 @@ GEM
     opennebula (4.4.0)
       json
       nokogiri
-    passenger (4.0.33)
+    passenger (4.0.29)
       daemon_controller (>= 1.1.0)
       rack
       rake (>= 0.8.1)
