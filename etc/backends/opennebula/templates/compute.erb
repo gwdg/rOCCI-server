@@ -128,7 +128,7 @@ NIC = [
 <% unless ntwrkintf_mxns.empty? %>
 OCCI_NETWORKINTERFACE_MIXINS = [
   <% local_mixins = [] %>
-  <% ntwrkintf_mxns.each_pair { |lnk, mxns| local_mixins << " NIC_#{lnk} = \"#{mxns.join(' ')}\"" } %>
+  <% ntwrkintf_mxns.each_pair { |lnk, mxns| local_mixins << "NIC_#{lnk} = \"#{mxns.join(' ')}\"" } %>
   <%= local_mixins.join(',') %>
 ]
 <% end %>

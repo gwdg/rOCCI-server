@@ -264,7 +264,9 @@ module Backends
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-        rc = virtual_machine.nic_detach(matched[:compute_nic_id])
+        raise Backends::Errors::ResourceStateError, "Given compute instance is not running!" unless virtual_machine.lcm_state_str == 'RUNNING'
+
+        rc = virtual_machine.nic_detach(matched[:compute_nic_id].to_i)
         check_retval(rc, Backends::Errors::ResourceActionError)
 
         true
@@ -288,7 +290,9 @@ module Backends
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-        rc = virtual_machine.disk_detach(matched[:compute_disk_id])
+        raise Backends::Errors::ResourceStateError, "Given compute instance is not running!" unless virtual_machine.lcm_state_str == 'RUNNING'
+
+        rc = virtual_machine.disk_detach(matched[:compute_disk_id].to_i)
         check_retval(rc, Backends::Errors::ResourceActionError)
 
         true
@@ -310,9 +314,9 @@ module Backends
         raise Backends::Errors::IdentifierNotValidError, "ID of the given networkinterface is not valid!" unless matched
 
         intf = compute_get(matched[:compute_id]).links.to_a.select { |l| l.id == networkinterface_id }
-        raise Backends::Errors::ResourceNotFoundError, "Networkinterface with the given ID does not exist!" if inft.blank?
+        raise Backends::Errors::ResourceNotFoundError, "Networkinterface with the given ID does not exist!" if intf.blank?
 
-        inft.first
+        intf.first
       end
 
       # Gets a storage from an existing compute instance, the compute instance in question
