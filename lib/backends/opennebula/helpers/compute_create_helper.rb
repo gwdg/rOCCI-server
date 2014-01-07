@@ -41,8 +41,9 @@ module Backends
           end
 
           if compute.speed
+            calc_speed = compute.speed.to_f * (template['TEMPLATE/VCPU'] || 1).to_i
             template.delete_element('TEMPLATE/CPU')
-            template.add_element('TEMPLATE', { "CPU" => compute.speed.to_f })
+            template.add_element('TEMPLATE', { "CPU" => calc_speed })
           end
 
           compute_create_check_context(compute)

@@ -15,8 +15,8 @@ OCCI_COMPUTE_MIXINS = "<%= @compute.mixins.to_a.collect { |m| m.type_identifier 
 NAME = "<%= @compute.title %>"
 DESCRIPTION = "<%= @compute.summary || "VM instantiated using rOCCI-server" %>"
 MEMORY = "<%= @compute.memory ? (@compute.memory.to_f * 1024).to_i : 256 %>"
-VCPU = "<%= @compute.cores || 1 %>"
-CPU = "<%= @compute.speed || 1 %>"
+VCPU = "<%= (@compute.cores || 1).to_i %>"
+CPU = "<%= (@compute.speed || 1).to_f * (@compute.cores || 1).to_i %>"
 
 <%# Hypervisor specific settings %>
 RAW = [TYPE = "<%= hypervisor %>"]

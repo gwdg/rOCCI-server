@@ -178,8 +178,23 @@ module Backends
       # @param compute [Occi::Infrastructure::Compute] instance containing updated information
       # @return [true, false] result of the operation
       def compute_update(compute)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute.id), @client)
+        rc = virtual_machine.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        raise Backends::Errors::ResourceStateError, "Given compute instance is not powered off!" unless virtual_machine.state_str == 'POWEROFF'
+
+        resize_template = ""
+        resize_template << "VCPU = #{compute.cores.to_i}" if compute.cores
+        resize_template << "CPU = #{compute.speed.to_f * (compute.cores || virtual_machine['TEMPLATE/VCPU']).to_i}" if compute.speed
+        resize_template << "MEMORY = #{(compute.memory.to_f * 1024).to_i}" if compute.memory
+
+        return false if resize_template.blank?
+
+        rc = virtual_machine.resize(resize_template, true)
+        check_retval(rc, Backends::Errors::ResourceActionError)
+
+        true
       end
 
       # Attaches a network to an existing compute instance, compute instance and network
@@ -206,7 +221,7 @@ module Backends
         template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :networkinterface => networkinterface })
 
         rc = virtual_machine.nic_attach(template)
-        check_retval(rc, Backends::Errors::ResourceCreationError)
+        check_retval(rc, Backends::Errors::ResourceActionError)
 
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
@@ -238,7 +253,7 @@ module Backends
         template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :storagelink => storagelink })
 
         rc = virtual_machine.nic_attach(template)
-        check_retval(rc, Backends::Errors::ResourceCreationError)
+        check_retval(rc, Backends::Errors::ResourceActionError)
 
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
