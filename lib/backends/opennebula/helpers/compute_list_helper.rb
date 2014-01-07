@@ -22,11 +22,12 @@ module Backends
           end
 
           compute.id    = backend_compute['ID']
-          compute.title = backend_compute['NAME'] if backend_compute['NAME']
+          compute.title = backend_compute['NAME']
           compute.summary = backend_compute['USER_TEMPLATE/DESCRIPTION'] if backend_compute['USER_TEMPLATE/DESCRIPTION']
 
-          compute.cores = (backend_compute['TEMPLATE/VCPU'] || "1").to_i
-          compute.memory = backend_compute['TEMPLATE/MEMORY'].to_f/1024 if backend_compute['TEMPLATE/MEMORY']
+          compute.cores = (backend_compute['TEMPLATE/VCPU'] || 1).to_i
+          compute.memory = (backend_compute['TEMPLATE/MEMORY'].to_f / 1024)
+          compute.speed = ((backend_compute['TEMPLATE/CPU'] || 1).to_f / compute.cores)
 
           compute.architecture = "x64" if backend_compute['TEMPLATE/OS/ARCH'] == "x86_64"
           compute.architecture = "x86" if backend_compute['TEMPLATE/OS/ARCH'] == "i686"
@@ -96,7 +97,7 @@ module Backends
 
             link = Occi::Infrastructure::Storagelink.new
             link.id = id
-            link.state = "active"
+            link.state = (compute.state == "active") ? "active" : "inactive"
 
             target = storage_get(disk['IMAGE_ID']) if disk['IMAGE_ID']
             unless target
@@ -137,7 +138,7 @@ module Backends
 
             link = Occi::Infrastructure::Networkinterface.new
             link.id = id
-            link.state = "active"
+            link.state = (compute.state == "active") ? "active" : "inactive"
 
             target = network_get(nic['NETWORK_ID']) if nic['NETWORK_ID']
             unless target
