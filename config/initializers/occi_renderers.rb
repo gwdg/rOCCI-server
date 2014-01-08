@@ -29,7 +29,40 @@ ActionController::Renderers.add :occi_json do |obj, options|
   if options[:flag] == :link_only
     "{ 'Location': '#{obj}' }"
   else
-    obj.respond_to?(:to_json) ? obj.to_json : "{ 'message': 'Object cannot be rendered as JSON!' }"
+    if obj.respond_to?(:to_json)
+      obj = case obj
+            when Occi::Core::Resources
+              c = Occi::Collection.new
+              c.resources = obj
+              c
+            when Occi::Core::Links
+              c = Occi::Collection.new
+              c.links = obj
+              c
+            when Occi::Core::Mixins
+              c = Occi::Collection.new
+              c.mixins = obj
+              c
+            when Occi::Core::Actions
+              c = Occi::Collection.new
+              c.actions = obj
+              c
+            when Occi::Core::Kinds
+              c = Occi::Collection.new
+              c.kinds = obj
+              c
+            else
+              unless obj.kind_of? Occi::Collection
+                Occi::Collection.new << obj
+              else
+                obj
+              end
+            end
+
+      obj.to_json
+    else
+      "{ 'message': 'Object cannot be rendered as JSON!' }"
+    end
   end
 end
 
