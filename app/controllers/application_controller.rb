@@ -99,8 +99,12 @@ class ApplicationController < ActionController::API
   def global_request_logging
     http_request_header_keys = request.headers.env.keys.select { |header_name| header_name.match("^HTTP.*") }
     http_request_headers = request.headers.select { |header_name, header_value| http_request_header_keys.index(header_name) }
+
     logger.debug "[ApplicationController] Processing with params #{params.inspect}"
-    logger.debug "[ApplicationController] Processing with body #{request.body.read.inspect}" if request.body.respond_to?(:read)
+    if request.body.respond_to?(:read) && request.body.respond_to?(:rewind)
+      request.body.rewind
+      logger.debug "[ApplicationController] Processing with body #{request.body.read.inspect}"
+    end
 
     # Run Warden if not already done, to avoid incomplete log entries after authN fail
     authenticate!
