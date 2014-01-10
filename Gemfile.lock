@@ -1,9 +1,9 @@
 GIT
   remote: git://github.com/gwdg/rOCCI-core.git
-  revision: ae4f4e2f39ef42cde65630fa02ca8b09c445a227
+  revision: 49d99d0dd300f6e75128287987a085b377c48357
   branch: master
   specs:
-    occi-core (4.2.4)
+    occi-core (4.2.5)
       activesupport (~> 4.0.0)
       hashie
       json
@@ -13,7 +13,7 @@ GIT
 
 GIT
   remote: git://github.com/mongomapper/mongomapper.git
-  revision: 651d0d805fb4131e343db282a551cf54036a45f7
+  revision: d3cc527b215d2573369eed3c9f963384305d626d
   branch: master
   specs:
     mongo_mapper (0.13.0.beta2)
@@ -78,7 +78,7 @@ GEM
     coderay (1.1.0)
     columnize (0.3.6)
     daemon_controller (1.1.8)
-    dalli (2.6.4)
+    dalli (2.7.0)
     debug_inspector (0.0.2)
     debugger (1.6.5)
       columnize (>= 0.3.1)
@@ -137,7 +137,7 @@ GEM
     minitest (4.7.5)
     mongo (1.9.2)
       bson (~> 1.9.2)
-    multi_json (1.8.2)
+    multi_json (1.8.3)
     net-scp (1.1.2)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)
