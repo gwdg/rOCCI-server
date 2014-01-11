@@ -6,7 +6,8 @@ class ComputeController < ApplicationController
       @computes = backend_instance.compute_list_ids
       @computes.map! { |c| "/compute/#{c}" }
     else
-      @computes = backend_instance.compute_list
+      @computes = Occi::Collection.new
+      @computes.resources = backend_instance.compute_list
     end
 
     respond_with(@computes)
@@ -14,9 +15,10 @@ class ComputeController < ApplicationController
 
   # GET /compute/:id
   def show
-    @compute = backend_instance.compute_get(params[:id])
+    @compute = Occi::Collection.new
+    @compute << backend_instance.compute_get(params[:id])
 
-    if @compute
+    unless @compute.empty?
       respond_with(@compute)
     else
       respond_with(Occi::Collection.new, status: 404)
@@ -43,9 +45,21 @@ class ComputeController < ApplicationController
   # PUT /compute/:id
   def update
     compute = request_occi_collection.resources.first
-    compute_upd = backend_instance.compute_update(compute)
+    compute.id = params[:id] if compute
+    result = backend_instance.compute_update(compute)
 
-    respond_with(Occi::Collection.new)
+    if result
+      compute = Occi::Collection.new
+      compute << backend_instance.compute_get(params[:id])
+
+      unless compute.empty?
+        respond_with(compute)
+      else
+        respond_with(Occi::Collection.new, status: 404)
+      end
+    else
+      respond_with(Occi::Collection.new, status: 304)
+    end
   end
 
   # DELETE /compute/

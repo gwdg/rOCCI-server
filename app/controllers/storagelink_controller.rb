@@ -2,9 +2,10 @@ class StoragelinkController < ApplicationController
 
   # GET /link/storagelink/:id
   def show
-    @storagelink = backend_instance.compute_get_storage(params[:id])
+    @storagelink = Occi::Collection.new
+    @storagelink << backend_instance.compute_get_storage(params[:id])
 
-    if @storagelink
+    unless @storagelink.empty?
       respond_with(@storagelink)
     else
       respond_with(Occi::Collection.new, status: 404)

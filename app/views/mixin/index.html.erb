@@ -1,7 +1,7 @@
 <%= render template: "shared/header" %>
 
 <h1>Resources w/ mixin(s)</h1>
-<% @local_resources ||= @resources %>
+<% @local_resources ||= @resources.resources %>
 <%= render template: "shared/resources_table" %>
 
 <br/>

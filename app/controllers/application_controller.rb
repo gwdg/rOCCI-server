@@ -93,6 +93,11 @@ class ApplicationController < ActionController::API
     @request_collection.check
   end
 
+  # Provides access to user-configured server URL
+  def server_url
+    ""
+  end
+
   private
 
   # Action wrapper providing logging capabilities, mostly for debugging purposes.

@@ -6,7 +6,8 @@ class StorageController < ApplicationController
       @storages = backend_instance.storage_list_ids
       @storages.map! { |c| "/storage/#{c}" }
     else
-      @storages = backend_instance.storage_list
+      @storages = Occi::Collection.new
+      @storages.resources = backend_instance.storage_list
     end
 
     respond_with(@storages)
@@ -14,9 +15,10 @@ class StorageController < ApplicationController
 
   # GET /storage/:id
   def show
-    @storage = backend_instance.storage_get(params[:id])
+    @storage = Occi::Collection.new
+    @storage << backend_instance.storage_get(params[:id])
 
-    if @storage
+    unless @storage.empty?
       respond_with(@storage)
     else
       respond_with(Occi::Collection.new, status: 404)
@@ -43,9 +45,21 @@ class StorageController < ApplicationController
   # PUT /storage/:id
   def update
     storage = request_occi_collection.resources.first
-    storage_upd = backend_instance.storage_update(storage)
+    storage.id = params[:id] if storage
+    result = backend_instance.storage_update(storage)
 
-    respond_with(Occi::Collection.new)
+    if result
+      storage = Occi::Collection.new
+      storage << backend_instance.storage_get(params[:id])
+
+      unless storage.empty?
+        respond_with(storage)
+      else
+        respond_with(Occi::Collection.new, status: 404)
+      end
+    else
+      respond_with(Occi::Collection.new, status: 304)
+    end
   end
 
   # DELETE /storage/

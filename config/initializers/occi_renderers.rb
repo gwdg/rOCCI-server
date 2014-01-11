@@ -5,9 +5,15 @@ ActionController::Renderers.add :occi_header do |obj, options|
   if options[:flag] == :link_only
     self.headers['Location'] = obj
     "OK"
-  else
-    self.headers.merge!(obj.to_header) if obj.respond_to?(:to_header)
+  elsif obj.respond_to?(:to_header)
+    self.headers.merge!(obj.to_header)
     ""
+  elsif obj.kind_of?(Hash)
+    self.headers.merge!(obj)
+    ""
+  else
+    self.status = 500
+    "Object cannot be rendered into HTTP headers!"
   end
 end
 
@@ -18,7 +24,7 @@ ActionController::Renderers.add :text do |obj, options|
   if options[:flag] == :link_only
     "X-OCCI-Location: #{obj}"
   else
-    obj.respond_to?(:to_text) ? obj.to_text : obj
+    obj.respond_to?(:to_text) ? obj.to_text : obj.to_s
   end
 end
 
@@ -27,42 +33,13 @@ ActionController::Renderers.add :occi_json do |obj, options|
   self.content_type ||= Mime::OCCI_JSON
 
   if options[:flag] == :link_only
-    "{ 'Location': '#{obj}' }"
+    self.headers['Location'] = obj
+    "OK"
+  elsif obj.respond_to?(:to_json)
+    obj.to_json
   else
-    if obj.respond_to?(:to_json)
-      obj = case obj
-            when Occi::Core::Resources
-              c = Occi::Collection.new
-              c.resources = obj
-              c
-            when Occi::Core::Links
-              c = Occi::Collection.new
-              c.links = obj
-              c
-            when Occi::Core::Mixins
-              c = Occi::Collection.new
-              c.mixins = obj
-              c
-            when Occi::Core::Actions
-              c = Occi::Collection.new
-              c.actions = obj
-              c
-            when Occi::Core::Kinds
-              c = Occi::Collection.new
-              c.kinds = obj
-              c
-            else
-              unless obj.kind_of? Occi::Collection
-                Occi::Collection.new << obj
-              else
-                obj
-              end
-            end
-
-      obj.to_json
-    else
-      "{ 'message': 'Object cannot be rendered as JSON!' }"
-    end
+    self.status = 500
+    "{ 'message': 'Object cannot be rendered as JSON!' }"
   end
 end
 
@@ -71,9 +48,13 @@ ActionController::Renderers.add :occi_xml do |obj, options|
   self.content_type ||= Mime::OCCI_XML
 
   if options[:flag] == :link_only
-    "<location>#{obj}</location>"
+    self.headers['Location'] = obj
+    "OK"
+  elsif obj.respond_to?(:to_xml)
+    obj.to_xml
   else
-    obj.respond_to?(:to_xml) ? obj.to_xml : "<message>Object cannot be rendered as XML!</message>"
+    self.status = 500
+    "<message>Object cannot be rendered as XML!</message>"
   end
 end
 
@@ -85,12 +66,11 @@ ActionController::Renderers.add :uri_list do |obj, options|
   when obj.respond_to?(:location)
     obj.location
   when obj.respond_to?(:resources)
-    obj.resources.to_a.collect { |o| o.location }.to_a.join("\n")
-  when obj.kind_of?(Occi::Core::Resources)
-    obj.to_a.collect { |o| o.location }.to_a.join("\n")
-  when obj.kind_of?(Array)
+    obj.resources.to_a.collect { |o| o.location }.join("\n")
+  when obj.respond_to?(:join)
     obj.join("\n")
   else
-    ""
+    self.status = 500
+    "Object cannot be rendered as a list of URIs!"
   end
 end

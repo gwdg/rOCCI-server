@@ -1,7 +1,7 @@
 <%= render template: "shared/header" %>
 
 <h1>Compute</h1>
-<% @local_resources = @computes %>
+<% @local_resources = @computes.resources %>
 <%= render template: "shared/resources_table" %>
 
 <br/>

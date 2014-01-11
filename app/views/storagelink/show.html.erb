@@ -1,10 +1,10 @@
 <%= render template: "shared/header" %>
 
-<h1>Storagelink#<%= @storagelink.id %></h1>
-<% @local_resource = @storagelink %>
+<h1>Storagelink#<%= @storagelink.links.first.id %></h1>
+<% @local_resource = @storagelink.links.first %>
 <%= render template: "shared/resource_table" %>
 
 <br/>
-<a href="/storagelink/">&laquo; Back</a>
+<a href="<%= @storagelink.links.first.source %>">&laquo; Back</a>
 
 <%= render template: "shared/footer" %>

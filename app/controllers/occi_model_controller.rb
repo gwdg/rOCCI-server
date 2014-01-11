@@ -9,11 +9,11 @@ class OcciModelController < ApplicationController
       @resources.concat(backend_instance.network_list_ids.map { |n| "/network/#{n}" })
       @resources.concat(backend_instance.storage_list_ids.map { |s| "/storage/#{s}" })
     else
-      @resources = Occi::Core::Resources.new
+      @resources = Occi::Collection.new
 
-      @resources.merge backend_instance.compute_list
-      @resources.merge backend_instance.network_list
-      @resources.merge backend_instance.storage_list
+      @resources.resources.merge backend_instance.compute_list
+      @resources.resources.merge backend_instance.network_list
+      @resources.resources.merge backend_instance.storage_list
     end
 
     respond_with(@resources)

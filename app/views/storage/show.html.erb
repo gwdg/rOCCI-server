@@ -1,7 +1,7 @@
 <%= render template: "shared/header" %>
 
-<h1>Storage#<%= @storage.id %></h1>
-<% @local_resource = @storage %>
+<h1>Storage#<%= @storage.resources.first.id %></h1>
+<% @local_resource = @storage.resources.first %>
 <%= render template: "shared/resource_table" %>
 
 <br/>

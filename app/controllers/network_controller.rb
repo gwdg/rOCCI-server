@@ -6,7 +6,8 @@ class NetworkController < ApplicationController
       @networks = backend_instance.network_list_ids
       @networks.map! { |c| "/network/#{c}" }
     else
-      @networks = backend_instance.network_list
+      @networks = Occi::Collection.new
+      @networks.resources = backend_instance.network_list
     end
 
     respond_with(@networks)
@@ -14,9 +15,10 @@ class NetworkController < ApplicationController
 
   # GET /network/:id
   def show
-    @network = backend_instance.network_get(params[:id])
+    @network = Occi::Collection.new
+    @network << backend_instance.network_get(params[:id])
 
-    if @network
+    unless @network.empty?
       respond_with(@network)
     else
       respond_with(Occi::Collection.new, status: 404)
@@ -43,9 +45,21 @@ class NetworkController < ApplicationController
   # PUT /network/:id
   def update
     network = request_occi_collection.resources.first
-    network_upd = backend_instance.network_update(network)
+    network.id = params[:id] if network
+    result = backend_instance.network_update(network)
 
-    respond_with(Occi::Collection.new)
+    if result
+      network = Occi::Collection.new
+      network << backend_instance.network_get(params[:id])
+
+      unless network.empty?
+        respond_with(network)
+      else
+        respond_with(Occi::Collection.new, status: 404)
+      end
+    else
+      respond_with(Occi::Collection.new, status: 304)
+    end
   end
 
   # DELETE /network/

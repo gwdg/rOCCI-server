@@ -2,9 +2,10 @@ class NetworkinterfaceController < ApplicationController
 
   # GET /link/networkinterface/:id
   def show
-    @networkinterface = backend_instance.compute_get_network(params[:id])
+    @networkinterface = Occi::Collection.new
+    @networkinterface << backend_instance.compute_get_network(params[:id])
 
-    if @networkinterface
+    unless @networkinterface.empty?
       respond_with(@networkinterface)
     else
       respond_with(Occi::Collection.new, status: 404)

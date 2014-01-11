@@ -1,7 +1,7 @@
 <%= render template: "shared/header" %>
 
 <h1>Resource Types</h1>
-<% @local_resource_types = @resources.to_a.collect { |r| r.kind }.uniq %>
+<% @local_resource_types = @resources.resources.to_a.collect { |r| r.kind }.uniq %>
 <%= render template: "shared/resource_types_table" %>
 
 <%= render template: "shared/footer" %>
