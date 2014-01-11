@@ -4,7 +4,7 @@ class NetworkController < ApplicationController
   def index
     if request.format == "text/uri-list"
       @networks = backend_instance.network_list_ids
-      @networks.map! { |c| "/network/#{c}" }
+      @networks.map! { |c| "#{server_url}/network/#{c}" }
     else
       @networks = Occi::Collection.new
       @networks.resources = backend_instance.network_list
@@ -30,7 +30,7 @@ class NetworkController < ApplicationController
     network = request_occi_collection.resources.first
     network_location = backend_instance.network_create(network)
 
-    respond_with("/network/#{network_location}", status: 201, flag: :link_only)
+    respond_with("#{server_url}/network/#{network_location}", status: 201, flag: :link_only)
   end
 
   # POST /network/?action=:action

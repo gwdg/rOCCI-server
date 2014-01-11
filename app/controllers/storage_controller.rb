@@ -4,7 +4,7 @@ class StorageController < ApplicationController
   def index
     if request.format == "text/uri-list"
       @storages = backend_instance.storage_list_ids
-      @storages.map! { |c| "/storage/#{c}" }
+      @storages.map! { |c| "#{server_url}/storage/#{c}" }
     else
       @storages = Occi::Collection.new
       @storages.resources = backend_instance.storage_list
@@ -30,7 +30,7 @@ class StorageController < ApplicationController
     storage = request_occi_collection.resources.first
     storage_location = backend_instance.storage_create(storage)
 
-    respond_with("/storage/#{storage_location}", status: 201, flag: :link_only)
+    respond_with("#{server_url}/storage/#{storage_location}", status: 201, flag: :link_only)
   end
 
   # POST /storage/?action=:action

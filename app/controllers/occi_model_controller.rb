@@ -5,9 +5,9 @@ class OcciModelController < ApplicationController
     if request.format == "text/uri-list"
       @resources = []
 
-      @resources.concat(backend_instance.compute_list_ids.map { |c| "/compute/#{c}" })
-      @resources.concat(backend_instance.network_list_ids.map { |n| "/network/#{n}" })
-      @resources.concat(backend_instance.storage_list_ids.map { |s| "/storage/#{s}" })
+      @resources.concat(backend_instance.compute_list_ids.map { |c| "#{server_url}/compute/#{c}" })
+      @resources.concat(backend_instance.network_list_ids.map { |n| "#{server_url}/network/#{n}" })
+      @resources.concat(backend_instance.storage_list_ids.map { |s| "#{server_url}/storage/#{s}" })
     else
       @resources = Occi::Collection.new
 

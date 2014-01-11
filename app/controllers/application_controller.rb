@@ -95,7 +95,9 @@ class ApplicationController < ActionController::API
 
   # Provides access to user-configured server URL
   def server_url
-    ""
+    "#{ROCCI_SERVER_CONFIG.common.protocol || 'http'}://" \
+    "#{ROCCI_SERVER_CONFIG.common.hostname || 'localhost'}:" \
+    "#{ROCCI_SERVER_CONFIG.common.port.to_s || '3000'}"
   end
 
   private

@@ -4,7 +4,7 @@ class ComputeController < ApplicationController
   def index
     if request.format == "text/uri-list"
       @computes = backend_instance.compute_list_ids
-      @computes.map! { |c| "/compute/#{c}" }
+      @computes.map! { |c| "#{server_url}/compute/#{c}" }
     else
       @computes = Occi::Collection.new
       @computes.resources = backend_instance.compute_list
@@ -30,7 +30,7 @@ class ComputeController < ApplicationController
     compute = request_occi_collection.resources.first
     compute_location = backend_instance.compute_create(compute)
 
-    respond_with("/compute/#{compute_location}", status: 201, flag: :link_only)
+    respond_with("#{server_url}/compute/#{compute_location}", status: 201, flag: :link_only)
   end
 
   # POST /compute/?action=:action

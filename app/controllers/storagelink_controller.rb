@@ -17,7 +17,7 @@ class StoragelinkController < ApplicationController
     storagelink = request_occi_collection(Occi::Core::Link).links.first
     storagelink_location = backend_instance.compute_attach_storage(storagelink)
 
-    respond_with("/link/storagelink/#{storagelink_location}", status: 201, flag: :link_only)
+    respond_with("#{server_url}/link/storagelink/#{storagelink_location}", status: 201, flag: :link_only)
   end
 
   # DELETE /link/storagelink/:id
