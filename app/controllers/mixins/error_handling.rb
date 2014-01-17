@@ -37,5 +37,10 @@ module Mixins
       render text: exception.message, status: 500
     end
 
+    def handle_auth_err(exception)
+      logger.warn "[Backend] Failed to authenticate user: #{exception.message}"
+      render text: exception.message, status: 401
+    end
+
   end
 end
