@@ -42,5 +42,10 @@ module Mixins
       render text: exception.message, status: 401
     end
 
+    def handle_authz_err(exception)
+      logger.warn "[Backend] Failed to authorize user: #{exception.message}"
+      render text: exception.message, status: 403
+    end
+
   end
 end

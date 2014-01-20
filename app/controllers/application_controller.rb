@@ -29,6 +29,7 @@ class ApplicationController < ActionController::API
   rescue_from ::Backends::Errors::ServiceUnavailableError, :with => :handle_internal_backend_err
   rescue_from ::Backends::Errors::ResourceStateError, :with => :handle_invalid_resource_err
   rescue_from ::Backends::Errors::AuthenticationError, :with => :handle_auth_err
+  rescue_from ::Backends::Errors::UserNotAuthorizedError, :with => :handle_authz_err
 
   include Mixins::ErrorHandling
 

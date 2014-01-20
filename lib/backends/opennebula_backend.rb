@@ -44,7 +44,18 @@ module Backends
     private :init_connection
 
     def check_retval(rc, e_klass)
-      raise e_klass, rc.message if ::OpenNebula.is_error?(rc)
+      return true unless ::OpenNebula.is_error?(rc)
+
+      case rc.errno
+      when ::OpenNebula::Error::EAUTHENTICATION
+        raise Backends::Errors::AuthenticationError, rc.message
+      when ::OpenNebula::Error::EAUTHORIZATION
+        raise Backends::Errors::UserNotAuthorizedError, rc.message
+      when ::OpenNebula::Error::ENO_EXISTS
+        raise Backends::Errors::ResourceNotFoundError, rc.message
+      else
+        raise e_klass, rc.message
+      end
     end
     private :check_retval
 
