@@ -17,6 +17,11 @@ module AuthenticationStrategies
     def authenticate!
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating ..."
 
+      unless valid_username_provided?(auth.username)
+        fail!('Provided username contains invalid characters!')
+        return
+      end
+
       user = Hashie::Mash.new
       user.auth!.type = "basic"
       user.auth!.credentials!.username = auth.username
@@ -24,6 +29,10 @@ module AuthenticationStrategies
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
       success! user
+    end
+
+    def valid_username_provided?(username)
+      /^[[:print:]]+$/.match(username) && /^\S+$/.match(username)
     end
 
   end

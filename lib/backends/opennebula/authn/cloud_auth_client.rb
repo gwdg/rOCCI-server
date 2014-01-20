@@ -104,6 +104,12 @@ module Backends::Opennebula::Authn
     # driver:: _String_ list of valid drivers for the user, | separated
     # [return] _Hash_ with the username
     def get_password(username, driver=nil)
+      begin
+        username = username.encode(:xml => :text)
+      rescue
+        return nil
+      end
+
       xpath = "USER[NAME=\"#{username}\""
       if driver
         xpath << " and (AUTH_DRIVER=\""
