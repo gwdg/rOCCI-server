@@ -26,7 +26,7 @@ gem 'debugger', group: [:development, :test]
 gem 'whenever', require: false
 
 # Use passenger for deployment (standalone or in Apache2)
-gem 'passenger'
+gem 'passenger', '= 4.0.29'
 
 # Use simplecov for coverage reports
 gem 'simplecov', group: [:development, :test]
