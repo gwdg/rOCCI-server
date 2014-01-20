@@ -40,7 +40,7 @@ set :bundle_without,  [:development, :test]
 if ENV['ROCCI_SERVER_USER'] && !ENV['ROCCI_SERVER_USER'].empty?
   set :user, ENV['ROCCI_SERVER_USER']
 else
-  set(:user) { Capistrano::CLI.ui.ask('What is the name of Clouditor\'s server-side user account?  ') do |q|; q.default = 'clouditor'; end }
+  set(:user) { Capistrano::CLI.ui.ask('What is the name of rOCCI-server\'s server-side user account?  ') do |q|; q.default = 'rocci'; end }
 end
 
 if ENV['ROCCI_HTTP_SERVER'] && !ENV['ROCCI_HTTP_SERVER'].empty?
@@ -63,7 +63,7 @@ end
 
 # RVM options
 #set :rvm_ruby_string, ENV['GEM_HOME'].gsub(/.*\//,"")
-set :rvm_ruby_string, 'ruby-1.9.3-p392'
+set :rvm_ruby_string, 'ruby-2.0.0-p353'
 #set :rvm_install_pkgs, %w[libyaml openssl]
 #set :rvm_install_pkgs, %w[libyaml openssl]
 #set :rvm_install_ruby_params, '--with-opt-dir=~/.rvm/usr'

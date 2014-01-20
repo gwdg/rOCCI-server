@@ -39,7 +39,7 @@ module ROCCIServer
       generate.assets false
       generate.view_specs false
       generate.resource_route false
-      generate.orm :mongo_mapper
+      generate.orm false
       generate.test_framework :rspec
     end
 

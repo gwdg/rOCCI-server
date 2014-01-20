@@ -71,10 +71,6 @@ gem 'hirb', group: :development
 gem 'dalli'
 gem 'kgio'
 
-# MongoDB integration
-gem 'mongo_mapper', git: "git://github.com/mongomapper/mongomapper.git", branch: "master"
-gem 'bson_ext'
-
 # AuthN middleware
 gem 'warden'
 
