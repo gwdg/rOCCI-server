@@ -1,17 +1,4 @@
 GIT
-  remote: git://github.com/gwdg/rOCCI-core.git
-  revision: 49d99d0dd300f6e75128287987a085b377c48357
-  branch: master
-  specs:
-    occi-core (4.2.5)
-      activesupport (~> 4.0.0)
-      hashie
-      json
-      nokogiri (~> 1.6.0)
-      settingslogic
-      uuidtools (>= 2.1.3)
-
-GIT
   remote: git://github.com/shadabahmed/logstasher.git
   revision: 43d4888006a2e40404ec031a97e0f398dbe498d8
   branch: master
@@ -100,7 +87,7 @@ GEM
     hirb (0.7.1)
     i18n (0.6.9)
     ice_nine (0.11.0)
-    interception (0.3)
+    interception (0.4)
     jbuilder (1.5.3)
       activesupport (>= 3.0.0)
       multi_json (>= 1.2.0)
@@ -131,6 +118,13 @@ GEM
       net-ssh (>= 2.6.5)
     nokogiri (1.6.1)
       mini_portile (~> 0.5.0)
+    occi-core (4.2.5)
+      activesupport (~> 4.0.0)
+      hashie
+      json
+      nokogiri (~> 1.6.0)
+      settingslogic
+      uuidtools (>= 2.1.3)
     opennebula (4.4.0)
       json
       nokogiri
@@ -139,14 +133,14 @@ GEM
       rack
       rake (>= 0.8.1)
     polyglot (0.3.3)
-    pry (0.9.12.4)
+    pry (0.9.12.6)
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
     pry-rails (0.3.2)
       pry (>= 0.9.10)
-    pry-rescue (1.2.0)
-      interception (>= 0.3)
+    pry-rescue (1.3.1)
+      interception (>= 0.4)
       pry
     pry-stack_explorer (0.4.9.1)
       binding_of_caller (>= 0.7)
@@ -194,7 +188,7 @@ GEM
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
       rspec-mocks (~> 2.14.0)
-    ruby-progressbar (1.4.0)
+    ruby-progressbar (1.4.1)
     rvm-capistrano (1.5.1)
       capistrano (~> 2.15.4)
     sdoc (0.4.0)
@@ -254,7 +248,7 @@ DEPENDENCIES
   kgio
   libnotify
   logstasher!
-  occi-core!
+  occi-core (~> 4.2.5)
   opennebula (~> 4.4.0)
   passenger (= 4.0.29)
   pry-rails

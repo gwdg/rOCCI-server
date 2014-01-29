@@ -84,7 +84,7 @@ gem 'hashie'
 gem 'ice_nine'
 
 # Use occi-core for OCCI stuff
-gem 'occi-core', git: "git://github.com/gwdg/rOCCI-core.git", branch: "master"
+gem 'occi-core', '~> 4.2.5'
 
 # Install gems for each backend from Rails.root/lib/backends/bundles
 Dir.glob(File.join(File.dirname(__FILE__), 'lib', 'backends', 'bundles', "Gemfile.*")) do |gemfile|
