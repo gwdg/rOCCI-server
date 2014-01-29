@@ -102,6 +102,12 @@ class ApplicationController < ActionController::API
     "#{ROCCI_SERVER_CONFIG.common.port.to_s || '3000'}"
   end
 
+  def check_ai!(ai, query_string)
+    action_param = action_from_query_string(query_string)
+    raise ::Errors::ArgumentError, "Provided action does not have a term!" unless ai && ai.action && ai.action.term
+    raise ::Errors::ArgumentTypeMismatchError, "Action terms in params and body do not match!" unless ai.action.term == action_param
+  end
+
   private
 
   # Action wrapper providing logging capabilities, mostly for debugging purposes.
@@ -124,6 +130,13 @@ class ApplicationController < ActionController::API
       logger.debug "[ApplicationController] Responding with headers #{response.headers.inspect}"
       logger.debug "[ApplicationController] Responding with body #{response.body.inspect}"
     end
+  end
+
+  def action_from_query_string(query_string)
+    return '' if query_string.blank?
+
+    matched = /^action=(?<act>\S+)$/.match(query_string)
+    matched[:act]
   end
 
 end

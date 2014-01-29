@@ -36,9 +36,20 @@ class NetworkController < ApplicationController
   # POST /network/?action=:action
   # POST /network/:id?action=:action
   def trigger
-    # TODO: impl
-    collection = Occi::Collection.new
-    respond_with(collection, status: 501)
+    ai = request_occi_collection(Occi::Core::ActionInstance).action
+    check_ai!(ai, request.query_string)
+
+    if params[:id]
+      result = backend_instance.network_trigger_action(params[:id], ai)
+    else
+      result = backend_instance.network_trigger_action_on_all(ai)
+    end
+
+    if result
+      respond_with(Occi::Collection.new)
+    else
+      respond_with(Occi::Collection.new, status: 304)
+    end
   end
 
   # POST /network/:id
