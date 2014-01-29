@@ -19,3 +19,6 @@ class ActiveSupport::Logger::SimpleFormatter
     "\033[0;37m#{formatted_time}\033[0m [\033[#{color}m#{formatted_severity}\033[0m] #{msg.strip} (pid:#{$$})\n"
   end
 end
+
+Rails.application.config.logger = ActiveSupport::TaggedLogging.new(Logger.new("#{Rails.root}/log/#{Rails.env}.log", 'daily'))
+Rails.application.config.log_tags = [:uuid]
