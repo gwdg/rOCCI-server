@@ -105,6 +105,35 @@ module BackendApi
       @backend_instance.compute_delete(compute_id)
     end
 
+    # Partialy updates an existing compute instance, instance to be updated
+    # is specified by compute_id.
+    # If the requested instance cannot be updated, an error describing the
+    # problem must be raised, @see Backends::Errors.
+    #
+    # @example
+    #    attributes = Occi::Core::Attributes.new
+    #    mixins = Occi::Core::Mixins.new
+    #    links = Occi::Core::Links.new
+    #    compute_partial_update(compute_id, attributes, mixins, links) #=> true
+    #
+    # @param compute_id [String] unique identifier of a compute instance to be updated
+    # @param attributes [Occi::Core::Attributes] a collection of attributes to be updated
+    # @param mixins [Occi::Core::Mixins] a collection of mixins to be added
+    # @param links [Occi::Core::Links] a collection of links to be added
+    # @return [true, false] result of the operation
+    def compute_partial_update(compute_id, attributes = nil, mixins = nil, links = nil)
+      raise Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
+      attributes ||= Occi::Core::Attributes.new
+      mixins ||= Occi::Core::Mixins.new
+      links ||= Occi::Core::Links.new
+
+      unless attributes.kind_of? Occi::Core::Attributes && mixins.kind_of? Occi::Core::Mixins && links.kind_of? Occi::Core::Links
+        raise Errors::ArgumentTypeMismatchError, 'Action requires attributes, mixins or links to be updated!'
+      end
+
+      @backend_instance.compute_partial_update(compute_id, deep_clone(attributes), deep_clone(mixins), deep_clone(links))
+    end
+
     # Updates an existing compute instance, instance to be updated is specified
     # using the occi.core.id attribute of the instance passed as an argument.
     # If the requested instance cannot be updated, an error describing the

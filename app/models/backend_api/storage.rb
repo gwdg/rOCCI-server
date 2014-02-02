@@ -105,6 +105,35 @@ module BackendApi
       @backend_instance.storage_delete(storage_id)
     end
 
+    # Partialy updates an existing storage instance, instance to be updated
+    # is specified by storage_id.
+    # If the requested instance cannot be updated, an error describing the
+    # problem must be raised, @see Backends::Errors.
+    #
+    # @example
+    #    attributes = Occi::Core::Attributes.new
+    #    mixins = Occi::Core::Mixins.new
+    #    links = Occi::Core::Links.new
+    #    storage_partial_update(storage_id, attributes, mixins, links) #=> true
+    #
+    # @param storage_id [String] unique identifier of a storage instance to be updated
+    # @param attributes [Occi::Core::Attributes] a collection of attributes to be updated
+    # @param mixins [Occi::Core::Mixins] a collection of mixins to be added
+    # @param links [Occi::Core::Links] a collection of links to be added
+    # @return [true, false] result of the operation
+    def storage_partial_update(storage_id, attributes = nil, mixins = nil, links = nil)
+      raise Errors::ArgumentError, '\'storage_id\' is a mandatory argument' if storage_id.blank?
+      attributes ||= Occi::Core::Attributes.new
+      mixins ||= Occi::Core::Mixins.new
+      links ||= Occi::Core::Links.new
+
+      unless attributes.kind_of? Occi::Core::Attributes && mixins.kind_of? Occi::Core::Mixins && links.kind_of? Occi::Core::Links
+        raise Errors::ArgumentTypeMismatchError, 'Action requires attributes, mixins or links to be updated!'
+      end
+
+      @backend_instance.storage_partial_update(storage_id, deep_clone(attributes), deep_clone(mixins), deep_clone(links))
+    end
+
     # Updates an existing storage instance, instance to be updated is specified
     # using the occi.core.id attribute of the instance passed as an argument.
     # If the requested instance cannot be updated, an error describing the

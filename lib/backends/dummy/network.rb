@@ -115,6 +115,27 @@ module Backends
         network_get(network_id).nil?
       end
 
+      # Partialy updates an existing network instance, instance to be updated
+      # is specified by network_id.
+      # If the requested instance cannot be updated, an error describing the
+      # problem must be raised, @see Backends::Errors.
+      #
+      # @example
+      #    attributes = Occi::Core::Attributes.new
+      #    mixins = Occi::Core::Mixins.new
+      #    links = Occi::Core::Links.new
+      #    network_partial_update(network_id, attributes, mixins, links) #=> true
+      #
+      # @param network_id [String] unique identifier of a network instance to be updated
+      # @param attributes [Occi::Core::Attributes] a collection of attributes to be updated
+      # @param mixins [Occi::Core::Mixins] a collection of mixins to be added
+      # @param links [Occi::Core::Links] a collection of links to be added
+      # @return [true, false] result of the operation
+      def network_partial_update(network_id, attributes = nil, mixins = nil, links = nil)
+        # TODO: impl
+        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+      end
+
       # Updates an existing network instance, instance to be updated is specified
       # using the occi.core.id attribute of the instance passed as an argument.
       # If the requested instance cannot be updated, an error describing the
