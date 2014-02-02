@@ -21,11 +21,11 @@ ROCCIServer::Application.routes.draw do
   get '/compute/', to: 'compute#index', as: 'computes'
 
   post '/compute/:id', to: 'compute#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/compute/:id', to: 'compute#update', as: 'update_compute'
+  post '/compute/:id', to: 'compute#partial_update', as: 'partial_update_compute'
   post '/compute/', to: 'compute#trigger', constraints: { query_string: /^action=\S+$/ }
   post '/compute/', to: 'compute#create', as: 'new_compute'
 
-  put '/compute/:id', to: 'compute#update'
+  put '/compute/:id', to: 'compute#update', as: 'update_compute'
   #put '/compute/' is undefined in GFD-P-R.185
 
   delete '/compute/:id', to: 'compute#delete', as: 'delete_compute'
@@ -38,11 +38,11 @@ ROCCIServer::Application.routes.draw do
   get '/network/', to: 'network#index', as: 'networks'
 
   post '/network/:id', to: 'network#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/network/:id', to: 'network#update', as: 'update_network'
+  post '/network/:id', to: 'network#partial_update', as: 'partial_update_network'
   post '/network/', to: 'network#trigger', constraints: { query_string: /^action=\S+$/ }
   post '/network/', to: 'network#create', as: 'new_network'
 
-  put '/network/:id', to: 'network#update'
+  put '/network/:id', to: 'network#update', as: 'update_network'
   #put '/network/' is undefined in GFD-P-R.185
 
   delete '/network/:id', to: 'network#delete', as: 'delete_network'
@@ -55,11 +55,11 @@ ROCCIServer::Application.routes.draw do
   get '/storage/', to: 'storage#index', as: 'storages'
 
   post '/storage/:id', to: 'storage#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/storage/:id', to: 'storage#update', as: 'update_storage'
+  post '/storage/:id', to: 'storage#partial_update', as: 'partial_update_storage'
   post '/storage/', to: 'storage#trigger', constraints: { query_string: /^action=\S+$/ }
   post '/storage/', to: 'storage#create', as: 'new_storage'
 
-  put '/storage/:id', to: 'storage#update'
+  put '/storage/:id', to: 'storage#update', as: 'update_storage'
   #put '/storage/' is undefined in GFD-P-R.185
 
   delete '/storage/:id', to: 'storage#delete', as: 'delete_storage'

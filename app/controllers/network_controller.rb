@@ -53,6 +53,11 @@ class NetworkController < ApplicationController
   end
 
   # POST /network/:id
+  def partial_update
+    # TODO: impl
+    respond_with(Occi::Collection.new, status: 501)
+  end
+
   # PUT /network/:id
   def update
     network = request_occi_collection.resources.first

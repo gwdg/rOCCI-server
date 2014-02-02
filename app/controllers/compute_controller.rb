@@ -53,6 +53,11 @@ class ComputeController < ApplicationController
   end
 
   # POST /compute/:id
+  def partial_update
+    # TODO: impl
+    respond_with(Occi::Collection.new, status: 501)
+  end
+
   # PUT /compute/:id
   def update
     compute = request_occi_collection.resources.first
