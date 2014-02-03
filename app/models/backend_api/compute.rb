@@ -127,7 +127,7 @@ module BackendApi
       mixins ||= Occi::Core::Mixins.new
       links ||= Occi::Core::Links.new
 
-      unless attributes.kind_of? Occi::Core::Attributes && mixins.kind_of? Occi::Core::Mixins && links.kind_of? Occi::Core::Links
+      unless attributes.kind_of?(Occi::Core::Attributes) && mixins.kind_of?(Occi::Core::Mixins) && links.kind_of?(Occi::Core::Links)
         raise Errors::ArgumentTypeMismatchError, 'Action requires attributes, mixins or links to be updated!'
       end
 
