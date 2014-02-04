@@ -92,7 +92,7 @@ GEM
       activesupport (>= 3.0.0)
       multi_json (>= 1.2.0)
     json (1.8.1)
-    kgio (2.8.1)
+    kgio (2.9.0)
     libnotify (0.8.2)
       ffi (>= 1.0.11)
     listen (2.4.0)
@@ -118,7 +118,7 @@ GEM
       net-ssh (>= 2.6.5)
     nokogiri (1.6.1)
       mini_portile (~> 0.5.0)
-    occi-core (4.2.6)
+    occi-core (4.2.7)
       activesupport (~> 4.0.0)
       hashie
       json
@@ -248,7 +248,7 @@ DEPENDENCIES
   kgio
   libnotify
   logstasher!
-  occi-core (~> 4.2.5)
+  occi-core (~> 4.2.7)
   opennebula (~> 4.4.0)
   passenger (= 4.0.29)
   pry-rails
