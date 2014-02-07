@@ -20,6 +20,7 @@ class ApplicationController < ActionController::API
   rescue_from ::Backends::Errors::ResourceNotFoundError, :with => :handle_resource_not_found_err
   rescue_from ::Backends::Errors::ResourceNotValidError, :with => :handle_invalid_resource_err
   rescue_from ::Occi::Errors::KindNotDefinedError, :with => :handle_parser_input_err
+  rescue_from ::Occi::Errors::CategoryNotDefinedError, :with => :handle_parser_input_err
   rescue_from ::Occi::Errors::AttributeNotDefinedError, :with => :handle_parser_input_err
   rescue_from ::Occi::Errors::AttributeTypeError, :with => :handle_parser_input_err
   rescue_from ::Occi::Errors::AttributeMissingError, :with => :handle_wrong_args_err
@@ -92,7 +93,7 @@ class ApplicationController < ActionController::API
     @request_collection = env["rocci_server.request.parser"].parse_occi_messages(expected_entity_type)
 
     @request_collection.model = OcciModel.get(backend_instance)
-    @request_collection.check
+    @request_collection.check(check_categories = true)
   end
 
   # Provides access to user-configured server URL
