@@ -1,11 +1,12 @@
 require 'spec_helper'
 
 describe Backends::DummyBackend do
-  let(:dummy) { Backends::DummyBackend.new nil, nil, nil, nil }
+  let(:dalli) { Dalli::Client.new }
+  let(:dummy) { Backends::DummyBackend.new nil, nil, nil, nil, dalli }
   let(:dummy_w_opts) {
     opts = Hashie::Mash.new
     opts.fixtures_dir = Rails.root.join('etc', 'backends', 'dummy', 'fixtures')
-    Backends::DummyBackend.new nil, opts, nil, nil
+    Backends::DummyBackend.new nil, opts, nil, nil, dalli
   }
 
   context 'os_tpl_*' do

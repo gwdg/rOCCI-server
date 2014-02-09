@@ -4,11 +4,12 @@ module Backends
     API_VERSION = "0.0.1"
     FIXTURES = [:compute, :network, :storage, :os_tpl, :resource_tpl].freeze
 
-    def initialize(delegated_user, options, server_properties, logger)
+    def initialize(delegated_user, options, server_properties, logger, dalli_cache)
       @delegated_user = Hashie::Mash.new(delegated_user)
       @options = Hashie::Mash.new(options)
       @server_properties = Hashie::Mash.new(server_properties)
       @logger = logger || Rails.logger
+      @dalli_cache = dalli_cache
 
       path = @options.fixtures_dir || ""
       read_fixtures(path)

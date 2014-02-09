@@ -45,6 +45,17 @@ describe Backend do
     end
   end
 
+  context 'self.dalli_instance_factory' do
+    it 'fails without backend_name' do
+      expect { Backend.dalli_instance_factory(nil) }.to raise_error(ArgumentError)
+      expect { Backend.dalli_instance_factory("") }.to raise_error(ArgumentError)
+    end
+
+    it 'returns Dalli::Client instance' do
+      expect(Backend.dalli_instance_factory("dummy")).to be_kind_of(Dalli::Client)
+    end
+  end
+
   context 'attribute accessors' do
 
     it 'has a backend_class reader' do
