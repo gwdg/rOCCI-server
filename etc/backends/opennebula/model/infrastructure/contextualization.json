@@ -14,9 +14,11 @@
             "credentials":{
               "publickey":{
                 "name":{
+                  "Mutable":true,
                   "Description":"User-defined name for the given public key."
                 },
                 "data":{
+                  "Mutable":true,
                   "Description":"SSH public key formatted as it appears in authorized_keys."
                 }
               }
@@ -38,6 +40,7 @@
           "openstack":{
             "compute":{
               "user_data":{
+                "Mutable":true,
                 "Description":"Base64 encoded content passed to the compute instance as USER_DATA."
               }
             }

@@ -13,29 +13,37 @@
           "opennebula":{
             "compute":{
               "id":{
-                 "Description":"ID of the compute element"
+                "Mutable":false,
+                "Description":"ID of the compute element"
               },
               "cpu":{
+                "Mutable":true,
                 "Description":"Percentage of CPU divided by 100 required for the Virtual Machine, half a processor is written 0.5. This value is used by OpenNebula and the scheduler to guide the host overcommitment.",
                 "Type":"number",
-                "Minimum":0
+                "Minimum":0.001
               },
               "kernel":{
+                "Mutable":true,
                 "Description":"path to the OS kernel to boot the image"
               },
               "initrd":{
+                "Mutable":true,
                 "Description":"path to the initrd image"
               },
               "root":{
+                "Mutable":true,
                 "Description":"device to be mounted as root"
               },
               "kernel_cmd":{
+                "Mutable":true,
                 "Description":"arguments for the booting kernel"
               },
               "bootloader":{
+                "Mutable":true,
                 "Description":"path to the bootloader executable"
               },
               "boot":{
+                "Mutable":true,
                 "Description":"boot device type: hd,fd,cdrom ,network"
               }
             }
