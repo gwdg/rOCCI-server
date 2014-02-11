@@ -391,8 +391,8 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def compute_trigger_action_on_all(action_instance, mixins = nil)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        compute_list_ids(mixins).each { |cmpt| compute_trigger_action(cmpt, action_instance) }
+        true
       end
 
       # Triggers an action on an existing compute instance, the compute instance in question
@@ -410,8 +410,21 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def compute_trigger_action(compute_id, action_instance)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        case action_instance.action.type_identifier
+        when 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop'
+          compute_trigger_action_stop(compute_id, action_instance.attributes)
+        when 'http://schemas.ogf.org/occi/infrastructure/compute/action#start'
+          compute_trigger_action_start(compute_id, action_instance.attributes)
+        when 'http://schemas.ogf.org/occi/infrastructure/compute/action#restart'
+          compute_trigger_action_restart(compute_id, action_instance.attributes)
+        when 'http://schemas.ogf.org/occi/infrastructure/compute/action#suspend'
+          compute_trigger_action_suspend(compute_id, action_instance.attributes)
+        else
+          raise Backends::Errors::ActionNotImplementedError,
+                "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+        end
+
+        true
       end
 
       private
@@ -421,6 +434,9 @@ module Backends
 
       # Load methods called from compute_create
       include Backends::Opennebula::Helpers::ComputeCreateHelper
+
+      # Load methods called from compute_trigger_action*
+      include Backends::Opennebula::Helpers::ComputeActionHelper
 
     end
   end
