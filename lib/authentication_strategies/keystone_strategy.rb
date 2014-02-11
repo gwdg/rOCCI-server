@@ -1,3 +1,12 @@
+begin
+  require 'openssl_cms'
+rescue
+  # Provide more information when CMS is not available.
+  raise "KeystoneStrategy requires a native library " \
+        "'openssl_cms' available only for CRuby 1.9.3, " \
+        "2.0.x and 2.1.x!"
+end
+
 module AuthenticationStrategies
   class KeystoneStrategy < ::Warden::Strategies::Base
 

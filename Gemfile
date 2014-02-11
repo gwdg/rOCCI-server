@@ -86,6 +86,11 @@ gem 'ice_nine'
 # Use occi-core for OCCI stuff
 gem 'occi-core', '~> 4.2.8'
 
+# Install gems for each auth. strategy from Rails.root/lib/authentication_strategies/bundles
+Dir.glob(File.join(File.dirname(__FILE__), 'lib', 'authentication_strategies', 'bundles', "Gemfile.*")) do |gemfile|
+    eval(IO.read(gemfile), binding)
+end
+
 # Install gems for each backend from Rails.root/lib/backends/bundles
 Dir.glob(File.join(File.dirname(__FILE__), 'lib', 'backends', 'bundles', "Gemfile.*")) do |gemfile|
     eval(IO.read(gemfile), binding)

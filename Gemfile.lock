@@ -6,6 +6,13 @@ GIT
     logstasher (0.4.8)
       logstash-event (~> 1.1.0)
 
+GIT
+  remote: https://github.com/arax/openssl-cms.git
+  revision: e87a29b2381ee3c7814fd152671305335db8ff1b
+  branch: ruby_2_0_0
+  specs:
+    openssl_cms (0.0.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -250,6 +257,7 @@ DEPENDENCIES
   logstasher!
   occi-core (~> 4.2.8)
   opennebula (~> 4.4.0)
+  openssl_cms!
   passenger (= 4.0.29)
   pry-rails
   pry-rescue
