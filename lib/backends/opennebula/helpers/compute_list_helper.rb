@@ -63,7 +63,7 @@ module Backends
             result.state = "active"
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
           when "FAILED"
-            result.state = "failed"
+            result.state = "error"
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
           when "STOPPED", "SUSPENDED", "POWEROFF"
             result.state = "suspended"
