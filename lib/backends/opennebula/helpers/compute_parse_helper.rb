@@ -2,7 +2,7 @@ module Backends
   module Opennebula
     module Helpers
 
-      module ComputeListHelper
+      module ComputeParseHelper
 
         STORAGE_GENERATED_PREFIX = "generated_"
         NETWORK_GENERATED_PREFIX = "generated_"

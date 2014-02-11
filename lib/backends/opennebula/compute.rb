@@ -430,7 +430,7 @@ module Backends
       private
 
       # Load methods called from compute_list/compute_get
-      include Backends::Opennebula::Helpers::ComputeListHelper
+      include Backends::Opennebula::Helpers::ComputeParseHelper
 
       # Load methods called from compute_create
       include Backends::Opennebula::Helpers::ComputeCreateHelper
