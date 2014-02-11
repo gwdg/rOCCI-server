@@ -248,6 +248,9 @@ module Backends
       # Load methods called from storage_list/storage_get
       include Backends::Opennebula::Helpers::StorageParseHelper
 
+      # Load methods called from storage_trigger_action*
+      include Backends::Opennebula::Helpers::StorageActionHelper
+
     end
   end
 end
