@@ -173,7 +173,7 @@ module Backends
       # @return [true, false] result of the operation
       def network_partial_update(network_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        raise Backends::Errors::MethodNotImplementedError, "Partial updates are currently not supported!"
       end
 
       # Updates an existing network instance, instance to be updated is specified
@@ -189,7 +189,7 @@ module Backends
       # @return [true, false] result of the operation
       def network_update(network)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        raise Backends::Errors::MethodNotImplementedError, "Updates are currently not supported!"
       end
 
       # Triggers an action on all existing network instance, instances must be filtered
@@ -207,7 +207,8 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def network_trigger_action_on_all(action_instance, mixins = nil)
-        raise Backends::Errors::MethodNotImplementedError, "Actions on networks are not supported!"
+        network_list_ids(mixins).each { |ntw| network_trigger_action(ntw, action_instance) }
+        true
       end
 
       # Triggers an action on an existing network instance, the network instance in question
@@ -225,7 +226,8 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def network_trigger_action(network_id, action_instance)
-        raise Backends::Errors::MethodNotImplementedError, "Actions on a network are not supported!"
+        raise Backends::Errors::ActionNotImplementedError,
+              "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
       end
 
       private

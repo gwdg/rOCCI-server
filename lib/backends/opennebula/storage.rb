@@ -175,7 +175,7 @@ module Backends
       # @return [true, false] result of the operation
       def storage_partial_update(storage_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        raise Backends::Errors::MethodNotImplementedError, "Partial updates are currently not supported!"
       end
 
       # Updates an existing storage instance, instance to be updated is specified
@@ -191,7 +191,7 @@ module Backends
       # @return [true, false] result of the operation
       def storage_update(storage)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        raise Backends::Errors::MethodNotImplementedError, "Updates are currently not supported!"
       end
 
       # Triggers an action on all existing storage instance, instances must be filtered
@@ -209,8 +209,8 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def storage_trigger_action_on_all(action_instance, mixins = nil)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        storage_list_ids(mixins).each { |strg| storage_trigger_action(strg, action_instance) }
+        true
       end
 
       # Triggers an action on an existing storage instance, the storage instance in question
@@ -228,8 +228,19 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def storage_trigger_action(storage_id, action_instance)
-        # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        case action_instance.action.type_identifier
+        when 'http://schemas.ogf.org/occi/infrastructure/storage/action#online'
+          storage_trigger_action_online(storage_id, action_instance.attributes)
+        when 'http://schemas.ogf.org/occi/infrastructure/storage/action#offline'
+          storage_trigger_action_offline(storage_id, action_instance.attributes)
+        when 'http://schemas.ogf.org/occi/infrastructure/storage/action#backup'
+          storage_trigger_action_backup(storage_id, action_instance.attributes)
+        else
+          raise Backends::Errors::ActionNotImplementedError,
+                "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+        end
+
+        true
       end
 
       private
