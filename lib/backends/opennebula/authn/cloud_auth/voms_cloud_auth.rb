@@ -31,6 +31,13 @@ module Backends::Opennebula::Authn::CloudAuth
       # Password should be a DN with VOMS attrs appended and whitespaces removed.
       constructed_dn = "#{params[:client_cert_dn]}/VO=#{first_voms[:vo]}/Role=#{first_voms[:role]}/Capability=#{first_voms[:capability]}"
       username = get_username(X509Auth.escape_dn(constructed_dn))
+
+      # TODO: remove this hack after Perun propagation scripts are updated
+      if username.blank?
+        # try a DN with whitespace chars removed
+        username = get_username(constructed_dn.gsub(/\s+/,''))
+      end
+
       return nil if username.blank?
 
       username
