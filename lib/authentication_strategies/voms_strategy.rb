@@ -1,7 +1,7 @@
 module AuthenticationStrategies
   class VomsStrategy < ::Warden::Strategies::Base
 
-    VOMS_RANGE = [0 .. 100]
+    VOMS_RANGE = (0..100)
     GRST_CRED_REGEXP = /(.+)\s(\d+)\s(\d+)\s(\d)\s(.+)/
     GRST_VOMS_REGEXP = /\/(.+)\/Role=(.+)\/Capability=(.+)/
 
@@ -56,9 +56,9 @@ module AuthenticationStrategies
         voms_ext = false
 
         VOMS_RANGE.each do |index|
+          Rails.logger.debug "[AuthN] [#{self}] GRST_CRED_#{index}: \"" + auth_request.env["GRST_CRED_#{index}"].inspect + "\""
           break if auth_request.env["GRST_CRED_#{index}"].blank?
 
-          Rails.logger.debug "[AuthN] [#{self.class}] GRST_CRED: \"" + auth_request.env["GRST_CRED_#{index}"].inspect + "\""
           if auth_request.env["GRST_CRED_#{index}"].start_with?('VOMS')
             voms_ext = true
             break
@@ -92,7 +92,7 @@ module AuthenticationStrategies
           end
         end
 
-        Rails.logger.debug "[AuthN] [#{self.class}] VOMS attrs: #{attributes.inspect}"
+        Rails.logger.debug "[AuthN] [#{self}] VOMS attrs: #{attributes.inspect}"
         attributes
       end
 
