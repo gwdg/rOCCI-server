@@ -9,15 +9,11 @@ class UnauthorizedController < ActionController::Metal
   def respond
     Rails.logger.warn "[AuthN] [#{self.class}] Authentication failed: #{warden_message}"
     set_unauth ROCCI_SERVER_CONFIG.common.authn_strategies.include?('keystone')
-    Rails.logger.debug "[AuthN] [#{self.class}] Responding with #{self.status} #{self.headers.inspect}"
+    Rails.logger.warn "[AuthN] [#{self.class}] Responding with #{self.status} #{self.headers.inspect}"
   end
 
   def self.default_url_options(*args)
-    if defined?(ApplicationController)
-      ApplicationController.default_url_options(*args)
-    else
-      {}
-    end
+    defined?(ApplicationController) ? ApplicationController.default_url_options(*args) : {}
   end
 
   protected
@@ -38,7 +34,8 @@ class UnauthorizedController < ActionController::Metal
   end
 
   def warden_message
-    @message ||= warden.message || warden_options[:message]
+    @message ||= warden.message || warden_options[:message] || "Authentication failed!" \
+                 " The following strategies are supported #{ROCCI_SERVER_CONFIG.common.authn_strategies.join(', ').inspect}!"
   end
 
   def scope

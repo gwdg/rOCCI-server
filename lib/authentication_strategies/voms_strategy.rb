@@ -15,11 +15,15 @@ module AuthenticationStrategies
 
     def valid?
       Rails.logger.debug "[AuthN] [#{self.class}] Checking for the strategy applicability"
-      !auth_request.env['SSL_CLIENT_S_DN'].blank? && self.class.voms_extensions?(auth_request)
+      Rails.logger.debug "[AuthN] [#{self.class}] SSL_CLIENT_S_DN: #{auth_request.env['SSL_CLIENT_S_DN'].inspect}"
+      result = !auth_request.env['SSL_CLIENT_S_DN'].blank? && self.class.voms_extensions?(auth_request)
+
+      Rails.logger.debug "[AuthN] [#{self.class}] Strategy is #{result ? '' : 'not '}applicable!"
+      result
     end
 
     def authenticate!
-      Rails.logger.debug "[AuthN] [#{self.class}] Authenticating ..."
+      Rails.logger.debug "[AuthN] [#{self.class}] Authenticating #{auth_request.env['GRST_CRED_0'].inspect}"
 
       # Get user's DN
       proxy_cert_subject = GRST_CRED_REGEXP.match(auth_request.env['GRST_CRED_0'])[5]
@@ -54,6 +58,7 @@ module AuthenticationStrategies
         VOMS_RANGE.each do |index|
           break if auth_request.env["GRST_CRED_#{index}"].blank?
 
+          Rails.logger.debug "[AuthN] [#{self.class}] GRST_CRED: \"" + auth_request.env["GRST_CRED_#{index}"].inspect + "\""
           if auth_request.env["GRST_CRED_#{index}"].start_with?('VOMS')
             voms_ext = true
             break
@@ -87,6 +92,7 @@ module AuthenticationStrategies
           end
         end
 
+        Rails.logger.debug "[AuthN] [#{self.class}] VOMS attrs: #{attributes.inspect}"
         attributes
       end
 
