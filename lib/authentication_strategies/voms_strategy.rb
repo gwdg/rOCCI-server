@@ -56,7 +56,7 @@ module AuthenticationStrategies
         voms_ext = false
 
         VOMS_RANGE.each do |index|
-          Rails.logger.debug "[AuthN] [#{self}] GRST_CRED_#{index}: \"" + auth_request.env["GRST_CRED_#{index}"].inspect + "\""
+          Rails.logger.debug "[AuthN] [#{self}] GRST_CRED_#{index}: " + auth_request.env["GRST_CRED_#{index}"].inspect
           break if auth_request.env["GRST_CRED_#{index}"].blank?
 
           if auth_request.env["GRST_CRED_#{index}"].start_with?('VOMS')
@@ -76,7 +76,7 @@ module AuthenticationStrategies
 
           if auth_request.env["GRST_CRED_#{index}"].start_with?('VOMS')
             # Parse the extension and drop useless first element of MatchData
-            voms_ext = GRST_CRED_REGEXP.match(auth_request.env["GRST_CRED_#{idx}"])
+            voms_ext = GRST_CRED_REGEXP.match(auth_request.env["GRST_CRED_#{index}"])
             voms_ext = voms_ext.to_a.drop 1
 
             # Parse group, role and capability from the VOMS extension
