@@ -1,14 +1,8 @@
 # Deps for the Keystone auth. strategy
 #raise "KeystoneStrategy requires CRuby!" unless RUBY_ENGINE == "ruby"
 
-if RUBY_VERSION =~ /1\.9\.3/
-  gem "openssl_cms", git: 'https://github.com/arax/openssl-cms.git', branch: 'ruby_1_9_3', require: false
-end
+gem "openssl_cms_1_9_3", git: 'https://github.com/arax/openssl-cms.git', branch: 'ruby_1_9_3', require: false, platforms: :ruby_19
 
-if RUBY_VERSION =~ /2\.0\.\d/
-  gem "openssl_cms", git: 'https://github.com/arax/openssl-cms.git', branch: 'ruby_2_0_0', require: false
-end
+gem "openssl_cms_2_0_0", git: 'https://github.com/arax/openssl-cms.git', branch: 'ruby_2_0_0', require: false, platforms: :ruby_20
 
-if RUBY_VERSION =~ /2\.1\.\d/
-  gem "openssl_cms", git: 'https://github.com/arax/openssl-cms.git', branch: 'ruby_2_1', require: false
-end
+gem "openssl_cms_2_1", git: 'https://github.com/arax/openssl-cms.git', branch: 'ruby_2_1', require: false, platforms: :ruby_21

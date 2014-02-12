@@ -8,10 +8,24 @@ GIT
 
 GIT
   remote: https://github.com/arax/openssl-cms.git
-  revision: e87a29b2381ee3c7814fd152671305335db8ff1b
+  revision: b6d079c076a9b8e15c573bf6660772ee83e34dd4
+  branch: ruby_1_9_3
+  specs:
+    openssl_cms_1_9_3 (0.0.2)
+
+GIT
+  remote: https://github.com/arax/openssl-cms.git
+  revision: 7fea071f542ff1cb57c28dffe623122848ed3f99
   branch: ruby_2_0_0
   specs:
-    openssl_cms (0.0.2)
+    openssl_cms_2_0_0 (0.0.2)
+
+GIT
+  remote: https://github.com/arax/openssl-cms.git
+  revision: b789b696d821bd6563dd207fb6b562c06acc835b
+  branch: ruby_2_1
+  specs:
+    openssl_cms_2_1 (0.0.2)
 
 GEM
   remote: https://rubygems.org/
@@ -257,7 +271,9 @@ DEPENDENCIES
   logstasher!
   occi-core (~> 4.2.8)
   opennebula (~> 4.4.0)
-  openssl_cms!
+  openssl_cms_1_9_3!
+  openssl_cms_2_0_0!
+  openssl_cms_2_1!
   passenger (= 4.0.29)
   pry-rails
   pry-rescue
