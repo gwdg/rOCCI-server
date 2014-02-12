@@ -24,7 +24,7 @@ module Backends::Opennebula::Authn
         "basic"   => 'BasicCloudAuth',
         "digest"  => 'BasicCloudAuth',
         "x509"    => 'X509CloudAuth',
-        "voms"    => 'X509CloudAuth'
+        "voms"    => 'VomsCloudAuth'
     }
 
     # These are the authentication modules for the OpenNebula requests
