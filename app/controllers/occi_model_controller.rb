@@ -1,8 +1,7 @@
 class OcciModelController < ApplicationController
-
   # GET /
   def index
-    if request.format == "text/uri-list"
+    if request.format == 'text/uri-list'
       @resources = []
 
       @resources.concat(backend_instance.compute_list_ids.map { |c| "#{server_url}/compute/#{c}" })
@@ -41,5 +40,4 @@ class OcciModelController < ApplicationController
     collection = Occi::Collection.new
     respond_with(collection, status: 501)
   end
-
 end

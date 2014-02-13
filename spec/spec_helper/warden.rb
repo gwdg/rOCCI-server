@@ -20,7 +20,7 @@ module Warden
       # Override process to consider warden.
       def process(*)
         # Make sure we always return @response, a la ActionController::TestCase::Behavior#process, even if warden interrupts
-        _catch_warden {super} || @response
+        _catch_warden { super } || @response
       end
 
       # We need to setup the environment variables and the response in the controller
@@ -52,8 +52,8 @@ module Warden
           Warden::Manager._run_callbacks(:before_failure, env, result)
 
           status, headers, body = warden.config[:failure_app].call(env).to_a
-          @controller.send :render, :status => status, :text => body,
-            :content_type => headers['Content-Type'], :location => headers['Location']
+          @controller.send :render, status: status, text: body,
+                                    content_type: headers['Content-Type'], location: headers['Location']
 
           nil
         else

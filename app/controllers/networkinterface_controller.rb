@@ -1,5 +1,4 @@
 class NetworkinterfaceController < ApplicationController
-
   # GET /link/networkinterface/:id
   def show
     @networkinterface = Occi::Collection.new

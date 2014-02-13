@@ -1,9 +1,7 @@
 module Backends
   module Opennebula
     module Helpers
-
       module StorageParseHelper
-
         def storage_parse_backend_obj(backend_storage)
           storage = Occi::Infrastructure::Storage.new
 
@@ -22,15 +20,15 @@ module Backends
           storage.title = backend_storage['NAME'] if backend_storage['NAME']
           storage.summary = backend_storage['TEMPLATE/DESCRIPTION'] if backend_storage['TEMPLATE/DESCRIPTION']
 
-          storage.size = backend_storage['SIZE'].to_f/1024 if backend_storage['SIZE']
+          storage.size = backend_storage['SIZE'].to_f / 1024 if backend_storage['SIZE']
 
           storage.attributes['org.opennebula.storage.id'] = backend_storage['ID']
           storage.attributes['org.opennebula.storage.type'] = backend_storage.type_str
 
           if backend_storage['PERSISTENT'].blank? || backend_storage['PERSISTENT'].to_i == 0
-            storage.attributes['org.opennebula.storage.persistent'] = "NO"
+            storage.attributes['org.opennebula.storage.persistent'] = 'NO'
           else
-            storage.attributes['org.opennebula.storage.persistent'] = "YES"
+            storage.attributes['org.opennebula.storage.persistent'] = 'YES'
           end
 
           storage.attributes['org.opennebula.storage.dev_prefix'] = backend_storage['TEMPLATE/DEV_PREFIX'] if backend_storage['TEMPLATE/DEV_PREFIX']
@@ -52,28 +50,26 @@ module Backends
           #                    CLONE DELETE USED_PERS}
           #
           case backend_storage.state_str
-          when "READY"
-            result.state = "online"
+          when 'READY'
+            result.state = 'online'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#offline http://schemas.ogf.org/occi/infrastructure/storage/action#backup|
-          when "USED", "CLONE", "USED_PERS"
-            result.state = "online"
+          when 'USED', 'CLONE', 'USED_PERS'
+            result.state = 'online'
             result.actions = []
-          when "DISABLED"
-            result.state = "offline"
+          when 'DISABLED'
+            result.state = 'offline'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online|
-          when "ERROR"
-            result.state = "degraded"
+          when 'ERROR'
+            result.state = 'degraded'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/storage/action#online|
           else
-            result.state = "offline"
+            result.state = 'offline'
             result.actions = []
           end
 
           result
         end
-
       end
-
     end
   end
 end

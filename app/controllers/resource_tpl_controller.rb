@@ -1,5 +1,4 @@
 class ResourceTplController < ApplicationController
-
   # GET /mixin/resource_tpl/:term*/
   def index
     # TODO: work with :term*

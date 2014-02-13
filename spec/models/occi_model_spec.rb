@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe OcciModel do
   let(:backend) { Backend.new }
-  
+
   context 'self.get' do
     it 'returns Occi::Model' do
       expect(OcciModel.get(backend)).to be_kind_of(Occi::Model)

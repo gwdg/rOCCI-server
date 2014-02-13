@@ -1,5 +1,4 @@
 class OsTplController < ApplicationController
-
   # GET /mixin/os_tpl/:term*/
   def index
     # TODO: work with :term*

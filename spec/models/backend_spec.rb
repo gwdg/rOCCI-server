@@ -48,11 +48,11 @@ describe Backend do
   context 'self.dalli_instance_factory' do
     it 'fails without backend_name' do
       expect { Backend.dalli_instance_factory(nil) }.to raise_error(ArgumentError)
-      expect { Backend.dalli_instance_factory("") }.to raise_error(ArgumentError)
+      expect { Backend.dalli_instance_factory('') }.to raise_error(ArgumentError)
     end
 
     it 'returns Dalli::Client instance' do
-      expect(Backend.dalli_instance_factory("dummy")).to be_kind_of(Dalli::Client)
+      expect(Backend.dalli_instance_factory('dummy')).to be_kind_of(Dalli::Client)
     end
   end
 

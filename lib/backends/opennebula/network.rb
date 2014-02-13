@@ -1,7 +1,6 @@
 module Backends
   module Opennebula
     module Network
-
       # Gets all network instance IDs, no details, no duplicates. Returned
       # identifiers must corespond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Network instances.
@@ -89,8 +88,8 @@ module Backends
       # @return [String] final identifier of the new network instance
       def network_create(network)
         @logger.debug "Creating network #{network.inspect}"
-        template_location = File.join(@options.templates_dir, "network.erb")
-        template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :network => network })
+        template_location = File.join(@options.templates_dir, 'network.erb')
+        template = Erubis::Eruby.new(File.read(template_location)).evaluate(network: network)
 
         @logger.debug "Template #{template.inspect}"
 
@@ -173,7 +172,7 @@ module Backends
       # @return [true, false] result of the operation
       def network_partial_update(network_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        raise Backends::Errors::MethodNotImplementedError, "Partial updates are currently not supported!"
+        fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
       end
 
       # Updates an existing network instance, instance to be updated is specified
@@ -189,7 +188,7 @@ module Backends
       # @return [true, false] result of the operation
       def network_update(network)
         # TODO: impl
-        raise Backends::Errors::MethodNotImplementedError, "Updates are currently not supported!"
+        fail Backends::Errors::MethodNotImplementedError, 'Updates are currently not supported!'
       end
 
       # Triggers an action on all existing network instance, instances must be filtered
@@ -226,15 +225,14 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def network_trigger_action(network_id, action_instance)
-        raise Backends::Errors::ActionNotImplementedError,
-              "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+        fail Backends::Errors::ActionNotImplementedError,
+             "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
       end
 
       private
 
       # Load methods called from network_list/network_get
       include Backends::Opennebula::Helpers::NetworkParseHelper
-
     end
   end
 end

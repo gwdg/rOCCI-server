@@ -8,9 +8,9 @@ ROCCIServer::Application.routes.draw do
   post '/-/', to: 'occi_model#create', as: 'add_mixin'
   post '/.well-known/org/ogf/occi/-/', to: 'occi_model#create'
 
-  #put '/-/' is undefined in GFD-P-R.185
-  #put '/.well-known/org/ogf/occi/-/' is undefined in GFD-P-R.185
-  
+  # put '/-/' is undefined in GFD-P-R.185
+  # put '/.well-known/org/ogf/occi/-/' is undefined in GFD-P-R.185
+
   delete '/-/', to: 'occi_model#delete', as: 'delete_mixin'
   delete '/.well-known/org/ogf/occi/-/', to: 'occi_model#delete'
 
@@ -26,7 +26,7 @@ ROCCIServer::Application.routes.draw do
   post '/compute/', to: 'compute#create', as: 'new_compute'
 
   put '/compute/:id', to: 'compute#update', as: 'update_compute'
-  #put '/compute/' is undefined in GFD-P-R.185
+  # put '/compute/' is undefined in GFD-P-R.185
 
   delete '/compute/:id', to: 'compute#delete', as: 'delete_compute'
   delete '/compute/', to: 'compute#delete', as: 'delete_computes'
@@ -43,7 +43,7 @@ ROCCIServer::Application.routes.draw do
   post '/network/', to: 'network#create', as: 'new_network'
 
   put '/network/:id', to: 'network#update', as: 'update_network'
-  #put '/network/' is undefined in GFD-P-R.185
+  # put '/network/' is undefined in GFD-P-R.185
 
   delete '/network/:id', to: 'network#delete', as: 'delete_network'
   delete '/network/', to: 'network#delete', as: 'delete_networks'
@@ -60,7 +60,7 @@ ROCCIServer::Application.routes.draw do
   post '/storage/', to: 'storage#create', as: 'new_storage'
 
   put '/storage/:id', to: 'storage#update', as: 'update_storage'
-  #put '/storage/' is undefined in GFD-P-R.185
+  # put '/storage/' is undefined in GFD-P-R.185
 
   delete '/storage/:id', to: 'storage#delete', as: 'delete_storage'
   delete '/storage/', to: 'storage#delete', as: 'delete_storages'

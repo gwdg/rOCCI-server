@@ -1,7 +1,6 @@
 module Backends
   module Opennebula
     module Compute
-
       COMPUTE_NINTF_REGEXP = /compute_(?<compute_id>\d+)_nic_(?<compute_nic_id>\d+)/
       COMPUTE_SLINK_REGEXP = /compute_(?<compute_id>\d+)_disk_(?<compute_disk_id>\d+)/
 
@@ -99,9 +98,9 @@ module Backends
         elsif !compute.links.empty?
           compute_id = compute_create_with_links(compute)
         else
-          raise Backends::Errors::ResourceNotValidError,
-                "Given instance contains neither an os_tpl " \
-                "mixin or links necessary to create a virtual machine!"
+          fail Backends::Errors::ResourceNotValidError,
+               "Given instance contains neither an os_tpl " \
+               "mixin or links necessary to create a virtual machine!"
         end
 
         compute_id
@@ -184,7 +183,7 @@ module Backends
       # @return [true, false] result of the operation
       def compute_partial_update(compute_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
 
       # Updates an existing compute instance, instance to be updated is specified
@@ -203,9 +202,9 @@ module Backends
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-        raise Backends::Errors::ResourceStateError, "Given compute instance is not powered off!" unless virtual_machine.state_str == 'POWEROFF'
+        fail Backends::Errors::ResourceStateError, 'Given compute instance is not powered off!' unless virtual_machine.state_str == 'POWEROFF'
 
-        resize_template = ""
+        resize_template = ''
         resize_template << "VCPU = #{compute.cores.to_i}" if compute.cores
         resize_template << "CPU = #{compute.speed.to_f * (compute.cores || virtual_machine['TEMPLATE/VCPU']).to_i}" if compute.speed
         resize_template << "MEMORY = #{(compute.memory.to_f * 1024).to_i}" if compute.memory
@@ -236,10 +235,10 @@ module Backends
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-        raise Backends::Errors::ResourceStateError, "Given compute instance is not running!" unless virtual_machine.lcm_state_str == 'RUNNING'
+        fail Backends::Errors::ResourceStateError, 'Given compute instance is not running!' unless virtual_machine.lcm_state_str == 'RUNNING'
 
-        template_location = File.join(@options.templates_dir, "compute_nic.erb")
-        template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :networkinterface => networkinterface })
+        template_location = File.join(@options.templates_dir, 'compute_nic.erb')
+        template = Erubis::Eruby.new(File.read(template_location)).evaluate(networkinterface: networkinterface)
 
         rc = virtual_machine.nic_attach(template)
         check_retval(rc, Backends::Errors::ResourceActionError)
@@ -268,10 +267,10 @@ module Backends
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-        raise Backends::Errors::ResourceStateError, "Given compute instance is not running!" unless virtual_machine.lcm_state_str == 'RUNNING'
+        fail Backends::Errors::ResourceStateError, 'Given compute instance is not running!' unless virtual_machine.lcm_state_str == 'RUNNING'
 
-        template_location = File.join(@options.templates_dir, "compute_disk.erb")
-        template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :storagelink => storagelink })
+        template_location = File.join(@options.templates_dir, 'compute_disk.erb')
+        template = Erubis::Eruby.new(File.read(template_location)).evaluate(storagelink: storagelink)
 
         rc = virtual_machine.nic_attach(template)
         check_retval(rc, Backends::Errors::ResourceActionError)
@@ -294,13 +293,13 @@ module Backends
       # @return [true, false] result of the operation
       def compute_detach_network(networkinterface_id)
         matched = COMPUTE_NINTF_REGEXP.match(networkinterface_id)
-        raise Backends::Errors::IdentifierNotValidError, "ID of the given networkinterface is not valid!" unless matched
+        fail Backends::Errors::IdentifierNotValidError, 'ID of the given networkinterface is not valid!' unless matched
 
         virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(matched[:compute_id]), @client)
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-        raise Backends::Errors::ResourceStateError, "Given compute instance is not running!" unless virtual_machine.lcm_state_str == 'RUNNING'
+        fail Backends::Errors::ResourceStateError, 'Given compute instance is not running!' unless virtual_machine.lcm_state_str == 'RUNNING'
 
         rc = virtual_machine.nic_detach(matched[:compute_nic_id].to_i)
         check_retval(rc, Backends::Errors::ResourceActionError)
@@ -320,13 +319,13 @@ module Backends
       # @return [true, false] result of the operation
       def compute_detach_storage(storagelink_id)
         matched = COMPUTE_SLINK_REGEXP.match(storagelink_id)
-        raise Backends::Errors::IdentifierNotValidError, "ID of the given storagelink is not valid!" unless matched
+        fail Backends::Errors::IdentifierNotValidError, 'ID of the given storagelink is not valid!' unless matched
 
         virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(matched[:compute_id]), @client)
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-        raise Backends::Errors::ResourceStateError, "Given compute instance is not running!" unless virtual_machine.lcm_state_str == 'RUNNING'
+        fail Backends::Errors::ResourceStateError, 'Given compute instance is not running!' unless virtual_machine.lcm_state_str == 'RUNNING'
 
         rc = virtual_machine.disk_detach(matched[:compute_disk_id].to_i)
         check_retval(rc, Backends::Errors::ResourceActionError)
@@ -347,10 +346,10 @@ module Backends
       # @return [Occi::Infrastructure::Networkinterface] instance of the found networkinterface
       def compute_get_network(networkinterface_id)
         matched = COMPUTE_NINTF_REGEXP.match(networkinterface_id)
-        raise Backends::Errors::IdentifierNotValidError, "ID of the given networkinterface is not valid!" unless matched
+        fail Backends::Errors::IdentifierNotValidError, 'ID of the given networkinterface is not valid!' unless matched
 
         intf = compute_get(matched[:compute_id]).links.to_a.select { |l| l.id == networkinterface_id }
-        raise Backends::Errors::ResourceNotFoundError, "Networkinterface with the given ID does not exist!" if intf.blank?
+        fail Backends::Errors::ResourceNotFoundError, 'Networkinterface with the given ID does not exist!' if intf.blank?
 
         intf.first
       end
@@ -368,10 +367,10 @@ module Backends
       # @return [Occi::Infrastructure::Storagelink] instance of the found storagelink
       def compute_get_storage(storagelink_id)
         matched = COMPUTE_SLINK_REGEXP.match(storagelink_id)
-        raise Backends::Errors::IdentifierNotValidError, "ID of the given storagelink is not valid!" unless matched
+        fail Backends::Errors::IdentifierNotValidError, 'ID of the given storagelink is not valid!' unless matched
 
         link = compute_get(matched[:compute_id]).links.to_a.select { |l| l.id == storagelink_id }
-        raise Backends::Errors::ResourceNotFoundError, "Storagelink with the given ID does not exist!" if link.blank?
+        fail Backends::Errors::ResourceNotFoundError, 'Storagelink with the given ID does not exist!' if link.blank?
 
         link.first
       end
@@ -420,8 +419,8 @@ module Backends
         when 'http://schemas.ogf.org/occi/infrastructure/compute/action#suspend'
           compute_trigger_action_suspend(compute_id, action_instance.attributes)
         else
-          raise Backends::Errors::ActionNotImplementedError,
-                "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+          fail Backends::Errors::ActionNotImplementedError,
+               "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
         end
 
         true
@@ -437,7 +436,6 @@ module Backends
 
       # Load methods called from compute_trigger_action*
       include Backends::Opennebula::Helpers::ComputeActionHelper
-
     end
   end
 end

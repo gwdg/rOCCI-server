@@ -4,7 +4,7 @@ ROCCI_SERVER_CONFIG = Hashie::Mash.new
 def get_yaml_config(path, env = Rails.env)
   begin
     Rails.logger.info "[Configuration] Loading configuration from #{path} for ENV #{env}."
-    raise "Does not exist!" unless Dir.exists?(path)
+    fail 'Does not exist!' unless Dir.exists?(path)
 
     path = path.join("#{env}.yml")
     YAML.load(ERB.new(File.read(path)).result) || {}

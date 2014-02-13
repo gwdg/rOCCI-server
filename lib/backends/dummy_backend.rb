@@ -1,7 +1,6 @@
 module Backends
   class DummyBackend
-
-    API_VERSION = "0.0.1"
+    API_VERSION = '0.0.1'
     FIXTURES = [:compute, :network, :storage, :os_tpl, :resource_tpl].freeze
 
     def initialize(delegated_user, options, server_properties, logger, dalli_cache)
@@ -11,7 +10,7 @@ module Backends
       @logger = logger || Rails.logger
       @dalli_cache = dalli_cache
 
-      path = @options.fixtures_dir || ""
+      path = @options.fixtures_dir || ''
       read_fixtures(path)
     end
 
@@ -57,6 +56,5 @@ module Backends
     include Backends::Dummy::Storage
     include Backends::Dummy::OsTpl
     include Backends::Dummy::ResourceTpl
-
   end
 end

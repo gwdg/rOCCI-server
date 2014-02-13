@@ -2,9 +2,8 @@
 # at runtime. All API calls will be automatically wrapped
 # and delegated to the real backend.
 class Backend
-
   # Expose API_VERSION
-  API_VERSION = "0.0.1"
+  API_VERSION = '0.0.1'
 
   # Exposing a few attributes
   attr_reader :backend_name, :backend_class, :options, :server_properties
@@ -25,7 +24,7 @@ class Backend
     @backend_instance = @backend_class.new(
       delegated_user, @options,
       @server_properties, Rails.logger,
-      Backend.dalli_instance_factory(@backend_name, "localhost:11211", { :expire_after => 20.minutes })
+      Backend.dalli_instance_factory(@backend_name, 'localhost:11211',  expire_after: 20.minutes)
     )
 
     @backend_instance.extend(Backends::Helpers::MethodMissingHelper) unless @backend_instance.respond_to? :method_missing
@@ -38,7 +37,7 @@ class Backend
   # @param args [Array] an array of method arguments
   # @param block [Proc] a block passed to the method
   def method_missing(m, *args, &block)
-    raise Errors::MethodNotImplementedError, "Method is not implemented in the backend model! [#{m}]"
+    fail Errors::MethodNotImplementedError, "Method is not implemented in the backend model! [#{m}]"
   end
 
   # Performs deep cloning on given Object. Returned
@@ -89,7 +88,7 @@ class Backend
     unless s_major == b_major
       message = "Backend reports API_VERSION=#{backend_version} and cannot be loaded because SERVER_API_VERSION=#{api_version}"
       Rails.logger.error "[#{self}] #{message}"
-      raise Errors::BackendApiVersionMismatchError, message
+      fail Errors::BackendApiVersionMismatchError, message
     end
 
     unless s_minor == b_minor
@@ -109,10 +108,10 @@ class Backend
   # @param endpoint [String] memcache endpoint address:port
   # @param options [Hash] options for Dalli::Client
   # @return [Dalli::Client] constructed Dalli::Client instance
-  def self.dalli_instance_factory(backend_name, endpoint = "localhost:11211", options = {})
-    raise ArgumentError, "Dalli instance cannot be constructed without a backend_name!" if backend_name.blank?
+  def self.dalli_instance_factory(backend_name, endpoint = 'localhost:11211', options = {})
+    fail ArgumentError, 'Dalli instance cannot be constructed without a backend_name!' if backend_name.blank?
 
-    defaults = { :compress => true }
+    defaults = { compress: true }
     defaults.merge! options
 
     defaults[:namespace] = "ROCCIServer.backend_cache.#{backend_name}"
@@ -126,5 +125,4 @@ class Backend
   include BackendApi::ResourceTpl
 
   include MethodLoggerHelper unless Rails.env.production?
-
 end

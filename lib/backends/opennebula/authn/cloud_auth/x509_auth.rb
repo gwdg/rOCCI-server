@@ -15,18 +15,14 @@
 #--------------------------------------------------------------------------- #
 
 module Backends::Opennebula::Authn::CloudAuth
-
   # X509 authentication class.
   class X509Auth
-
     def self.escape_dn(dn)
-      dn.gsub(/\s/) { |s| "\\"+s[0].ord.to_s(16) }
+      dn.gsub(/\s/) { |s| '\\' + s[0].ord.to_s(16) }
     end
 
     def self.unescape_dn(dn)
-      dn.gsub(/\\[0-9a-f]{2}/) { |s| s[1,2].to_i(16).chr }
+      dn.gsub(/\\[0-9a-f]{2}/) { |s| s[1, 2].to_i(16).chr }
     end
-
   end
-
 end

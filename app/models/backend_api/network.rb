@@ -1,6 +1,5 @@
 module BackendApi
   module Network
-
     # Gets all network instance IDs, no details, no duplicates. Returned
     # identifiers must corespond to those found in the occi.core.id
     # attribute of Occi::Infrastructure::Network instances.
@@ -48,7 +47,7 @@ module BackendApi
     # @param network_id [String] OCCI identifier of the requested network instance
     # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
     def network_get(network_id)
-      raise Errors::ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
+      fail Errors::ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
       @backend_instance.network_get(network_id)
     end
 
@@ -66,8 +65,8 @@ module BackendApi
     # @param network [Occi::Infrastructure::Network] network instance containing necessary attributes
     # @return [String] final identifier of the new network instance
     def network_create(network)
-      raise Errors::ArgumentError, '\'network\' is a mandatory argument' if network.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a network instance!' unless network.kind_of? Occi::Infrastructure::Network
+      fail Errors::ArgumentError, '\'network\' is a mandatory argument' if network.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a network instance!' unless network.kind_of? Occi::Infrastructure::Network
       @backend_instance.network_create(deep_clone(network))
     end
 
@@ -101,7 +100,7 @@ module BackendApi
     # @param network_id [String] an identifier of a network instance to be deleted
     # @return [true, false] result of the operation
     def network_delete(network_id)
-      raise Errors::ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
+      fail Errors::ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
       @backend_instance.network_delete(network_id)
     end
 
@@ -122,13 +121,13 @@ module BackendApi
     # @param links [Occi::Core::Links] a collection of links to be added
     # @return [true, false] result of the operation
     def network_partial_update(network_id, attributes = nil, mixins = nil, links = nil)
-      raise Errors::ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
+      fail Errors::ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
       attributes ||= Occi::Core::Attributes.new
       mixins ||= Occi::Core::Mixins.new
       links ||= Occi::Core::Links.new
 
       unless attributes.kind_of?(Occi::Core::Attributes) && mixins.kind_of?(Occi::Core::Mixins) && links.kind_of?(Occi::Core::Links)
-        raise Errors::ArgumentTypeMismatchError, 'Action requires attributes, mixins or links to be updated!'
+        fail Errors::ArgumentTypeMismatchError, 'Action requires attributes, mixins or links to be updated!'
       end
 
       @backend_instance.network_partial_update(network_id, deep_clone(attributes), deep_clone(mixins), deep_clone(links))
@@ -146,8 +145,8 @@ module BackendApi
     # @param network [Occi::Infrastructure::Network] instance containing updated information
     # @return [true, false] result of the operation
     def network_update(network)
-      raise Errors::ArgumentError, '\'network\' is a mandatory argument' if network.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a network instance!' unless network.kind_of? Occi::Infrastructure::Network
+      fail Errors::ArgumentError, '\'network\' is a mandatory argument' if network.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a network instance!' unless network.kind_of? Occi::Infrastructure::Network
       @backend_instance.network_update(deep_clone(network))
     end
 
@@ -166,8 +165,8 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [true, false] result of the operation
     def network_trigger_action_on_all(action_instance, mixins = nil)
-      raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
+      fail Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
       mixins = deep_clone(mixins) if mixins
       @backend_instance.network_trigger_action_on_all(deep_clone(action_instance), mixins)
     end
@@ -187,11 +186,10 @@ module BackendApi
     # @param action_instance [Occi::Core::ActionInstance] action to be triggered
     # @return [true, false] result of the operation
     def network_trigger_action(network_id, action_instance)
-      raise Errors::ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
-      raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
+      fail Errors::ArgumentError, '\'network_id\' is a mandatory argument' if network_id.blank?
+      fail Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
       @backend_instance.network_trigger_action(network_id, deep_clone(action_instance))
     end
-
   end
 end

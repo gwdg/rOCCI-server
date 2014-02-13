@@ -1,5 +1,4 @@
 class StoragelinkController < ApplicationController
-
   # GET /link/storagelink/:id
   def show
     @storagelink = Occi::Collection.new

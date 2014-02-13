@@ -1,7 +1,6 @@
 module Backends
   module Dummy
     module Storage
-
       # Gets all storage instance IDs, no details, no duplicates. Returned
       # identifiers must corespond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Storage instances.
@@ -14,7 +13,7 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available storage instances
       def storage_list_ids(mixins = nil)
-        storage_list(mixins).to_a.collect { |s| s.id }
+        storage_list(mixins).to_a.map { |s| s.id }
       end
 
       # Gets all storage instances, instances must be filtered
@@ -69,7 +68,7 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] storage instance containing necessary attributes
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
-        raise Backends::Errors::IdentifierConflictError, "Instance with ID #{storage.id} already exists!" if storage_list_ids.include?(storage.id)
+        fail Backends::Errors::IdentifierConflictError, "Instance with ID #{storage.id} already exists!" if storage_list_ids.include?(storage.id)
 
         @storage << storage
         storage.id
@@ -133,7 +132,7 @@ module Backends
       # @return [true, false] result of the operation
       def storage_partial_update(storage_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
 
       # Updates an existing storage instance, instance to be updated is specified
@@ -148,7 +147,7 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] instance containing updated information
       # @return [true, false] result of the operation
       def storage_update(storage)
-        raise Backends::Errors::ResourceNotFoundError, "Instance with ID #{storage.id} does not exist!" unless storage_list_ids.include?(storage.id)
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{storage.id} does not exist!" unless storage_list_ids.include?(storage.id)
 
         @storage << storage
         storage_get(storage.id) == storage
@@ -170,7 +169,7 @@ module Backends
       # @return [true, false] result of the operation
       def storage_trigger_action_on_all(action_instance, mixins = nil)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
 
       # Triggers an action on an existing storage instance, the storage instance in question
@@ -189,9 +188,8 @@ module Backends
       # @return [true, false] result of the operation
       def storage_trigger_action(storage_id, action_instance)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
-
     end
   end
 end

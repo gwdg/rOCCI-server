@@ -2,7 +2,6 @@ require 'action_dispatch/http/request'
 
 module RequestParsers
   class OcciParser
-
     AVAILABLE_PARSERS = {
       'application/occi+json' => ::RequestParsers::Occi::JSON,
       'application/json' => ::RequestParsers::Occi::JSON,
@@ -17,7 +16,7 @@ module RequestParsers
     def initialize(app)
       @app = app
     end
-    
+
     def call(env)
       request = ::ActionDispatch::Request.new(env)
 
@@ -30,12 +29,12 @@ module RequestParsers
       @headers = sanitize_request_headers(request.headers)
       @fullpath = request.fullpath.to_s
 
-      env["rocci_server.request.parser"] = self
+      env['rocci_server.request.parser'] = self
       @app.call(env)
     end
 
     def parse_occi_messages(entity_type = nil)
-      raise ::Errors::UnsupportedMediaTypeError, "Media type '#{@media_type}' is not supported by the RequestParser" unless AVAILABLE_PARSERS.key?(@media_type)
+      fail ::Errors::UnsupportedMediaTypeError, "Media type '#{@media_type}' is not supported by the RequestParser" unless AVAILABLE_PARSERS.key?(@media_type)
 
       collection = if entity_type
                      AVAILABLE_PARSERS[@media_type].parse(@media_type, @body, @headers, @fullpath, entity_type)
@@ -51,6 +50,5 @@ module RequestParsers
       headers.select { |_, v| v.kind_of?(String) }
     end
     private :sanitize_request_headers
-
   end
 end

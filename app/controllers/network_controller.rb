@@ -1,8 +1,7 @@
 class NetworkController < ApplicationController
-
   # GET /network/
   def index
-    if request.format == "text/uri-list"
+    if request.format == 'text/uri-list'
       @networks = backend_instance.network_list_ids
       @networks.map! { |c| "#{server_url}/network/#{c}" }
     else

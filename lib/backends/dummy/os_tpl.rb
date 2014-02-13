@@ -1,7 +1,6 @@
 module Backends
   module Dummy
     module OsTpl
-
       # Gets backend-specific `os_tpl` mixins which should be merged
       # into Occi::Model of the server.
       #
@@ -32,7 +31,6 @@ module Backends
         ###
         os_tpl_list.to_a.select { |m| m.term == term }.first
       end
-
     end
   end
 end

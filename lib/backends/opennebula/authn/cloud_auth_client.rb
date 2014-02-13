@@ -18,20 +18,19 @@ require 'thread'
 
 module Backends::Opennebula::Authn
   class CloudAuthClient
-
     # These are the authentication methods for the user requests
     AUTH_MODULES = {
-        "basic"   => 'BasicCloudAuth',
-        "digest"  => 'BasicCloudAuth',
-        "x509"    => 'X509CloudAuth',
-        "voms"    => 'VomsCloudAuth'
+        'basic'   => 'BasicCloudAuth',
+        'digest'  => 'BasicCloudAuth',
+        'x509'    => 'X509CloudAuth',
+        'voms'    => 'VomsCloudAuth'
     }
 
     # These are the authentication modules for the OpenNebula requests
     # Each entry is an array with the filename  for require and class name
     # to instantiate the object.
     AUTH_CORE_MODULES = {
-       "cipher" => 'ServerCipherAuth'
+       'cipher' => 'ServerCipherAuth'
     }
 
     # Default interval for timestamps. Tokens will be generated using the same
@@ -57,7 +56,7 @@ module Backends::Opennebula::Authn
         extend Backends::Opennebula::Authn::CloudAuth.const_get(AUTH_MODULES[@conf[:auth]])
         self.class.initialize_auth if self.class.method_defined?(:initialize_auth)
       else
-        raise Backends::Errors::AuthenticationError, "Auth module not specified"
+        fail Backends::Errors::AuthenticationError, 'Auth module not specified'
       end
 
       # TODO: support other core authN methods than server_cipher
@@ -73,8 +72,8 @@ module Backends::Opennebula::Authn
     # is nil the Client is generated for the server_admin
     # username:: _String_ Name of the User
     # [return] _Client_
-    def client(username=nil)
-      expiration_time = @lock.synchronize {
+    def client(username = nil)
+      expiration_time = @lock.synchronize do
         time_now = ::Time.now.to_i
 
         if time_now > @token_expiration_time - EXPIRE_MARGIN
@@ -82,7 +81,7 @@ module Backends::Opennebula::Authn
         end
 
         @token_expiration_time
-      }
+      end
 
       token = @server_auth.login_token(expiration_time, username)
 
@@ -92,9 +91,9 @@ module Backends::Opennebula::Authn
     # Authenticate the request. This is a wrapper method that executes the
     # specific do_auth module method. It updates the user cache (if needed)
     # before calling the do_auth module.
-    def auth(params={})
+    def auth(params = {})
       update_userpool_cache if @conf[:use_user_pool_cache]
-      return do_auth(params)
+      do_auth(params)
     end
 
     protected
@@ -103,9 +102,9 @@ module Backends::Opennebula::Authn
     # username:: _String_ the username
     # driver:: _String_ list of valid drivers for the user, | separated
     # [return] _Hash_ with the username
-    def get_password(username, driver=nil)
+    def get_password(username, driver = nil)
       begin
-        username = username.encode(:xml => :text)
+        username = username.encode(xml: :text)
       rescue
         return nil
       end
@@ -115,7 +114,7 @@ module Backends::Opennebula::Authn
         xpath << " and (AUTH_DRIVER=\""
         xpath << driver.split('|').join("\" or AUTH_DRIVER=\"") << '")'
       end
-      xpath << "]/PASSWORD"
+      xpath << ']/PASSWORD'
 
       retrieve_from_userpool(xpath)
     end
@@ -128,7 +127,7 @@ module Backends::Opennebula::Authn
       # of the pipe-separated DNs stored in USER/PASSWORD
       @lock.synchronize do
         @user_pool.each_with_xpath("USER[contains(PASSWORD, \"#{password}\")]") do |user|
-          return user["NAME"] if user["AUTH_DRIVER"] == "x509" && user["PASSWORD"].split('|').include?(password)
+          return user['NAME'] if user['AUTH_DRIVER'] == 'x509' && user['PASSWORD'].split('|').include?(password)
         end
       end
 
@@ -146,17 +145,16 @@ module Backends::Opennebula::Authn
     def update_userpool_cache
       oneadmin_client = client
 
-      @lock.synchronize {
+      @lock.synchronize do
         if ::Time.now.to_i > @upool_expiration_time
           @user_pool = ::OpenNebula::UserPool.new(oneadmin_client)
 
           rc = @user_pool.info
-          raise Backends::Errors::AuthenticationError, rc.message if ::OpenNebula.is_error?(rc)
+          fail Backends::Errors::AuthenticationError, rc.message if ::OpenNebula.is_error?(rc)
 
           @upool_expiration_time = ::Time.now.to_i + EXPIRE_USER_CACHE
         end
-      }
+      end
     end
   end
-
 end

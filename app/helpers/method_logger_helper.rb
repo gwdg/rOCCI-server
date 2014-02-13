@@ -1,6 +1,5 @@
 
 module MethodLoggerHelper
-
   def self.included(base)
     # Load instance methods directly from the given class
     methods = base.instance_methods(false) + base.private_instance_methods(false)
@@ -9,7 +8,7 @@ module MethodLoggerHelper
     # since they are in separate modules
     api_ancestors = base.ancestors.select { |anc| anc.to_s.start_with?('BackendApi') }
     api_ancestors.each { |anc| methods << anc.instance_methods(false) }
-    
+
     # All methods are equal
     methods.flatten!
 
@@ -28,5 +27,4 @@ module MethodLoggerHelper
       end
     end
   end
-
 end

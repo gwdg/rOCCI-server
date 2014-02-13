@@ -1,7 +1,6 @@
 module Backends
   module Dummy
     module Network
-
       # Gets all network instance IDs, no details, no duplicates. Returned
       # identifiers must corespond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Network instances.
@@ -14,7 +13,7 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available network instances
       def network_list_ids(mixins = nil)
-        network_list(mixins).to_a.collect { |n| n.id }
+        network_list(mixins).to_a.map { |n| n.id }
       end
 
       # Gets all network instances, instances must be filtered
@@ -69,7 +68,7 @@ module Backends
       # @param network [Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
       def network_create(network)
-        raise Backends::Errors::IdentifierConflictError, "Instance with ID #{network.id} already exists!" if network_list_ids.include?(network.id)
+        fail Backends::Errors::IdentifierConflictError, "Instance with ID #{network.id} already exists!" if network_list_ids.include?(network.id)
 
         @network << network
         network.id
@@ -133,7 +132,7 @@ module Backends
       # @return [true, false] result of the operation
       def network_partial_update(network_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
 
       # Updates an existing network instance, instance to be updated is specified
@@ -148,7 +147,7 @@ module Backends
       # @param network [Occi::Infrastructure::Network] instance containing updated information
       # @return [true, false] result of the operation
       def network_update(network)
-        raise Backends::Errors::ResourceNotFoundError, "Instance with ID #{network.id} does not exist!" unless network_list_ids.include?(network.id)
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{network.id} does not exist!" unless network_list_ids.include?(network.id)
 
         @network << network
         network_get(network.id) == network
@@ -170,7 +169,7 @@ module Backends
       # @return [true, false] result of the operation
       def network_trigger_action_on_all(action_instance, mixins = nil)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
 
       # Triggers an action on an existing network instance, the network instance in question
@@ -189,9 +188,8 @@ module Backends
       # @return [true, false] result of the operation
       def network_trigger_action(network_id, action_instance)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
-
     end
   end
 end

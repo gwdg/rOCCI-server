@@ -1,5 +1,4 @@
 class << Singleton
-
   def included_with_reset(klass)
     included_without_reset(klass)
 
@@ -13,5 +12,4 @@ class << Singleton
 
   alias_method :included_without_reset, :included
   alias_method :included, :included_with_reset
-
 end

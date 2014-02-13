@@ -2,8 +2,7 @@ require 'ipaddr'
 
 module Backends
   class OpennebulaBackend
-
-    API_VERSION = "0.0.1"
+    API_VERSION = '0.0.1'
 
     def initialize(delegated_user, options, server_properties, logger, dalli_cache)
       @delegated_user = Hashie::Mash.new(delegated_user)
@@ -17,12 +16,12 @@ module Backends
 
       @options.backend_scheme ||= "http://occi.#{@server_properties.hostname || 'localhost'}"
 
-      path = @options.fixtures_dir || ""
+      path = @options.fixtures_dir || ''
       read_resource_tpl_fixtures(path)
     end
 
     def read_resource_tpl_fixtures(base_path)
-      path = File.join(base_path, "resource_tpl", "*.json")
+      path = File.join(base_path, 'resource_tpl', '*.json')
       @resource_tpl = Occi::Core::Mixins.new
 
       Dir.glob(path) do |json_file|
@@ -36,7 +35,7 @@ module Backends
       conf.auth = delegated_user.auth_.type
       conf.one_xmlrpc = options.xmlrpc_endpoint
 
-      conf.srv_auth = "cipher"
+      conf.srv_auth = 'cipher'
       conf.srv_user = options.username
       conf.srv_passwd = options.password
 
@@ -49,13 +48,13 @@ module Backends
 
       case rc.errno
       when ::OpenNebula::Error::EAUTHENTICATION
-        raise Backends::Errors::AuthenticationError, rc.message
+        fail Backends::Errors::AuthenticationError, rc.message
       when ::OpenNebula::Error::EAUTHORIZATION
-        raise Backends::Errors::UserNotAuthorizedError, rc.message
+        fail Backends::Errors::UserNotAuthorizedError, rc.message
       when ::OpenNebula::Error::ENO_EXISTS
-        raise Backends::Errors::ResourceNotFoundError, rc.message
+        fail Backends::Errors::ResourceNotFoundError, rc.message
       else
-        raise e_klass, rc.message
+        fail e_klass, rc.message
       end
     end
     private :check_retval
@@ -77,14 +76,13 @@ module Backends
       return if @client
 
       username = @cloud_auth_client.auth(@delegated_user.auth_.credentials)
-      raise Backends::Errors::AuthenticationError, "User could not be authenticated!" if username.blank?
+      fail Backends::Errors::AuthenticationError, 'User could not be authenticated!' if username.blank?
 
       @client = @cloud_auth_client.client(username)
-      raise Backends::Errors::AuthenticationError, "Could not get a client for the current user!" unless @client
+      fail Backends::Errors::AuthenticationError, 'Could not get a client for the current user!' unless @client
     end
     private :run_authn
 
     run_before(instance_methods, :run_authn, true)
-
   end
 end

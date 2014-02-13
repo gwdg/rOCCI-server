@@ -23,7 +23,7 @@ def check_hook_deps(hook_class, hook_config = Hashie::Mash.new)
     unless found
       message = "#{hook_class.to_s} requires #{required_backend.inspect} as a backend but #{loaded_backend.inspect} is loaded!"
       Rails.logger.error "[Hooks] #{message}"
-      raise Errors::HookDepsError, message
+      fail Errors::HookDepsError, message
     end
   end
 end

@@ -4,9 +4,7 @@
 # * Automatically performs necessary registrations
 # * Helps with filtering
 class OcciModel
-
   class << self
-
     # Instantiates Occi::Model and registers necessary extensions.
     #
     # @example
@@ -17,7 +15,7 @@ class OcciModel
     # @param filter [Occi::Collection, Occi::Core::Category, String] filtration parameters
     # @return [Occi::Model] an Occi::Model instance ready to use
     def get(backend, filter = nil)
-      raise ArgumentError, 'Backend is a mandatory argument!' unless backend
+      fail ArgumentError, 'Backend is a mandatory argument!' unless backend
       filter ? get_filtered(backend, filter) : model_factory(backend)
     end
 
@@ -32,8 +30,8 @@ class OcciModel
     # @param filter [Occi::Collection, Occi::Core::Category, String] filtration parameters
     # @return [Occi::Model] an Occi::Model instance ready to use
     def get_filtered(backend, filter)
-      raise ArgumentError, 'Backend is a mandatory argument!' unless backend
-      raise ArgumentError, 'Filter is a mandatory argument!' unless filter
+      fail ArgumentError, 'Backend is a mandatory argument!' unless backend
+      fail ArgumentError, 'Filter is a mandatory argument!' unless filter
 
       Rails.logger.debug "[#{self}] Building OCCI model with filter: #{filter.inspect}"
       filter = filter.kinds.first if filter.respond_to?(:kinds)
@@ -101,17 +99,15 @@ class OcciModel
     # @param mixins [Occi::Core::Mixins]
     # @return [Occi::Collection]
     def mixins_as_a_coll(mixins)
-      raise ArgumentError, 'Mixins is a mandatory argument!' unless mixins
+      fail ArgumentError, 'Mixins is a mandatory argument!' unless mixins
       collection = Occi::Collection.new
       collection.mixins = mixins
 
       collection
     end
-
   end
 
   private_class_method :model_factory
   private_class_method :get_extensions
   private_class_method :mixins_as_a_coll
-
 end

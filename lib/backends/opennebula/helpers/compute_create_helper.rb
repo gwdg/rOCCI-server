@@ -1,9 +1,7 @@
 module Backends
   module Opennebula
     module Helpers
-
       module ComputeCreateHelper
-
         COMPUTE_SSH_REGEXP = /^(command=.+\s)?((?:ssh\-|ecds)[\w-]+\s.+)$/
         COMPUTE_BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
 
@@ -22,35 +20,35 @@ module Backends
           check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
           template.delete_element('TEMPLATE/NAME')
-          template.add_element('TEMPLATE', { 'NAME' => compute.title })
+          template.add_element('TEMPLATE',  'NAME' => compute.title)
 
           if compute.cores
             template.delete_element('TEMPLATE/VCPU')
-            template.add_element('TEMPLATE', { "VCPU" => compute.cores.to_i })
+            template.add_element('TEMPLATE',  'VCPU' => compute.cores.to_i)
           end
 
           if compute.memory
             memory = compute.memory.to_f * 1024
             template.delete_element('TEMPLATE/MEMORY')
-            template.add_element('TEMPLATE', { "MEMORY" => memory.to_i })
+            template.add_element('TEMPLATE',  'MEMORY' => memory.to_i)
           end
 
           if compute.architecture
             template.delete_element('TEMPLATE/ARCHITECTURE')
-            template.add_element('TEMPLATE', { "ARCHITECTURE" => compute.architecture })
+            template.add_element('TEMPLATE',  'ARCHITECTURE' => compute.architecture)
           end
 
           if compute.speed
             calc_speed = compute.speed.to_f * (template['TEMPLATE/VCPU'] || 1).to_i
             template.delete_element('TEMPLATE/CPU')
-            template.add_element('TEMPLATE', { "CPU" => calc_speed })
+            template.add_element('TEMPLATE',  'CPU' => calc_speed)
           end
 
           compute_create_check_context(compute)
           compute_create_add_context(compute, template)
 
-          mixins = compute.mixins.to_a.collect { |m| m.type_identifier }
-          template.add_element('TEMPLATE', { "OCCI_COMPUTE_MIXINS" => mixins.join(' ') })
+          mixins = compute.mixins.to_a.map { |m| m.type_identifier }
+          template.add_element('TEMPLATE',  'OCCI_COMPUTE_MIXINS' => mixins.join(' '))
 
           # remove template-specific values
           template.delete_element('ID')
@@ -79,8 +77,8 @@ module Backends
 
         def compute_create_with_links(compute)
           @logger.debug "Deploying #{compute.inspect} with links"
-          template_location = File.join(@options.templates_dir, "compute.erb")
-          template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :compute => compute })
+          template_location = File.join(@options.templates_dir, 'compute.erb')
+          template = Erubis::Eruby.new(File.read(template_location)).evaluate(compute: compute)
 
           @logger.debug "Template #{template.inspect}"
 
@@ -101,36 +99,34 @@ module Backends
         def compute_create_add_context(compute, template)
           return unless compute.attributes.org!.openstack
 
-          template.add_element('TEMPLATE', "CONTEXT" => '')
+          template.add_element('TEMPLATE', 'CONTEXT' => '')
 
           if compute.attributes.org.openstack.credentials!.publickey!.data
             template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
-            template.add_element('TEMPLATE/CONTEXT', "SSH_KEY" => compute.attributes['org.openstack.credentials.publickey.data'])
+            template.add_element('TEMPLATE/CONTEXT', 'SSH_KEY' => compute.attributes['org.openstack.credentials.publickey.data'])
 
             template.delete_element('TEMPLATE/CONTEXT/SSH_PUBLIC_KEY')
-            template.add_element('TEMPLATE/CONTEXT', "SSH_PUBLIC_KEY" => compute.attributes['org.openstack.credentials.publickey.data'])
+            template.add_element('TEMPLATE/CONTEXT', 'SSH_PUBLIC_KEY' => compute.attributes['org.openstack.credentials.publickey.data'])
           end
 
           if compute.attributes.org.openstack.compute!.user_data
             template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
-            template.add_element('TEMPLATE/CONTEXT', "USER_DATA" => compute.attributes['org.openstack.compute.user_data'])
+            template.add_element('TEMPLATE/CONTEXT', 'USER_DATA' => compute.attributes['org.openstack.compute.user_data'])
           end
         end
 
         def compute_create_check_context(compute)
           if compute.attributes.org!.openstack!.credentials!.publickey!.data
-            raise Backends::Errors::ResourceNotValidError, 'Public key is invalid!' unless \
+            fail Backends::Errors::ResourceNotValidError, 'Public key is invalid!' unless \
               COMPUTE_SSH_REGEXP.match(compute.attributes['org.openstack.credentials.publickey.data'])
           end
 
           if compute.attributes.org!.openstack!.compute!.user_data
-            raise Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
+            fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
               COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
           end
         end
-
       end
-
     end
   end
 end

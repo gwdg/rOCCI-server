@@ -3,11 +3,11 @@ require 'spec_helper'
 describe Backends::DummyBackend do
   let(:dalli) { Dalli::Client.new }
   let(:dummy) { Backends::DummyBackend.new nil, nil, nil, nil, dalli }
-  let(:dummy_w_opts) {
+  let(:dummy_w_opts) do
     opts = Hashie::Mash.new
     opts.fixtures_dir = Rails.root.join('etc', 'backends', 'dummy', 'fixtures')
     Backends::DummyBackend.new nil, opts, nil, nil, dalli
-  }
+  end
 
   context 'os_tpl_*' do
     describe '#os_tpl_list' do

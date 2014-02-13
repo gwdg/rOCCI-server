@@ -1,7 +1,6 @@
 module Backends
   module Opennebula
     module ResourceTpl
-
       # Gets platform- or backend-specific `resource_tpl` mixins which should be merged
       # into Occi::Model of the server.
       #
@@ -27,7 +26,6 @@ module Backends
       def resource_tpl_get(term)
         resource_tpl_list.to_a.select { |m| m.term == term }.first
       end
-
     end
   end
 end

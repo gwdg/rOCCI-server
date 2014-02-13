@@ -1,6 +1,5 @@
 module AuthenticationStrategies
   class VomsStrategy < ::Warden::Strategies::Base
-
     VOMS_RANGE = (0..100)
     GRST_CRED_REGEXP = /(.+)\s(\d+)\s(\d+)\s(\d)\s(.+)/
     GRST_VOMS_REGEXP = /\/(.+)\/Role=(.+)\/Capability=(.+)/
@@ -40,7 +39,7 @@ module AuthenticationStrategies
       end
 
       user = Hashie::Mash.new
-      user.auth!.type = "voms"
+      user.auth!.type = 'voms'
       user.auth!.credentials!.client_cert_dn = proxy_cert_subject
       user.auth!.credentials!.client_cert_voms_attrs = voms_cert_attrs
       user.auth!.credentials!.client_cert = auth_request.env['SSL_CLIENT_CERT'] unless auth_request.env['SSL_CLIENT_CERT'].blank?
@@ -51,7 +50,6 @@ module AuthenticationStrategies
     end
 
     class << self
-
       def voms_extensions?(auth_request)
         voms_ext = false
 
@@ -95,8 +93,6 @@ module AuthenticationStrategies
         Rails.logger.debug "[AuthN] [#{self}] VOMS attrs: #{attributes.inspect}"
         attributes
       end
-
     end
-
   end
 end

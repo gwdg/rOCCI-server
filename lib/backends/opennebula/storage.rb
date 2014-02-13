@@ -1,7 +1,6 @@
 module Backends
   module Opennebula
     module Storage
-
       DEFAULT_DATASTORE_ID = 1
 
       # Gets all storage instance IDs, no details, no duplicates. Returned
@@ -91,8 +90,8 @@ module Backends
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
         @logger.debug "Creating storage #{storage.inspect}"
-        template_location = File.join(@options.templates_dir, "storage.erb")
-        template = Erubis::Eruby.new(File.read(template_location)).evaluate({ :storage => storage })
+        template_location = File.join(@options.templates_dir, 'storage.erb')
+        template = Erubis::Eruby.new(File.read(template_location)).evaluate(storage: storage)
 
         @logger.debug "Template #{template.inspect}"
 
@@ -175,7 +174,7 @@ module Backends
       # @return [true, false] result of the operation
       def storage_partial_update(storage_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        raise Backends::Errors::MethodNotImplementedError, "Partial updates are currently not supported!"
+        fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
       end
 
       # Updates an existing storage instance, instance to be updated is specified
@@ -191,7 +190,7 @@ module Backends
       # @return [true, false] result of the operation
       def storage_update(storage)
         # TODO: impl
-        raise Backends::Errors::MethodNotImplementedError, "Updates are currently not supported!"
+        fail Backends::Errors::MethodNotImplementedError, 'Updates are currently not supported!'
       end
 
       # Triggers an action on all existing storage instance, instances must be filtered
@@ -236,8 +235,8 @@ module Backends
         when 'http://schemas.ogf.org/occi/infrastructure/storage/action#backup'
           storage_trigger_action_backup(storage_id, action_instance.attributes)
         else
-          raise Backends::Errors::ActionNotImplementedError,
-                "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+          fail Backends::Errors::ActionNotImplementedError,
+               "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
         end
 
         true
@@ -250,7 +249,6 @@ module Backends
 
       # Load methods called from storage_trigger_action*
       include Backends::Opennebula::Helpers::StorageActionHelper
-
     end
   end
 end

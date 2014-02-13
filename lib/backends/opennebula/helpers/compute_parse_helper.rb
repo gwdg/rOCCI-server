@@ -1,11 +1,9 @@
 module Backends
   module Opennebula
     module Helpers
-
       module ComputeParseHelper
-
-        STORAGE_GENERATED_PREFIX = "generated_"
-        NETWORK_GENERATED_PREFIX = "generated_"
+        STORAGE_GENERATED_PREFIX = 'generated_'
+        NETWORK_GENERATED_PREFIX = 'generated_'
 
         def compute_parse_backend_obj(backend_compute)
           compute = Occi::Infrastructure::Compute.new
@@ -29,8 +27,8 @@ module Backends
           compute.memory = (backend_compute['TEMPLATE/MEMORY'].to_f / 1024)
           compute.speed = ((backend_compute['TEMPLATE/CPU'] || 1).to_f / compute.cores)
 
-          compute.architecture = "x64" if backend_compute['TEMPLATE/OS/ARCH'] == "x86_64"
-          compute.architecture = "x86" if backend_compute['TEMPLATE/OS/ARCH'] == "i686"
+          compute.architecture = 'x64' if backend_compute['TEMPLATE/OS/ARCH'] == 'x86_64'
+          compute.architecture = 'x86' if backend_compute['TEMPLATE/OS/ARCH'] == 'i686'
 
           compute.attributes['org.opennebula.compute.id'] = backend_compute['ID']
           compute.attributes['org.opennebula.compute.cpu'] = backend_compute['TEMPLATE/CPU'].to_f if backend_compute['TEMPLATE/CPU']
@@ -59,20 +57,20 @@ module Backends
           #       POWEROFF UNDEPLOYED}
           #
           case backend_compute.state_str
-          when "ACTIVE"
-            result.state = "active"
+          when 'ACTIVE'
+            result.state = 'active'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
-          when "FAILED"
-            result.state = "error"
+          when 'FAILED'
+            result.state = 'error'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
-          when "STOPPED", "SUSPENDED", "POWEROFF"
-            result.state = "suspended"
+          when 'STOPPED', 'SUSPENDED', 'POWEROFF'
+            result.state = 'suspended'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
-          when "PENDING"
-            result.state = "waiting"
+          when 'PENDING'
+            result.state = 'waiting'
             result.actions = []
           else
-            result.state = "inactive"
+            result.state = 'inactive'
             result.actions = []
           end
 
@@ -97,13 +95,13 @@ module Backends
 
             link = Occi::Infrastructure::Storagelink.new
             link.id = id
-            link.state = (compute.state == "active") ? "active" : "inactive"
+            link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
             target = storage_get(disk['IMAGE_ID']) if disk['IMAGE_ID']
             unless target
               target = Occi::Infrastructure::Storage.new
               target.id = "#{STORAGE_GENERATED_PREFIX}#{id}"
-              target.title = "Generated target for an on-the-fly created non-persistent disk"
+              target.title = 'Generated target for an on-the-fly created non-persistent disk'
             end
 
             link.target = target
@@ -138,13 +136,13 @@ module Backends
 
             link = Occi::Infrastructure::Networkinterface.new
             link.id = id
-            link.state = (compute.state == "active") ? "active" : "inactive"
+            link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
             target = network_get(nic['NETWORK_ID']) if nic['NETWORK_ID']
             unless target
               target = Occi::Infrastructure::Network.new
               target.id = "#{NETWORK_GENERATED_PREFIX}#{id}"
-              target.title = "Generated target for a non-existent network (probably removed)"
+              target.title = 'Generated target for a non-existent network (probably removed)'
             end
 
             link.target = target
@@ -179,9 +177,7 @@ module Backends
 
           result_network_links
         end
-
       end
-
     end
   end
 end

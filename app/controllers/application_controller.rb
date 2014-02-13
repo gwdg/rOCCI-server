@@ -1,37 +1,36 @@
 class ApplicationController < ActionController::API
-
   # Include some stuff present in the full ActionController
-  #include ActionController::UrlFor
-  #include ActionController::Redirecting
+  # include ActionController::UrlFor
+  # include ActionController::Redirecting
   include ActionController::Rendering
   include ActionController::Renderers::All
   include ActionController::ImplicitRender
   include ActionController::MimeResponds
 
   # Handle known exceptions
-  rescue_from ::Errors::UnsupportedMediaTypeError, :with => :handle_parser_type_err
-  rescue_from ::Occi::Errors::ParserInputError, :with => :handle_parser_input_err
-  rescue_from ::Backends::Errors::MethodNotImplementedError, :with => :handle_not_impl_err
-  rescue_from ::Errors::ArgumentTypeMismatchError, :with => :handle_wrong_args_err
-  rescue_from ::Errors::ArgumentError, :with => :handle_wrong_args_err
-  rescue_from ::Backends::Errors::StubError, :with => :handle_not_impl_err
-  rescue_from ::Backends::Errors::IdentifierConflictError, :with => :handle_invalid_resource_err
-  rescue_from ::Backends::Errors::IdentifierNotValidError, :with => :handle_resource_not_found_err
-  rescue_from ::Backends::Errors::ResourceNotFoundError, :with => :handle_resource_not_found_err
-  rescue_from ::Backends::Errors::ResourceNotValidError, :with => :handle_invalid_resource_err
-  rescue_from ::Occi::Errors::KindNotDefinedError, :with => :handle_parser_input_err
-  rescue_from ::Occi::Errors::CategoryNotDefinedError, :with => :handle_parser_input_err
-  rescue_from ::Occi::Errors::AttributeNotDefinedError, :with => :handle_parser_input_err
-  rescue_from ::Occi::Errors::AttributeTypeError, :with => :handle_parser_input_err
-  rescue_from ::Occi::Errors::AttributeMissingError, :with => :handle_wrong_args_err
-  rescue_from ::Backends::Errors::ResourceRetrievalError, :with => :handle_resource_not_found_err
-  rescue_from ::Backends::Errors::ResourceActionError, :with => :handle_internal_backend_err
-  rescue_from ::Backends::Errors::ResourceCreationError, :with => :handle_wrong_args_err
-  rescue_from ::Backends::Errors::ServiceUnavailableError, :with => :handle_internal_backend_err
-  rescue_from ::Backends::Errors::ResourceStateError, :with => :handle_invalid_resource_err
-  rescue_from ::Backends::Errors::AuthenticationError, :with => :handle_auth_err
-  rescue_from ::Backends::Errors::UserNotAuthorizedError, :with => :handle_authz_err
-  rescue_from ::Backends::Errors::ActionNotImplementedError, :with => :handle_not_impl_err
+  rescue_from ::Errors::UnsupportedMediaTypeError, with: :handle_parser_type_err
+  rescue_from ::Occi::Errors::ParserInputError, with: :handle_parser_input_err
+  rescue_from ::Backends::Errors::MethodNotImplementedError, with: :handle_not_impl_err
+  rescue_from ::Errors::ArgumentTypeMismatchError, with: :handle_wrong_args_err
+  rescue_from ::Errors::ArgumentError, with: :handle_wrong_args_err
+  rescue_from ::Backends::Errors::StubError, with: :handle_not_impl_err
+  rescue_from ::Backends::Errors::IdentifierConflictError, with: :handle_invalid_resource_err
+  rescue_from ::Backends::Errors::IdentifierNotValidError, with: :handle_resource_not_found_err
+  rescue_from ::Backends::Errors::ResourceNotFoundError, with: :handle_resource_not_found_err
+  rescue_from ::Backends::Errors::ResourceNotValidError, with: :handle_invalid_resource_err
+  rescue_from ::Occi::Errors::KindNotDefinedError, with: :handle_parser_input_err
+  rescue_from ::Occi::Errors::CategoryNotDefinedError, with: :handle_parser_input_err
+  rescue_from ::Occi::Errors::AttributeNotDefinedError, with: :handle_parser_input_err
+  rescue_from ::Occi::Errors::AttributeTypeError, with: :handle_parser_input_err
+  rescue_from ::Occi::Errors::AttributeMissingError, with: :handle_wrong_args_err
+  rescue_from ::Backends::Errors::ResourceRetrievalError, with: :handle_resource_not_found_err
+  rescue_from ::Backends::Errors::ResourceActionError, with: :handle_internal_backend_err
+  rescue_from ::Backends::Errors::ResourceCreationError, with: :handle_wrong_args_err
+  rescue_from ::Backends::Errors::ServiceUnavailableError, with: :handle_internal_backend_err
+  rescue_from ::Backends::Errors::ResourceStateError, with: :handle_invalid_resource_err
+  rescue_from ::Backends::Errors::AuthenticationError, with: :handle_auth_err
+  rescue_from ::Backends::Errors::UserNotAuthorizedError, with: :handle_authz_err
+  rescue_from ::Backends::Errors::ActionNotImplementedError, with: :handle_not_impl_err
 
   include Mixins::ErrorHandling
 
@@ -47,9 +46,9 @@ class ApplicationController < ActionController::API
   # Register supported MIME formats
   # @see 'config/initializers/mime_types.rb' for details
   respond_to :xml, :json, :occi_xml, :occi_json
-  respond_to :occi_header, :text, :except => [ :index ]
-  respond_to :uri_list, :only => [ :index ]
-  respond_to :html, :only => [ :index, :show ]
+  respond_to :occi_header, :text, except: [:index]
+  respond_to :uri_list, only: [:index]
+  respond_to :html, only: [:index, :show]
 
   # Provides access to a structure containing authentication data
   # intended for delegation to the backend.
@@ -91,7 +90,7 @@ class ApplicationController < ActionController::API
 
   # Provides access to a lazy parser object
   def parse_request(expected_entity_type = nil)
-    @request_collection = env["rocci_server.request.parser"].parse_occi_messages(expected_entity_type)
+    @request_collection = env['rocci_server.request.parser'].parse_occi_messages(expected_entity_type)
 
     @request_collection.model = OcciModel.get(backend_instance)
     @request_collection.check(check_categories = true)
@@ -106,15 +105,15 @@ class ApplicationController < ActionController::API
 
   def check_ai!(ai, query_string)
     action_param = action_from_query_string(query_string)
-    raise ::Errors::ArgumentError, "Provided action does not have a term!" unless ai && ai.action && ai.action.term
-    raise ::Errors::ArgumentTypeMismatchError, "Action terms in params and body do not match!" unless ai.action.term == action_param
+    fail ::Errors::ArgumentError, 'Provided action does not have a term!' unless ai && ai.action && ai.action.term
+    fail ::Errors::ArgumentTypeMismatchError, 'Action terms in params and body do not match!' unless ai.action.term == action_param
   end
 
   private
 
   # Action wrapper providing logging capabilities, mostly for debugging purposes.
   def global_request_logging
-    http_request_header_keys = request.headers.env.keys.select { |header_name| header_name.match("^HTTP.*") }
+    http_request_header_keys = request.headers.env.keys.select { |header_name| header_name.match('^HTTP.*') }
     http_request_headers = request.headers.select { |header_name, header_value| http_request_header_keys.index(header_name) }
 
     logger.debug "[ApplicationController] Processing with params #{params.inspect}"
@@ -140,5 +139,4 @@ class ApplicationController < ActionController::API
     matched = /^action=(?<act>\S+)$/.match(query_string)
     matched[:act]
   end
-
 end

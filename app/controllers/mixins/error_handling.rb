@@ -1,6 +1,5 @@
 module Mixins
   module ErrorHandling
-
     # Define handlers for known exceptions
     def handle_parser_type_err(exception)
       logger.warn "[Parser] Request from #{request.remote_ip} refused with: #{exception.message}"
@@ -46,6 +45,5 @@ module Mixins
       logger.warn "[Backend] Failed to authorize user: #{exception.message}"
       render text: exception.message, status: 403
     end
-
   end
 end

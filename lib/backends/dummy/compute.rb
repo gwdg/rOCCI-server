@@ -1,7 +1,6 @@
 module Backends
   module Dummy
     module Compute
-
       # Gets all compute instance IDs, no details, no duplicates. Returned
       # identifiers must corespond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Compute instances.
@@ -26,7 +25,7 @@ module Backends
         # compute.id = 'my_unique_id'
         # compute.location #=> "/compute/my_unique_id"
         ###
-        compute_list(mixins).to_a.collect { |c| c.id }
+        compute_list(mixins).to_a.map { |c| c.id }
       end
 
       # Gets all compute instances, instances must be filtered
@@ -129,7 +128,7 @@ module Backends
         #
         # Given Occi::Infrastructure::Compute instance is frozen and unmodifiable!
         ###
-        raise Backends::Errors::IdentifierConflictError, "Instance with ID #{compute.id} already exists!" if compute_list_ids.include?(compute.id)
+        fail Backends::Errors::IdentifierConflictError, "Instance with ID #{compute.id} already exists!" if compute_list_ids.include?(compute.id)
 
         @compute << compute
         compute.id
@@ -201,7 +200,7 @@ module Backends
       # @return [true, false] result of the operation
       def compute_partial_update(compute_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
 
       # Updates an existing compute instance, instance to be updated is specified
@@ -224,7 +223,7 @@ module Backends
         # decided internally based on attributes set in the given
         # Occi::Infrastructure::Compute instance.
         ###
-        raise Backends::Errors::ResourceNotFoundError, "Instance with ID #{compute.id} does not exist!" unless compute_list_ids.include?(compute.id)
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{compute.id} does not exist!" unless compute_list_ids.include?(compute.id)
 
         @compute << compute
         compute_get(compute.id) == compute
@@ -267,8 +266,8 @@ module Backends
         compute = compute_get(networkinterface.attributes['occi.core.source'].split('/').last)
         network = network_get(networkinterface.attributes['occi.core.target'].split('/').last)
 
-        raise Backends::Errors::ResourceNotFoundError, "Given compute instance does not exist!" unless compute
-        raise Backends::Errors::ResourceNotFoundError, "Given network instance does not exist!" unless network
+        fail Backends::Errors::ResourceNotFoundError, 'Given compute instance does not exist!' unless compute
+        fail Backends::Errors::ResourceNotFoundError, 'Given network instance does not exist!' unless network
 
         compute.links << networkinterface
 
@@ -312,8 +311,8 @@ module Backends
         compute = compute_get(storagelink.attributes['occi.core.source'].split('/').last)
         storage = storage_get(storagelink.attributes['occi.core.target'].split('/').last)
 
-        raise Backends::Errors::ResourceNotFoundError, "Given compute instance does not exist!" unless compute
-        raise Backends::Errors::ResourceNotFoundError, "Given storage instance does not exist!" unless storage
+        fail Backends::Errors::ResourceNotFoundError, 'Given compute instance does not exist!' unless compute
+        fail Backends::Errors::ResourceNotFoundError, 'Given storage instance does not exist!' unless storage
 
         compute.links << storagelink
 
@@ -345,11 +344,11 @@ module Backends
           next if compute.links.blank?
           old_size = compute.links.size
 
-          compute.links.delete_if { |l|
-            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#networkinterface" \
+          compute.links.delete_if do |l|
+            l.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' \
                  && \
             l.id == networkinterface_id
-          }
+          end
 
           break unless old_size == compute.links.size
         end
@@ -382,11 +381,11 @@ module Backends
           next if compute.links.blank?
           old_size = compute.links.size
 
-          compute.links.delete_if { |l|
-            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#storagelink" \
+          compute.links.delete_if do |l|
+            l.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink' \
                  && \
             l.id == storagelink_id
-          }
+          end
 
           break unless old_size == compute.links.size
         end
@@ -415,16 +414,16 @@ module Backends
         compute_list.to_a.each do |compute|
           next if compute.links.blank?
 
-          found = compute.links.to_a.select { |l|
-            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#networkinterface" \
+          found = compute.links.to_a.select do |l|
+            l.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' \
                  && \
             l.id == networkinterface_id
-          }
+          end
 
           break unless found.blank?
         end
 
-        raise Backends::Errors::ResourceNotFoundError, "Given link instance does not exist!" if found.blank?
+        fail Backends::Errors::ResourceNotFoundError, 'Given link instance does not exist!' if found.blank?
 
         found.first
       end
@@ -450,16 +449,16 @@ module Backends
         compute_list.to_a.each do |compute|
           next if compute.links.blank?
 
-          found = compute.links.to_a.select { |l|
-            l.kind.type_identifier == "http://schemas.ogf.org/occi/infrastructure#storagelink" \
+          found = compute.links.to_a.select do |l|
+            l.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink' \
                  && \
             l.id == storagelink_id
-          }
+          end
 
           break unless found.blank?
         end
 
-        raise Backends::Errors::ResourceNotFoundError, "Given link instance does not exist!" if found.blank?
+        fail Backends::Errors::ResourceNotFoundError, 'Given link instance does not exist!' if found.blank?
 
         found.first
       end
@@ -480,7 +479,7 @@ module Backends
       # @return [true, false] result of the operation
       def compute_trigger_action_on_all(action_instance, mixins = nil)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
 
       # Triggers an action on an existing compute instance, the compute instance in question
@@ -499,9 +498,8 @@ module Backends
       # @return [true, false] result of the operation
       def compute_trigger_action(compute_id, action_instance)
         # TODO: impl
-        raise Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
       end
-
     end
   end
 end

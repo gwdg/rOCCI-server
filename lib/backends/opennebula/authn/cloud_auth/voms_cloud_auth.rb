@@ -15,17 +15,16 @@
 #--------------------------------------------------------------------------- #
 
 module Backends::Opennebula::Authn::CloudAuth
-
   module VomsCloudAuth
-    def do_auth(params={})
-      raise Backends::Errors::AuthenticationError, "Credentials for X.509 not set!" unless params && params[:client_cert_dn]
-      raise Backends::Errors::AuthenticationError, "Attributes for VOMS not set!" unless params[:client_cert_voms_attrs] && params[:client_cert_voms_attrs].first
+    def do_auth(params = {})
+      fail Backends::Errors::AuthenticationError, 'Credentials for X.509 not set!' unless params && params[:client_cert_dn]
+      fail Backends::Errors::AuthenticationError, 'Attributes for VOMS not set!' unless params[:client_cert_voms_attrs] && params[:client_cert_voms_attrs].first
 
       # TODO: interate through all available sets of attrs?
       first_voms = params[:client_cert_voms_attrs].first
 
       if first_voms[:vo].blank? || first_voms[:role].blank? || first_voms[:capability].blank?
-        raise Backends::Errors::AuthenticationError, "Invalid VOMS attributes! #{first_voms.inspect}"
+        fail Backends::Errors::AuthenticationError, "Invalid VOMS attributes! #{first_voms.inspect}"
       end
 
       # Password should be a DN with VOMS attrs appended and whitespaces removed.
@@ -35,7 +34,7 @@ module Backends::Opennebula::Authn::CloudAuth
       # TODO: remove this hack after Perun propagation scripts are updated
       if username.blank?
         # try a DN with whitespace chars removed
-        username = get_username(constructed_dn.gsub(/\s+/,''))
+        username = get_username(constructed_dn.gsub(/\s+/, ''))
       end
 
       return nil if username.blank?
@@ -43,5 +42,4 @@ module Backends::Opennebula::Authn::CloudAuth
       username
     end
   end
-
 end

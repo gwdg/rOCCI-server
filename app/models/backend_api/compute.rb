@@ -1,6 +1,5 @@
 module BackendApi
   module Compute
-
     # Gets all compute instance IDs, no details, no duplicates. Returned
     # identifiers must corespond to those found in the occi.core.id
     # attribute of Occi::Infrastructure::Compute instances.
@@ -48,7 +47,7 @@ module BackendApi
     # @param compute_id [String] OCCI identifier of the requested compute instance
     # @return [Occi::Infrastructure::Compute, nil] a compute instance or `nil`
     def compute_get(compute_id)
-      raise Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
+      fail Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
       @backend_instance.compute_get(compute_id)
     end
 
@@ -66,8 +65,8 @@ module BackendApi
     # @param compute [Occi::Infrastructure::Compute] compute instance containing necessary attributes
     # @return [String] final identifier of the new compute instance
     def compute_create(compute)
-      raise Errors::ArgumentError, '\'compute\' is a mandatory argument' if compute.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a compute instance!' unless compute.kind_of? Occi::Infrastructure::Compute
+      fail Errors::ArgumentError, '\'compute\' is a mandatory argument' if compute.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a compute instance!' unless compute.kind_of? Occi::Infrastructure::Compute
       @backend_instance.compute_create(deep_clone(compute))
     end
 
@@ -101,7 +100,7 @@ module BackendApi
     # @param compute_id [String] an identifier of a compute instance to be deleted
     # @return [true, false] result of the operation
     def compute_delete(compute_id)
-      raise Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
+      fail Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
       @backend_instance.compute_delete(compute_id)
     end
 
@@ -122,13 +121,13 @@ module BackendApi
     # @param links [Occi::Core::Links] a collection of links to be added
     # @return [true, false] result of the operation
     def compute_partial_update(compute_id, attributes = nil, mixins = nil, links = nil)
-      raise Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
+      fail Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
       attributes ||= Occi::Core::Attributes.new
       mixins ||= Occi::Core::Mixins.new
       links ||= Occi::Core::Links.new
 
       unless attributes.kind_of?(Occi::Core::Attributes) && mixins.kind_of?(Occi::Core::Mixins) && links.kind_of?(Occi::Core::Links)
-        raise Errors::ArgumentTypeMismatchError, 'Action requires attributes, mixins or links to be updated!'
+        fail Errors::ArgumentTypeMismatchError, 'Action requires attributes, mixins or links to be updated!'
       end
 
       @backend_instance.compute_partial_update(compute_id, deep_clone(attributes), deep_clone(mixins), deep_clone(links))
@@ -146,8 +145,8 @@ module BackendApi
     # @param compute [Occi::Infrastructure::Compute] instance containing updated information
     # @return [true, false] result of the operation
     def compute_update(compute)
-      raise Errors::ArgumentError, '\'compute\' is a mandatory argument' if compute.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a compute instance!' unless compute.kind_of? Occi::Infrastructure::Compute
+      fail Errors::ArgumentError, '\'compute\' is a mandatory argument' if compute.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a compute instance!' unless compute.kind_of? Occi::Infrastructure::Compute
       @backend_instance.compute_update(deep_clone(compute))
     end
 
@@ -163,9 +162,9 @@ module BackendApi
     # @param networkinterface [Occi::Infrastructure::Networkinterface] NI instance containing necessary attributes
     # @return [String] final identifier of the new network interface
     def compute_attach_network(networkinterface)
-      raise Errors::ArgumentError, '\'networkinterface\' is a mandatory argument' if networkinterface.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a link instance!' unless networkinterface.kind_of? Occi::Core::Link
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a networkinterface instance!' unless networkinterface.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
+      fail Errors::ArgumentError, '\'networkinterface\' is a mandatory argument' if networkinterface.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a link instance!' unless networkinterface.kind_of? Occi::Core::Link
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a networkinterface instance!' unless networkinterface.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
       @backend_instance.compute_attach_network(deep_clone(networkinterface))
     end
 
@@ -181,9 +180,9 @@ module BackendApi
     # @param storagelink [Occi::Infrastructure::Storagelink] SL instance containing necessary attributes
     # @return [String] final identifier of the new storage link
     def compute_attach_storage(storagelink)
-      raise Errors::ArgumentError, '\'storagelink\' is a mandatory argument' if storagelink.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a link instance!' unless storagelink.kind_of? Occi::Core::Link
-      raise Errors::ArgumentTypeMismatchError, 'Action requires a storagelink instance!' unless storagelink.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink'
+      fail Errors::ArgumentError, '\'storagelink\' is a mandatory argument' if storagelink.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a link instance!' unless storagelink.kind_of? Occi::Core::Link
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a storagelink instance!' unless storagelink.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink'
       @backend_instance.compute_attach_storage(deep_clone(storagelink))
     end
 
@@ -198,7 +197,7 @@ module BackendApi
     # @param networkinterface_id [String] network interface identifier
     # @return [true, false] result of the operation
     def compute_detach_network(networkinterface_id)
-      raise Errors::ArgumentError, '\'networkinterface_id\' is a mandatory argument' if networkinterface_id.blank?
+      fail Errors::ArgumentError, '\'networkinterface_id\' is a mandatory argument' if networkinterface_id.blank?
       @backend_instance.compute_detach_network(networkinterface_id)
     end
 
@@ -213,7 +212,7 @@ module BackendApi
     # @param storagelink_id [String] storage link identifier
     # @return [true, false] result of the operation
     def compute_detach_storage(storagelink_id)
-      raise Errors::ArgumentError, '\'storagelink_id\' is a mandatory argument' if storagelink_id.blank?
+      fail Errors::ArgumentError, '\'storagelink_id\' is a mandatory argument' if storagelink_id.blank?
       @backend_instance.compute_detach_storage(storagelink_id)
     end
 
@@ -229,7 +228,7 @@ module BackendApi
     # @param networkinterface_id [String] network interface identifier
     # @return [Occi::Infrastructure::Networkinterface] instance of the found networkinterface
     def compute_get_network(networkinterface_id)
-      raise Errors::ArgumentError, '\'networkinterface_id\' is a mandatory argument' if networkinterface_id.blank?
+      fail Errors::ArgumentError, '\'networkinterface_id\' is a mandatory argument' if networkinterface_id.blank?
       @backend_instance.compute_get_network(networkinterface_id)
     end
 
@@ -245,7 +244,7 @@ module BackendApi
     # @param storagelink_id [String] storage link identifier
     # @return [Occi::Infrastructure::Storagelink] instance of the found storagelink
     def compute_get_storage(storagelink_id)
-      raise Errors::ArgumentError, '\'storagelink_id\' is a mandatory argument' if storagelink_id.blank?
+      fail Errors::ArgumentError, '\'storagelink_id\' is a mandatory argument' if storagelink_id.blank?
       @backend_instance.compute_get_storage(storagelink_id)
     end
 
@@ -264,8 +263,8 @@ module BackendApi
     # @param mixins [Occi::Core::Mixins] a filter containing mixins
     # @return [true, false] result of the operation
     def compute_trigger_action_on_all(action_instance, mixins = nil)
-      raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
+      fail Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
       mixins = deep_clone(mixins) if mixins
       @backend_instance.compute_trigger_action_on_all(deep_clone(action_instance), mixins)
     end
@@ -285,11 +284,10 @@ module BackendApi
     # @param action_instance [Occi::Core::ActionInstance] action to be triggered
     # @return [true, false] result of the operation
     def compute_trigger_action(compute_id, action_instance)
-      raise Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
-      raise Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
-      raise Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
+      fail Errors::ArgumentError, '\'compute_id\' is a mandatory argument' if compute_id.blank?
+      fail Errors::ArgumentError, '\'action_instance\' is a mandatory argument' if action_instance.blank?
+      fail Errors::ArgumentTypeMismatchError, 'Action requires an action instance!' unless action_instance.kind_of? Occi::Core::ActionInstance
       @backend_instance.compute_trigger_action(compute_id, deep_clone(action_instance))
     end
-
   end
 end

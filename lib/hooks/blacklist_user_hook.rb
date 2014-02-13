@@ -1,6 +1,5 @@
 module Hooks
   class BlacklistUserHook
-
     def initialize(app, options)
       @app = app
       @options = options
@@ -9,6 +8,5 @@ module Hooks
     def call(env)
       @app.call(env)
     end
-
   end
 end

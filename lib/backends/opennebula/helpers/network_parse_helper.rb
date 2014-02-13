@@ -1,9 +1,7 @@
 module Backends
   module Opennebula
     module Helpers
-
       module NetworkParseHelper
-
         def network_parse_backend_obj(backend_network)
           network = Occi::Infrastructure::Network.new
 
@@ -26,14 +24,14 @@ module Backends
           network.vlan = backend_network['VLAN_ID'].to_i if backend_network['VLAN_ID']
 
           unless backend_network['TEMPLATE/NETWORK_ADDRESS'].blank?
-            network.allocation = "dynamic"
+            network.allocation = 'dynamic'
 
             if backend_network['TEMPLATE/NETWORK_ADDRESS'].include? '/'
               network.address = backend_network['TEMPLATE/NETWORK_ADDRESS']
             else
               unless backend_network['TEMPLATE/NETWORK_MASK'].blank?
                 if backend_network['TEMPLATE/NETWORK_MASK'].include?('.')
-                  cidr = IPAddr.new(backend_network['TEMPLATE/NETWORK_MASK']).to_i.to_s(2).count("1")
+                  cidr = IPAddr.new(backend_network['TEMPLATE/NETWORK_MASK']).to_i.to_s(2).count('1')
                   network.address = "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/#{cidr}"
                 else
                   network.address = "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/#{backend_network['TEMPLATE/NETWORK_MASK']}"
@@ -41,15 +39,15 @@ module Backends
               end
             end
           else
-            network.allocation = "static"
+            network.allocation = 'static'
           end
 
           network.attributes['org.opennebula.network.id'] = backend_network['ID']
 
           if backend_network['VLAN'].blank? || backend_network['VLAN'].to_i == 0
-            network.attributes['org.opennebula.network.vlan'] = "NO"
+            network.attributes['org.opennebula.network.vlan'] = 'NO'
           else
-            network.attributes['org.opennebula.network.vlan'] = "YES"
+            network.attributes['org.opennebula.network.vlan'] = 'YES'
           end
 
           network.attributes['org.opennebula.network.phydev'] = backend_network['PHYDEV'] unless backend_network['PHYDEV'].blank?
@@ -72,13 +70,11 @@ module Backends
 
           # ON doesn't implement actions on networks
           result.actions = []
-          result.state = "active"
+          result.state = 'active'
 
           result
         end
-
       end
-
     end
   end
 end

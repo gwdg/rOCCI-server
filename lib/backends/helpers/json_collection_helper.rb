@@ -1,7 +1,6 @@
 module Backends
   module Helpers
     module JsonCollectionHelper
-
       def read_from_json(path)
         collection = Occi::Collection.new
         collection.model = nil
@@ -14,7 +13,6 @@ module Backends
 
         collection
       end
-
     end
   end
 end

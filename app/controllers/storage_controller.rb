@@ -1,8 +1,7 @@
 class StorageController < ApplicationController
-
   # GET /storage/
   def index
-    if request.format == "text/uri-list"
+    if request.format == 'text/uri-list'
       @storages = backend_instance.storage_list_ids
       @storages.map! { |c| "#{server_url}/storage/#{c}" }
     else

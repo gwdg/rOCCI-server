@@ -15,10 +15,9 @@
 #--------------------------------------------------------------------------- #
 
 module Backends::Opennebula::Authn::CloudAuth
-
   module X509CloudAuth
-    def do_auth(params={})
-      raise Backends::Errors::AuthenticationError, "Credentials for X.509 not set!" unless params && params[:client_cert_dn]
+    def do_auth(params = {})
+      fail Backends::Errors::AuthenticationError, 'Credentials for X.509 not set!' unless params && params[:client_cert_dn]
 
       # Password should be DN with whitespaces removed.
       username = get_username(X509Auth.escape_dn(params[:client_cert_dn]))
@@ -27,5 +26,4 @@ module Backends::Opennebula::Authn::CloudAuth
       username
     end
   end
-
 end

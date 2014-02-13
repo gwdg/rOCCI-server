@@ -1,6 +1,5 @@
 module BackendApi
   module OsTpl
-
     # Gets backend-specific `os_tpl` mixins which should be merged
     # into Occi::Model of the server.
     #
@@ -26,11 +25,10 @@ module BackendApi
     # @param term [String] OCCI term of the requested os_tpl mixin instance
     # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
     def os_tpl_get(term)
-      raise Errors::ArgumentError, '\'term\' is a mandatory argument' if term.blank?
+      fail Errors::ArgumentError, '\'term\' is a mandatory argument' if term.blank?
       os_tpl = @backend_instance.os_tpl_get(term)
       os_tpl.location = "/mixin/os_tpl/#{os_tpl.term}/" if os_tpl
       os_tpl
     end
-
   end
 end

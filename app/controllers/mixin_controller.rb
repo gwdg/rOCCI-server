@@ -1,5 +1,4 @@
 class MixinController < ApplicationController
-
   # GET /mixin/:term*/
   def index
     # TODO: impl

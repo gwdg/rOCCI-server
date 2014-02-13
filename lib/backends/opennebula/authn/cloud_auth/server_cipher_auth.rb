@@ -21,24 +21,23 @@ require 'base64'
 require 'fileutils'
 
 module Backends::Opennebula::Authn::CloudAuth
-
   # Server authentication class. This method can be used by OpenNebula services
-  # to let access authenticated users by other means. It is based on OpenSSL 
+  # to let access authenticated users by other means. It is based on OpenSSL
   # symmetric ciphers
-  class ServerCipherAuth 
+  class ServerCipherAuth
     ###########################################################################
-    #Constants with paths to relevant files and defaults
+    # Constants with paths to relevant files and defaults
     ###########################################################################
-    CIPHER = "aes-256-cbc"
+    CIPHER = 'aes-256-cbc'
 
     def initialize(srv_user, srv_passwd)
       @srv_user   = srv_user
-      @srv_passwd = srv_passwd 
+      @srv_passwd = srv_passwd
 
       if !srv_passwd.blank?
           @key = ::Digest::SHA1.hexdigest(@srv_passwd)
       else
-          @key = ""
+          @key = ''
       end
 
       @cipher = ::OpenSSL::Cipher::Cipher.new(CIPHER)
@@ -46,48 +45,47 @@ module Backends::Opennebula::Authn::CloudAuth
 
     # Creates a ServerCipher for client usage
     def self.new_client(srv_user, srv_passwd)
-      self.new(srv_user, srv_passwd)
+      new(srv_user, srv_passwd)
     end
 
     # Generates a login token in the form:
-    #   - server_user:target_user:time_expires 
+    #   - server_user:target_user:time_expires
     # The token is then encrypted with the contents of one_auth
-    def login_token(expire, target_user=nil)
+    def login_token(expire, target_user = nil)
       target_user ||= @srv_user
       token_txt   =   "#{@srv_user}:#{target_user}:#{expire}"
 
       token   = encrypt(token_txt)
-      token64 = ::Base64::encode64(token).strip.delete("\n")
+      token64 = ::Base64.encode64(token).strip.delete("\n")
 
-      return "#{@srv_user}:#{target_user}:#{token64}"
+      "#{@srv_user}:#{target_user}:#{token64}"
     end
 
     # Returns a valid password string to create a user using this auth driver
     def password
-        return @srv_passwd
+        @srv_passwd
     end
 
     private
 
-    def encrypt(data) 
+    def encrypt(data)
       @cipher.encrypt
       @cipher.key = @key
-      
+
       rc = @cipher.update(data)
       rc << @cipher.final
 
-      return rc
+      rc
     end
 
-    def decrypt(data) 
+    def decrypt(data)
       @cipher.decrypt
       @cipher.key = @key
-      
-      rc = @cipher.update(::Base64::decode64(data))
+
+      rc = @cipher.update(::Base64.decode64(data))
       rc << @cipher.final
 
-      return rc
+      rc
     end
   end
-
 end
