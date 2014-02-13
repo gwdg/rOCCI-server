@@ -1,8 +1,8 @@
 module AuthenticationStrategies
   class VomsStrategy < ::Warden::Strategies::Base
     VOMS_RANGE = (0..100)
-    GRST_CRED_REGEXP = /(.+)\s(\d+)\s(\d+)\s(\d)\s(.+)/
-    GRST_VOMS_REGEXP = /\/(.+)\/Role=(.+)\/Capability=(.+)/
+    GRST_CRED_REGEXP = /^(.+)\s(\d+)\s(\d+)\s(\d)\s(.+)$/
+    GRST_VOMS_REGEXP = /^\/(.+)\/Role=(.+)\/Capability=(.+)$/
 
     def auth_request
       @auth_request ||= ::ActionDispatch::Request.new(env)
@@ -13,6 +13,7 @@ module AuthenticationStrategies
     end
 
     def valid?
+      # TODO: verify that we are running inside Apache2
       Rails.logger.debug "[AuthN] [#{self.class}] Checking for the strategy applicability"
       Rails.logger.debug "[AuthN] [#{self.class}] SSL_CLIENT_S_DN: #{auth_request.env['SSL_CLIENT_S_DN'].inspect}"
       result = !auth_request.env['SSL_CLIENT_S_DN'].blank? && self.class.voms_extensions?(auth_request)
@@ -82,16 +83,64 @@ module AuthenticationStrategies
             voms_ary = voms_ary.to_a.drop 1
 
             voms_attrs = Hashie::Mash.new
-            voms_attrs.vo = voms_ary[0]
+            voms_attrs.vo = mapped_vo_name(voms_ary[0])
             voms_attrs.role = voms_ary[1]
             voms_attrs.capability = voms_ary[2]
 
-            attributes << voms_attrs
+            if allowed_access?(voms_attrs.vo)
+              attributes << voms_attrs
+            else
+              Rails.logger.warn "[AuthN] [#{self}] VO #{voms_attrs.vo.inspect} is NOT allowed!"
+            end
           end
         end
 
         Rails.logger.debug "[AuthN] [#{self}] VOMS attrs: #{attributes.inspect}"
         attributes
+      end
+
+      def allowed_access?(vo_name)
+        return false if vo_name.blank?
+
+        case OPTIONS.access_policy
+        when 'blacklist'
+          !blacklisted_vo?(vo_name)
+        when 'whitelist'
+          whitelisted_vo?(vo_name)
+        else
+          raise Errors::ConfigurationParsingError,
+                "Unsupported VOMS access policy #{OPTIONS.access_policy.inspect}!"
+        end
+      end
+
+      def blacklisted_vo?(vo_name)
+        blacklist = read_yaml(OPTIONS.blacklist) || []
+        blacklist.include?(vo_name)
+      end
+
+      def whitelisted_vo?(vo_name)
+        whitelist = read_yaml(OPTIONS.whitelist) || []
+        whitelist.include?(vo_name)
+      end
+
+      def mapped_vo_name(vo_name)
+        return vo_name unless OPTIONS.vo_mapping
+
+        map = read_yaml(OPTIONS.vo_mapfile) || {}
+        new_vo_name = map[vo_name] || vo_name
+
+        Rails.logger.debug "[AuthN] [#{self}] VO name mapped #{vo_name.inspect} -> #{new_vo_name.inspect}"
+        new_vo_name
+      end
+
+      def read_yaml(path)
+        begin
+          raise "File does not exist!" unless File.exists?(path)
+          YAML.load(ERB.new(File.read(path)).result)
+        rescue Exception => err
+          raise Errors::ConfigurationParsingError,
+                "Failed to parse a YAML file! [#{path}]: #{err.message}"
+        end
       end
     end
   end
