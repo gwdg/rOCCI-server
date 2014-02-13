@@ -1,1 +1,0 @@
-blacklists: <%= Rails.root.join('etc', 'hooks', 'blacklist_user', 'blacklists') %>

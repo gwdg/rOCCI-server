@@ -6,7 +6,7 @@ authn_strategies:
   - x509
   - voms
 hooks:
-  - autocreate_user
+  - dummy
 backend: dummy
 log_level: debug
 tempdir: /tmp/rocci_server
