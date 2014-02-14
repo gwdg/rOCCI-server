@@ -8,7 +8,7 @@ class UnauthorizedController < ActionController::Metal
 
   def respond
     Rails.logger.warn "[AuthN] [#{self.class}] Authentication failed: #{warden_message}"
-    set_unauth ROCCI_SERVER_CONFIG.common.authn_strategies.include?('keystone')
+    set_unauth
     Rails.logger.warn "[AuthN] [#{self.class}] Responding with #{status} #{headers.inspect}"
   end
 
@@ -18,9 +18,14 @@ class UnauthorizedController < ActionController::Metal
 
   protected
 
-  def set_unauth(keystone = false)
+  def set_unauth
     self.status = 401
-    headers['WWW-Authenticate'] = %(Keystone uri=#{"test"}) if keystone
+
+    # Include Keystone URI in the response, if applicable
+    if ROCCI_SERVER_CONFIG.common.authn_strategies.include?('keystone')
+      headers['WWW-Authenticate'] = %(Keystone uri='#{ROCCI_SERVER_CONFIG.authn_strategies.keystone_.keystone_uri || "http://localhost:5000/"}')
+    end
+
     self.content_type = 'text/plain'
     self.response_body = warden_message
   end

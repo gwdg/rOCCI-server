@@ -1,1 +1,35 @@
-# No configuration
+# Keystone URI (as it appears in the WWW-Authenticate HTTP header)
+keystone_uri: 'http://localhost:5000/'
+
+# X.509 stuff
+# cert_source  -- read certificates from 'file' or 'url'
+# ca_cert      -- from http://[KEYSTONE_FQDN]:35357/v2.0/certificates/ca
+# signing_cert -- from http://[KEYSTONE_FQDN]:35357/v2.0/certificates/signing
+# trl_url      -- http://[KEYSTONE_FQDN]:35357/v2.0/tokens/revoked
+keystone_pki_trust:
+  cert_source: 'file'
+  ca_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'ca_cert.pem') %>
+  signing_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'signing_cert.pem') %>
+  trl_url: 'http://localhost:35357/v2.0/tokens/revoked'
+
+# Mapping to local user and group names
+group_mapping: 'false'
+user_mapping: 'false'
+# YAML file with the following syntax
+#
+# old_name: 'new_name'
+# another_old_name: 'another_new_name'
+user_mapfile: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'user_mapfile.yml') %>
+group_mapfile: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'group_mapfile.yml') %>
+
+# Allow all groups except the ones in the blacklist
+# or allow only those found in the whitelist. Evaluation
+# is done BEFORE the group name mapping is applied!
+access_policy: 'blacklist' # or 'whitelist'
+# YAML files with the following syntax
+#
+# - group_name
+# - another_group_name
+# - yet_another_group_name
+whitelist: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'whitelist.yml') %>
+blacklist: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'blacklist.yml') %>
