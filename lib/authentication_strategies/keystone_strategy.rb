@@ -30,6 +30,11 @@ module AuthenticationStrategies
     def authenticate!
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating with X-Auth-Token"
 
+      if self.class.revoked_token?(auth_request.headers['X-Auth-Token'])
+        fail!('Your Keystone token has been revoked!')
+        return
+      end
+
       # TODO: impl. ca_path
       store = self.class.init_x509_store(
         OPTIONS.keystone_pki_trust.ca_cert,
@@ -46,14 +51,19 @@ module AuthenticationStrategies
         return
       end
 
-      extracted_token = self.class.extract_and_validate_token(cms_token)
+      extracted_token = self.class.extract_token(cms_token)
       unless extracted_token
-        fail!('Your Keystone token is either expired or malformed!')
+        fail!('Your Keystone token is malformed!')
         return
       end
 
       # TODO: impl. ACLs
       user = self.class.user_factory(extracted_token)
+      unless user
+        fail!('Couldn\'t retrieve user and tenant information from the token!')
+        return
+      end
+
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
       success! user
     end
@@ -95,25 +105,24 @@ module AuthenticationStrategies
         store
       end
 
-      def extract_and_validate_token(cms_token)
+      def extract_token(cms_token)
         begin
           data = Hashie::Mash.new(cms_token.data)
-          valid_token?(data) ? data : nil
+          expired_token?(data) ? nil : data
         rescue => e
           Rails.logger.error "[AuthN] [#{self.class}] Failed to " \
-                             "extract and validate CMS token! #{e.message}"
+                             "extract data from CMS token! #{e.message}"
           nil
         end
       end
 
-      def valid_token?(extracted_token)
-        !expired_token?(extracted_token) && !revoked_token?(extracted_token)
-      end
-
-      def revoked_token?(extracted_token)
+      def revoked_token?(original_token)
         return false unless OPTIONS.keystone_pki_trust.trl_url
-        # TODO: impl.
-        true
+        trl = get_trl(OPTIONS.keystone_pki_trust.trl_url)
+        return true unless trl && trl.revoked
+
+        token_md5 = Digest::MD5.digest(original_token)
+        trl.revoked.select { |rev| rev.id == token_md5 }.any?
       end
 
       def expired_token?(extracted_token)
@@ -122,12 +131,39 @@ module AuthenticationStrategies
         DateTime.iso8601(exp_time) > DateTime.now
       end
 
+      def get_trl(url)
+        # TODO: configurable memcache endpoint
+        dalli = Backend.dalli_instance_factory(
+          "keystone_strategy_trl_cache",
+          'localhost:11211', expire_after: 2.minutes
+        )
+
+        trl_parsed = nil
+        begin
+          unless trl = dalli.get('trl')
+            trl = open(url).read
+            dalli.set('trl', trl)
+          end
+
+          trl_parsed = Hashie::Mash.new(JSON.parse(trl))
+        rescue
+          Rails.logger.error "[AuthN] [#{self.class}] Failed to " \
+                             "retrieve and parse TRL from #{url.inspect}! #{e.message}"
+          dalli.delete('trl')
+          return nil
+        end
+
+        trl_parsed
+      end
+
       def user_factory(extracted_token)
+        return unless extracted_token.access_.token_.tenant_.name && extracted_token.access_.user_.username
+
         # TODO: impl. mapping for username & tenant
         user = Hashie::Mash.new
         user.auth!.type = 'keystone'
-        user.auth!.credentials!.tenant = ""
-        user.auth!.credentials!.username = ""
+        user.auth!.credentials!.tenant = extracted_token.access.token.tenant.name
+        user.auth!.credentials!.username = extracted_token.access.user.username
         user.auth!.credentials!.token = extracted_token
         user.auth!.credentials!.verification_status = 'SUCCESS'
 

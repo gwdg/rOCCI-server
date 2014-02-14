@@ -18,3 +18,5 @@
 # end
 
 # Learn more: http://github.com/javan/whenever
+#
+set :output, "#{`pwd`.strip}/log/cronjobs.log"
