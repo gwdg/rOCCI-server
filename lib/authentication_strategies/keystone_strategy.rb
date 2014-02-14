@@ -43,8 +43,15 @@ module AuthenticationStrategies
 
       crt = OpenSSL::X509::Certificate.new(File.read(OPTIONS.keystone_pki_trust.signing_cert))
 
-      cms_token = OpenSSL::CMS.read_cms(keystone2cms(auth_request.headers['X-Auth-Token']))
-      verified = cms_token.verify([crt], store, nil, nil)
+      verified = begin
+        cms_token = OpenSSL::CMS.read_cms(self.class.keystone2cms(auth_request.headers['X-Auth-Token']))
+        cms_token.verify([crt], store, nil, nil)
+      rescue => e
+        Rails.logger.warn "[AuthN] [#{self.class}] OpenSSL::CMS validation " \
+                          "failed with #{e.message.inspect} on: #{auth_request.headers['X-Auth-Token']}"
+        fail!('Your Keystone token is invalid!')
+        return
+      end
 
       unless verified
         fail!('Failed to verify your Keystone token!')
@@ -53,7 +60,7 @@ module AuthenticationStrategies
 
       extracted_token = self.class.extract_token(cms_token)
       unless extracted_token
-        fail!('Your Keystone token is malformed!')
+        fail!('Your Keystone token is expired or malformed!')
         return
       end
 
@@ -77,7 +84,10 @@ module AuthenticationStrategies
                 "Only #{SUPPORTED_CERT_SOURCES.join(', ').inspect} are allowed!"
         end
 
-        file_marcopolo?(OPTIONS.keystone_pki_trust_.ca_cert) && file_marcopolo?(OPTIONS.keystone_pki_trust_.signing_cert)
+        result = file_marcopolo?(OPTIONS.keystone_pki_trust_.ca_cert) && file_marcopolo?(OPTIONS.keystone_pki_trust_.signing_cert)
+
+        Rails.logger.warn "[AuthN] [#{self.name}] Certificates are not present or empty! Bailing out ..." unless result
+        result
       end
 
       def keystone2cms(token)
@@ -107,12 +117,12 @@ module AuthenticationStrategies
 
       def extract_token(cms_token)
         begin
-          data = Hashie::Mash.new(cms_token.data)
+          data = Hashie::Mash.new(JSON.parse(cms_token.data))
           expired_token?(data) ? nil : data
         rescue => e
-          Rails.logger.error "[AuthN] [#{self.class}] Failed to " \
+          Rails.logger.error "[AuthN] [#{self.name}] Failed to " \
                              "extract data from CMS token! #{e.message}"
-          nil
+          raise e
         end
       end
 
@@ -128,7 +138,7 @@ module AuthenticationStrategies
       def expired_token?(extracted_token)
         exp_time = extracted_token.access_.token_.expires
         return true unless exp_time
-        DateTime.iso8601(exp_time) > DateTime.now
+        DateTime.iso8601(exp_time) < DateTime.now
       end
 
       def get_trl(url)
@@ -146,11 +156,11 @@ module AuthenticationStrategies
           end
 
           trl_parsed = Hashie::Mash.new(JSON.parse(trl))
-        rescue
-          Rails.logger.error "[AuthN] [#{self.class}] Failed to " \
+        rescue => e
+          Rails.logger.error "[AuthN] [#{self.name}] Failed to " \
                              "retrieve and parse TRL from #{url.inspect}! #{e.message}"
           dalli.delete('trl')
-          return nil
+          raise e
         end
 
         trl_parsed

@@ -8,9 +8,9 @@ keystone_uri: 'http://localhost:5000/'
 # trl_url      -- http://[KEYSTONE_FQDN]:35357/v2.0/tokens/revoked
 keystone_pki_trust:
   cert_source: 'file'
-  ca_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'ca_cert.pem') %>
-  signing_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'signing_cert.pem') %>
-  trl_url: 'http://localhost:35357/v2.0/tokens/revoked'
+  ca_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'ca_cert.pem.devel') %>
+  signing_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'signing_cert.pem.devel') %>
+  trl_url: false
 
 # Mapping to local user and tenant names
 tenant_mapping: 'false'
