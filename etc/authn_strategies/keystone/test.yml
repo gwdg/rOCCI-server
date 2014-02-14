@@ -3,8 +3,8 @@ keystone_uri: 'http://localhost:5000/'
 
 # X.509 stuff
 # cert_source  -- read certificates from 'file' or 'url'
-# ca_cert      -- from http://[KEYSTONE_FQDN]:35357/v2.0/certificates/ca
-# signing_cert -- from http://[KEYSTONE_FQDN]:35357/v2.0/certificates/signing
+# ca_cert      -- the file from http://[KEYSTONE_FQDN]:35357/v2.0/certificates/ca or URL
+# signing_cert -- the file from http://[KEYSTONE_FQDN]:35357/v2.0/certificates/signing or URL
 # trl_url      -- http://[KEYSTONE_FQDN]:35357/v2.0/tokens/revoked
 keystone_pki_trust:
   cert_source: 'file'
@@ -12,24 +12,24 @@ keystone_pki_trust:
   signing_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'signing_cert.pem') %>
   trl_url: false
 
-# Mapping to local user and group names
-group_mapping: 'false'
+# Mapping to local user and tenant names
+tenant_mapping: 'false'
 user_mapping: 'false'
 # YAML file with the following syntax
 #
 # old_name: 'new_name'
 # another_old_name: 'another_new_name'
 user_mapfile: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'user_mapfile.yml') %>
-group_mapfile: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'group_mapfile.yml') %>
+tenant_mapfile: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'tenant_mapfile.yml') %>
 
-# Allow all groups except the ones in the blacklist
+# Allow all tenants except the ones in the blacklist
 # or allow only those found in the whitelist. Evaluation
-# is done BEFORE the group name mapping is applied!
+# is done BEFORE the tenant name mapping is applied!
 access_policy: 'blacklist' # or 'whitelist'
 # YAML files with the following syntax
 #
-# - group_name
-# - another_group_name
-# - yet_another_group_name
+# - tenant_name
+# - another_tenant_name
+# - yet_another_tenant_name
 whitelist: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'whitelist.yml') %>
 blacklist: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'blacklist.yml') %>
