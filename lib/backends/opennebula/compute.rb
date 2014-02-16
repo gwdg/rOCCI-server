@@ -272,7 +272,7 @@ module Backends
         template_location = File.join(@options.templates_dir, 'compute_disk.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(storagelink: storagelink)
 
-        rc = virtual_machine.nic_attach(template)
+        rc = virtual_machine.disk_attach(template)
         check_retval(rc, Backends::Errors::ResourceActionError)
 
         rc = virtual_machine.info
