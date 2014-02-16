@@ -1,13 +1,13 @@
 DISK = [
   IMAGE_ID = "<%= @storagelink.target.split('/').last %>"
 
-  <% if @storagelink.deviceid %>
-  ,TARGET  = "<%= @storagelink.deviceid.gsub('/dev/', '') %>"
+  <% if @storagelink.attributes.occi_.storagelink_.deviceid %>
+  ,TARGET  = "<%= @storagelink.attributes['occi.storagelink.deviceid'].gsub('/dev/', '') %>"
   <% end %>
-  <% if @storagelink.attributes.org!.opennebula!.storagelink!.bus %>
+  <% if @storagelink.attributes.org_.opennebula_.storagelink_.bus %>
   ,BUS = "<%= @storagelink.attributes['org.opennebula.storagelink.bus'] %>"
   <% end %>
-  <% if @storagelink.attributes.org!.opennebula!.storagelink!.driver %>
+  <% if @storagelink.attributes.org_.opennebula_.storagelink_.driver %>
   ,DRIVER = "<%= @storagelink.attributes['org.opennebula.storagelink.driver'] %>"
   <% end %>
 ]

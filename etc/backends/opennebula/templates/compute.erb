@@ -30,7 +30,7 @@ OS = [
   <% if hypervisor == :xen  %>
      ,BOOTLOADER = "pygrub"
   <% else %>
-     ,BOOT = "<%= @compute.attributes.org!.opennebula!.boot || "hd" %>"
+     ,BOOT = "<%= @compute.attributes.org_.opennebula_.boot || "hd" %>"
   <% end  %>
 ]
 
@@ -39,14 +39,14 @@ OS = [
 CONTEXT = [
   FILES_DS="<%= context_init %>",
   PUBLIC_IP="$NIC[IP]",
-  <% if @compute.attributes.org!.openstack!.credentials!.publickey!.data %>
+  <% if @compute.attributes.org_.openstack_.credentials_.publickey_.data %>
   SSH_KEY="<%= @compute.attributes['org.openstack.credentials.publickey.data'] %>",
   SSH_PUBLIC_KEY="<%= @compute.attributes['org.openstack.credentials.publickey.data'] %>"
   <% else %>
   SSH_KEY="$USER[SSH_KEY]",
   SSH_KEY="$USER[SSH_PUBLIC_KEY]"
   <% end %>
-  <% if @compute.attributes.org!.openstack!.compute!.user_data %>
+  <% if @compute.attributes.org_.openstack_.compute_.user_data %>
   ,USER_DATA="<%= @compute.attributes['org.openstack.compute.user_data'] %>"
   <% end %>
 ]
@@ -61,10 +61,10 @@ DISK = [
   <% if storagelink.deviceid %>
   ,TARGET  = "<%= storagelink.deviceid.gsub('/dev/', '') %>"
   <% end %>
-  <% if storagelink.attributes.org!.opennebula!.storagelink!.bus %>
+  <% if storagelink.attributes.org_.opennebula_.storagelink_.bus %>
   ,BUS = "<%= storagelink.attributes['org.opennebula.storagelink.bus'] %>"
   <% end %>
-  <% if storagelink.attributes.org!.opennebula!.storagelink!.driver %>
+  <% if storagelink.attributes.org_.opennebula_.storagelink_.driver %>
   ,DRIVER = "<%= storagelink.attributes['org.opennebula.storagelink.driver'] %>"
   <% end %>
 ]
@@ -97,25 +97,25 @@ NIC = [
   <% if networkinterface.interface %>
   ,TARGET = "<%= networkinterface.interface %>"
   <% end %>
-  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.bridge %>
+  <% if networkinterface.attributes.org_.opennebula_.networkinterface_.bridge %>
   ,BRIDGE = "<%= networkinterface.attributes['org.opennebula.networkinterface.bridge'] %>"
   <% end %>
-  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.script %>
+  <% if networkinterface.attributes.org_.opennebula_.networkinterface_.script %>
   ,SCRIPT = "<%= networkinterface.attributes['org.opennebula.networkinterface.script'] %>"
   <% end %>
-  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.white_ports_tcp %>
+  <% if networkinterface.attributes.org_.opennebula_.networkinterface_.white_ports_tcp %>
   ,WHITE_PORTS_TCP = "<%= networkinterface.attributes['org.opennebula.networkinterface.white_ports_tcp'] %>"
   <% end %>
-  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.black_ports_tcp %>
+  <% if networkinterface.attributes.org_.opennebula_.networkinterface_.black_ports_tcp %>
   ,BLACK_PORTS_TCP = "<%= networkinterface.attributes['org.opennebula.networkinterface.black_ports_tcp'] %>"
   <% end %>
-  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.white_ports_udp %>
+  <% if networkinterface.attributes.org_.opennebula_.networkinterface_.white_ports_udp %>
   ,WHITE_PORTS_UDP = "<%= networkinterface.attributes['org.opennebula.networkinterface.white_ports_udp'] %>"
   <% end %>
-  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.black_ports_udp %>
+  <% if networkinterface.attributes.org_.opennebula_.networkinterface_.black_ports_udp %>
   ,BLACK_PORTS_UDP = "<%= networkinterface.attributes['org.opennebula.networkinterface.black_ports_udp'] %>"
   <% end %>
-  <% if networkinterface.attributes.org!.opennebula!.networkinterface!.icmp %>
+  <% if networkinterface.attributes.org_.opennebula_.networkinterface_.icmp %>
   ,ICMP = "<%= networkinterface.attributes['org.opennebula.networkinterface.icmp'] %>"
   <% end %>
 ]

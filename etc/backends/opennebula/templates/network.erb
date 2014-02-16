@@ -10,11 +10,11 @@ VLAN_ID = "<%= @network.vlan.to_i %>"
 VLAN = "NO"
 <% end %>
 
-<% if @network.attributes.org!.opennebula!.network!.phydev %>
+<% if @network.attributes.org_.opennebula_.network_.phydev %>
 PHYDEV = "<%= @network.attributes['org.opennebula.network.phydev'] %>"
 <% end %>
 
-<% if @network.attributes.org!.opennebula!.network!.bridge %>
+<% if @network.attributes.org_.opennebula_.network_.bridge %>
 BRIDGE = "<%= @network.attributes['org.opennebula.network.bridge'] %>"
 <% end %>
 
@@ -35,7 +35,7 @@ TYPE = "RANGED"
 NETWORK_ADDRESS = "<%= addr %>"
 NETWORK_SIZE = "<%= case net; when '8'; "A"; when '16'; "B"; when '24'; "C"; end %>"
 
-  <% if @network.attributes.org!.opennebula!.network!.ip_start && @network.attributes.org!.opennebula!.network!.ip_end %>
+  <% if @network.attributes.org_.opennebula_.network_.ip_start && @network.attributes.org_.opennebula_.network_.ip_end %>
 IP_START = "<%= @network.attributes['org.opennebula.network.ip_start'] %>"
 IP_END = "<%= @network.attributes['org.opennebula.network.ip_end'] %>"
   <% end %>

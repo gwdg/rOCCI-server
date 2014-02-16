@@ -1,34 +1,34 @@
 NIC = [
   NETWORK_ID = "<%= @networkinterface.target.split('/').last %>"
 
-  <% if @networkinterface.address %>
-  ,IP = "<%= @networkinterface.address %>"
+  <% if @networkinterface.attributes.occi_.networkinterface_.address %>
+  ,IP = "<%= @networkinterface.attributes['occi.networkinterface.address'] %>"
   <% end %>
-  <% if @networkinterface.mac %>
-  ,MAC = "<%= @networkinterface.mac %>"
+  <% if @networkinterface.attributes.occi_.networkinterface_.mac %>
+  ,MAC = "<%= @networkinterface.attributes['occi.networkinterface.mac'] %>"
   <% end %>
-  <% if @networkinterface.interface %>
-  ,TARGET = "<%= @networkinterface.interface %>"
+  <% if @networkinterface.attributes.occi_.networkinterface_.interface %>
+  ,TARGET = "<%= @networkinterface.attributes['occi.networkinterface.interface'] %>"
   <% end %>
-  <% if @networkinterface.attributes.org!.opennebula!.networkinterface!.bridge %>
+  <% if @networkinterface.attributes.org_.opennebula_.networkinterface_.bridge %>
   ,BRIDGE = "<%= @networkinterface.attributes['org.opennebula.networkinterface.bridge'] %>"
   <% end %>
-  <% if @networkinterface.attributes.org!.opennebula!.networkinterface!.script %>
+  <% if @networkinterface.attributes.org_.opennebula_.networkinterface_.script %>
   ,SCRIPT = "<%= @networkinterface.attributes['org.opennebula.networkinterface.script'] %>"
   <% end %>
-  <% if @networkinterface.attributes.org!.opennebula!.networkinterface!.white_ports_tcp %>
+  <% if @networkinterface.attributes.org_.opennebula_.networkinterface_.white_ports_tcp %>
   ,WHITE_PORTS_TCP = "<%= @networkinterface.attributes['org.opennebula.networkinterface.white_ports_tcp'] %>"
   <% end %>
-  <% if @networkinterface.attributes.org!.opennebula!.networkinterface!.black_ports_tcp %>
+  <% if @networkinterface.attributes.org_.opennebula_.networkinterface_.black_ports_tcp %>
   ,BLACK_PORTS_TCP = "<%= @networkinterface.attributes['org.opennebula.networkinterface.black_ports_tcp'] %>"
   <% end %>
-  <% if @networkinterface.attributes.org!.opennebula!.networkinterface!.white_ports_udp %>
+  <% if @networkinterface.attributes.org_.opennebula_.networkinterface_.white_ports_udp %>
   ,WHITE_PORTS_UDP = "<%= @networkinterface.attributes['org.opennebula.networkinterface.white_ports_udp'] %>"
   <% end %>
-  <% if @networkinterface.attributes.org!.opennebula!.networkinterface!.black_ports_udp %>
+  <% if @networkinterface.attributes.org_.opennebula_.networkinterface_.black_ports_udp %>
   ,BLACK_PORTS_UDP = "<%= @networkinterface.attributes['org.opennebula.networkinterface.black_ports_udp'] %>"
   <% end %>
-  <% if @networkinterface.attributes.org!.opennebula!.networkinterface!.icmp %>
+  <% if @networkinterface.attributes.org_.opennebula_.networkinterface_.icmp %>
   ,ICMP = "<%= @networkinterface.attributes['org.opennebula.networkinterface.icmp'] %>"
   <% end %>
 ]
