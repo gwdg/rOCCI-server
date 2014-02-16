@@ -30,7 +30,7 @@ describe 'routing to storage' do
     it 'routes /storage/:id to storage#update' do
       expect(post: '/storage/654fad6f-adf465df4-a6df4ad6f').to route_to(
         controller: 'storage',
-        action: 'update',
+        action: 'partial_update',
         id: '654fad6f-adf465df4-a6df4ad6f'
       )
     end
@@ -53,7 +53,7 @@ describe 'routing to storage' do
 
   context 'DELETE' do
     it 'routes /storage/:id to storage#delete' do
-      expect(get: '/storage/54fdaa-6a4df65adf-ad6f4adf6').to route_to(
+      expect(delete: '/storage/54fdaa-6a4df65adf-ad6f4adf6').to route_to(
         controller: 'storage',
         action: 'delete',
         id: '54fdaa-6a4df65adf-ad6f4adf6'
@@ -61,7 +61,7 @@ describe 'routing to storage' do
     end
 
     it 'routes /storage/ to storage#delete' do
-      expect(get: '/storage/').to route_to(
+      expect(delete: '/storage/').to route_to(
         controller: 'storage',
         action: 'delete'
       )

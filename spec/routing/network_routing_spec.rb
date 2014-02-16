@@ -30,7 +30,7 @@ describe 'routing to network' do
     it 'routes /network/:id to network#update' do
       expect(post: '/network/654fad6f-adf465df4-a6df4ad6f').to route_to(
         controller: 'network',
-        action: 'update',
+        action: 'partial_update',
         id: '654fad6f-adf465df4-a6df4ad6f'
       )
     end
@@ -53,7 +53,7 @@ describe 'routing to network' do
 
   context 'DELETE' do
     it 'routes /network/:id to network#delete' do
-      expect(get: '/network/54fdaa-6a4df65adf-ad6f4adf6').to route_to(
+      expect(delete: '/network/54fdaa-6a4df65adf-ad6f4adf6').to route_to(
         controller: 'network',
         action: 'delete',
         id: '54fdaa-6a4df65adf-ad6f4adf6'
@@ -61,7 +61,7 @@ describe 'routing to network' do
     end
 
     it 'routes /network/ to network#delete' do
-      expect(get: '/network/').to route_to(
+      expect(delete: '/network/').to route_to(
         controller: 'network',
         action: 'delete'
       )

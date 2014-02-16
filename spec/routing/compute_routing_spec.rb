@@ -30,7 +30,7 @@ describe 'routing to compute' do
     it 'routes /compute/:id to compute#update' do
       expect(post: '/compute/654fad6f-adf465df4-a6df4ad6f').to route_to(
         controller: 'compute',
-        action: 'update',
+        action: 'partial_update',
         id: '654fad6f-adf465df4-a6df4ad6f'
       )
     end
@@ -53,7 +53,7 @@ describe 'routing to compute' do
 
   context 'DELETE' do
     it 'routes /compute/:id to compute#delete' do
-      expect(get: '/compute/54fdaa-6a4df65adf-ad6f4adf6').to route_to(
+      expect(delete: '/compute/54fdaa-6a4df65adf-ad6f4adf6').to route_to(
         controller: 'compute',
         action: 'delete',
         id: '54fdaa-6a4df65adf-ad6f4adf6'
@@ -61,7 +61,7 @@ describe 'routing to compute' do
     end
 
     it 'routes /compute/ to compute#delete' do
-      expect(get: '/compute/').to route_to(
+      expect(delete: '/compute/').to route_to(
         controller: 'compute',
         action: 'delete'
       )
