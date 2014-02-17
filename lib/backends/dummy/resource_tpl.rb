@@ -10,7 +10,7 @@ module Backends
       #
       # @return [Occi::Core::Mixins] a collection of mixins
       def resource_tpl_list
-        @resource_tpl
+        read_resource_tpl_fixtures
       end
 
       # Gets a specific resource_tpl mixin instance as Occi::Core::Mixin.

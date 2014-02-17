@@ -32,9 +32,9 @@ module Backends
       # @return [Occi::Core::Resources] a collection of network instances
       def network_list(mixins = nil)
         if mixins.blank?
-          @network
+          read_network_fixtures
         else
-          filtered_networks = @network.to_a.select { |n| (n.mixins & mixins).any? }
+          filtered_networks = read_network_fixtures.to_a.select { |n| (n.mixins & mixins).any? }
           Occi::Core::Resources.new filtered_networks
         end
       end
@@ -51,7 +51,7 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
       def network_get(network_id)
-        @network.to_a.select { |n| n.id == network_id }.first
+        read_network_fixtures.to_a.select { |n| n.id == network_id }.first
       end
 
       # Instantiates a new network instance from Occi::Infrastructure::Network.
@@ -70,7 +70,9 @@ module Backends
       def network_create(network)
         fail Backends::Errors::IdentifierConflictError, "Instance with ID #{network.id} already exists!" if network_list_ids.include?(network.id)
 
-        @network << network
+        updated = read_network_fixtures << network
+        save_network_fixtures(updated)
+
         network.id
       end
 
@@ -89,12 +91,13 @@ module Backends
       # @return [true, false] result of the operation
       def network_delete_all(mixins = nil)
         if mixins.blank?
-          @network = Occi::Core::Resources.new
-          @network.empty?
+          drop_network_fixtures
+          read_network_fixtures.empty?
         else
-          old_count = @network.count
-          @network.delete_if { |n| (n.mixins & mixins).any? }
-          old_count != @network.count
+          old_count = read_network_fixtures.count
+          updated = read_network_fixtures.delete_if { |n| (n.mixins & mixins).any? }
+          save_network_fixtures(updated)
+          old_count != read_network_fixtures.count
         end
       end
 
@@ -110,7 +113,8 @@ module Backends
       # @param network_id [String] an identifier of a network instance to be deleted
       # @return [true, false] result of the operation
       def network_delete(network_id)
-        @network.delete_if { |n| n.id == network_id }
+        updated = read_network_fixtures.delete_if { |n| n.id == network_id }
+        save_network_fixtures(updated)
         network_get(network_id).nil?
       end
 
@@ -149,7 +153,9 @@ module Backends
       def network_update(network)
         fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{network.id} does not exist!" unless network_list_ids.include?(network.id)
 
-        @network << network
+        network_delete(network.id)
+        updated = read_network_fixtures << network
+        save_network_fixtures(updated)
         network_get(network.id) == network
       end
 

@@ -76,9 +76,9 @@ module Backends
         # instance.
         ###
         if mixins.blank?
-          @compute
+          read_compute_fixtures
         else
-          filtered_computes = @compute.to_a.select { |c| (c.mixins & mixins).any? }
+          filtered_computes = read_compute_fixtures.to_a.select { |c| (c.mixins & mixins).any? }
           Occi::Core::Resources.new filtered_computes
         end
       end
@@ -130,7 +130,9 @@ module Backends
         ###
         fail Backends::Errors::IdentifierConflictError, "Instance with ID #{compute.id} already exists!" if compute_list_ids.include?(compute.id)
 
-        @compute << compute
+        updated = read_compute_fixtures << compute
+        save_compute_fixtures(updated)
+
         compute.id
       end
 
@@ -153,12 +155,13 @@ module Backends
         # Filtration mechanism works the same way as in #compute_list.
         ###
         if mixins.blank?
-          @compute = Occi::Core::Resources.new
-          @compute.empty?
+          drop_compute_fixtures
+          read_compute_fixtures.empty?
         else
-          old_count = @compute.count
-          @compute.delete_if { |c| (c.mixins & mixins).any? }
-          old_count != @compute.count
+          old_count = read_compute_fixtures.count
+          updated = read_compute_fixtures.delete_if { |c| (c.mixins & mixins).any? }
+          save_compute_fixtures(updated)
+          old_count != read_compute_fixtures.count
         end
       end
 
@@ -178,7 +181,8 @@ module Backends
         # Again, operation on a single resource instance. The opposite
         # of #compute_create.
         ###
-        @compute.delete_if { |c| c.id == compute_id }
+        updated = read_compute_fixtures.delete_if { |c| c.id == compute_id }
+        save_compute_fixtures(updated)
         compute_get(compute_id).nil?
       end
 
@@ -225,7 +229,9 @@ module Backends
         ###
         fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{compute.id} does not exist!" unless compute_list_ids.include?(compute.id)
 
-        @compute << compute
+        compute_delete(compute.id)
+        updated = read_compute_fixtures << compute
+        save_compute_fixtures(updated)
         compute_get(compute.id) == compute
       end
 
@@ -270,6 +276,10 @@ module Backends
         fail Backends::Errors::ResourceNotFoundError, 'Given network instance does not exist!' unless network
 
         compute.links << networkinterface
+
+        compute_delete(compute.id)
+        updated = read_compute_fixtures << compute
+        save_compute_fixtures(updated)
 
         networkinterface.id
       end
@@ -316,6 +326,10 @@ module Backends
 
         compute.links << storagelink
 
+        compute_delete(compute.id)
+        updated = read_compute_fixtures << compute
+        save_compute_fixtures(updated)
+
         storagelink.id
       end
 
@@ -350,7 +364,12 @@ module Backends
             l.id == networkinterface_id
           end
 
-          break unless old_size == compute.links.size
+          unless old_size == compute.links.size
+            compute_delete(compute.id)
+            updated = read_compute_fixtures << compute
+            save_compute_fixtures(updated)
+            break
+          end
         end
 
         true
@@ -387,7 +406,12 @@ module Backends
             l.id == storagelink_id
           end
 
-          break unless old_size == compute.links.size
+          unless old_size == compute.links.size
+            compute_delete(compute.id)
+            updated = read_compute_fixtures << compute
+            save_compute_fixtures(updated)
+            break
+          end
         end
 
         true
