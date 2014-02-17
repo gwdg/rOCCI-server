@@ -106,7 +106,7 @@ class Backend
   # @param endpoints [String] memcache endpoints, address:port
   # @param options [Hash] options for Dalli::Client
   # @return [Dalli::Client] constructed Dalli::Client instance
-  def self.dalli_instance_factory(backend_name, endpoints, options = {})
+  def self.dalli_instance_factory(backend_name, endpoints = nil, options = {})
     fail ArgumentError, 'Dalli instance cannot be constructed without a backend_name!' if backend_name.blank?
     endpoints ||= 'localhost:11211'
 

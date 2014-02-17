@@ -9,6 +9,14 @@ describe Backends::DummyBackend do
     Backends::DummyBackend.new nil, opts, nil, nil, dalli
   end
 
+  before(:each) do
+    dalli.delete 'dummy_compute'
+    dalli.delete 'dummy_storage'
+    dalli.delete 'dummy_network'
+    dalli.delete 'dummy_os_tpl'
+    dalli.delete 'dummy_resource_tpl'
+  end
+
   context 'os_tpl_*' do
     describe '#os_tpl_list' do
       it 'returns an Occi::Core::Mixins instance' do
