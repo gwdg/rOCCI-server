@@ -19,12 +19,10 @@ class Backend
                        "for delegated_user=#{delegated_user.inspect} " <<
                        "with options=#{@options} and server_properties=#{@server_properties}"
 
-    # TODO: impl. memcache address:port from configuration
-    # TODO: sync conf. with session_store.rb and production.rb?
     @backend_instance = @backend_class.new(
       delegated_user, @options,
       @server_properties, Rails.logger,
-      Backend.dalli_instance_factory(@backend_name, 'localhost:11211',  expire_after: 20.minutes)
+      Backend.dalli_instance_factory(@backend_name, @server_properties.memcaches, expire_after: 20.minutes)
     )
 
     @backend_instance.extend(Backends::Helpers::MethodMissingHelper) unless @backend_instance.respond_to? :method_missing
@@ -105,17 +103,18 @@ class Backend
   #    # => #<Dalli::Client>
   #
   # @param backend_name [String] name of the target backend, for namespacing
-  # @param endpoint [String] memcache endpoint address:port
+  # @param endpoints [String] memcache endpoints, address:port
   # @param options [Hash] options for Dalli::Client
   # @return [Dalli::Client] constructed Dalli::Client instance
-  def self.dalli_instance_factory(backend_name, endpoint = 'localhost:11211', options = {})
+  def self.dalli_instance_factory(backend_name, endpoints, options = {})
     fail ArgumentError, 'Dalli instance cannot be constructed without a backend_name!' if backend_name.blank?
+    endpoints ||= 'localhost:11211'
 
     defaults = { compress: true }
     defaults.merge! options
 
     defaults[:namespace] = "ROCCIServer.backend_cache.#{backend_name}"
-    Dalli::Client.new(endpoint, defaults)
+    Dalli::Client.new(endpoints, defaults)
   end
 
   include BackendApi::Compute

@@ -20,5 +20,5 @@ class ActiveSupport::Logger::SimpleFormatter
   end
 end
 
-Rails.application.config.logger = ActiveSupport::TaggedLogging.new(Logger.new("#{Rails.root}/log/#{Rails.env}.log", 'daily'))
 Rails.application.config.log_tags = [:uuid]
+Rails.application.config.logger = ActiveSupport::TaggedLogging.new(Logger.new("#{Rails.root}/log/#{Rails.env}.log", 'daily'))

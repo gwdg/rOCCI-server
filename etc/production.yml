@@ -11,3 +11,5 @@ backend: dummy
 log_level: debug
 tempdir: /tmp/rocci_server
 force_ssl: false
+memcaches:
+  - 'localhost:11211'

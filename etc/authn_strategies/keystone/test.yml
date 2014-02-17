@@ -12,6 +12,10 @@ keystone_pki_trust:
   signing_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'signing_cert.pem.devel') %>
   trl_url: false
 
+# Pool of memcache servers, at least one is required
+memcaches:
+  - 'localhost:11211'
+
 # Mapping to local user and tenant names
 tenant_mapping: 'false'
 user_mapping: 'false'
