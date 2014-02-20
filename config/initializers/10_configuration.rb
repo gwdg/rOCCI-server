@@ -22,7 +22,7 @@ ROCCI_SERVER_CONFIG.common = get_yaml_config(Rails.root.join('etc'))
 # Load hook configuration from 'etc/hooks/**/*.yml'
 unless ROCCI_SERVER_CONFIG.common.hooks.respond_to?(:each)
   if ROCCI_SERVER_CONFIG.common.hooks
-    ROCCI_SERVER_CONFIG.common.hooks = [ROCCI_SERVER_CONFIG.common.hooks]
+    ROCCI_SERVER_CONFIG.common.hooks = ROCCI_SERVER_CONFIG.common.hooks.split
   else
     ROCCI_SERVER_CONFIG.common.hooks = []
   end
@@ -38,7 +38,7 @@ ROCCI_SERVER_CONFIG.backends![ROCCI_SERVER_CONFIG.common.backend] = get_yaml_con
 # Load backend configuration from 'etc/authn_strategies/**/*.yml'
 unless ROCCI_SERVER_CONFIG.common.authn_strategies.respond_to?(:each)
   if ROCCI_SERVER_CONFIG.common.authn_strategies
-    ROCCI_SERVER_CONFIG.common.authn_strategies = [ROCCI_SERVER_CONFIG.common.authn_strategies]
+    ROCCI_SERVER_CONFIG.common.authn_strategies = ROCCI_SERVER_CONFIG.common.authn_strategies.split
   else
     ROCCI_SERVER_CONFIG.common.authn_strategies = []
   end
@@ -46,6 +46,15 @@ end
 
 ROCCI_SERVER_CONFIG.common.authn_strategies.each do |authn_strategy|
   ROCCI_SERVER_CONFIG.authn_strategies![authn_strategy] = get_yaml_config(Rails.root.join('etc', 'authn_strategies', authn_strategy))
+end
+
+# Load and normalize memcache endpoints
+unless ROCCI_SERVER_CONFIG.common.memcaches.respond_to?(:each)
+  if ROCCI_SERVER_CONFIG.common.memcaches
+    ROCCI_SERVER_CONFIG.common.memcaches = ROCCI_SERVER_CONFIG.common.memcaches.split
+  else
+    ROCCI_SERVER_CONFIG.common.memcaches = []
+  end
 end
 
 # Freeze the config

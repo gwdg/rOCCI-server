@@ -145,7 +145,7 @@ module AuthenticationStrategies
         # TODO: configurable memcache endpoint
         dalli = Backend.dalli_instance_factory(
           "keystone_strategy_trl_cache",
-          OPTIONS.memcaches, expire_after: 2.minutes
+          get_memcaches, expire_after: 2.minutes
         )
 
         trl_parsed = nil
@@ -164,6 +164,11 @@ module AuthenticationStrategies
         end
 
         trl_parsed
+      end
+
+      def get_memcaches
+        return unless OPTIONS.memcaches
+        OPTIONS.memcaches.respond_to?(:each) ? OPTIONS.memcaches : OPTIONS.memcaches.split
       end
 
       def user_factory(extracted_token)
