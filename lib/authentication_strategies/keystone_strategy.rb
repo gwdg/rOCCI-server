@@ -145,7 +145,8 @@ module AuthenticationStrategies
         # TODO: configurable memcache endpoint
         dalli = Backend.dalli_instance_factory(
           "keystone_strategy_trl_cache",
-          get_memcaches, expire_after: 2.minutes
+          get_memcaches, { expire_after: 2.minutes },
+          url.gsub(/\W+/, '_')
         )
 
         trl_parsed = nil
