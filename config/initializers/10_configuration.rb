@@ -59,3 +59,6 @@ end
 
 # Freeze the config
 ROCCI_SERVER_CONFIG.deep_freeze
+
+# Log server version
+Rails.logger.info "[Configuration] Starting rOCCI-server/#{ROCCIServer::VERSION} with rOCCI-core/#{ROCCIServer::ROCCI_VERSION}"
