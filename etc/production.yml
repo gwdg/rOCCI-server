@@ -1,15 +1,10 @@
-protocol: http
-hostname: localhost
-port: 3000
-authn_strategies:
-  - basic
-  - x509
-  - voms
-hooks:
-  - dummy
-backend: dummy
-log_level: debug
-tempdir: /tmp/rocci_server
-force_ssl: false
-memcaches:
-  - 'localhost:11211'
+protocol: <%= ENV['ROCCI_SERVER_PROTOCOL'] || 'http' %>
+hostname: <%= ENV['ROCCI_SERVER_HOSTNAME'] || 'localhost' %>
+port: <%= ENV['ROCCI_SERVER_PORT'] || '3000' %>
+authn_strategies: <%= ENV['ROCCI_SERVER_AUTHN_STRATEGIES'] || 'basic x509 voms' %>
+hooks: <%= ENV['ROCCI_SERVER_HOOKS'] || 'dummy' %>
+backend: <%= ENV['ROCCI_SERVER_BACKEND'] || 'dummy' %>
+log_level: <%= ENV['ROCCI_SERVER_LOG_LEVEL'] || 'info' %>
+tempdir: <%= ENV['ROCCI_SERVER_TMP'] || '/tmp/rocci_server' %>
+force_ssl: <%= (ENV['ROCCI_SERVER_PROTOCOL'] == 'https') ? 'true' : 'false' %>
+memcaches: <%= ENV['ROCCI_SERVER_MEMCACHES'] || 'localhost:11211' %>

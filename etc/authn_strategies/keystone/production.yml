@@ -1,5 +1,5 @@
 # Keystone URI (as it appears in the WWW-Authenticate HTTP header)
-keystone_uri: 'http://localhost:5000/'
+keystone_uri: <%= ENV['ROCCI_SERVER_AUTHN_KEYSTONE_URI'] || 'http://localhost:5000/' %>
 
 # X.509 stuff
 # cert_source  -- read certificates from 'file' or 'url'
@@ -10,11 +10,10 @@ keystone_pki_trust:
   cert_source: 'file'
   ca_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'ca_cert.pem') %>
   signing_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'signing_cert.pem') %>
-  trl_url: 'http://localhost:35357/v2.0/tokens/revoked'
+  trl_url: <%= ENV['ROCCI_SERVER_AUTHN_KEYSTONE_TRL_URL'] || 'http://localhost:35357/v2.0/tokens/revoked' %>
 
 # Pool of memcache servers, at least one is required
-memcaches:
-  - 'localhost:11211'
+memcaches: <%= ENV['ROCCI_SERVER_AUTHN_KEYSTONE_MEMCACHES'] || 'localhost:11211' %>
 
 # Mapping to local user and tenant names
 tenant_mapping: 'false'
