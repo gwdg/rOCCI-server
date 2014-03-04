@@ -3,6 +3,7 @@ keystone_uri: <%= ENV['ROCCI_SERVER_AUTHN_KEYSTONE_URI'] || 'http://localhost:50
 
 # X.509 stuff
 # cert_source  -- read certificates from 'file' or 'url'
+# ca_path      -- path to a directory with CA certificates
 # ca_cert      -- the file from http://[KEYSTONE_FQDN]:35357/v2.0/certificates/ca or URL
 # signing_cert -- the file from http://[KEYSTONE_FQDN]:35357/v2.0/certificates/signing or URL
 # trl_url      -- http://[KEYSTONE_FQDN]:35357/v2.0/tokens/revoked
