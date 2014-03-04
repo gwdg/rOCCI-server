@@ -10,8 +10,12 @@ module AuthenticationStrategies
 
     def valid?
       # TODO: verify that we are running inside Apache2
-      Rails.logger.debug "[AuthN] [#{self.class}] Checking for the strategy applicability"
-      !(auth_request.env['SSL_CLIENT_S_DN'].blank? || VomsStrategy.voms_extensions?(auth_request))
+      Rails.logger.debug "[AuthN] [#{self.class}] Checking for applicability"
+      Rails.logger.debug "[AuthN] [#{self.class}] SSL_CLIENT_S_DN: #{auth_request.env['SSL_CLIENT_S_DN'].inspect}"
+      result = !(auth_request.env['SSL_CLIENT_S_DN'].blank? || VomsStrategy.voms_extensions?(auth_request))
+
+      Rails.logger.debug "[AuthN] [#{self.class}] Strategy is #{result ? '' : 'not '}applicable!"
+      result
     end
 
     def authenticate!

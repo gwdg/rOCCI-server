@@ -20,7 +20,7 @@ module AuthenticationStrategies
     end
 
     def valid?
-      Rails.logger.debug "[AuthN] [#{self.class}] Checking for the strategy applicability"
+      Rails.logger.debug "[AuthN] [#{self.class}] Checking for applicability"
       result = !auth_request.headers['X-Auth-Token'].blank? && self.class.have_certs?
 
       Rails.logger.debug "[AuthN] [#{self.class}] Strategy is #{result ? '' : 'not '}applicable!"
@@ -35,7 +35,6 @@ module AuthenticationStrategies
         return
       end
 
-      # TODO: impl. ca_path
       store = self.class.init_x509_store(
         OPTIONS.keystone_pki_trust.ca_cert,
         OPTIONS.keystone_pki_trust.ca_path
@@ -142,7 +141,6 @@ module AuthenticationStrategies
       end
 
       def get_trl(url)
-        # TODO: configurable memcache endpoint
         dalli = Backend.dalli_instance_factory(
           "keystone_strategy_trl_cache",
           get_memcaches, { expire_after: 2.minutes },

@@ -1,7 +1,8 @@
 module AuthenticationStrategies
   class DummyStrategy < ::Warden::Strategies::Base
     def valid?
-      Rails.logger.debug "[AuthN] [#{self.class}] Checking for the strategy applicability"
+      Rails.logger.debug "[AuthN] [#{self.class}] Checking for applicability"
+      Rails.logger.debug "[AuthN] [#{self.class}] Strategy is always applicable!"
       true
     end
 

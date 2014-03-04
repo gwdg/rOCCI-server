@@ -9,8 +9,11 @@ module AuthenticationStrategies
     end
 
     def valid?
-      Rails.logger.debug "[AuthN] [#{self.class}] Checking for the strategy applicability"
-      auth.provided? && auth.basic?
+      Rails.logger.debug "[AuthN] [#{self.class}] Checking for applicability"
+      result = auth.provided? && auth.basic?
+
+      Rails.logger.debug "[AuthN] [#{self.class}] Strategy is #{result ? '' : 'not '}applicable!"
+      result
     end
 
     def authenticate!
