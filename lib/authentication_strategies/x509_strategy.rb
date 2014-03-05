@@ -4,10 +4,12 @@ module AuthenticationStrategies
       @auth_request ||= ::ActionDispatch::Request.new(env)
     end
 
+    # @see AuthenticationStrategies::DummyStrategy
     def store?
       false
     end
 
+    # @see AuthenticationStrategies::DummyStrategy
     def valid?
       # TODO: verify that we are running inside Apache2
       Rails.logger.debug "[AuthN] [#{self.class}] Checking for applicability"
@@ -18,6 +20,7 @@ module AuthenticationStrategies
       result
     end
 
+    # @see AuthenticationStrategies::DummyStrategy
     def authenticate!
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating ..."
 

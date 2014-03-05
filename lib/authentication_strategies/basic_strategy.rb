@@ -1,33 +1,36 @@
 module AuthenticationStrategies
   class BasicStrategy < ::Warden::Strategies::Base
-    def auth
-      @auth ||= Rack::Auth::Basic::Request.new(env)
+    def auth_request
+      @auth_request ||= Rack::Auth::Basic::Request.new(env)
     end
 
+    # @see AuthenticationStrategies::DummyStrategy
     def store?
       false
     end
 
+    # @see AuthenticationStrategies::DummyStrategy
     def valid?
       Rails.logger.debug "[AuthN] [#{self.class}] Checking for applicability"
-      result = auth.provided? && auth.basic?
+      result = auth_request.provided? && auth_request.basic?
 
       Rails.logger.debug "[AuthN] [#{self.class}] Strategy is #{result ? '' : 'not '}applicable!"
       result
     end
 
+    # @see AuthenticationStrategies::DummyStrategy
     def authenticate!
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating ..."
 
-      unless valid_username_provided?(auth.username)
+      unless valid_username_provided?(auth_request.username)
         fail!('Provided username contains invalid characters!')
         return
       end
 
       user = Hashie::Mash.new
       user.auth!.type = 'basic'
-      user.auth!.credentials!.username = auth.username
-      user.auth!.credentials!.password = auth.credentials.last
+      user.auth!.credentials!.username = auth_request.username
+      user.auth!.credentials!.password = auth_request.credentials.last
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
       success! user

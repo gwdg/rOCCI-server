@@ -15,10 +15,12 @@ module AuthenticationStrategies
       @auth_request ||= ::ActionDispatch::Request.new(env)
     end
 
+    # @see AuthenticationStrategies::DummyStrategy
     def store?
       false
     end
 
+    # @see AuthenticationStrategies::DummyStrategy
     def valid?
       Rails.logger.debug "[AuthN] [#{self.class}] Checking for applicability"
       result = !auth_request.headers['X-Auth-Token'].blank? && self.class.have_certs?
@@ -27,6 +29,7 @@ module AuthenticationStrategies
       result
     end
 
+    # @see AuthenticationStrategies::DummyStrategy
     def authenticate!
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating with X-Auth-Token"
 
