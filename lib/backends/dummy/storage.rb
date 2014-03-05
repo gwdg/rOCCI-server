@@ -136,7 +136,7 @@ module Backends
       # @return [true, false] result of the operation
       def storage_partial_update(storage_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
+        fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
       end
 
       # Updates an existing storage instance, instance to be updated is specified
