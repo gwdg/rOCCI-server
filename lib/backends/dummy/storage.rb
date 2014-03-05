@@ -193,8 +193,32 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def storage_trigger_action(storage_id, action_instance)
-        # TODO: impl
-        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
+        case action_instance.action.type_identifier
+        when 'http://schemas.ogf.org/occi/infrastructure/storage/action#offline'
+          state = 'offline'
+        when 'http://schemas.ogf.org/occi/infrastructure/storage/action#online'
+          state = 'online'
+        when 'http://schemas.ogf.org/occi/infrastructure/storage/action#backup'
+          state = 'online'
+        when 'http://schemas.ogf.org/occi/infrastructure/storage/action#resize'
+          state = 'online'
+        when 'http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot'
+          state = 'online'
+        else
+          fail Backends::Errors::ActionNotImplementedError,
+               "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+        end
+
+        # get existing storage instance and set a new state
+        storage = storage_get(storage_id)
+        storage.state = state
+
+        # clean-up and save the new collection
+        storage_delete(storage.id)
+        updated = read_storage_fixtures << storage
+        save_storage_fixtures(updated)
+
+        true
       end
     end
   end

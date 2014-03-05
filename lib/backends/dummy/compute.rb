@@ -521,8 +521,30 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def compute_trigger_action(compute_id, action_instance)
-        # TODO: impl
-        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
+        case action_instance.action.type_identifier
+        when 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop'
+          state = 'inactive'
+        when 'http://schemas.ogf.org/occi/infrastructure/compute/action#start'
+          state = 'active'
+        when 'http://schemas.ogf.org/occi/infrastructure/compute/action#restart'
+          state = 'active'
+        when 'http://schemas.ogf.org/occi/infrastructure/compute/action#suspend'
+          state = 'suspended'
+        else
+          fail Backends::Errors::ActionNotImplementedError,
+               "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+        end
+
+        # get existing compute instance and set a new state
+        compute = compute_get(compute_id)
+        compute.state = state
+
+        # clean-up and save the new collection
+        compute_delete(compute.id)
+        updated = read_compute_fixtures << compute
+        save_compute_fixtures(updated)
+
+        true
       end
     end
   end

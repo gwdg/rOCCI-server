@@ -193,8 +193,26 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def network_trigger_action(network_id, action_instance)
-        # TODO: impl
-        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
+        case action_instance.action.type_identifier
+        when 'http://schemas.ogf.org/occi/infrastructure/network/action#down'
+          state = 'inactive'
+        when 'http://schemas.ogf.org/occi/infrastructure/network/action#up'
+          state = 'active'
+        else
+          fail Backends::Errors::ActionNotImplementedError,
+               "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+        end
+
+        # get existing network instance and set a new state
+        network = network_get(network_id)
+        network.state = state
+
+        # clean-up and save the new collection
+        network_delete(network.id)
+        updated = read_network_fixtures << network
+        save_network_fixtures(updated)
+
+        true
       end
     end
   end

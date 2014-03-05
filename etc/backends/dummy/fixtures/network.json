@@ -14,7 +14,8 @@
           "network": {
             "address": "10.1.1.1",
             "gateway": "10.1.1.0",
-            "allocation": "static"
+            "allocation": "static",
+            "state": "active"
           }
         }
       },
@@ -34,7 +35,8 @@
           "network": {
             "address": "10.2.1.1",
             "gateway": "10.2.1.0",
-            "allocation": "static"
+            "allocation": "static",
+            "state": "active"
           }
         }
       },
@@ -54,7 +56,8 @@
           "network": {
             "address": "10.3.1.1",
             "gateway": "10.3.1.0",
-            "allocation": "static"
+            "allocation": "static",
+            "state": "inactive"
           }
         }
       },

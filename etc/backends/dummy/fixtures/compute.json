@@ -12,7 +12,8 @@
             "architecture": "x86",
             "hostname": "compute1.example.org",
             "memory": 1.7,
-            "speed": 1.0
+            "speed": 1.0,
+            "state": "active"
           }
         }
       },
@@ -30,7 +31,8 @@
             "architecture": "x86",
             "hostname": "compute2.example.org",
             "memory": 1.7,
-            "speed": 1.0
+            "speed": 1.0,
+            "state": "active"
           }
         }
       },
@@ -48,7 +50,8 @@
             "architecture": "x86",
             "hostname": "compute3.example.org",
             "memory": 1.7,
-            "speed": 1.0
+            "speed": 1.0,
+            "state": "inactive"
           }
         }
       },
