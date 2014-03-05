@@ -502,8 +502,8 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def compute_trigger_action_on_all(action_instance, mixins = nil)
-        # TODO: impl
-        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
+        compute_list_ids(mixins).each { |cmpt| compute_trigger_action(cmpt, action_instance) }
+        true
       end
 
       # Triggers an action on an existing compute instance, the compute instance in question

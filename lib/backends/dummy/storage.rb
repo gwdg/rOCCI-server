@@ -174,8 +174,8 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def storage_trigger_action_on_all(action_instance, mixins = nil)
-        # TODO: impl
-        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
+        storage_list_ids(mixins).each { |strg| storage_trigger_action(strg, action_instance) }
+        true
       end
 
       # Triggers an action on an existing storage instance, the storage instance in question

@@ -174,8 +174,8 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def network_trigger_action_on_all(action_instance, mixins = nil)
-        # TODO: impl
-        fail Backends::Errors::StubError, "#{__method__} is just a stub!"
+        network_list_ids(mixins).each { |ntwrk| network_trigger_action(ntwrk, action_instance) }
+        true
       end
 
       # Triggers an action on an existing network instance, the network instance in question
