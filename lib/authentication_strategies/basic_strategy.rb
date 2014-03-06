@@ -23,7 +23,7 @@ module AuthenticationStrategies
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating ..."
 
       unless valid_username_provided?(auth_request.username)
-        fail!('Provided username contains invalid characters!')
+        fail! 'Provided username contains invalid characters!'
         return
       end
 

@@ -25,7 +25,7 @@ module AuthenticationStrategies
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating ..."
 
       unless auth_request.env['SSL_CLIENT_VERIFY'] == 'SUCCESS'
-        fail!("The verification process has failed! SSL_CLIENT_VERIFY = #{auth_request.env['SSL_CLIENT_VERIFY'].inspect}")
+        fail! "The verification process has failed! SSL_CLIENT_VERIFY = #{auth_request.env['SSL_CLIENT_VERIFY'].inspect}"
         return
       end
 
