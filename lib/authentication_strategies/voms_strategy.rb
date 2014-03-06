@@ -31,14 +31,14 @@ module AuthenticationStrategies
       # Get user's DN
       proxy_cert_subject = GRST_CRED_REGEXP.match(auth_request.env['GRST_CRED_0'])[5]
       if proxy_cert_subject.blank?
-        fail!('Could not extract user\'s DN from credentials!')
+        fail! 'Could not extract user\'s DN from credentials!'
         return
       end
 
       # Get VOMS extension attributes
       voms_cert_attrs = self.class.voms_extension_attrs(auth_request)
       if voms_cert_attrs.empty?
-        fail!('Could not extract VOMS attributes from user\'s credentials!')
+        fail! 'Could not extract VOMS attributes from user\'s credentials!'
         return
       end
 
@@ -117,33 +117,23 @@ module AuthenticationStrategies
       end
 
       def blacklisted_vo?(vo_name)
-        blacklist = read_yaml(OPTIONS.blacklist) || []
+        blacklist = AuthenticationStrategies::Helpers::YamlHelper.read_yaml(OPTIONS.blacklist) || []
         blacklist.include?(vo_name)
       end
 
       def whitelisted_vo?(vo_name)
-        whitelist = read_yaml(OPTIONS.whitelist) || []
+        whitelist = AuthenticationStrategies::Helpers::YamlHelper.read_yaml(OPTIONS.whitelist) || []
         whitelist.include?(vo_name)
       end
 
       def mapped_vo_name(vo_name)
         return vo_name unless OPTIONS.vo_mapping
 
-        map = read_yaml(OPTIONS.vo_mapfile) || {}
+        map = AuthenticationStrategies::Helpers::YamlHelper.read_yaml(OPTIONS.vo_mapfile) || {}
         new_vo_name = map[vo_name] || vo_name
 
         Rails.logger.debug "[AuthN] [#{self}] VO name mapped #{vo_name.inspect} -> #{new_vo_name.inspect}"
         new_vo_name
-      end
-
-      def read_yaml(path)
-        begin
-          raise "File does not exist!" unless File.exists?(path)
-          YAML.load(ERB.new(File.read(path)).result)
-        rescue Exception => err
-          raise Errors::ConfigurationParsingError,
-                "Failed to parse a YAML file! [#{path}]: #{err.message}"
-        end
       end
     end
   end
