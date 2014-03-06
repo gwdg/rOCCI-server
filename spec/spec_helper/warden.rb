@@ -1,9 +1,9 @@
-## Based on https://github.com/ajsharp/warden-rspec-rails
-
+# Based on https://github.com/ajsharp/warden-rspec-rails
 module Warden
-  # Warden::Test::ControllerHelpers provides a facility to test controllers in isolation
-  # Most of the code was extracted from Devise's Devise::TestHelpers.
+  # Set of helpers for testing with Warden
   module Test
+    # Warden::Test::ControllerHelpers provides a facility to test controllers in isolation
+    # Most of the code was extracted from Devise's Devise::TestHelpers.
     module ControllerHelpers
       def self.included(base)
         base.class_eval do
