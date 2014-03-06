@@ -1,10 +1,7 @@
 module AuthenticationStrategies::Helpers
-  #
-  #
+  # Set of helpers for working with YAML
   module YamlHelper
-
-    #
-    #
+    # Helps with reading YAML files with ERB snippets
     def read_yaml(path)
       begin
         raise "File does not exist!" unless File.exists?(path)
