@@ -32,7 +32,7 @@
     SetEnv ROCCI_SERVER_PROTOCOL         https
     SetEnv ROCCI_SERVER_HOSTNAME         localhost
     SetEnv ROCCI_SERVER_PORT             11443
-    SetEnv ROCCI_SERVER_AUTHN_STRATEGIES "basic x509 voms"
+    SetEnv ROCCI_SERVER_AUTHN_STRATEGIES "voms x509 basic"
     SetEnv ROCCI_SERVER_HOOKS            dummy
     SetEnv ROCCI_SERVER_BACKEND          dummy
     SetEnv ROCCI_SERVER_LOG_LEVEL        info
