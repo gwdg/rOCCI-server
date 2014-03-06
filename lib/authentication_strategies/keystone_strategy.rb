@@ -10,6 +10,7 @@ end
 module AuthenticationStrategies
   class KeystoneStrategy < ::Warden::Strategies::Base
     SUPPORTED_CERT_SOURCES = %w(file).freeze
+    ALLOWED_MAPPING_TYPES = [:user, :tenant].freeze
 
     def auth_request
       @auth_request ||= ::ActionDispatch::Request.new(env)
@@ -34,7 +35,7 @@ module AuthenticationStrategies
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating with X-Auth-Token"
 
       if self.class.revoked_token?(auth_request.headers['X-Auth-Token'])
-        fail!('Your Keystone token has been revoked!')
+        fail! 'Your Keystone token has been revoked!'
         return
       end
 
@@ -51,25 +52,29 @@ module AuthenticationStrategies
       rescue => e
         Rails.logger.warn "[AuthN] [#{self.class}] OpenSSL::CMS validation " \
                           "failed with #{e.message.inspect} on: #{auth_request.headers['X-Auth-Token']}"
-        fail!('Your Keystone token is invalid!')
+        fail! 'Your Keystone token is invalid!'
         return
       end
 
       unless verified
-        fail!('Failed to verify your Keystone token!')
+        fail! 'Failed to verify your Keystone token!'
         return
       end
 
       extracted_token = self.class.extract_token(cms_token)
       unless extracted_token
-        fail!('Your Keystone token is expired or malformed!')
+        fail! 'Your Keystone token is expired or malformed!'
         return
       end
 
-      # TODO: impl. ACLs
+      unless self.class.allowed_access?(extracted_token.access_.token_.tenant_.name)
+        fail! "Tenant #{extracted_token.access_.token_.tenant_.name.inspect} is not allowed!"
+        return
+      end
+
       user = self.class.user_factory(extracted_token)
       unless user
-        fail!('Couldn\'t retrieve user and tenant information from the token!')
+        fail! 'Couldn\'t retrieve user and tenant information from the token!'
         return
       end
 
@@ -174,13 +179,13 @@ module AuthenticationStrategies
       end
 
       def user_factory(extracted_token)
-        return unless extracted_token.access_.token_.tenant_.name && extracted_token.access_.user_.username
+        return if extracted_token.access_.token_.tenant_.name.blank?
+        return if extracted_token.access_.user_.username.blank?
 
-        # TODO: impl. mapping for username & tenant
         user = Hashie::Mash.new
         user.auth!.type = 'keystone'
-        user.auth!.credentials!.tenant = extracted_token.access.token.tenant.name
-        user.auth!.credentials!.username = extracted_token.access.user.username
+        user.auth!.credentials!.tenant = mapped_name(extracted_token.access.token.tenant.name, :tenant)
+        user.auth!.credentials!.username = mapped_name(extracted_token.access.user.username, :user)
         user.auth!.credentials!.token = extracted_token
         user.auth!.credentials!.verification_status = 'SUCCESS'
 
@@ -190,6 +195,42 @@ module AuthenticationStrategies
       def file_marcopolo?(path)
         return false if path.blank?
         File.readable?(path) && !File.zero?(path)
+      end
+
+      def allowed_access?(tenant_name)
+        return false if tenant_name.blank?
+
+        case OPTIONS.access_policy
+        when 'blacklist'
+          !blacklisted_tenant?(tenant_name)
+        when 'whitelist'
+          whitelisted_tenant?(tenant_name)
+        else
+          raise Errors::ConfigurationParsingError,
+                "Unsupported Keystone access policy #{OPTIONS.access_policy.inspect}!"
+        end
+      end
+
+      def blacklisted_tenant?(tenant_name)
+        blacklist = AuthenticationStrategies::Helpers::YamlHelper.read_yaml(OPTIONS.blacklist) || []
+        blacklist.include?(tenant_name)
+      end
+
+      def whitelisted_tenant?(tenant_name)
+        whitelist = AuthenticationStrategies::Helpers::YamlHelper.read_yaml(OPTIONS.whitelist) || []
+        whitelist.include?(tenant_name)
+      end
+
+      def mapped_name(name, type)
+        raise "Unsupported mapping request! Type #{type.to_s.inspect} " \
+              "is not registered!" unless ALLOWED_MAPPING_TYPES.include?(type)
+        return name unless OPTIONS.send("#{type.to_s}_mapping")
+
+        map = AuthenticationStrategies::Helpers::YamlHelper.read_yaml(OPTIONS.send("#{type.to_s}_mapfile")) || {}
+        new_name = map[name] || name
+
+        Rails.logger.debug "[AuthN] [#{self}] #{type.to_s.capitalize} name mapped #{name.inspect} -> #{new_name.inspect}"
+        new_name
       end
     end
   end
