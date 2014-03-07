@@ -1,15 +1,18 @@
 require 'bundler/capistrano'
-require 'rvm/capistrano'
 
 # Warning
 Capistrano::CLI.ui.say <<"EOF";
 
 <%= color('IMPORTANT:', RED) %>
-   * Capistrano will NOT use sudo to make changes on your server!
-   * In order to compile Rubies in RVM, you need libyaml-dev and libssl-dev already installed on the server!
-   * In order to check-out the code, you need git binaries installed on the server!
+   * Capistrano will NOT make any privileged changes on your server!
+   * You need Ruby 1.9.3+ already installed on your server!
+   * You need the bundler gem installed on your server!
    * The server-side user has to be able to write into /opt/rOCCI-server!
-   * Apache2 and Phusion Passenger have to be installed and properly configured!
+
+     mkdir /opt/rOCCI-server
+     chown rocci:rocci /opt/rOCCI-server
+
+   * Apache2 has to be installed and properly configured!
    * Apache2 VirtualHost must use /opt/rOCCI-server/current/public as DocumentRoot and Directory!
    * Cron has to be installed and the use of crontab allowed for the selected server-side user!
 
@@ -18,15 +21,13 @@ EOF
 # Info
 Capistrano::CLI.ui.say <<"EOF";
 <%= color('ENV defaults:', GREEN) %>
-   ROCCI_SERVER_USER = #{ENV['ROCCI_SERVER_USER']}
-   ROCCI_HTTP_SERVER = #{ENV['ROCCI_HTTP_SERVER']}
-   ROCCI_APP_SERVER = #{ENV['ROCCI_APP_SERVER']}
-   ROCCI_DB_SERVER = #{ENV['ROCCI_DB_SERVER']}
+   CAP_ROCCI_SERVER_USER = #{ENV['CAP_ROCCI_SERVER_USER']}
+   CAP_ROCCI_APP_SERVER = #{ENV['CAP_ROCCI_APP_SERVER']}
 
 EOF
 
 set :application, 'rOCCI-server'
-set :repository,  'https://github.com/gwdg/rOCCI-server.git'
+set :repository,  'https://github.com/EGI-FCTF/rOCCI-server.git'
 ssh_options[:forward_agent] = false
 
 set :use_sudo, false
@@ -36,37 +37,27 @@ set :keep_releases, 2
 set :ssh_options,  auth_methods: %w(gssapi-with-mic publickey) 
 set :bundle_without,  [:development, :test]
 
+default_run_options[:shell] = '/bin/bash --login'
+default_run_options[:pty] = true
+
 # Remote servers
-if ENV['ROCCI_SERVER_USER'] && !ENV['ROCCI_SERVER_USER'].empty?
-  set :user, ENV['ROCCI_SERVER_USER']
+if ENV['CAP_ROCCI_SERVER_USER'] && !ENV['CAP_ROCCI_SERVER_USER'].empty?
+  set :user, ENV['CAP_ROCCI_SERVER_USER']
 else
   set(:user) { Capistrano::CLI.ui.ask('What is the name of rOCCI-server\'s server-side user account?  ') { |q|; q.default = 'rocci'; } }
 end
 
-if ENV['ROCCI_HTTP_SERVER'] && !ENV['ROCCI_HTTP_SERVER'].empty?
-  role :web, ENV['ROCCI_HTTP_SERVER']
+if ENV['CAP_ROCCI_APP_SERVER'] && !ENV['CAP_ROCCI_APP_SERVER'].empty?
+  role :app, ENV['CAP_ROCCI_APP_SERVER']
+  role :web, ENV['CAP_ROCCI_APP_SERVER']
+  role :db, ENV['CAP_ROCCI_APP_SERVER']
 else
-  role(:web) { Capistrano::CLI.ui.ask('Where is your HTTP server running?  ') { |q|; q.default = 'localhost'; } }
-end
+  all_server = Capistrano::CLI.ui.ask('Where is your APP server running?  ') { |q|; q.default = 'localhost'; }
 
-if ENV['ROCCI_APP_SERVER'] && !ENV['ROCCI_APP_SERVER'].empty?
-  role :app, ENV['ROCCI_APP_SERVER']
-else
-  role(:app) { Capistrano::CLI.ui.ask('Where is your APP server running?  ') { |q|; q.default = 'localhost'; } }
+  role :app, all_server
+  role :web, all_server
+  role :db, all_server
 end
-
-if ENV['ROCCI_DB_SERVER'] && !ENV['ROCCI_DB_SERVER'].empty?
-  role :db, ENV['ROCCI_DB_SERVER'], primary: true
-else
-  role(:db, primary: true) { Capistrano::CLI.ui.ask('Where is your DB server running?  ') { |q|; q.default = 'localhost'; } }
-end
-
-# RVM options
-# set :rvm_ruby_string, ENV['GEM_HOME'].gsub(/.*\//,"")
-set :rvm_ruby_string, 'ruby-2.0.0-p353'
-# set :rvm_install_pkgs, %w[libyaml openssl]
-# set :rvm_install_pkgs, %w[libyaml openssl]
-# set :rvm_install_ruby_params, '--with-opt-dir=~/.rvm/usr'
 
 # Cron
 set :whenever_command, 'bundle exec whenever'
@@ -75,16 +66,18 @@ set :whenever_roles, [:app]
 require 'whenever/capistrano'
 
 # Tasks to run before & after deployment
-before 'rvm:install_ruby', 'rvm:install_rvm'
-before 'deploy:setup', 'rvm:install_ruby'
 before 'deploy', 'deploy:setup'
 after 'deploy:restart', 'deploy:cleanup'
-# after 'deploy:update_code', 'deploy:migrate'
-# after 'deploy:create_symlink', 'deploy:seed'
 
 namespace :deploy do
-  task :start { ; }
-  task :stop { ; }
+  task :start, roles: :app do
+    run "/bin/true"
+  end
+
+  task :stop, roles: :app do
+    run "/bin/true"
+  end
+
   task :restart, roles: :app, except: { no_release: true } do
     run "#{try_sudo} touch #{File.join(current_path, 'tmp', 'restart.txt')}"
   end
