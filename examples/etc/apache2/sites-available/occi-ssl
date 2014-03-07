@@ -9,11 +9,26 @@
     # directory containing the Root CA certificates and their hashes
     SSLCACertificatePath /etc/grid-security/certificates
     # set to optional, this tells Apache to attempt to verify SSL certificates if provided
+    # for X.509 access with GridSite/VOMS, however, set to 'require'
     SSLVerifyClient optional
+    #SSLVerifyClient require
     # if you have multiple CAs in the file above, you may need to increase the verify depht
     SSLVerifyDepth 10
-    # enable passing of SSL variables to passenger
+    # enable passing of SSL variables to passenger. For GridSite/VOMS, enable also exporting certificate data
     SSLOptions +StdEnvVars
+    #SSLOptions +StdEnvVars +ExportCertData
+
+    #for GridSite/VOMS enable the four directives in the following block:
+    #  ## variables (and is needed for gridsite-admin.cgi to work.)
+    #  GridSiteEnvs on 
+    #  ## Nice GridSite directory listings (without truncating file names!)
+    #  GridSiteIndexes off 
+    #  ## If this is greater than zero, we will accept GSI Proxies for clients
+    #  ## (full client certificates - eg inside web browsers - are always ok)
+    #  GridSiteGSIProxyLimit 4 
+    #  ## This directive allows authorized people to write/delete files
+    #  ## from non-browser clients - eg with htcp(1)
+    #  GridSiteMethods ""
 
     # set RackEnv
     RackEnv production
