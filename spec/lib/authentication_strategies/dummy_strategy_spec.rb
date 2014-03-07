@@ -11,6 +11,17 @@ describe AuthenticationStrategies::DummyStrategy do
     Warden::Strategies.add :dummy, AuthenticationStrategies::DummyStrategy
   end
 
+  after(:each) do
+    Warden::Strategies.clear!
+    AuthenticationStrategies::DummyStrategy.send(:remove_const, :OPTIONS) if AuthenticationStrategies::DummyStrategy.const_defined?(:OPTIONS)
+    AuthenticationStrategies::DummyStrategy.const_set(
+      :OPTIONS,
+      RocciSpecHelpers::YamlHelper.read_yaml("#{Rails.root.join('etc','authn_strategies', 'dummy', Rails.env + '.yml')}")
+    )
+    # TODO: read the default strategy from Rails.root/etc/Rails.env.yml
+    Warden::Strategies.add :dummy, AuthenticationStrategies::DummyStrategy
+  end
+
   let(:strategy){ Warden::Strategies[:dummy].new(Warden::Test::StrategyHelper.env_with_params) }
 
   describe "implements required methods" do
