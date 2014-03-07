@@ -1,9 +1,9 @@
 GIT
-  remote: git://github.com/shadabahmed/logstasher.git
-  revision: 46e640319a7215f97cf25002c44f15ed1d709c66
+  remote: git://github.com/arax/logstasher.git
+  revision: 4ceebbb27b647d7f15776afba4893684c575ce72
   branch: master
   specs:
-    logstasher (0.4.9)
+    logstasher (0.5.0)
       logstash-event (~> 1.1.0)
 
 GIT
@@ -111,15 +111,15 @@ GEM
     hirb (0.7.1)
     i18n (0.6.9)
     ice_nine (0.11.0)
-    interception (0.4)
-    jbuilder (2.0.3)
+    interception (0.5)
+    jbuilder (2.0.4)
       activesupport (>= 3.0.0)
       multi_json (>= 1.2.0)
     json (1.8.1)
     kgio (2.9.2)
     libnotify (0.8.2)
       ffi (>= 1.0.11)
-    listen (2.6.2)
+    listen (2.7.0)
       celluloid (>= 0.15.2)
       celluloid-io (>= 0.15.0)
       rb-fsevent (>= 0.9.3)
@@ -133,7 +133,7 @@ GEM
     mime-types (1.25.1)
     mini_portile (0.5.2)
     minitest (4.7.5)
-    multi_json (1.8.4)
+    multi_json (1.9.0)
     net-scp (1.1.2)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)

@@ -75,7 +75,7 @@ gem 'kgio'
 gem 'warden'
 
 # Sensible logging with LogStash support
-gem 'logstasher', git: "git://github.com/shadabahmed/logstasher.git", branch: "master"
+gem 'logstasher', git: "git://github.com/arax/logstasher.git", branch: "master"
 
 # Use Hashie::Mash to simplify hash-related stuff
 gem 'hashie'
