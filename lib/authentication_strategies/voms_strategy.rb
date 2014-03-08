@@ -29,7 +29,7 @@ module AuthenticationStrategies
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticating #{auth_request.env['GRST_CRED_0'].inspect}"
 
       # Get user's DN
-      proxy_cert_subject = GRST_CRED_REGEXP.match(auth_request.env['GRST_CRED_0'])[5]
+      proxy_cert_subject = (GRST_CRED_REGEXP.match(auth_request.env['GRST_CRED_0']) || [])[5]
       if proxy_cert_subject.blank?
         fail! 'Could not extract user\'s DN from credentials!'
         return
@@ -80,10 +80,12 @@ module AuthenticationStrategies
             # Parse the extension and drop useless first element of MatchData
             voms_ext = GRST_CRED_REGEXP.match(auth_request.env["GRST_CRED_#{index}"])
             voms_ext = voms_ext.to_a.drop 1
+            break if voms_ext.empty?
 
             # Parse group, role and capability from the VOMS extension
             voms_ary = GRST_VOMS_REGEXP.match(voms_ext[4])
             voms_ary = voms_ary.to_a.drop 1
+            break if voms_ary.empty?
 
             voms_attrs = Hashie::Mash.new
             voms_attrs.vo = mapped_vo_name(voms_ary[0])
