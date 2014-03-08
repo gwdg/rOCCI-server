@@ -138,4 +138,130 @@ describe AuthenticationStrategies::VomsStrategy do
 
   end
 
+  describe "internal helpers" do
+
+    let(:wrapped_env_valid){
+      Hashie::Mash.new({ 'env' => Warden::Test::StrategyHelper.env_with_params('/', {}, valid_voms) })
+    }
+    let(:wrapped_env_invalid){
+      Hashie::Mash.new({ 'env' => Warden::Test::StrategyHelper.env_with_params('/', {}, invalid_voms) })
+    }
+    let(:wrapped_env_novoms){
+      Hashie::Mash.new({ 'env' => Warden::Test::StrategyHelper.env_with_params('/', {}, {}) })
+    }
+    let(:whitelist_tempfile){
+      tmp = Tempfile.new('rocci-server.spec.voms_strategy.whitelist')
+      tmp.write "- whitelisted_vo"
+      tmp.close
+      tmp.path
+    }
+    let(:blacklist_tempfile){
+      tmp = Tempfile.new('rocci-server.spec.voms_strategy.blacklist')
+      tmp.write "- blacklisted_vo\n- vo.example.org"
+      tmp.close
+      tmp.path
+    }
+    let(:mapfile_tempfile){
+      tmp = Tempfile.new('rocci-server.spec.voms_strategy.mapfile')
+      tmp.write "test: 'mapped_test'"
+      tmp.close
+      tmp.path
+    }
+
+    it "recognize ENV with VOMS attributes" do
+      expect(
+        AuthenticationStrategies::VomsStrategy.voms_extensions?(wrapped_env_valid)
+      ).to be_true
+    end
+
+    it "recognize ENV without VOMS attributes" do
+      expect(
+        AuthenticationStrategies::VomsStrategy.voms_extensions?(wrapped_env_novoms)
+      ).to be_false
+    end
+
+    it "parse VOMS attributes" do
+      expect(
+        AuthenticationStrategies::VomsStrategy.voms_extension_attrs(wrapped_env_valid)
+      ).not_to be_empty
+    end
+
+    it "refuse to parse invalid VOMS attributes" do
+      expect(
+        AuthenticationStrategies::VomsStrategy.voms_extension_attrs(wrapped_env_invalid)
+      ).to be_empty
+    end
+
+    it "refuse to parse valid VOMS attributes for a blacklisted VO" do
+      strategy.class::OPTIONS.access_policy = 'blacklist'
+      strategy.class::OPTIONS.blacklist = blacklist_tempfile
+
+      expect(
+        AuthenticationStrategies::VomsStrategy.voms_extension_attrs(wrapped_env_valid)
+      ).to be_empty
+    end
+
+    it "correctly refuse access to empty VO names" do
+      expect(
+        AuthenticationStrategies::VomsStrategy.allowed_access?('')
+      ).to be_false
+
+      expect(
+        AuthenticationStrategies::VomsStrategy.allowed_access?(nil)
+      ).to be_false
+    end
+
+    it "correctly apply whitelist rules" do
+      strategy.class::OPTIONS.access_policy = 'whitelist'
+      strategy.class::OPTIONS.whitelist = whitelist_tempfile
+
+      expect(
+        AuthenticationStrategies::VomsStrategy.allowed_access?('whitelisted_vo')
+      ).to be_true
+
+      expect(
+        AuthenticationStrategies::VomsStrategy.allowed_access?('not_whitelisted_vo')
+      ).to be_false
+    end
+
+    it "correctly apply blacklist rules" do
+      strategy.class::OPTIONS.access_policy = 'blacklist'
+      strategy.class::OPTIONS.blacklist = blacklist_tempfile
+
+      expect(
+        AuthenticationStrategies::VomsStrategy.allowed_access?('not_blacklisted_vo')
+      ).to be_true
+
+      expect(
+        AuthenticationStrategies::VomsStrategy.allowed_access?('blacklisted_vo')
+      ).to be_false
+    end
+
+    it "fail on unsupported access policy rules" do
+      strategy.class::OPTIONS.access_policy = 'WATlist'
+      expect {
+        AuthenticationStrategies::VomsStrategy.allowed_access?('not_blacklisted_vo')
+      }.to raise_error Errors::ConfigurationParsingError
+    end
+
+    it "do not VO names when VO mapping is not enabled" do
+      strategy.class::OPTIONS.vo_mapping = false
+      strategy.class::OPTIONS.vo_mapfile = mapfile_tempfile
+
+      expect(
+        AuthenticationStrategies::VomsStrategy.mapped_vo_name('test')
+      ).to eq 'test'
+    end
+
+    it "map a VO name to another specified name when VO mapping is enabled" do
+      strategy.class::OPTIONS.vo_mapping = true
+      strategy.class::OPTIONS.vo_mapfile = mapfile_tempfile
+
+      expect(
+        AuthenticationStrategies::VomsStrategy.mapped_vo_name('test')
+      ).to eq 'mapped_test'
+    end
+
+  end
+
 end
