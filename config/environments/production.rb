@@ -42,8 +42,13 @@ ROCCIServer::Application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = false
 
-  # Set to :debug to see everything in the log.
+  # Set log dir.
+  rocci_logging_path = ENV['ROCCI_SERVER_LOG_DIR'].blank? ? Rails.root.join('log') : ENV['ROCCI_SERVER_LOG_DIR']
+  raise Errors::ConfigurationError, "Logging directory #{rocci_logging_path.inspect} is not writable!" unless File.writable?(rocci_logging_path)
+
+  config.log_tags = [:uuid]
   config.log_level = :info
+  config.logger = ActiveSupport::TaggedLogging.new(Logger.new(File.join(rocci_logging_path, "#{Rails.env}.log"), 'daily'))
 
   # Prepend all log lines with the following tags.
   # config.log_tags = [ :subdomain, :uuid ]
