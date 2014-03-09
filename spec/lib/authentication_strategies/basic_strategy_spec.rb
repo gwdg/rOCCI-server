@@ -69,6 +69,7 @@ describe AuthenticationStrategies::BasicStrategy do
       expect(strategy_w_basic.user.auth!.type).to eq 'basic'
       expect(strategy_w_basic.user.auth!.credentials!.username).to eq 'Aladdin'
       expect(strategy_w_basic.user.auth!.credentials!.password).to eq 'open sesame'
+      expect(strategy_w_basic.user.identity).to eq 'Aladdin'
     end
 
     it "reports a success" do

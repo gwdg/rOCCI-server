@@ -83,6 +83,7 @@ describe AuthenticationStrategies::X509Strategy do
       expect(strategy_w_x509.user.auth!.credentials!.client_cert).to eq valid_x509['SSL_CLIENT_CERT'] unless valid_x509['SSL_CLIENT_CERT'].blank?
       expect(strategy_w_x509.user.auth!.credentials!.issuer_cert_dn).to eq valid_x509['SSL_CLIENT_I_DN']
       expect(strategy_w_x509.user.auth!.credentials!.verification_status).to eq valid_x509['SSL_CLIENT_VERIFY']
+      expect(strategy_w_x509.user.identity).to eq valid_x509['SSL_CLIENT_S_DN']
     end
 
     it "reports a success" do

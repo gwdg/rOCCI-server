@@ -55,7 +55,7 @@ class ApplicationController < ActionController::API
   #
   # @return [Hashie::Mash] a hash containing authentication data
   def current_user
-    warden.user
+    @current_user ||= warden.user
   end
 
   # Provides access to a lazy authN object from Warden.

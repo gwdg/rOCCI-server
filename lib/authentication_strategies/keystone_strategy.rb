@@ -188,6 +188,7 @@ module AuthenticationStrategies
         user.auth!.credentials!.username = mapped_name(extracted_token.access.user.username, :user)
         user.auth!.credentials!.token = extracted_token
         user.auth!.credentials!.verification_status = 'SUCCESS'
+        user.identity = user.auth.credentials.username
 
         user
       end

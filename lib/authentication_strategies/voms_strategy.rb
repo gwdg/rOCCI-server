@@ -48,6 +48,7 @@ module AuthenticationStrategies
       user.auth!.credentials!.client_cert_voms_attrs = voms_cert_attrs
       user.auth!.credentials!.client_cert = auth_request.env['SSL_CLIENT_CERT'] unless auth_request.env['SSL_CLIENT_CERT'].blank?
       user.auth!.credentials!.verification_status = auth_request.env['SSL_CLIENT_VERIFY']
+      user.identity = user.auth.credentials.client_cert_dn
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
       success! user

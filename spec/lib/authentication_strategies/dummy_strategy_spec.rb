@@ -61,6 +61,7 @@ describe AuthenticationStrategies::DummyStrategy do
       expect(strategy.user.auth!.type).to eq 'basic'
       expect(strategy.user.auth!.credentials!.username).to eq 'dummy_user'
       expect(strategy.user.auth!.credentials!.password).to eq 'dummy_password'
+      expect(strategy.user.identity).to eq 'dummy_user'
     end
 
     it "reports a success" do
@@ -82,6 +83,7 @@ describe AuthenticationStrategies::DummyStrategy do
       expect(strategy.user.auth!.credentials!.client_cert_voms_attrs).to eq({})
       expect(strategy.user.auth!.credentials!.issuer_cert_dn).to eq 'dummy_issuer_cert_dn'
       expect(strategy.user.auth!.credentials!.verification_status).to eq 'SUCCESS'
+      expect(strategy.user.identity).to eq 'dummy_cert_dn'
     end
 
     it "fakes voms when requested" do
@@ -94,6 +96,7 @@ describe AuthenticationStrategies::DummyStrategy do
       expect(strategy.user.auth!.credentials!.client_cert_voms_attrs).to eq({})
       expect(strategy.user.auth!.credentials!.issuer_cert_dn).to eq 'dummy_issuer_cert_dn'
       expect(strategy.user.auth!.credentials!.verification_status).to eq 'SUCCESS'
+      expect(strategy.user.identity).to eq 'dummy_cert_dn'
     end
 
     it "fakes basic when requested" do
@@ -103,6 +106,7 @@ describe AuthenticationStrategies::DummyStrategy do
       expect(strategy.user.auth!.type).to eq 'basic'
       expect(strategy.user.auth!.credentials!.username).to eq 'dummy_user'
       expect(strategy.user.auth!.credentials!.password).to eq 'dummy_password'
+      expect(strategy.user.identity).to eq 'dummy_user'
     end
 
     it "returns empty credentials for unknown auth type" do
@@ -111,6 +115,7 @@ describe AuthenticationStrategies::DummyStrategy do
 
       expect(strategy.user.auth!.type).to eq 'stupid'
       expect(strategy.user.auth!.credentials).to eq({})
+      expect(strategy.user.identity).to eq 'unknown'
     end
 
     it "fails when block_all is enabled" do

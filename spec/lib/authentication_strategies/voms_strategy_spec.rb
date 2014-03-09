@@ -100,6 +100,7 @@ describe AuthenticationStrategies::VomsStrategy do
       expect(strategy_w_voms.user.auth!.credentials!.client_cert).to eq valid_voms['SSL_CLIENT_CERT'] unless valid_voms['SSL_CLIENT_CERT'].blank?
       expect(strategy_w_voms.user.auth!.credentials!.client_cert_voms_attrs).to eq [{"vo"=>"vo.example.org", "role"=>"NULL", "capability"=>"NULL"}]
       expect(strategy_w_voms.user.auth!.credentials!.verification_status).to eq valid_voms['SSL_CLIENT_VERIFY']
+      expect(strategy_w_voms.user.identity).to eq valid_voms['SSL_CLIENT_S_DN']
     end
 
     it "reports a success" do

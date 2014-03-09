@@ -31,6 +31,7 @@ module AuthenticationStrategies
       user.auth!.type = 'basic'
       user.auth!.credentials!.username = auth_request.username
       user.auth!.credentials!.password = auth_request.credentials.last
+      user.identity = auth_request.username
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
       success! user
