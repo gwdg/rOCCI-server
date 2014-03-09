@@ -39,4 +39,7 @@ ROCCIServer::Application.configure do
 
   # This line is optional if you do not want to suppress app logs in your <environment>.log
   config.logstasher.suppress_app_log = false
+
+  # This line is optional, it allows you to set a custom value for the @source field of the log event
+  config.logstasher.source = 'localhost'
 end
