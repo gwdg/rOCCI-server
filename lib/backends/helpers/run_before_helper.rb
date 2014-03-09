@@ -15,7 +15,7 @@ module Backends
         end
 
         def needs_authn?(name)
-          name.to_s.match(/compute_|network_|os_tpl_|resource_tpl_|storage_/)
+          name.to_s.match(/^(compute_|network_|os_tpl_|resource_tpl_|storage_).+/)
         end
       end
     end
