@@ -42,6 +42,12 @@
         Options -MultiViews
     </Directory>
 
+    # configuration for Passenger
+    PassengerUser rocci
+    PassengerGroup rocci
+    PassengerFriendlyErrorPages off
+    SetEnv ROCCI_SERVER_LOG_DIR /var/log/rocci-server
+
     # configuration for rOCCI-server
     ## common
     SetEnv ROCCI_SERVER_PROTOCOL         https
