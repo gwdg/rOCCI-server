@@ -87,6 +87,13 @@ ROCCIServer::Application.configure do
   # Enable the logstasher logs for the current environment
   config.logstasher.enabled = true
 
+  # Respect ENV['ROCCI_SERVER_LOG_DIR'] if applicable
+  unless ENV['ROCCI_SERVER_LOG_DIR'].blank?
+    path = File.join(ENV['ROCCI_SERVER_LOG_DIR'], "logstash_#{Rails.env}.log")
+    FileUtils.touch path # prevent autocreate messages in log
+    config.logstasher.logger = Logger.new(path, 'daily')
+  end
+
   # This line is optional if you do not want to suppress app logs in your <environment>.log
   config.logstasher.suppress_app_log = false
 
