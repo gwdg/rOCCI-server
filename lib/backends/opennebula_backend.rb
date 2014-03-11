@@ -1,5 +1,3 @@
-require 'ipaddr'
-
 module Backends
   class OpennebulaBackend
     API_VERSION = '0.0.1'
