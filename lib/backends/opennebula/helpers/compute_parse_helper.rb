@@ -4,6 +4,10 @@ module Backends
       module ComputeParseHelper
         STORAGE_GENERATED_PREFIX = 'generated_'
         NETWORK_GENERATED_PREFIX = 'generated_'
+        CONTEXTUALIZATION_MIXIN_KEY = 'http://schemas.openstack.org/instance/credentials#public_key'
+        CONTEXTUALIZATION_MIXIN_UD = 'http://schemas.openstack.org/compute/instance#user_data'
+        CONTEXTUALIZATION_ATTR_KEY = 'org.openstack.credentials.publickey.data'
+        CONTEXTUALIZATION_ATTR_UD = 'org.openstack.compute.user_data'
 
         def compute_parse_backend_obj(backend_compute)
           compute = Occi::Infrastructure::Compute.new
@@ -19,6 +23,16 @@ module Backends
             end
           end
 
+          if backend_compute['TEMPLATE/CONTEXT']
+            if backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
+              compute.mixins << CONTEXTUALIZATION_MIXIN_KEY
+            end
+
+            if backend_compute['TEMPLATE/CONTEXT/USER_DATA']
+              compute.mixins << CONTEXTUALIZATION_MIXIN_UD
+            end
+          end
+
           # include basic OCCI attributes
           basic_attrs = compute_parse_basic_attrs(backend_compute)
           compute.attributes.merge! basic_attrs
@@ -26,6 +40,10 @@ module Backends
           # include ONE-specific attributes
           one_attrs = compute_parse_one_attrs(backend_compute)
           compute.attributes.merge! one_attrs
+
+          # include contextualization attributes
+          context_attrs = compute_parse_context_attrs(backend_compute)
+          compute.attributes.merge! context_attrs
 
           # include state information and available actions
           result = compute_parse_state(backend_compute)
@@ -69,6 +87,17 @@ module Backends
           compute_attrs['org.opennebula.compute.boot'] = backend_compute['TEMPLATE/OS/BOOT'] if backend_compute['TEMPLATE/OS/BOOT']
 
           compute_attrs
+        end
+
+        def compute_parse_context_attrs(backend_compute)
+          context_attrs = Occi::Core::Attributes.new
+
+          if backend_compute['TEMPLATE/CONTEXT']
+            context_attrs[CONTEXTUALIZATION_ATTR_KEY] = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
+            context_attrs[CONTEXTUALIZATION_ATTR_UD] = backend_compute['TEMPLATE/CONTEXT/USER_DATA']
+          end
+
+          context_attrs
         end
 
         def compute_parse_state(backend_compute)
