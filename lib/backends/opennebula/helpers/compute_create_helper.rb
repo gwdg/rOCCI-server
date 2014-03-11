@@ -145,6 +145,7 @@ module Backends
 
           begin
             decoded = Base64.strict_decode64(user_data)
+            decoded.gsub! '"', "'" # TODO: proper escaping for ONE template variables
             decoded.match(/^\s*#cloud-config\s*$/) ? decoded : user_data
           rescue => e
             @logger.error "[Backends] [OpennebulaBackend] Failed to decode USER_DATA! #{e.message}"
