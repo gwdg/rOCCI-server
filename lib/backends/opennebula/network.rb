@@ -1,3 +1,5 @@
+require 'ipaddr'
+
 module Backends
   module Opennebula
     module Network
