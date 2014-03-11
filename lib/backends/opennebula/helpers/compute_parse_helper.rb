@@ -19,37 +19,59 @@ module Backends
             end
           end
 
-          compute.id    = backend_compute['ID']
-          compute.title = backend_compute['NAME']
-          compute.summary = backend_compute['USER_TEMPLATE/DESCRIPTION'] if backend_compute['USER_TEMPLATE/DESCRIPTION']
+          # include basic OCCI attributes
+          basic_attrs = compute_parse_basic_attrs(backend_compute)
+          compute.attributes.merge! basic_attrs
 
-          compute.cores = (backend_compute['TEMPLATE/VCPU'] || 1).to_i
-          compute.memory = (backend_compute['TEMPLATE/MEMORY'].to_f / 1024)
-          compute.speed = ((backend_compute['TEMPLATE/CPU'] || 1).to_f / compute.cores)
+          # include ONE-specific attributes
+          one_attrs = compute_parse_one_attrs(backend_compute)
+          compute.attributes.merge! one_attrs
 
-          compute.architecture = 'x64' if backend_compute['TEMPLATE/OS/ARCH'] == 'x86_64'
-          compute.architecture = 'x86' if backend_compute['TEMPLATE/OS/ARCH'] == 'i686'
-
-          compute.attributes['org.opennebula.compute.id'] = backend_compute['ID']
-          compute.attributes['org.opennebula.compute.cpu'] = backend_compute['TEMPLATE/CPU'].to_f if backend_compute['TEMPLATE/CPU']
-          compute.attributes['org.opennebula.compute.kernel'] = backend_compute['TEMPLATE/OS/KERNEL'] if backend_compute['TEMPLATE/OS/KERNEL']
-          compute.attributes['org.opennebula.compute.initrd'] = backend_compute['TEMPLATE/OS/INITRD'] if backend_compute['TEMPLATE/OS/INITRD']
-          compute.attributes['org.opennebula.compute.root'] = backend_compute['TEMPLATE/OS/ROOT'] if backend_compute['TEMPLATE/OS/ROOT']
-          compute.attributes['org.opennebula.compute.kernel_cmd'] = backend_compute['TEMPLATE/OS/KERNEL_CMD'] if backend_compute['TEMPLATE/OS/KERNEL_CMD']
-          compute.attributes['org.opennebula.compute.bootloader'] = backend_compute['TEMPLATE/OS/BOOTLOADER'] if backend_compute['TEMPLATE/OS/BOOTLOADER']
-          compute.attributes['org.opennebula.compute.boot'] = backend_compute['TEMPLATE/OS/BOOT'] if backend_compute['TEMPLATE/OS/BOOT']
-
-          result = compute_parse_set_state(backend_compute)
+          # include state information and available actions
+          result = compute_parse_state(backend_compute)
           compute.state = result.state
           result.actions.each { |a| compute.actions << a }
 
+          # include storage and network links
           result = compute_parse_links(backend_compute, compute)
           result.each { |link| compute.links << link }
 
           compute
         end
 
-        def compute_parse_set_state(backend_compute)
+        def compute_parse_basic_attrs(backend_compute)
+          compute_attrs = Occi::Core::Attributes.new
+
+          compute_attrs['occi.core.id']    = backend_compute['ID']
+          compute_attrs['occi.core.title'] = backend_compute['NAME']
+          compute_attrs['occi.core.summary'] = backend_compute['USER_TEMPLATE/DESCRIPTION'] if backend_compute['USER_TEMPLATE/DESCRIPTION']
+
+          compute_attrs['occi.compute.cores'] = (backend_compute['TEMPLATE/VCPU'] || 1).to_i
+          compute_attrs['occi.compute.memory'] = (backend_compute['TEMPLATE/MEMORY'].to_f / 1024)
+          compute_attrs['occi.compute.speed'] = ((backend_compute['TEMPLATE/CPU'] || 1).to_f / compute_attrs['occi.compute.cores'])
+
+          compute_attrs['occi.compute.architecture'] = 'x64' if backend_compute['TEMPLATE/OS/ARCH'] == 'x86_64'
+          compute_attrs['occi.compute.architecture'] = 'x86' if backend_compute['TEMPLATE/OS/ARCH'] == 'i686'
+
+          compute_attrs
+        end
+
+        def compute_parse_one_attrs(backend_compute)
+          compute_attrs = Occi::Core::Attributes.new
+
+          compute_attrs['org.opennebula.compute.id'] = backend_compute['ID']
+          compute_attrs['org.opennebula.compute.cpu'] = backend_compute['TEMPLATE/CPU'].to_f if backend_compute['TEMPLATE/CPU']
+          compute_attrs['org.opennebula.compute.kernel'] = backend_compute['TEMPLATE/OS/KERNEL'] if backend_compute['TEMPLATE/OS/KERNEL']
+          compute_attrs['org.opennebula.compute.initrd'] = backend_compute['TEMPLATE/OS/INITRD'] if backend_compute['TEMPLATE/OS/INITRD']
+          compute_attrs['org.opennebula.compute.root'] = backend_compute['TEMPLATE/OS/ROOT'] if backend_compute['TEMPLATE/OS/ROOT']
+          compute_attrs['org.opennebula.compute.kernel_cmd'] = backend_compute['TEMPLATE/OS/KERNEL_CMD'] if backend_compute['TEMPLATE/OS/KERNEL_CMD']
+          compute_attrs['org.opennebula.compute.bootloader'] = backend_compute['TEMPLATE/OS/BOOTLOADER'] if backend_compute['TEMPLATE/OS/BOOTLOADER']
+          compute_attrs['org.opennebula.compute.boot'] = backend_compute['TEMPLATE/OS/BOOT'] if backend_compute['TEMPLATE/OS/BOOT']
+
+          compute_attrs
+        end
+
+        def compute_parse_state(backend_compute)
           result = Hashie::Mash.new
 
           # In ON 4.4:
