@@ -59,7 +59,7 @@ module Backends
         end
 
         def compute_trigger_action_state_check(backend_object, action_type_identifier)
-          result = compute_parse_set_state(backend_object)
+          result = compute_parse_state(backend_object)
 
           unless result.actions.include? action_type_identifier
             fail ::Backends::Errors::ResourceStateError,

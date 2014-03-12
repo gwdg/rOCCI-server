@@ -41,7 +41,7 @@ module Backends
         end
 
         def storage_trigger_action_state_check(backend_object, action_type_identifier)
-          result = storage_parse_set_state(backend_object)
+          result = storage_parse_state(backend_object)
 
           unless result.actions.include? action_type_identifier
             fail ::Backends::Errors::ResourceStateError,

@@ -89,11 +89,11 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] storage instance containing necessary attributes
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
-        @logger.debug "Creating storage #{storage.inspect}"
+        @logger.debug "[Backends] [OpennebulaBackend] Creating storage #{storage.inspect}"
         template_location = File.join(@options.templates_dir, 'storage.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(storage: storage)
 
-        @logger.debug "Template #{template.inspect}"
+        @logger.debug "[Backends] [OpennebulaBackend] Template #{template.inspect}"
 
         image_alloc = ::OpenNebula::Image.build_xml
         backend_object = ::OpenNebula::Image.new(image_alloc, @client)

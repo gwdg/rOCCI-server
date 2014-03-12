@@ -16,33 +16,54 @@ module Backends
             end
           end
 
-          storage.id  = backend_storage['ID']
-          storage.title = backend_storage['NAME'] if backend_storage['NAME']
-          storage.summary = backend_storage['TEMPLATE/DESCRIPTION'] if backend_storage['TEMPLATE/DESCRIPTION']
+          # include basic OCCI attributes
+          basic_attrs = storage_parse_basic_attrs(backend_storage)
+          storage.attributes.merge! basic_attrs
 
-          storage.size = backend_storage['SIZE'].to_f / 1024 if backend_storage['SIZE']
+          # include ONE-specific attributes
+          one_attrs = storage_parse_one_attrs(backend_storage)
+          storage.attributes.merge! one_attrs
 
-          storage.attributes['org.opennebula.storage.id'] = backend_storage['ID']
-          storage.attributes['org.opennebula.storage.type'] = backend_storage.type_str
-
-          if backend_storage['PERSISTENT'].blank? || backend_storage['PERSISTENT'].to_i == 0
-            storage.attributes['org.opennebula.storage.persistent'] = 'NO'
-          else
-            storage.attributes['org.opennebula.storage.persistent'] = 'YES'
-          end
-
-          storage.attributes['org.opennebula.storage.dev_prefix'] = backend_storage['TEMPLATE/DEV_PREFIX'] if backend_storage['TEMPLATE/DEV_PREFIX']
-          storage.attributes['org.opennebula.storage.bus'] = backend_storage['TEMPLATE/BUS'] if backend_storage['TEMPLATE/BUS']
-          storage.attributes['org.opennebula.storage.driver'] = backend_storage['TEMPLATE/DRIVER'] if backend_storage['TEMPLATE/DRIVER']
-
-          result = storage_parse_set_state(backend_storage)
+          # include state information and available actions
+          result = storage_parse_state(backend_storage)
           storage.state = result.state
           result.actions.each { |a| storage.actions << a }
 
           storage
         end
 
-        def storage_parse_set_state(backend_storage)
+        def storage_parse_basic_attrs(backend_storage)
+          basic_attrs = Occi::Core::Attributes.new
+
+          basic_attrs['occi.core.id']  = backend_storage['ID']
+          basic_attrs['occi.core.title'] = backend_storage['NAME'] if backend_storage['NAME']
+          basic_attrs['occi.core.summary'] = backend_storage['TEMPLATE/DESCRIPTION'] if backend_storage['TEMPLATE/DESCRIPTION']
+
+          basic_attrs['occi.storage.size'] = backend_storage['SIZE'].to_f / 1024 if backend_storage['SIZE']
+
+          basic_attrs
+        end
+
+        def storage_parse_one_attrs(backend_storage)
+          one_attrs = Occi::Core::Attributes.new
+
+          one_attrs['org.opennebula.storage.id'] = backend_storage['ID']
+          one_attrs['org.opennebula.storage.type'] = backend_storage.type_str
+
+          if backend_storage['PERSISTENT'].blank? || backend_storage['PERSISTENT'].to_i == 0
+            one_attrs['org.opennebula.storage.persistent'] = 'NO'
+          else
+            one_attrs['org.opennebula.storage.persistent'] = 'YES'
+          end
+
+          one_attrs['org.opennebula.storage.dev_prefix'] = backend_storage['TEMPLATE/DEV_PREFIX'] if backend_storage['TEMPLATE/DEV_PREFIX']
+          one_attrs['org.opennebula.storage.bus'] = backend_storage['TEMPLATE/BUS'] if backend_storage['TEMPLATE/BUS']
+          one_attrs['org.opennebula.storage.driver'] = backend_storage['TEMPLATE/DRIVER'] if backend_storage['TEMPLATE/DRIVER']
+
+          one_attrs
+        end
+
+        def storage_parse_state(backend_storage)
           result = Hashie::Mash.new
 
           # In ON 4.4:

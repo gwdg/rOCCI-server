@@ -1,3 +1,5 @@
+require 'ipaddr'
+
 module Backends
   module Opennebula
     module Network
@@ -87,11 +89,11 @@ module Backends
       # @param network [Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
       def network_create(network)
-        @logger.debug "Creating network #{network.inspect}"
+        @logger.debug "[Backends] [OpennebulaBackend] Creating network #{network.inspect}"
         template_location = File.join(@options.templates_dir, 'network.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(network: network)
 
-        @logger.debug "Template #{template.inspect}"
+        @logger.debug "[Backends] [OpennebulaBackend] Template #{template.inspect}"
 
         vnet_alloc = ::OpenNebula::VirtualNetwork.build_xml
         backend_object = ::OpenNebula::VirtualNetwork.new(vnet_alloc, @client)
