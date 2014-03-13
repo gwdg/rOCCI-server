@@ -94,7 +94,13 @@ module Backends
 
           if backend_compute['TEMPLATE/CONTEXT']
             context_attrs[CONTEXTUALIZATION_ATTR_KEY] = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
-            context_attrs[CONTEXTUALIZATION_ATTR_UD] = backend_compute['TEMPLATE/CONTEXT/USER_DATA']
+
+            # re-encode cloud-init configuration files as Base64
+            context_attrs[CONTEXTUALIZATION_ATTR_UD] = if backend_compute['TEMPLATE/CONTEXT/USER_DATA'] && backend_compute['TEMPLATE/CONTEXT/USER_DATA'].match(/^\s*#cloud-config\s*$/)
+              Base64.strict_encode64(backend_compute['TEMPLATE/CONTEXT/USER_DATA'])
+            else
+              backend_compute['TEMPLATE/CONTEXT/USER_DATA']
+            end
           end
 
           context_attrs
@@ -107,10 +113,24 @@ module Backends
           #    VM_STATE=%w{INIT PENDING HOLD ACTIVE STOPPED SUSPENDED DONE FAILED
           #       POWEROFF UNDEPLOYED}
           #
+          #    LCM_STATE=%w{LCM_INIT PROLOG BOOT RUNNING MIGRATE SAVE_STOP SAVE_SUSPEND
+          #        SAVE_MIGRATE PROLOG_MIGRATE PROLOG_RESUME EPILOG_STOP EPILOG
+          #        SHUTDOWN CANCEL FAILURE CLEANUP_RESUBMIT UNKNOWN HOTPLUG SHUTDOWN_POWEROFF
+          #        BOOT_UNKNOWN BOOT_POWEROFF BOOT_SUSPENDED BOOT_STOPPED CLEANUP_DELETE
+          #        HOTPLUG_SNAPSHOT HOTPLUG_NIC HOTPLUG_SAVEAS HOTPLUG_SAVEAS_POWEROFF
+          #        HOTPLUG_SAVEAS_SUSPENDED SHUTDOWN_UNDEPLOY EPILOG_UNDEPLOY
+          #        PROLOG_UNDEPLOY BOOT_UNDEPLOY}
+          #
           case backend_compute.state_str
           when 'ACTIVE'
-            result.state = 'active'
-            result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
+            # ACTIVE is a very broad term, look at lcm_state_str too
+            if backend_compute.lcm_state_str == 'RUNNING'
+              result.state = 'active'
+              result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
+            else
+              result.state = 'inactive'
+              result.actions = []
+            end
           when 'FAILED'
             result.state = 'error'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
