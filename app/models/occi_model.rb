@@ -34,8 +34,9 @@ class OcciModel
       fail ArgumentError, 'Filter is a mandatory argument!' unless filter
 
       Rails.logger.debug "[#{self}] Building OCCI model with filter: #{filter.inspect}"
-      filter = filter.kinds.first if filter.respond_to?(:kinds)
-      model_factory(backend).get(filter)
+      single_filter = filter.kinds.first if filter.respond_to?(:kinds)
+      single_filter = filter.mixins.first if single_filter.blank? && filter.respond_to?(:mixins)
+      model_factory(backend).get(single_filter)
     end
 
     # Instantiates Occi::Model and registers necessary extensions
