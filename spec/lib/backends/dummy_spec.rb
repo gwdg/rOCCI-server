@@ -5,7 +5,7 @@ describe Backends::DummyBackend do
   let(:dummy) { Backends::DummyBackend.new nil, nil, nil, nil, dalli }
   let(:dummy_w_opts) do
     opts = Hashie::Mash.new
-    opts.fixtures_dir = Rails.root.join('etc', 'backends', 'dummy', 'fixtures')
+    opts.fixtures_dir = Rails.application.config.rocci_server_etc_dir.join('backends', 'dummy', 'fixtures')
     Backends::DummyBackend.new nil, opts, nil, nil, dalli
   end
 

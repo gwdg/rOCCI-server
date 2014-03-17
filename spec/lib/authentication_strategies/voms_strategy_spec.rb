@@ -6,7 +6,7 @@ describe AuthenticationStrategies::VomsStrategy do
     AuthenticationStrategies::VomsStrategy.send(:remove_const, :OPTIONS) if AuthenticationStrategies::VomsStrategy.const_defined?(:OPTIONS)
     AuthenticationStrategies::VomsStrategy.const_set(
       :OPTIONS,
-      RocciSpecHelpers::YamlHelper.read_yaml("#{Rails.root.join('etc','authn_strategies', 'voms', Rails.env + '.yml')}")
+      RocciSpecHelpers::YamlHelper.read_yaml("#{File.join(Rails.application.config.rocci_server_etc_dir,'authn_strategies', 'voms', Rails.env + '.yml')}")
     )
     Warden::Strategies.add :voms, AuthenticationStrategies::VomsStrategy
   end
@@ -16,9 +16,9 @@ describe AuthenticationStrategies::VomsStrategy do
     AuthenticationStrategies::VomsStrategy.send(:remove_const, :OPTIONS) if AuthenticationStrategies::VomsStrategy.const_defined?(:OPTIONS)
     AuthenticationStrategies::VomsStrategy.const_set(
       :OPTIONS,
-      RocciSpecHelpers::YamlHelper.read_yaml("#{Rails.root.join('etc','authn_strategies', 'voms', Rails.env + '.yml')}")
+      RocciSpecHelpers::YamlHelper.read_yaml("#{File.join(Rails.application.config.rocci_server_etc_dir,'authn_strategies', 'voms', Rails.env + '.yml')}")
     )
-    # TODO: read the default strategy from Rails.root/etc/Rails.env.yml
+    # TODO: read the default strategy from Rails.application.config.rocci_server_etc_dir/etc/ENV.yml
     Warden::Strategies.add :dummy, AuthenticationStrategies::DummyStrategy
   end
 

@@ -77,7 +77,7 @@ class OcciModel
 
       # Load all JSON files in the given directory, these contain
       # JSON rendering of OCCI kind/mixin/action definitions
-      path = Rails.root.join('etc', 'backends', backend.backend_name, 'model')
+      path = File.join(Rails.application.config.rocci_server_etc_dir, 'backends', backend.backend_name, 'model')
       Rails.logger.debug "[#{self}] Getting extensions from #{path}"
       Dir.glob(File.join(path, '**', '*.json')) do |file|
         Rails.logger.debug "[#{self}] Reading #{file}"

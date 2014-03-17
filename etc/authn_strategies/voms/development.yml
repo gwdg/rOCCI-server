@@ -4,7 +4,7 @@ vo_mapping: false
 #
 # old_name: 'new_name'
 # another_old_name: 'another_new_name'
-vo_mapfile: <%= Rails.root.join('etc', 'authn_strategies', 'voms', 'files', 'mapfile.yml') %>
+vo_mapfile: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'voms', 'files', 'mapfile.yml') %>
 
 # Allow all VOs except the ones in the blacklist
 # or allow only those found in the whitelist. Evaluation
@@ -15,5 +15,5 @@ access_policy: 'blacklist' # or 'whitelist'
 # - vo_name
 # - another_vo_name
 # - yet_another_vo_name
-whitelist: <%= Rails.root.join('etc', 'authn_strategies', 'voms', 'files', 'whitelist.yml') %>
-blacklist: <%= Rails.root.join('etc', 'authn_strategies', 'voms', 'files', 'blacklist.yml') %>
+whitelist: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'voms', 'files', 'whitelist.yml') %>
+blacklist: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'voms', 'files', 'blacklist.yml') %>

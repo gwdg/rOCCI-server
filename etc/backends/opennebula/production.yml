@@ -1,6 +1,6 @@
-model_extensions_dir: <%= Rails.root.join('etc', 'backends', 'opennebula', 'model') %>
-fixtures_dir: <%= Rails.root.join('etc', 'backends', 'opennebula', 'fixtures') %>
-templates_dir: <%= Rails.root.join('etc', 'backends', 'opennebula', 'templates') %>
+model_extensions_dir: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'opennebula', 'model') %>
+fixtures_dir: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'opennebula', 'fixtures') %>
+templates_dir: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'opennebula', 'templates') %>
 xmlrpc_endpoint: <%= ENV['ROCCI_SERVER_ONE_XMLRPC'] %>
 username: <%= ENV['ROCCI_SERVER_ONE_USER'] %>
 password: <%= ENV['ROCCI_SERVER_ONE_PASSWD'] %>

@@ -9,7 +9,7 @@ module AuthenticationStrategies
   #
   # Options from the strategy-specific configuration file are available
   # globally as `OPTIONS` (constant). Configuration files are located
-  # in {Rails.root}/etc/auth_strategies/STRATEGY_NAME/ENV_NAME.yml
+  # in {Rails.application.config.rocci_server_etc_dir}/auth_strategies/STRATEGY_NAME/ENV_NAME.yml
   class DummyStrategy < ::Warden::Strategies::Base
 
     # Checks whether this strategy is applicable or we should

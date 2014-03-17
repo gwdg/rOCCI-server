@@ -17,7 +17,7 @@ end
 private :get_yaml_config
 
 # Load general configuration from 'etc/*.yml'
-ROCCI_SERVER_CONFIG.common = get_yaml_config(Rails.root.join('etc'))
+ROCCI_SERVER_CONFIG.common = get_yaml_config(Rails.application.config.rocci_server_etc_dir)
 
 # Load hook configuration from 'etc/hooks/**/*.yml'
 unless ROCCI_SERVER_CONFIG.common.hooks.respond_to?(:each)
@@ -29,11 +29,11 @@ unless ROCCI_SERVER_CONFIG.common.hooks.respond_to?(:each)
 end
 
 ROCCI_SERVER_CONFIG.common.hooks.each do |hook|
-  ROCCI_SERVER_CONFIG.hooks![hook] = get_yaml_config(Rails.root.join('etc', 'hooks', hook))
+  ROCCI_SERVER_CONFIG.hooks![hook] = get_yaml_config(Rails.application.config.rocci_server_etc_dir.join('hooks', hook))
 end
 
 # Load backend configuration from 'etc/backends/**/*.yml'
-ROCCI_SERVER_CONFIG.backends![ROCCI_SERVER_CONFIG.common.backend] = get_yaml_config(Rails.root.join('etc', 'backends', ROCCI_SERVER_CONFIG.common.backend))
+ROCCI_SERVER_CONFIG.backends![ROCCI_SERVER_CONFIG.common.backend] = get_yaml_config(Rails.application.config.rocci_server_etc_dir.join('backends', ROCCI_SERVER_CONFIG.common.backend))
 
 # Load backend configuration from 'etc/authn_strategies/**/*.yml'
 unless ROCCI_SERVER_CONFIG.common.authn_strategies.respond_to?(:each)
@@ -45,7 +45,7 @@ unless ROCCI_SERVER_CONFIG.common.authn_strategies.respond_to?(:each)
 end
 
 ROCCI_SERVER_CONFIG.common.authn_strategies.each do |authn_strategy|
-  ROCCI_SERVER_CONFIG.authn_strategies![authn_strategy] = get_yaml_config(Rails.root.join('etc', 'authn_strategies', authn_strategy))
+  ROCCI_SERVER_CONFIG.authn_strategies![authn_strategy] = get_yaml_config(Rails.application.config.rocci_server_etc_dir.join('authn_strategies', authn_strategy))
 end
 
 # Load and normalize memcache endpoints

@@ -6,7 +6,7 @@ describe AuthenticationStrategies::X509Strategy do
     AuthenticationStrategies::X509Strategy.send(:remove_const, :OPTIONS) if AuthenticationStrategies::X509Strategy.const_defined?(:OPTIONS)
     AuthenticationStrategies::X509Strategy.const_set(
       :OPTIONS,
-      RocciSpecHelpers::YamlHelper.read_yaml("#{Rails.root.join('etc','authn_strategies', 'x509', Rails.env + '.yml')}")
+      RocciSpecHelpers::YamlHelper.read_yaml("#{File.join(Rails.application.config.rocci_server_etc_dir,'authn_strategies', 'x509', Rails.env + '.yml')}")
     )
     Warden::Strategies.add :x509, AuthenticationStrategies::X509Strategy
   end
@@ -16,9 +16,9 @@ describe AuthenticationStrategies::X509Strategy do
     AuthenticationStrategies::X509Strategy.send(:remove_const, :OPTIONS) if AuthenticationStrategies::X509Strategy.const_defined?(:OPTIONS)
     AuthenticationStrategies::X509Strategy.const_set(
       :OPTIONS,
-      RocciSpecHelpers::YamlHelper.read_yaml("#{Rails.root.join('etc','authn_strategies', 'x509', Rails.env + '.yml')}")
+      RocciSpecHelpers::YamlHelper.read_yaml("#{File.join(Rails.application.config.rocci_server_etc_dir,'authn_strategies', 'x509', Rails.env + '.yml')}")
     )
-    # TODO: read the default strategy from Rails.root/etc/Rails.env.yml
+    # TODO: read the default strategy from Rails.application.config.rocci_server_etc_dir/ENV.yml
     Warden::Strategies.add :dummy, AuthenticationStrategies::DummyStrategy
   end
 

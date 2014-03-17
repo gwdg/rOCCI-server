@@ -1,4 +1,4 @@
-# Check whether a backend is selected in Rails.root/etc/common.yml
+# Check whether a backend is selected in Rails.application.config.rocci_server_etc_dir/ENV.yml
 backend = ROCCI_SERVER_CONFIG.common.backend
 
 if backend.blank?

@@ -103,4 +103,11 @@ ROCCIServer::Application.configure do
   else
     "#{ENV['ROCCI_SERVER_HOSTNAME']}_#{ENV['ROCCI_SERVER_PORT']}"
   end
+
+  # Set path to configuration files
+  config.rocci_server_etc_dir = if ENV['ROCCI_SERVER_ETC_DIR'].blank?
+    Rails.root.join('etc')
+  else
+    Pathname.new(ENV['ROCCI_SERVER_ETC_DIR'])
+  end
 end

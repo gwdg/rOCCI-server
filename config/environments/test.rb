@@ -46,4 +46,7 @@ ROCCIServer::Application.configure do
 
   # This line is optional, it allows you to set a custom value for the @source field of the log event
   config.logstasher.source = 'localhost'
+
+  # Set path to configuration files
+  config.rocci_server_etc_dir = Rails.root.join('etc')
 end

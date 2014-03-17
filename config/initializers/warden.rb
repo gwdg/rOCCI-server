@@ -5,7 +5,7 @@ Rails.configuration.middleware.insert_before Rack::Head, Warden::Manager do |man
   manager.scope_defaults :default, store: false
 end
 
-# Enable strategies selected in Rails.root/etc/common.yml
+# Enable strategies selected in Rails.application.config.rocci_server_etc_dir/ENV.yml
 ROCCI_SERVER_CONFIG.common.authn_strategies.each do |authn_strategy|
   authn_strategy_sym = authn_strategy.to_sym
   authn_strategy = "#{authn_strategy.camelize}Strategy"

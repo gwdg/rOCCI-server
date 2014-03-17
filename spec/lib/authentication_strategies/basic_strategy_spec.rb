@@ -6,7 +6,7 @@ describe AuthenticationStrategies::BasicStrategy do
     AuthenticationStrategies::BasicStrategy.send(:remove_const, :OPTIONS) if AuthenticationStrategies::BasicStrategy.const_defined?(:OPTIONS)
     AuthenticationStrategies::BasicStrategy.const_set(
       :OPTIONS,
-      RocciSpecHelpers::YamlHelper.read_yaml("#{Rails.root.join('etc','authn_strategies', 'basic', Rails.env + '.yml')}")
+      RocciSpecHelpers::YamlHelper.read_yaml("#{File.join(Rails.application.config.rocci_server_etc_dir,'authn_strategies', 'basic', Rails.env + '.yml')}")
     )
     Warden::Strategies.add :basic, AuthenticationStrategies::BasicStrategy
   end
@@ -16,9 +16,9 @@ describe AuthenticationStrategies::BasicStrategy do
     AuthenticationStrategies::BasicStrategy.send(:remove_const, :OPTIONS) if AuthenticationStrategies::BasicStrategy.const_defined?(:OPTIONS)
     AuthenticationStrategies::BasicStrategy.const_set(
       :OPTIONS,
-      RocciSpecHelpers::YamlHelper.read_yaml("#{Rails.root.join('etc','authn_strategies', 'basic', Rails.env + '.yml')}")
+      RocciSpecHelpers::YamlHelper.read_yaml("#{File.join(Rails.application.config.rocci_server_etc_dir,'authn_strategies', 'basic', Rails.env + '.yml')}")
     )
-    # TODO: read the default strategy from Rails.root/etc/Rails.env.yml
+    # TODO: read the default strategy from Rails.application.config.rocci_server_etc_dir/ENV.yml
     Warden::Strategies.add :dummy, AuthenticationStrategies::DummyStrategy
   end
 

@@ -9,8 +9,8 @@ keystone_uri: 'http://localhost:5000/'
 # trl_url      -- http://[KEYSTONE_FQDN]:35357/v2.0/tokens/revoked
 keystone_pki_trust:
   cert_source: 'file'
-  ca_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'ca_cert.pem.devel') %>
-  signing_cert: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'certificates', 'signing_cert.pem.devel') %>
+  ca_cert: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'keystone', 'certificates', 'ca_cert.pem.devel') %>
+  signing_cert: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'keystone', 'certificates', 'signing_cert.pem.devel') %>
   trl_url: false
 
 # Pool of memcache servers, at least one is required
@@ -24,8 +24,8 @@ user_mapping: 'false'
 #
 # old_name: 'new_name'
 # another_old_name: 'another_new_name'
-user_mapfile: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'user_mapfile.yml') %>
-tenant_mapfile: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'tenant_mapfile.yml') %>
+user_mapfile: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'keystone', 'files', 'user_mapfile.yml') %>
+tenant_mapfile: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'keystone', 'files', 'tenant_mapfile.yml') %>
 
 # Allow all tenants except the ones in the blacklist
 # or allow only those found in the whitelist. Evaluation
@@ -36,5 +36,5 @@ access_policy: 'blacklist' # or 'whitelist'
 # - tenant_name
 # - another_tenant_name
 # - yet_another_tenant_name
-whitelist: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'whitelist.yml') %>
-blacklist: <%= Rails.root.join('etc', 'authn_strategies', 'keystone', 'files', 'blacklist.yml') %>
+whitelist: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'keystone', 'files', 'whitelist.yml') %>
+blacklist: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'keystone', 'files', 'blacklist.yml') %>
