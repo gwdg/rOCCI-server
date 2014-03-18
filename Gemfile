@@ -69,7 +69,7 @@ gem 'hirb', group: :development
 
 # Caching stuff
 gem 'dalli'
-gem 'kgio'
+gem 'kgio', group: :stuff_breaking_travis_ci
 
 # AuthN middleware
 gem 'warden', '~> 1.2.3'

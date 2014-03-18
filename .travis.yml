@@ -18,4 +18,9 @@ branches:
 services:
     - memcached
 
-script: "bundle exec rake spec"
+script: bundle exec rake spec
+
+bundler_args: --without stuff_breaking_travis_ci
+
+env:
+  - ON_TRAVIS_CI=yes
