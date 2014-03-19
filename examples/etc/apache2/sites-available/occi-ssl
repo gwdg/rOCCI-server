@@ -1,4 +1,8 @@
 <VirtualHost *:11443>
+    # if you wish to change the default Ruby used to run this app
+    #PassengerRuby /path/to/your/bin/ruby
+
+    # enable SSL
     SSLEngine on
 
     # for security reasons you may restrict the SSL protocol, but some clients may fail if SSLv2 is not supported
