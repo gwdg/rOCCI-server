@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/arax/logstasher.git
-  revision: 4ceebbb27b647d7f15776afba4893684c575ce72
+  revision: b3f4834fede4107561ba505fdfe3b29f1295a6df
   branch: master
   specs:
     logstasher (0.5.0)
@@ -55,7 +55,7 @@ GEM
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
     arel (4.0.2)
-    atomic (1.1.15)
+    atomic (1.1.16)
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
     bond (0.5.1)
@@ -133,7 +133,7 @@ GEM
     mime-types (1.25.1)
     mini_portile (0.5.2)
     minitest (4.7.5)
-    multi_json (1.9.0)
+    multi_json (1.9.2)
     net-scp (1.1.2)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)
@@ -153,7 +153,7 @@ GEM
     opennebula (4.4.0)
       json
       nokogiri
-    passenger (4.0.38)
+    passenger (4.0.40)
       daemon_controller (>= 1.2.0)
       rack
       rake (>= 0.8.1)
@@ -277,7 +277,7 @@ DEPENDENCIES
   openssl_cms_1_9_3!
   openssl_cms_2_0_0!
   openssl_cms_2_1!
-  passenger (~> 4.0.38)
+  passenger (~> 4.0.40)
   pry-rails
   pry-rescue
   pry-stack_explorer
