@@ -18,7 +18,7 @@ module Backends
       FIXTURES.each { |name| send "read_#{name.to_s}_fixtures", "#{File.join(path, name.to_s)}.json" }
     end
 
-    def read_compute_fixtures(path = nil)
+    def read_compute_fixtures(path = '')
       unless compute = @dalli_cache.get('dummy_compute')
         compute = File.readable?(path) ? read_from_json(path).resources : Occi::Core::Resources.new
         @dalli_cache.set 'dummy_compute', compute
@@ -35,7 +35,7 @@ module Backends
       @dalli_cache.delete 'dummy_compute'
     end
 
-    def read_network_fixtures(path = nil)
+    def read_network_fixtures(path = '')
       unless network = @dalli_cache.get('dummy_network')
         network = File.readable?(path) ? read_from_json(path).resources : Occi::Core::Resources.new
         @dalli_cache.set 'dummy_network', network
@@ -52,7 +52,7 @@ module Backends
       @dalli_cache.delete 'dummy_network'
     end
 
-    def read_storage_fixtures(path = nil)
+    def read_storage_fixtures(path = '')
       unless storage = @dalli_cache.get('dummy_storage')
         storage = File.readable?(path) ? read_from_json(path).resources : Occi::Core::Resources.new
         @dalli_cache.set 'dummy_storage', storage
@@ -69,7 +69,7 @@ module Backends
       @dalli_cache.delete 'dummy_storage'
     end
 
-    def read_os_tpl_fixtures(path = nil)
+    def read_os_tpl_fixtures(path = '')
       unless os_tpl = @dalli_cache.get('dummy_os_tpl')
         os_tpl = File.readable?(path) ? read_from_json(path).mixins : Occi::Core::Mixins.new
         @dalli_cache.set 'dummy_os_tpl', os_tpl
@@ -78,7 +78,7 @@ module Backends
       os_tpl
     end
 
-    def read_resource_tpl_fixtures(path = nil)
+    def read_resource_tpl_fixtures(path = '')
       unless resource_tpl = @dalli_cache.get('dummy_resource_tpl')
         resource_tpl = File.readable?(path) ? read_from_json(path).mixins : Occi::Core::Mixins.new
         @dalli_cache.set 'dummy_resource_tpl', resource_tpl
