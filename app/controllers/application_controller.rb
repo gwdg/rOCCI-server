@@ -55,7 +55,12 @@ class ApplicationController < ActionController::API
   #
   # @return [Hashie::Mash] a hash containing authentication data
   def current_user
-    @current_user ||= warden.user
+    if Rails.env.test?
+      # turn off caching for tests
+      @current_user = warden.user
+    else
+      @current_user ||= warden.user
+    end
   end
 
   # Provides access to a lazy authN object from Warden.
@@ -77,32 +82,53 @@ class ApplicationController < ActionController::API
   # @param expected_entity_type [Object] parameter passed as 'entity_type' to Occi::Parser.parse
   # @return [Occi::Collection] collection containig parsed OCCI request
   def request_occi_collection(expected_entity_type = nil)
-    parse_request(expected_entity_type) unless @request_collection
-    @request_collection || Occi::Collection.new
+    if Rails.env.test?
+      # turn off caching for tests
+      @request_collection = parse_request(expected_entity_type)
+    else
+      @request_collection ||= parse_request(expected_entity_type)
+    end
   end
 
   protected
 
   # Provides access to and caching for the active backend instance.
+  #
+  # @return [Backend] instance of the backend
   def backend_instance
-    @backend_instance ||= Backend.new(current_user)
+    if Rails.env.test?
+      # turn off caching for tests
+      @backend_instance = Backend.new(current_user)
+    else
+      @backend_instance ||= Backend.new(current_user)
+    end
   end
 
   # Provides access to a lazy parser object
+  #
+  # @param expected_entity_type [Object] parameter passed as 'entity_type' to Occi::Parser.parse
+  # @return [Occi::Collection] collection of parsed OCCI objects
   def parse_request(expected_entity_type = nil)
-    @request_collection = env['rocci_server.request.parser'].parse_occi_messages(expected_entity_type)
+    request_collection = env['rocci_server.request.parser'].parse_occi_messages(expected_entity_type)
+    request_collection ||= Occi::Collection.new
 
-    @request_collection.model = OcciModel.get(backend_instance)
-    @request_collection.check(check_categories = true)
+    request_collection.model = OcciModel.get(backend_instance)
+    request_collection.check(check_categories = true)
+
+    request_collection
   end
 
   # Provides access to user-configured server URL
+  #
+  # @return [String] FQDN of the server, including the port number
   def server_url
     "#{ROCCI_SERVER_CONFIG.common.protocol || 'http'}://" \
     "#{ROCCI_SERVER_CONFIG.common.hostname || 'localhost'}:" \
     "#{ROCCI_SERVER_CONFIG.common.port.to_s || '3000'}"
   end
 
+  # Runs basic checks matching ActionInstance content with action name declared
+  # in the 'query_string'
   def check_ai!(ai, query_string)
     action_param = action_from_query_string(query_string)
     fail ::Errors::ArgumentError, 'Provided action does not have a term!' unless ai && ai.action && ai.action.term
@@ -133,6 +159,13 @@ class ApplicationController < ActionController::API
     end
   end
 
+  # Extracts action term from a 'query_string'
+  #
+  # @example
+  #    action_from_query_string('action=stop') # => 'stop'
+  #
+  # @param query_string [String] query string
+  # @return [String] action term
   def action_from_query_string(query_string)
     return '' if query_string.blank?
 
