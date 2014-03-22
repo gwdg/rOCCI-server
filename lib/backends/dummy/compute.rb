@@ -100,7 +100,10 @@ module Backends
         # Here you simply select a specific instance with a matching ID.
         # Since IDs must be unique, you should always return at most one instance.
         ###
-        compute_list.to_a.select { |c| c.id == compute_id }.first
+        found = compute_list.to_a.select { |c| c.id == compute_id }.first
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{compute_id} does not exist!" unless found
+
+        found
       end
 
       # Instantiates a new compute instance from Occi::Infrastructure::Compute.
@@ -181,6 +184,8 @@ module Backends
         # Again, operation on a single resource instance. The opposite
         # of #compute_create.
         ###
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{compute_id} does not exist!" unless compute_list_ids.include?(compute_id)
+
         updated = read_compute_fixtures.delete_if { |c| c.id == compute_id }
         save_compute_fixtures(updated)
         compute_get(compute_id).nil?

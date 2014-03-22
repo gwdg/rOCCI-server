@@ -51,7 +51,10 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
       def network_get(network_id)
-        read_network_fixtures.to_a.select { |n| n.id == network_id }.first
+        found = read_network_fixtures.to_a.select { |n| n.id == network_id }.first
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{network_id} does not exist!" unless found
+
+        found
       end
 
       # Instantiates a new network instance from Occi::Infrastructure::Network.
@@ -113,6 +116,8 @@ module Backends
       # @param network_id [String] an identifier of a network instance to be deleted
       # @return [true, false] result of the operation
       def network_delete(network_id)
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{network_id} does not exist!" unless network_list_ids.include?(network_id)
+
         updated = read_network_fixtures.delete_if { |n| n.id == network_id }
         save_network_fixtures(updated)
         network_get(network_id).nil?

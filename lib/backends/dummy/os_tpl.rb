@@ -29,7 +29,10 @@ module Backends
         # Here you simply select a specific instance with a matching term.
         # Since terms must be unique, you should always return at most one instance.
         ###
-        os_tpl_list.to_a.select { |m| m.term == term }.first
+        found = os_tpl_list.to_a.select { |m| m.term == term }.first
+        fail Backends::Errors::ResourceNotFoundError, "Mixin with term #{term.inspect} does not exist!" unless found
+
+        found
       end
     end
   end

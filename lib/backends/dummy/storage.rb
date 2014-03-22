@@ -51,7 +51,10 @@ module Backends
       # @param storage_id [String] OCCI identifier of the requested storage instance
       # @return [Occi::Infrastructure::Storage, nil] a storage instance or `nil`
       def storage_get(storage_id)
-        read_storage_fixtures.to_a.select { |s| s.id == storage_id }.first
+        found = read_storage_fixtures.to_a.select { |s| s.id == storage_id }.first
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{storage_id} does not exist!" unless found
+
+        found
       end
 
       # Instantiates a new storage instance from Occi::Infrastructure::Storage.
@@ -113,6 +116,8 @@ module Backends
       # @param storage_id [String] an identifier of a storage instance to be deleted
       # @return [true, false] result of the operation
       def storage_delete(storage_id)
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{storage_id} does not exist!" unless storage_list_ids.include?(storage_id)
+
         updated = read_storage_fixtures.delete_if { |s| s.id == storage_id }
         save_storage_fixtures(updated)
         storage_get(storage_id).nil?
