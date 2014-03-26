@@ -2,19 +2,19 @@ require 'spec_helper'
 
 describe Backends::DummyBackend do
   let(:dalli) { Dalli::Client.new }
-  let(:dummy) { Backends::DummyBackend.new nil, nil, nil, nil, dalli }
   let(:dummy_w_opts) do
     opts = Hashie::Mash.new
     opts.fixtures_dir = Rails.application.config.rocci_server_etc_dir.join('backends', 'dummy', 'fixtures')
     Backends::DummyBackend.new nil, opts, nil, nil, dalli
   end
 
-  before(:each) do
-    dalli.delete 'dummy_compute'
-    dalli.delete 'dummy_storage'
-    dalli.delete 'dummy_network'
-    dalli.delete 'dummy_os_tpl'
-    dalli.delete 'dummy_resource_tpl'
+  before(:each) { dalli.flush }
+  after(:all) { dalli.flush }
+
+  describe '#new' do
+    it 'fails to instantiate without a fixtures_dir' do
+      expect { Backends::DummyBackend.new nil, nil, nil, nil, dalli }.to raise_error
+    end
   end
 
   context 'os_tpl_*' do
@@ -25,10 +25,6 @@ describe Backends::DummyBackend do
 
       it 'returns a non-empty collection' do\
         expect(dummy_w_opts.os_tpl_list).not_to be_empty
-      end
-
-      it 'returns an empty collection without model_extensions_dir' do
-        expect(dummy.os_tpl_list).to be_empty
       end
     end
 
@@ -51,10 +47,6 @@ describe Backends::DummyBackend do
 
       it 'returns a non-empty collection' do\
         expect(dummy_w_opts.resource_tpl_list).not_to be_empty
-      end
-
-      it 'returns an empty collection without model_extensions_dir' do
-        expect(dummy.resource_tpl_list).to be_empty
       end
     end
 
