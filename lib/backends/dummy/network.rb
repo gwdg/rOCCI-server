@@ -120,7 +120,13 @@ module Backends
 
         updated = read_network_fixtures.delete_if { |n| n.id == network_id }
         save_network_fixtures(updated)
-        network_get(network_id).nil?
+
+        begin
+          network_get(network_id)
+          false
+        rescue Backends::Errors::ResourceNotFoundError
+          true
+        end
       end
 
       # Partialy updates an existing network instance, instance to be updated

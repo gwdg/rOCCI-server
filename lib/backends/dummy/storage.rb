@@ -120,7 +120,13 @@ module Backends
 
         updated = read_storage_fixtures.delete_if { |s| s.id == storage_id }
         save_storage_fixtures(updated)
-        storage_get(storage_id).nil?
+
+        begin
+          storage_get(storage_id)
+          false
+        rescue Backends::Errors::ResourceNotFoundError
+          true
+        end
       end
 
       # Partialy updates an existing storage instance, instance to be updated

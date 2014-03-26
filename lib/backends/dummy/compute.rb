@@ -188,7 +188,13 @@ module Backends
 
         updated = read_compute_fixtures.delete_if { |c| c.id == compute_id }
         save_compute_fixtures(updated)
-        compute_get(compute_id).nil?
+
+        begin
+          compute_get(compute_id)
+          false
+        rescue Backends::Errors::ResourceNotFoundError
+          true
+        end
       end
 
       # Partialy updates an existing compute instance, instance to be updated
