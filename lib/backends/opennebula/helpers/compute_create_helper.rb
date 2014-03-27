@@ -117,7 +117,7 @@ module Backends
 
           if compute.attributes.org.openstack.compute!.user_data
             template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
-            template.add_element('TEMPLATE/CONTEXT', 'USER_DATA' => compute_create_add_context_ud4ci(compute.attributes['org.openstack.compute.user_data']))
+            template.add_element('TEMPLATE/CONTEXT', 'USER_DATA' => compute.attributes['org.openstack.compute.user_data'])
           end
         end
 
@@ -141,6 +141,7 @@ module Backends
         # @param user_data [String] Base64-encoded USER_DATA
         # @return [String] decoded cloud-init config or Base64-encoded original content
         def compute_create_add_context_ud4ci(user_data)
+          # TODO: unused, remove
           return '' if user_data.blank?
 
           begin
