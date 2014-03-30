@@ -51,7 +51,7 @@ module AuthenticationStrategies
       user.identity = user.auth.credentials.client_cert_dn
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
-      success! user
+      success! user.deep_freeze
     end
 
     class << self

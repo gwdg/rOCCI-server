@@ -75,7 +75,7 @@ module AuthenticationStrategies
       end
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
-      success! user
+      success! user.deep_freeze
     end
   end
 end

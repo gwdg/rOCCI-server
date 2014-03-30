@@ -34,7 +34,7 @@ module AuthenticationStrategies
       user.identity = auth_request.username
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
-      success! user
+      success! user.deep_freeze
     end
 
     def valid_username_provided?(username)
