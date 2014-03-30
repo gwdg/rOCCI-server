@@ -132,27 +132,6 @@ module Backends
               COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
           end
         end
-
-        # Decodes Base64-encoded USER_DATA and check whether this is a cloud-init
-        # configuration file or just an arbitrary content. USER_DATA for cloud-init
-        # will be decoded into its original form, arbitrary content will stay encoded
-        # in Base64 and returned.
-        #
-        # @param user_data [String] Base64-encoded USER_DATA
-        # @return [String] decoded cloud-init config or Base64-encoded original content
-        def compute_create_add_context_ud4ci(user_data)
-          # TODO: unused, remove
-          return '' if user_data.blank?
-
-          begin
-            decoded = Base64.strict_decode64(user_data)
-            decoded.gsub! '"', "'" # TODO: proper escaping for ONE template variables
-            decoded.match(/^\s*#cloud-config\s*$/) ? decoded : user_data
-          rescue => e
-            @logger.error "[Backends] [OpennebulaBackend] Failed to decode USER_DATA! #{e.message}"
-            fail Backends::Errors::ResourceNotValidError, "Couldn't decode USER_DATA from Base64!"
-          end
-        end
       end
     end
   end
