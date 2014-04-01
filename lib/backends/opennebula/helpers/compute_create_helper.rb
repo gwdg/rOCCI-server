@@ -77,28 +77,9 @@ module Backends
         end
 
         def compute_create_with_links(compute)
-          # TODO: fix or drop this part
-          # TODO: needs clean-up and DRYing with compute_create_with_os_tpl
-          # TODO: especially CONTEXT handling
+          # TODO: drop this branch in the second stable release
           fail Backends::Errors::MethodNotImplementedError,
                "This functionality has been deprecated! Use os_tpl and resource_tpl mixins!"
-
-          @logger.debug "[Backends] [OpennebulaBackend] Deploying #{compute.inspect} with links"
-          template_location = File.join(@options.templates_dir, 'compute.erb')
-          template = Erubis::Eruby.new(File.read(template_location)).evaluate(compute: compute)
-
-          @logger.debug "[Backends] [OpennebulaBackend] Template #{template.inspect}"
-
-          vm_alloc = ::OpenNebula::VirtualMachine.build_xml
-          backend_object = ::OpenNebula::VirtualMachine.new(vm_alloc, @client)
-
-          rc = backend_object.allocate(template)
-          check_retval(rc, Backends::Errors::ResourceCreationError)
-
-          rc = backend_object.info
-          check_retval(rc, Backends::Errors::ResourceRetrievalError)
-
-          backend_object['ID']
         end
 
         private
