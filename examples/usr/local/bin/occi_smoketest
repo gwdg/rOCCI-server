@@ -1,0 +1,208 @@
+#!/bin/bash
+
+# -------------------------------------------------------------------------- #
+# Licensed under the Apache License, Version 2.0 (the "License"); you may    #
+# not use this file except in compliance with the License. You may obtain    #
+# a copy of the License at                                                   #
+#                                                                            #
+# http://www.apache.org/licenses/LICENSE-2.0                                 #
+#                                                                            #
+# Unless required by applicable law or agreed to in writing, software        #
+# distributed under the License is distributed on an "AS IS" BASIS,          #
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+# See the License for the specific language governing permissions and        #
+# limitations under the License.                                             #
+#--------------------------------------------------------------------------- #
+
+PROGNAME=`basename $0`
+
+#
+#
+function error_exit()
+{
+  printf "%s\n" "${PROGNAME}: ${1:-"Unknown Error"}" 1>&2
+  exit 1
+}
+
+#
+#
+function print_help_exit()
+{
+  if [ -n "$1" ]; then
+    printf "%s\n\n" "${PROGNAME}: ${1}" 1>&2
+  fi
+
+  printf "%s\n\n" "Usage: ${PROGNAME} [OPTIONS]"
+  printf "%s\n" "\t-e  Server endpoint address without the trailing slash, defaults to \"http://localhost:3000\""
+  printf "%s\n" "\t-n  Authentication schema from {none, basic, x509, token}, defaults to \"none\""
+  printf "%s\n" "\t-h  Show this help"
+  printf "%s\n" "\t-u  Password for basic authentication scheme"
+  printf "%s\n" "\t-p  Username for basic authentication scheme"
+  printf "%s\n" "\t-c  CA path for x509 authentication scheme"
+  printf "%s\n" "\t-f  CA file for x509 authentication scheme"
+  printf "%s\n" "\t-x  Path to user credentials for x509 authentication scheme"
+  printf "%s\n" "\t-i  Token for token-based authentication scheme"
+  printf "%s\n" "\t-d  Enable debug mode (show raw cURL commands)"
+
+  if [ -n "$1" ]; then
+    exit 1
+  else
+    exit 0
+  fi
+}
+
+#
+#
+# $1 -- HTTP method
+# $2 -- path
+# $3 -- media type
+# $4 -- expect fail
+# $5 -- request data
+# $6 -- content type
+function curl_query()
+{
+  AUTH_STUFF=''
+
+  case "$ROCCI_SERVER_AUTHENTICATION_SCHEME" in
+    'none') ;;
+    'basic') AUTH_STUFF="--basic -u ${ROCCI_SERVER_AUTHENTICATION_USERNAME}:${ROCCI_SERVER_AUTHENTICATION_PASSWORD} -k";;
+    'x509') AUTH_STUFF="--cert ${ROCCI_SERVER_AUTHENTICATION_CRED} --key ${ROCCI_SERVER_AUTHENTICATION_CRED} --capath ${ROCCI_SERVER_AUTHENTICATION_CA_PATH}";;
+    'token') AUTH_STUFF="-H \"X-Auth-Token: ${ROCCI_SERVER_AUTHENTICATION_TOKEN}\" -k";;
+    *) error_exit "Unknow authentication scheme \"$ROCCI_SERVER_AUTHENTICATION_SCHEME\" for curl!"
+  esac
+
+  CURL_CMD="curl -f -s ${AUTH_STUFF} -X $1 ${ROCCI_SERVER_ENDPOINT}$2"
+  if [ -n "$3" ]; then
+    CURL_CMD="$CURL_CMD -H \"Accept: $3\""
+  fi
+
+  if [ "$ROCCI_SERVER_DEBUG" == "yes" ]; then
+    echo "$CURL_CMD" >> /tmp/occi_smoketest.log
+  fi
+
+  CURL_OUTPUT=`eval $CURL_CMD`
+  CURL_RETVAL=$?
+  if [ "$CURL_RETVAL" -ne "0" ] && [ "$4" != "yes" ]; then
+    error_exit "cURL request failed: $CURL_CMD"
+  fi
+  if [ "$CURL_RETVAL" -eq "0" ] && [ "$4" == "yes" ]; then
+    error_exit "cURL request mistakenly successful: $CURL_CMD"
+  fi
+
+  printf "%s" "$CURL_OUTPUT"
+}
+
+# set defaults
+ROCCI_SERVER_ENDPOINT="http://localhost:3000"
+ROCCI_SERVER_AUTHENTICATION_SCHEME="none"
+ROCCI_SERVER_AUTHENTICATION_CA_PATH="/etc/grid-security/certificates"
+ROCCI_SERVER_DEBUG="no"
+
+# parse arguments
+while getopts ":e:n:u:p:c:f:x:i:dh" flag; do
+  case "$flag" in
+    'e') ROCCI_SERVER_ENDPOINT=$OPTARG;;
+    'n') ROCCI_SERVER_AUTHENTICATION_SCHEME=$OPTARG;;
+    'u') ROCCI_SERVER_AUTHENTICATION_USERNAME=$OPTARG;;
+    'p') ROCCI_SERVER_AUTHENTICATION_PASSWORD=$OPTARG;;
+    'c') ROCCI_SERVER_AUTHENTICATION_CA_PATH=$OPTARG;;
+    'f') ROCCI_SERVER_AUTHENTICATION_CA_FILE=$OPTARG;;
+    'x') ROCCI_SERVER_AUTHENTICATION_CRED=$OPTARG;;
+    'i') ROCCI_SERVER_AUTHENTICATION_TOKEN=$OPTARG;;
+    'h') print_help_exit;;
+    'd') ROCCI_SERVER_DEBUG='yes' && rm -f /tmp/occi_smoketest.log;;
+    '?') error_exit "Unknown option \"-${OPTARG}\"!";;
+    ':') error_exit "Missing required argument \"-${OPTARG} VALUE\"!";;
+    *) error_exit "Unknown option parsing error!"
+  esac
+done
+
+# check basic pre-conditions && required options
+if [ -z "$ROCCI_SERVER_ENDPOINT" ]; then
+  print_help_exit "Endpoint is a required argument!"
+else
+  ROCCI_SERVER_ENDPOINT_ESCAPED=$(echo "$ROCCI_SERVER_ENDPOINT" | sed -e 's/[\/&]/\\&/g')
+fi
+
+if [ -z "$ROCCI_SERVER_AUTHENTICATION_SCHEME" ]; then
+  print_help_exit "Authentication scheme is a required argument!"
+fi
+
+if [ "$ROCCI_SERVER_AUTHENTICATION_SCHEME" != "none" ] && [ "$ROCCI_SERVER_AUTHENTICATION_SCHEME" != "basic" ] && [ "$ROCCI_SERVER_AUTHENTICATION_SCHEME" != "x509" ] && [ "$ROCCI_SERVER_AUTHENTICATION_SCHEME" != "token" ]; then
+  print_help_exit "Unsupported authentication scheme \"${ROCCI_SERVER_AUTHENTICATION_SCHEME}!\""
+fi
+
+if [ "$ROCCI_SERVER_AUTHENTICATION_SCHEME" == "basic" ]; then
+  if [ -z "$ROCCI_SERVER_AUTHENTICATION_USERNAME" ] || [ -z "$ROCCI_SERVER_AUTHENTICATION_PASSWORD" ]; then
+    print_help_exit "Authentication scheme \"basic\" requires username and password!"
+  fi
+fi
+
+if [ "$ROCCI_SERVER_AUTHENTICATION_SCHEME" == "x509" ]; then
+  if [ -z "$ROCCI_SERVER_AUTHENTICATION_CRED" ]; then
+    print_help_exit "Authentication scheme \"x509\" requires user credentials!"
+  fi
+fi
+
+if [ "$ROCCI_SERVER_AUTHENTICATION_SCHEME" == "token" ]; then
+  if [ -z "$ROCCI_SERVER_AUTHENTICATION_TOKEN" ]; then
+    print_help_exit "Authentication scheme \"token\" requires a token!"
+  fi
+fi
+
+# check required external utilities
+curl --help &> /dev/null
+if [ "$?" -ne "0" ]; then
+  print_help_exit "\"curl\" is not available!"
+fi
+
+# run fcional tests
+printf "%s\n" "* Running a basic set of functionality tests on ${ROCCI_SERVER_ENDPOINT}"
+
+printf "%s\n" "** Getting server model"
+curl_query "GET" "/-/" "text/plain" > /dev/null
+
+printf "%s\n" "** Getting various resource lists"
+LINKS=$(curl_query "GET" "/" "text/uri-list")
+
+printf "%s\n" "*** Getting descriptions for specific resources"
+for LINK in $LINKS; do
+  LINK_RELATIVE=`echo "$LINK" | sed "s/$ROCCI_SERVER_ENDPOINT_ESCAPED//g"`
+  printf "%s\n" "**** Getting description for \"$LINK_RELATIVE\""
+  curl_query "GET" "$LINK_RELATIVE" "text/plain" > /dev/null
+done
+
+printf "%s\n" "*** Testing responses to non-existing resources"
+curl_query "GET" "/compute/not_there" "text/plain" "yes" > /dev/null
+curl_query "GET" "/storage/not_there" "text/plain" "yes" > /dev/null
+curl_query "GET" "/network/not_there" "text/plain" "yes" > /dev/null
+curl_query "GET" "/not_there/" "text/plain" "yes" > /dev/null
+
+printf "%s\n" "** Testing various media types"
+printf "%s\n" "*** Testing text/plain"
+curl_query "GET" "/-/" "text/plain" > /dev/null
+
+printf "%s\n" "*** Testing text/occi"
+curl_query "GET" "/-/" "text/occi" > /dev/null
+
+printf "%s\n" "*** Testing application/occi+json"
+curl_query "GET" "/-/" "application/occi+json" > /dev/null
+
+printf "%s\n" "** Testing error responses"
+printf "%s\n" "*** Testing responses to invalid requests"
+curl_query "POST" "/compute/" "text/plain" "yes" > /dev/null
+curl_query "POST" "/storage/" "text/plain" "yes" > /dev/null
+curl_query "POST" "/network/" "text/plain" "yes" > /dev/null
+
+printf "%s\n" "*** Testing responses to invalid media types"
+curl_query "GET" "/-/" "application/rss" "yes" > /dev/null
+curl_query "GET" "/-/" "text/uri-list" "yes" > /dev/null
+
+# run configuration tests
+printf "%s\n" "* Running server configuration tests"
+
+printf "%s\n" "** Headers"
+printf "%s\n" "** Hidden versions"
+printf "%s\n" "** X-Powered-By"
+
+# run full resource tests (including creation and clean-up)
