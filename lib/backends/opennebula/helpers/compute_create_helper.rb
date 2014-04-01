@@ -4,6 +4,7 @@ module Backends
       module ComputeCreateHelper
         COMPUTE_SSH_REGEXP = /^(command=.+\s)?((?:ssh\-|ecds)[\w-]+\s.+)$/
         COMPUTE_BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
+        COMPUTE_USER_DATA_SIZE_LIMIT = 16384
 
         def compute_create_with_os_tpl(compute)
           @logger.debug "[Backends] [OpennebulaBackend] Deploying #{compute.inspect}"
@@ -130,6 +131,11 @@ module Backends
           if compute.attributes.org!.openstack!.compute!.user_data
             fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
               COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
+          end
+
+          if compute.attributes.org!.openstack!.compute!.user_data
+            fail Backends::Errors::ResourceNotValidError, "User data exeeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" unless \
+              compute.attributes['org.openstack.compute.user_data'].bytesize <= COMPUTE_USER_DATA_SIZE_LIMIT
           end
         end
       end
