@@ -71,14 +71,73 @@ describe ComputeController do
   # TODO: impl
   describe "POST 'create'" do
 
-    it 'returns http bad request without body' #do
-    #   @request.env['rocci_server.request.parser'] = ::RequestParsers::OcciParser.new
-    #   post 'create', format: :text
-    #   expect(response).to be_bad_request
-    # end
-    it 'returns http bad request with invalid body'
-    it 'returns http created on success'
-    it 'returns a link on success'
+    let(:dalli) { Dalli::Client.new }
+
+    before(:each) { dalli.flush }
+    after(:all) { dalli.flush }
+
+    let(:fake_app) { Proc.new {} }
+    let(:body) {
+      %Q|Category: compute;scheme="http://schemas.ogf.org/occi/infrastructure#";class="kind"
+X-OCCI-Attribute: occi.core.id="0444ecfc-a518-47a4-b5ca-c9a7320ecccc"
+X-OCCI-Attribute: occi.core.title="Compute1"
+X-OCCI-Attribute: occi.core.summary="Scientific Linux 6.2 Boron"
+X-OCCI-Attribute: occi.compute.hostname="compute1.example.org"|
+    }
+    let(:body_invalid) { 'not OCCI' }
+
+    let(:setup_success) do
+      env = @request.env
+      env['rack.input'] = StringIO.new(body)
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    let(:setup_empty_fail) do
+      env = @request.env
+      env['rack.input'] = StringIO.new('')
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    let(:setup_invl_fail) do
+      env = @request.env
+      env['rack.input'] = StringIO.new(body_invalid)
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    before(:each){
+      @request.env['rocci_server.request.parser'] ||= ::RequestParsers::OcciParser.new(fake_app)
+    }
+
+    it 'returns http bad request without body' do
+      setup_empty_fail
+
+      post 'create', format: :text
+      expect(response).to be_bad_request
+    end
+
+    it 'returns http bad request with invalid body' do
+      setup_invl_fail
+
+      post 'create', format: :text
+      expect(response).to be_bad_request
+    end
+
+    it 'returns http created on success' do
+      setup_success
+
+      post 'create', format: :text
+      expect(response.status).to eq 201
+    end
+
+    it 'returns a link on success' do
+      setup_success
+
+      post 'create', format: :text
+      expect(response.body).to include('http://localhost:3000/compute/0444ecfc-a518-47a4-b5ca-c9a7320ecccc')
+    end
 
   end
 
