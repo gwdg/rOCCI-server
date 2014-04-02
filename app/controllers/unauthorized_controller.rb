@@ -31,11 +31,11 @@ class UnauthorizedController < ActionController::Metal
   end
 
   def warden
-    env['warden']
+    request.env['warden']
   end
 
   def warden_options
-    env['warden.options']
+    request.env['warden.options']
   end
 
   def warden_message
