@@ -109,7 +109,7 @@ class ApplicationController < ActionController::API
   # @param expected_entity_type [Object] parameter passed as 'entity_type' to Occi::Parser.parse
   # @return [Occi::Collection] collection of parsed OCCI objects
   def parse_request(expected_entity_type = nil)
-    request_collection = env['rocci_server.request.parser'].parse_occi_messages(expected_entity_type)
+    request_collection = request.env['rocci_server.request.parser'].parse_occi_messages(expected_entity_type)
     request_collection ||= Occi::Collection.new
 
     request_collection.model = OcciModel.get(backend_instance)
