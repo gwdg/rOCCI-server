@@ -2,12 +2,6 @@ require 'spec_helper'
 
 describe StorageController do
 
-  let(:dalli) { Dalli::Client.new }
-
-  before(:each) { dalli.flush }
-
-  after(:all) { dalli.flush }
-
   describe "GET 'index'" do
 
     it 'returns http success' do
@@ -98,6 +92,11 @@ describe StorageController do
   describe "PUT 'update'"
 
   describe "DELETE 'delete'" do
+
+    let(:dalli) { Dalli::Client.new }
+
+    before(:each) { dalli.flush }
+    after(:all) { dalli.flush }
 
     it 'returns http success for removed resources' do
       delete 'delete', id: '63a14263-2671-4429-bcd0-6ba19177491f', format: :text
