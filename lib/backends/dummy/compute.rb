@@ -133,6 +133,7 @@ module Backends
         ###
         fail Backends::Errors::IdentifierConflictError, "Instance with ID #{compute.id} already exists!" if compute_list_ids.include?(compute.id)
 
+        compute.state = 'active'
         updated = read_compute_fixtures << compute
         save_compute_fixtures(updated)
 
