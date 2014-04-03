@@ -1,0 +1,456 @@
+#!/opt/occi-cli/embedded/bin/ruby
+
+# -------------------------------------------------------------------------- #
+# Licensed under the Apache License, Version 2.0 (the "License"); you may    #
+# not use this file except in compliance with the License. You may obtain    #
+# a copy of the License at                                                   #
+#                                                                            #
+# http://www.apache.org/licenses/LICENSE-2.0                                 #
+#                                                                            #
+# Unless required by applicable law or agreed to in writing, software        #
+# distributed under the License is distributed on an "AS IS" BASIS,          #
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+# See the License for the specific language governing permissions and        #
+# limitations under the License.                                             #
+#--------------------------------------------------------------------------- #
+
+require 'rubygems'
+require 'occi-api'
+require 'optparse'
+require 'uri'
+require 'logger'
+require 'openssl'
+require 'timeout'
+
+extend Occi::Api::Dsl
+
+## aux class definitions
+module Occi::Probe
+  VERSION = "0.0.1.beta.7"
+  BASIC_KINDS = %w(compute network storage)
+  BASIC_MIXINS = %w(os_tpl resource_tpl)
+  CONTEXTUALIZATION_MIXINS = %w(http://schemas.openstack.org/instance/credentials#public_key http://schemas.openstack.org/compute/instance#user_data)
+end
+
+module Occi::Probe::RetVals
+  OK = 0
+  WARNING = 1
+  CRITICAL = 2
+  UNKNOWN = 3
+end
+
+module Occi::Probe::Errors
+  class Timeout < Timeout::Error; end
+  class ComputeErrored < RuntimeError; end
+end
+
+module Occi::Probe
+  class Log < ::Occi::Log
+    SUBSCRIPTION_HANDLE = "rOCCI-probe.log"
+
+    attr_reader :api_log
+
+    def initialize(log_dev, log_prefix = '[rOCCI-probe]')
+      @api_log = ::Occi::Api::Log.new(log_dev) 
+      super
+    end
+
+    def close
+      super
+      @api_log.close
+    end
+
+    # @param severity [::Logger::Severity] severity
+    def level=(severity)
+      @api_log.level = severity
+      super
+    end
+
+    def core_log
+      @api_log.core_log
+    end
+  end
+end
+
+## constants
+AUTH_METHODS = [:x509, :basic, :digest, :none].freeze
+MEDIA_TYPES = ["application/occi+json", "text/plain,text/occi", "text/plain", "text/occi"].freeze
+
+options = Hashie::Mash.new
+
+## defaults
+options.debug = false
+
+options.log = {}
+options.log.out = STDERR
+options.log.level = Occi::Probe::Log::ERROR
+
+options.endpoint = "http://localhost:3000"
+options.timeout = 180
+
+options.auth = {}
+options.auth.type = "none"
+options.auth.user_cert = "#{ENV['HOME']}/.globus/usercred.pem"
+options.auth.ca_path = "/etc/grid-security/certificates"
+options.auth.username = "anonymous"
+options.auth.ca_file = nil
+options.auth.voms = false
+
+options.output_format = :plain
+
+options.attributes = []
+options.media_type = "text/plain,text/occi"
+
+options.resource = 'compute'
+options.action = 'create'
+
+## parse arguments
+opts = OptionParser.new do |opts|
+  opts.banner = %{Usage: check_occi_compute_create [OPTIONS]}
+
+  opts.separator ""
+  opts.separator "Options:"
+
+  opts.on("-e",
+          "--endpoint URI",
+          String,
+          "OCCI server URI, defaults to #{options.endpoint.inspect}") do |endpoint|
+    options.endpoint = URI(endpoint).to_s
+  end
+
+  opts.on("-n",
+          "--auth METHOD",
+          AUTH_METHODS,
+          "Authentication method, only: [#{AUTH_METHODS.join('|')}], defaults " \
+          "to #{options.auth.type.inspect}") do |auth|
+    options.auth.type = auth.to_s
+  end
+
+  opts.on("-t",
+          "--timeout SEC",
+          Integer,
+          "Default timeout for all HTTP connections, in seconds") do |timeout|
+    raise "Timeout has to be a number larger than 0!" if timeout < 1
+    options.timeout = timeout
+  end
+
+  opts.on("-u",
+          "--username USER",
+          String,
+          "Username for basic or digest authentication, defaults to " \
+          "#{options.auth.username.inspect}") do |username|
+    options.auth.username = username
+  end
+
+  opts.on("-p",
+          "--password PASSWORD",
+          String,
+          "Password for basic, digest and x509 authentication") do |password|
+    options.auth.password = password
+    options.auth.user_cert_password = password
+  end
+
+  opts.on("-c",
+          "--ca-path PATH",
+          String,
+          "Path to CA certificates directory, defaults to #{options.auth.ca_path.inspect}") do |ca_path|
+    raise ArgumentError, "Path specified in --ca-path is not a directory!" unless File.directory? ca_path
+    raise ArgumentError, "Path specified in --ca-path is not readable!" unless File.readable? ca_path
+
+    options.auth.ca_path = ca_path
+  end
+
+  opts.on("-f",
+          "--ca-file PATH",
+          String,
+          "Path to CA certificates in a file") do |ca_file|
+    raise ArgumentError, "File specified in --ca-file is not a file!" unless File.file? ca_file
+    raise ArgumentError, "File specified in --ca-file is not readable!" unless File.readable? ca_file
+
+    options.auth.ca_file = ca_file
+  end
+
+  opts.on("-x",
+          "--user-cred FILE",
+          String,
+          "Path to user's x509 credentials, defaults to #{options.auth.user_cert.inspect}") do |user_cred|
+    raise ArgumentError, "File specified in --user-cred is not a file!" unless File.file? user_cred
+    raise ArgumentError, "File specified in --user-cred is not readable!" unless File.readable? user_cred
+
+    options.auth.user_cert = user_cred
+  end
+
+  opts.on("-X",
+          "--voms",
+          "Using VOMS credentials; modifies behavior of the X509 authN module") do |voms|
+
+    options.auth.voms = true
+  end
+
+  opts.on("-y",
+          "--media-type MEDIA_TYPE",
+          MEDIA_TYPES,
+          "Media type for client <-> server communication, only: [#{MEDIA_TYPES.join('|')}], " \
+          "defaults to #{options.media_type.inspect}") do |media_type|
+    options.media_type = media_type
+  end
+
+  opts.on("-a",
+          "--compute-title TITLE",
+          String,
+          "Value for the occi.core.title attribute, mandatory") do |compute_title|
+    options.compute_title = compute_title
+  end
+
+  opts.on("-M",
+          "--os_tpl IDENTIFIER",
+          String,
+          "Identifier of an os_tpl mixin, formatted as SCHEME#TERM or SHORT_SCHEME#TERM or TERM") do |os_tpl|
+    options.os_tpl = os_tpl.include?('#') ? os_tpl : "os_tpl##{os_tpl}"
+  end
+
+  opts.on("-R",
+          "--resource_tpl IDENTIFIER",
+          String,
+          "Identifier of an resource_tpl mixin, formatted as SCHEME#TERM or SHORT_SCHEME#TERM or TERM") do |resource_tpl|
+    options.resource_tpl = resource_tpl.include?('#') ? resource_tpl : "resource_tpl##{resource_tpl}"
+  end
+
+  opts.on("-F",
+          "--checks-only",
+          "Run specified checks against the server model and exit without instantiating a compute") do |checks_only|
+    options.checks_only = checks_only
+  end
+
+  opts.on("-G",
+          "--check-context-mixins",
+          "Check server's model for contextualization extensions") do |check_context_mixins|
+    options.check_context_mixins = check_context_mixins
+  end
+
+  opts.on("-H",
+          "--check-basic-kinds",
+          "Check server's model for basic kind definitions") do |check_basic_kinds|
+    options.check_basic_kinds = check_basic_kinds
+  end
+
+  opts.on("-I",
+          "--check-basic-mixins",
+          "Check server's model for mixin definitions") do |check_basic_mixins|
+    options.check_basic_mixins = check_basic_mixins
+  end
+
+  opts.on_tail("-d",
+               "--debug",
+               "Enable debugging messages") do |debug|
+    options.debug = debug
+    options.log.level = Occi::Probe::Log::DEBUG
+  end
+
+  opts.on_tail("-h",
+               "--help",
+               "Show this message") do
+    puts opts
+    exit! true
+  end
+
+  opts.on_tail("-v",
+               "--version",
+               "Show version") do
+    puts "Probe:  #{Occi::Probe::VERSION}"
+    puts "API:    #{Occi::Api::VERSION}"
+    puts "Core:   #{Occi::VERSION}"
+    exit! true
+  end
+end
+
+begin
+  opts.parse!(ARGV)
+rescue => ex
+  puts "UNKNOWN - #{ex.message.capitalize}"
+  exit Occi::Probe::RetVals::UNKNOWN
+end
+
+## check options for required args (if applicable)
+if options.checks_only
+  unless options.check_basic_kinds || options.check_basic_mixins || options.check_context_mixins
+    puts "UNKNOWN - Option checks-only requires additional check-* arguments!"
+    exit Occi::Probe::RetVals::UNKNOWN
+  end
+else
+  if options.os_tpl.blank? || options.resource_tpl.blank?
+    puts "UNKNOWN - Required options os_tpl and resource_tpl are missing!"
+    exit Occi::Probe::RetVals::UNKNOWN
+  end
+
+  if options.compute_title.blank?
+    puts "UNKNOWN - Required option compute-title is missing!"
+    exit Occi::Probe::RetVals::UNKNOWN
+  end
+end
+
+## initialize logger
+logger = Occi::Probe::Log.new(options.log[:out])
+logger.level = options.log[:level]
+options.log[:logger] = logger.api_log
+
+Occi::Probe::Log.debug "Parsed options: #{options.inspect}"
+
+## establish a connection
+begin
+  Occi::Probe::Log.debug "Establishing a connection to #{options.endpoint}"
+
+  options.auto_connect = true
+  connect :http, options
+
+  ## run feature checks and exit (if applicable)
+  if options.check_basic_kinds
+    Occi::Probe::BASIC_KINDS.each do |kind|
+      unless model.get_by_id(Occi::Infrastructure.const_get(kind.classify).type_identifier)
+        puts "CRITICAL - #{kind.upcase} kind is not advertised by the endpoint"
+        exit Occi::Probe::RetVals::CRITICAL
+      end
+    end
+  end
+
+  if options.check_basic_mixins
+    Occi::Probe::BASIC_MIXINS.each do |mixin|
+      unless model.get_by_id(Occi::Infrastructure.const_get(mixin.classify).mixin.type_identifier)
+        puts "CRITICAL - #{mixin.upcase} mixin is not advertised by the endpoint"
+        exit Occi::Probe::RetVals::CRITICAL
+      end
+    end
+  end
+
+  if options.check_context_mixins
+    Occi::Probe::CONTEXTUALIZATION_MIXINS.each do |mixin|
+      unless model.get_by_id(mixin)
+        if options.checks_only
+          puts "WARNING - #{mixin.split('#').last.upcase} contextualization mixin is not advertised by the endpoint"
+          exit Occi::Probe::RetVals::WARNING
+        else
+          puts "CRITICAL - #{mixin.split('#').last.upcase} contextualization mixin is not advertised by the endpoint"
+          exit Occi::Probe::RetVals::CRITICAL
+        end
+      end
+    end
+  end
+
+  if options.checks_only
+    # we got here, so everything is fine
+    puts "OK - OCCI model contains required kinds, mixins or other extensions"
+    exit Occi::Probe::RetVals::OK
+  end
+
+  ## start executing
+  res = resource(options.resource)
+  res.title = res.hostname = options.compute_title
+
+  ## add mixins
+  %w(os_tpl resource_tpl).each do |mixin_idf|
+    orig_mxn = model.get_by_id(options.send(mixin_idf.to_sym))
+    if orig_mxn.blank?
+      mixin_parts = options.send(mixin_idf.to_sym).split('#')
+      orig_mxn = mixin(mixin_parts.last, mixin_parts.first, true)
+      raise ArgumentError,
+            "The specified mixin is not declared in " \
+            "the model! #{options.send(mixin_idf.to_sym).inspect}" if orig_mxn.blank?
+    end
+
+    res.mixins << orig_mxn
+  end
+
+  Occi::Probe::Log.debug "Creating #{options.resource.inspect}: #{res.inspect}"
+  res_link = create res
+
+  state = 'inactive'
+  Timeout::timeout(options.timeout, Occi::Probe::Errors::Timeout) {
+    while state != 'active' do
+      Occi::Probe::Log.debug "Waiting for state \"active\" on " \
+                             "#{res_link.inspect}, current state #{state.inspect}!"
+
+      res = describe(res_link)
+      state = res.first.state
+
+      raise Occi::Probe::Errors::ComputeErrored if state == 'error'
+
+      sleep 1
+    end
+
+    delete(res_link)
+  }
+rescue Occi::Api::Client::Errors::AuthnError
+  # authentication failed
+  puts "CRITICAL - authentication with #{options.endpoint.inspect} failed!"
+  exit Occi::Probe::RetVals::CRITICAL
+rescue Occi::Probe::Errors::ComputeErrored
+  # deployment explicitly failed
+
+  ## an attempt to do clean-up
+  unless res_link.blank?
+    begin
+      delete(res_link)
+    rescue => e
+      # ignore errors
+    end
+  end
+
+  puts "CRITICAL - #{options.endpoint.inspect} failed to deploy a COMPUTE instance!"
+  exit Occi::Probe::RetVals::CRITICAL
+rescue Occi::Probe::Errors::Timeout
+  # the remote server failed to instantiate a compute
+  # instance in the given timeframe
+
+  ## an attempt to do clean-up
+  unless res_link.blank?
+    begin
+      delete(res_link)
+    rescue => e
+      # ignore errors
+    end
+  end
+
+  puts "WARNING - #{options.endpoint.inspect} failed to instantiate " \
+       "a COMPUTE instance in the given timeframe! Timeout: #{options.timeout}s"
+  exit Occi::Probe::RetVals::WARNING
+rescue Errno::ECONNREFUSED
+  # the remote server has refused our connection attempt(s)
+  # there is nothing we can do ...
+  puts "CRITICAL - Connection refused by #{options.endpoint.inspect}!"
+  exit Occi::Probe::RetVals::CRITICAL
+rescue Errno::ETIMEDOUT, Timeout::Error, Net::OpenTimeout, Net::ReadTimeout
+  # connection attempt timed out
+  puts "CRITICAL - Connection to #{options.endpoint.inspect} timed out!"
+  exit Occi::Probe::RetVals::CRITICAL
+rescue OpenSSL::SSL::SSLError => ssl_ex
+  # generic SSL error raised whilst establishing a connection
+  # possibly an untrusted server cert or invalid user credentials 
+  raise ssl_ex if options.debug
+  puts "CRITICAL - SSL connection with #{options.endpoint.inspect} could " \
+       "not be established! #{ssl_ex.message}"
+  exit Occi::Probe::RetVals::CRITICAL
+rescue OpenSSL::PKey::RSAError => key_ex
+  # generic X.509 error raised whilst reading user's credentials from a file
+  # possibly a wrong password or mangled/unsupported credential format
+  raise key_ex if options.debug
+  puts "UNKNOWN - Failed to acquire local user credentials! #{key_ex.message}"
+  exit Occi::Probe::RetVals::UNKNOWN
+rescue StandardError => ex
+  # something went wrong during the execution
+  # hide the stack trace in non-debug modes
+
+  ## an attempt to do clean-up
+  unless res_link.blank?
+    begin
+      delete(res_link)
+    rescue => e
+      # ignore errors
+    end
+  end
+
+  raise ex if options.debug
+  puts "UNKNOWN - An error occurred! #{ex.message}"
+  exit Occi::Probe::RetVals::UNKNOWN
+end
+
+puts "OK - COMPUTE instance successfully created & cleaned up. Ref. #{res_link.inspect}"
