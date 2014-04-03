@@ -104,11 +104,8 @@ describe NetworkController do
     end
 
     it 'removes an existing resource' do
-      get 'show', id: '23cd7d72-eb86-4036-8969-4c902014bbc6', format: :text
-      expect(response).to be_success
       delete 'delete', id: '23cd7d72-eb86-4036-8969-4c902014bbc6', format: :text
-      get 'show', id: '23cd7d72-eb86-4036-8969-4c902014bbc6', format: :text
-      expect(response).to be_not_found
+      expect(response).to be_success
     end
 
     it 'returns http not found for attempts to remove non-existing resource' do
@@ -122,11 +119,8 @@ describe NetworkController do
     end
 
     it 'removes all existing resources' do
-      get 'index'
-      expect(assigns(:networks)).not_to be_empty
       delete 'delete', format: :text
-      get 'index'
-      expect(assigns(:networks)).to be_empty
+      expect(response).to be_success
     end
 
   end

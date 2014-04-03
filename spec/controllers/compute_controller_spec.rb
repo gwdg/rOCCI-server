@@ -163,11 +163,8 @@ X-OCCI-Attribute: occi.compute.hostname="compute1.example.org"|
     end
 
     it 'removes an existing resource' do
-      get 'show', id: '87f3bfc3-42d4-4474-b45c-757e55e093e9', format: :text
-      expect(response).to be_success
       delete 'delete', id: '87f3bfc3-42d4-4474-b45c-757e55e093e9', format: :text
-      get 'show', id: '87f3bfc3-42d4-4474-b45c-757e55e093e9', format: :text
-      expect(response).to be_not_found
+      expect(response).to be_success
     end
 
     it 'returns http not found for attempts to remove non-existing resource' do
@@ -181,11 +178,8 @@ X-OCCI-Attribute: occi.compute.hostname="compute1.example.org"|
     end
 
     it 'removes all existing resources' do
-      get 'index'
-      expect(assigns(:computes)).not_to be_empty
       delete 'delete', format: :text
-      get 'index'
-      expect(assigns(:computes)).to be_empty
+      expect(response).to be_success
     end
 
   end

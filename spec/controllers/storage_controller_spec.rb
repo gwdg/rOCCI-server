@@ -104,11 +104,8 @@ describe StorageController do
     end
 
     it 'removes an existing resource' do
-      get 'show', id: '63a14263-2671-4429-bcd0-6ba19177491f', format: :text
-      expect(response).to be_success
       delete 'delete', id: '63a14263-2671-4429-bcd0-6ba19177491f', format: :text
-      get 'show', id: '63a14263-2671-4429-bcd0-6ba19177491f', format: :text
-      expect(response).to be_not_found
+      expect(response).to be_success
     end
 
     it 'returns http not found for attempts to remove non-existing resource' do
@@ -122,11 +119,8 @@ describe StorageController do
     end
 
     it 'removes all existing resources' do
-      get 'index'
-      expect(assigns(:storages)).not_to be_empty
       delete 'delete', format: :text
-      get 'index'
-      expect(assigns(:storages)).to be_empty
+      expect(response).to be_success
     end
 
   end
