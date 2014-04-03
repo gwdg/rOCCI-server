@@ -15,9 +15,6 @@ Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
 ## Requires spec_helper extensions
 Dir[Rails.root.join('spec/spec_helper/*.rb')].each { |f| require f }
 
-# Clean-up all cache, if applicable
-Dalli::Client.new.flush
-
 RSpec.configure do |config|
   config.expect_with :rspec do |c|
     # Disable the 'should' sytax

@@ -93,11 +93,6 @@ describe NetworkController do
 
   describe "DELETE 'delete'" do
 
-    let(:dalli) { Dalli::Client.new }
-
-    before(:each) { dalli.flush }
-    after(:all) { dalli.flush }
-
     it 'returns http success for removed resources' do
       delete 'delete', id: '23cd7d72-eb86-4036-8969-4c902014bbc6', format: :text
       expect(response).to be_success

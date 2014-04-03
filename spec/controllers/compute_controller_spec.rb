@@ -71,11 +71,6 @@ describe ComputeController do
   # TODO: impl
   describe "POST 'create'" do
 
-    let(:dalli) { Dalli::Client.new }
-
-    before(:each) { dalli.flush }
-    after(:all) { dalli.flush }
-
     let(:fake_app) { Proc.new {} }
     let(:body) {
       %Q|Category: compute;scheme="http://schemas.ogf.org/occi/infrastructure#";class="kind"
@@ -151,11 +146,6 @@ X-OCCI-Attribute: occi.compute.hostname="compute1.example.org"|
   describe "PUT 'update'"
 
   describe "DELETE 'delete'" do
-
-    let(:dalli) { Dalli::Client.new }
-
-    before(:each) { dalli.flush }
-    after(:all) { dalli.flush }
 
     it 'returns http success for removed resources' do
       delete 'delete', id: '87f3bfc3-42d4-4474-b45c-757e55e093e9', format: :text
