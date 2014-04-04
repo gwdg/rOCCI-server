@@ -45,16 +45,19 @@ function print_help_exit()
   fi
 
   printf "%s\n\n" "Usage: ${PROGNAME} [OPTIONS]"
-  printf "\t%s\n" "-e  Server endpoint address without the trailing slash, defaults to \"http://localhost:3000\""
-  printf "\t%s\n" "-n  Authentication schema from {none, basic, x509, token}, defaults to \"none\""
-  printf "\t%s\n" "-h  Show this help"
-  printf "\t%s\n" "-u  Password for basic authentication scheme"
-  printf "\t%s\n" "-p  Username for basic authentication scheme"
-  printf "\t%s\n" "-c  CA path for x509 authentication scheme"
-  printf "\t%s\n" "-f  CA file for x509 authentication scheme"
-  printf "\t%s\n" "-x  Path to user credentials for x509 authentication scheme"
-  printf "\t%s\n" "-i  Token for token-based authentication scheme"
-  printf "\t%s\n" "-d  Enable debug mode (log raw cURL commands to '/tmp/occi_smoketest.log')"
+  printf "\t%s\n" "-e ENDPOINT  Server endpoint address without the trailing slash, defaults to \"http://localhost:3000\""
+  printf "\t%s\n" "-n SCHEME    Authentication schema from {none, basic, x509, token}, defaults to \"none\""
+  printf "\t%s\n" "-h           Show this help"
+  printf "\t%s\n" "-u USERNAME  Password for basic authentication scheme"
+  printf "\t%s\n" "-p PASSWORD  Username for basic authentication scheme"
+  printf "\t%s\n" "-c PATH      CA path for x509 authentication scheme"
+  printf "\t%s\n" "-f PATH      CA file for x509 authentication scheme"
+  printf "\t%s\n" "-x PATH      Path to user credentials for x509 authentication scheme"
+  printf "\t%s\n" "-i TOKEN     Token for token-based authentication scheme"
+  printf "\t%s\n" "-X           Switch x509 authentication scheme to a VOMS-compatible mode"
+  printf "\t%s\n" "-M TPL       os_tpl for the compute instantiation test"
+  printf "\t%s\n" "-R TPL       resource_tpl for the compute instantiation test"
+  printf "\t%s\n" "-d           Enable debug mode (log raw cURL commands to '/tmp/occi_smoketest.log')"
 
   if [ -n "$1" ]; then
     exit 1
