@@ -1,5 +1,5 @@
 # Keystone URI (as it appears in the WWW-Authenticate HTTP header)
-keystone_uri: 'http://localhost:5000/'
+keystone_uri: 'http://localhost:5000/v2.0/'
 
 # X.509 stuff
 # cert_source  -- read certificates from 'file' or 'url'
