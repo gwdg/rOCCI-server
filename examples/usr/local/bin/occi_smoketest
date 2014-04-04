@@ -17,27 +17,27 @@
 PROGNAME=`basename $0`
 DIRNAME=`dirname $0`
 
+# Prints the given message and exits denoting an execution error.
 #
-#
-#
+# @param message [String] message to be printed
 function error_exit()
 {
   printf "%s\n" "${PROGNAME}: ${1:-"Unknown Error"}" 1>&2
   exit 1
 }
 
+# Prints the given message and exits denoting a warning.
 #
-#
-#
+# @param message [String] message to be printed
 function warn_exit()
 {
   printf "%s\n" "${PROGNAME}: ${1:-"Unknown warning"}" 1>&2
   exit 0
 }
 
+# Prints the given message with help attached.
 #
-#
-#
+# @param message [String] message to be printed
 function print_help_exit()
 {
   if [ -n "$1" ]; then
@@ -66,14 +66,13 @@ function print_help_exit()
   fi
 }
 
+# Executes a cURL query with authentication and returns
+# the response.
 #
-#
-# $1 -- HTTP method
-# $2 -- path
-# $3 -- media type
-# $4 -- expect fail
-# $5 -- request data
-# $6 -- content type
+# @param method [String] HTTP method
+# @param path [String] path to be queried
+# @param media_type [String] media type
+# @param fail ['yes', 'no'] expect fail or not
 function curl_query()
 {
   AUTH_STUFF=''
@@ -216,13 +215,6 @@ curl_query "POST" "/network/" "text/plain" "yes" > /dev/null
 printf "%s\n" "*** Testing responses to invalid media types"
 curl_query "GET" "/-/" "application/rss" "yes" > /dev/null
 curl_query "GET" "/-/" "text/uri-list" "yes" > /dev/null
-
-# run configuration tests
-printf "%s\n" "* Running server configuration tests"
-
-printf "%s\n" "** Headers"
-printf "%s\n" "** Hidden versions"
-printf "%s\n" "** X-Powered-By"
 
 # run a full cumpute instantiation test (including clean-up)
 printf "%s\n" "* Running a compute instantiation test"
