@@ -1,3 +1,5 @@
+# Controller class handling all os_tpl-related requests.
+# Implements listing and triggering actions on mixin-tagged instances.
 class OsTplController < ApplicationController
   # GET /mixin/os_tpl/:term*/
   def index

@@ -1,3 +1,5 @@
+# Controller class handling all resource_tpl-related requests.
+# Implements listing and triggering actions on mixin-tagged instances.
 class ResourceTplController < ApplicationController
   # GET /mixin/resource_tpl/:term*/
   def index

@@ -1,3 +1,6 @@
+# Controller class handling all compute-related requests.
+# Implements listing, retrieval, creation, deletion and
+# triggering actions on compute instances.
 class ComputeController < ApplicationController
   # GET /compute/
   def index

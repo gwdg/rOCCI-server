@@ -1,3 +1,6 @@
+# Special controller handling requests routed from Warden.
+# Responds with HTTP 401 and, optionally, with a Keystone
+# URI in the WWW-Authenticate header.
 class UnauthorizedController < ActionController::Metal
   include ActionController::RackDelegation
 

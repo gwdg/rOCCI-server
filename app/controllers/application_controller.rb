@@ -1,3 +1,6 @@
+# Base class for all rOCCI-server's controllers. Implements
+# parsing and authentication callbacks, exposes user information,
+# declares supported media formats and handles raised errors.
 class ApplicationController < ActionController::API
   # Include some stuff present in the full ActionController
   # include ActionController::UrlFor
