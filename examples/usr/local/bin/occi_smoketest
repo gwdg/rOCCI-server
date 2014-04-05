@@ -232,7 +232,7 @@ if [ -e "/opt/occi-cli/embedded/bin/ruby" ] && [ -x "/opt/occi-cli/embedded/bin/
 
     case "$ROCCI_SERVER_AUTHENTICATION_SCHEME" in
       'none') ;;
-      'basic') PROBE_CMD="$PROBE_CMD -u $ROCCI_SERVER_AUTHENTICATION_USERNAME -p $ROCCI_SERVER_AUTHENTICATION_PASSWORD ";;
+      'basic') PROBE_CMD="$PROBE_CMD -u $ROCCI_SERVER_AUTHENTICATION_USERNAME -p '$ROCCI_SERVER_AUTHENTICATION_PASSWORD' ";;
       'x509') PROBE_CMD="$PROBE_CMD --user-cred $ROCCI_SERVER_AUTHENTICATION_CRED ";;
       *) error_exit "Unknow authentication scheme \"$ROCCI_SERVER_AUTHENTICATION_SCHEME\" for occi-cli!"
     esac
