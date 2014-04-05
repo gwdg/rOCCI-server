@@ -1,3 +1,5 @@
+# Controller class handling all storagelink-related requests.
+# Implements retrieval, creation and deletion of storagelink instances.
 class StoragelinkController < ApplicationController
   # GET /link/storagelink/:id
   def show

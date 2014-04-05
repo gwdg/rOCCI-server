@@ -40,6 +40,10 @@ describe Backend do
       expect { Backend.check_version('2.0', '1.0') }.to raise_error(Errors::BackendApiVersionMismatchError)
     end
 
+    it 'reports success on minor mismatch' do
+      expect(Backend.check_version('2.1', '2.0')).to be_true
+    end
+
     it 'reports success on match' do
       expect(Backend.check_version('2.1', '2.1')).to be_true
     end

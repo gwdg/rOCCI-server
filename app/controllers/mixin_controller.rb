@@ -1,3 +1,11 @@
+# Controller class handling all mixin-related requests.
+# Implements listing, assignment, creation, deletion and
+# triggering actions on mixin-tagged instances.
+#
+# `os_tpl` and `resource_tpl` mixins are a special case and
+# are handled separately. See OsTplController and ResourceTplController.
+#
+# TODO: Not yet implemented! Returns HTTP 501 for all requests!
 class MixinController < ApplicationController
   # GET /mixin/:term*/
   def index

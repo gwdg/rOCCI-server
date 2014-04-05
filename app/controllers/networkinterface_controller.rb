@@ -1,3 +1,5 @@
+# Controller class handling all networkinterface-related requests.
+# Implements retrieval, creation and deletion of networkinterface instances.
 class NetworkinterfaceController < ApplicationController
   # GET /link/networkinterface/:id
   def show

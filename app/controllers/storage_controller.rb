@@ -1,3 +1,6 @@
+# Controller class handling all storage-related requests.
+# Implements listing, retrieval, creation, deletion and
+# triggering actions on storage instances.
 class StorageController < ApplicationController
   # GET /storage/
   def index

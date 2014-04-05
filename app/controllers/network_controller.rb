@@ -1,3 +1,6 @@
+# Controller class handling all network-related requests.
+# Implements listing, retrieval, creation, deletion and
+# triggering actions on network instances.
 class NetworkController < ApplicationController
   # GET /network/
   def index
