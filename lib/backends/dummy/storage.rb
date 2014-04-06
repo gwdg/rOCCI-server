@@ -129,7 +129,7 @@ module Backends
         end
       end
 
-      # Partialy updates an existing storage instance, instance to be updated
+      # Partially updates an existing storage instance, instance to be updated
       # is specified by storage_id.
       # If the requested instance cannot be updated, an error describing the
       # problem must be raised, @see Backends::Errors.

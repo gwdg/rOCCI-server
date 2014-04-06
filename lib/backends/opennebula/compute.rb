@@ -165,7 +165,7 @@ module Backends
         true
       end
 
-      # Partialy updates an existing compute instance, instance to be updated
+      # Partially updates an existing compute instance, instance to be updated
       # is specified by compute_id.
       # If the requested instance cannot be updated, an error describing the
       # problem must be raised, @see Backends::Errors.
@@ -218,7 +218,7 @@ module Backends
       end
 
       # Attaches a network to an existing compute instance, compute instance and network
-      # instance in question are identified by occi.core.{source, target} attributes.
+      # instance in question are identified by occi.core.source, occi.core.target attributes.
       # If the requested instance cannot be linked, an error describing the
       # problem must be raised, @see Backends::Errors.
       #
@@ -250,7 +250,7 @@ module Backends
       end
 
       # Attaches a storage to an existing compute instance, compute instance and storage
-      # instance in question are identified by occi.core.{source, target} attributes.
+      # instance in question are identified by occi.core.source, occi.core.target attributes.
       # If the requested instance cannot be linked, an error describing the
       # problem must be raised, @see Backends::Errors.
       #
