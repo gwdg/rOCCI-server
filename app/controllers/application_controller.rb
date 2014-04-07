@@ -135,7 +135,8 @@ class ApplicationController < ActionController::API
   def check_ai!(ai, query_string)
     action_param = action_from_query_string(query_string)
     fail ::Errors::ArgumentError, 'Provided action does not have a term!' unless ai && ai.action && ai.action.term
-    fail ::Errors::ArgumentTypeMismatchError, 'Action terms in params and body do not match!' unless ai.action.term == action_param
+    fail ::Errors::ArgumentTypeMismatchError, "Action terms in params and body do not " \
+                                              "match! #{action_param.inspect} vs. #{ai.action.term.inspect}" unless ai.action.term == action_param
   end
 
   private
@@ -146,7 +147,9 @@ class ApplicationController < ActionController::API
     http_request_headers = request.headers.select { |header_name, header_value| http_request_header_keys.index(header_name) }
 
     logger.debug "[ApplicationController] Processing with params #{params.inspect}"
-    if request.body.respond_to?(:read) && request.body.respond_to?(:rewind)
+    if request.body.respond_to?(:string)
+      logger.debug "[ApplicationController] Processing with body #{request.body.string.inspect}" unless request.body.string.blank?
+    elsif request.body.respond_to?(:read) && request.body.respond_to?(:rewind)
       request.body.rewind
       logger.debug "[ApplicationController] Processing with body #{request.body.read.inspect}"
     end
@@ -158,7 +161,7 @@ class ApplicationController < ActionController::API
       yield
     ensure
       logger.debug "[ApplicationController] Responding with headers #{response.headers.inspect}"
-      logger.debug "[ApplicationController] Responding with body #{response.body.inspect}"
+      logger.debug "[ApplicationController] Responding with body #{response.body.inspect}" unless response.body.blank?
     end
   end
 
@@ -170,6 +173,7 @@ class ApplicationController < ActionController::API
   # @param query_string [String] query string
   # @return [String] action term
   def action_from_query_string(query_string)
+    logger.debug "[ApplicationController] Parsing action term from query string #{query_string.inspect}"
     return '' if query_string.blank?
 
     matched = /^action=(?<act>\S+)$/.match(query_string)
