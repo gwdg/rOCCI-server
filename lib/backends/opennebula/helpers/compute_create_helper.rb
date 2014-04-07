@@ -100,6 +100,9 @@ module Backends
           if compute.attributes.org.openstack.compute!.user_data
             template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
             template.add_element('TEMPLATE/CONTEXT', 'USER_DATA' => compute.attributes['org.openstack.compute.user_data'])
+
+            template.delete_element('TEMPLATE/CONTEXT/USERDATA_ENCODING')
+            template.add_element('TEMPLATE/CONTEXT', 'USERDATA_ENCODING' => 'base64')
           end
         end
 
@@ -110,13 +113,13 @@ module Backends
           end
 
           if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
-              COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
+            fail Backends::Errors::ResourceNotValidError, "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" unless \
+              compute.attributes['org.openstack.compute.user_data'].bytesize <= COMPUTE_USER_DATA_SIZE_LIMIT
           end
 
           if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, "User data exeeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" unless \
-              compute.attributes['org.openstack.compute.user_data'].bytesize <= COMPUTE_USER_DATA_SIZE_LIMIT
+            fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
+              COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
           end
         end
       end
