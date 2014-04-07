@@ -27,7 +27,7 @@ def read_#{fixture}_fixtures(path = '')
 
   unless #{fixture}
     path = path_for_fixture_file(path, :#{fixture})
-    @logger.debug "[Backends] [DummyBackend] Reloading #{fixture} fixtures from \"" + path.to_s + "\""
+    @logger.debug "[Backends] [DummyBackend] Reloading #{fixture} fixtures from '" + path.to_s + "'"
     #{fixture} = File.readable?(path) ? read_from_json(path).resources : Occi::Core::Resources.new
     save_#{fixture}_fixtures(#{fixture})
   end
@@ -59,7 +59,7 @@ def read_#{fixture_tpl}_fixtures(path = '')
 
   unless #{fixture_tpl}
     path = path_for_fixture_file(path, :#{fixture_tpl})
-    @logger.debug "[Backends] [DummyBackend] Reloading #{fixture_tpl} fixtures from \"" + path.to_s + "\""
+    @logger.debug "[Backends] [DummyBackend] Reloading #{fixture_tpl} fixtures from '" + path.to_s + "'"
     #{fixture_tpl} = File.readable?(path) ? read_from_json(path).mixins : Occi::Core::Mixins.new
     save_#{fixture_tpl}_fixtures(#{fixture_tpl})
   end
