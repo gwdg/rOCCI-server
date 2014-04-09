@@ -116,7 +116,7 @@ class ApplicationController < ActionController::API
     request_collection ||= Occi::Collection.new
 
     request_collection.model = OcciModel.get(backend_instance)
-    request_collection.check(check_categories = true)
+    request_collection.check(check_categories = true, set_default_attrs = true)
 
     request_collection
   end
