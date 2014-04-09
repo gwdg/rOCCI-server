@@ -2,8 +2,8 @@
   "mixins":[
     {
       "term":"extra_large",
-      "scheme":"http://sitespecific.cesnet.cz/occi/infrastructure/resource_tpl#",
-      "title":"Extra Large Instance",
+      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "title":"Extra Large Instance - 4 cores and 15 GB of RAM",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],

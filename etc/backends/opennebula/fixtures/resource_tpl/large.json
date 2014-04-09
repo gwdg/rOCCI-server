@@ -2,8 +2,8 @@
   "mixins":[
     {
       "term":"large",
-      "scheme":"http://sitespecific.cesnet.cz/occi/infrastructure/resource_tpl#",
-      "title":"Large Instance",
+      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "title":"Large Instance - 2 cores and 7.5 GB of RAM",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
