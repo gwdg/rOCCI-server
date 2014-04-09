@@ -38,7 +38,7 @@ class ApplicationController < ActionController::API
   include Mixins::ErrorHandling
 
   # Wrap actions in a request logger, only in non-production envs
-  around_filter :global_request_logging unless Rails.env.production?
+  around_filter :global_request_logging if ROCCI_SERVER_CONFIG.common.log_requests_in_debug
 
   # Force authentication, if not already authenticated
   before_action :authenticate!
