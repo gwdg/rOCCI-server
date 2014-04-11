@@ -73,7 +73,11 @@ module Backends
           rc = backend_object.info
           check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-          backend_object['ID']
+          compute_id = backend_object['ID']
+          rc = backend_object.update("OCCI_ID=\"#{compute_id}\"", true)
+          check_retval(rc, Backends::Errors::ResourceActionError)
+
+          compute_id
         end
 
         def compute_create_with_links(compute)
