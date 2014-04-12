@@ -5,7 +5,7 @@ module Backends
       COMPUTE_SLINK_REGEXP = /compute_(?<compute_id>\d+)_disk_(?<compute_disk_id>\d+)/
 
       # Gets all compute instance IDs, no details, no duplicates. Returned
-      # identifiers must corespond to those found in the occi.core.id
+      # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Compute instances.
       #
       # @example

@@ -2,7 +2,7 @@ module Backends
   module Dummy
     module Network
       # Gets all network instance IDs, no details, no duplicates. Returned
-      # identifiers must corespond to those found in the occi.core.id
+      # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Network instances.
       #
       # @example
