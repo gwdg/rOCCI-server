@@ -9,6 +9,9 @@ module Backends
         def compute_create_with_os_tpl(compute)
           @logger.debug "[Backends] [OpennebulaBackend] Deploying #{compute.inspect}"
 
+          # include some basic mixins
+          compute.mixins << 'http://opennebula.org/occi/infrastructure#compute'
+
           os_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::OsTpl.mixin.type_identifier)
           os_tpl = os_tpl_mixins.first
 

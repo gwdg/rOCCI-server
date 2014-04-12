@@ -90,6 +90,10 @@ module Backends
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
         @logger.debug "[Backends] [OpennebulaBackend] Creating storage #{storage.inspect}"
+
+        # include some basic mixins
+        storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
+
         template_location = File.join(@options.templates_dir, 'storage.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(storage: storage)
 

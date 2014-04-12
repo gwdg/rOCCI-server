@@ -90,6 +90,10 @@ module Backends
       # @return [String] final identifier of the new network instance
       def network_create(network)
         @logger.debug "[Backends] [OpennebulaBackend] Creating network #{network.inspect}"
+
+        # include some basic mixins
+        network.mixins << 'http://opennebula.org/occi/infrastructure#network'
+
         template_location = File.join(@options.templates_dir, 'network.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(network: network)
 
