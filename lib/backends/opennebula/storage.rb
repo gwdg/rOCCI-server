@@ -104,6 +104,9 @@ module Backends
         rc = backend_object.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
+        rc = backend_object.persistent
+        check_retval(rc, Backends::Errors::ResourceActionError)
+
         backend_object['ID']
       end
 
