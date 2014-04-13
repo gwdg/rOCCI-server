@@ -7,6 +7,7 @@ class NetworkinterfaceController < ApplicationController
     @networkinterface << backend_instance.compute_get_network(params[:id])
 
     unless @networkinterface.empty?
+      update_mixins_in_coll(@networkinterface)
       respond_with(@networkinterface)
     else
       respond_with(Occi::Collection.new, status: 404)

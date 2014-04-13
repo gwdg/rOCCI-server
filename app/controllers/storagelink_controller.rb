@@ -7,6 +7,7 @@ class StoragelinkController < ApplicationController
     @storagelink << backend_instance.compute_get_storage(params[:id])
 
     unless @storagelink.empty?
+      update_mixins_in_coll(@storagelink)
       respond_with(@storagelink)
     else
       respond_with(Occi::Collection.new, status: 404)
