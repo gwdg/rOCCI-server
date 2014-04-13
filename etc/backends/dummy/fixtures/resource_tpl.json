@@ -27,7 +27,7 @@
             "speed":{
               "Mutable":false,
               "Type":"number",
-              "Default":2
+              "Default":1
             },
             "memory":{
               "Mutable":false,
@@ -65,7 +65,7 @@
             "speed":{
               "Mutable":false,
               "Type":"number",
-              "Default":2
+              "Default":1
             },
             "memory":{
               "Mutable":false,

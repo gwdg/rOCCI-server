@@ -2,8 +2,8 @@
   "mixins":[
     {
       "term":"small",
-      "scheme":"http://sitespecific.cesnet.cz/occi/infrastructure/resource_tpl#",
-      "title":"Small Instance",
+      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "title":"Small Instance - 1 core and 1.7 GB of RAM",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],

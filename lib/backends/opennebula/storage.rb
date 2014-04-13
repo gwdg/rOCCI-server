@@ -4,7 +4,7 @@ module Backends
       DEFAULT_DATASTORE_ID = 1
 
       # Gets all storage instance IDs, no details, no duplicates. Returned
-      # identifiers must corespond to those found in the occi.core.id
+      # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Storage instances.
       #
       # @example
@@ -90,6 +90,10 @@ module Backends
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
         @logger.debug "[Backends] [OpennebulaBackend] Creating storage #{storage.inspect}"
+
+        # include some basic mixins
+        storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
+
         template_location = File.join(@options.templates_dir, 'storage.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(storage: storage)
 
@@ -103,6 +107,9 @@ module Backends
 
         rc = backend_object.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        rc = backend_object.persistent
+        check_retval(rc, Backends::Errors::ResourceActionError)
 
         backend_object['ID']
       end
@@ -156,7 +163,7 @@ module Backends
         true
       end
 
-      # Partialy updates an existing storage instance, instance to be updated
+      # Partially updates an existing storage instance, instance to be updated
       # is specified by storage_id.
       # If the requested instance cannot be updated, an error describing the
       # problem must be raised, @see Backends::Errors.

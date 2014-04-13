@@ -10,6 +10,7 @@ class StorageController < ApplicationController
     else
       @storages = Occi::Collection.new
       @storages.resources = backend_instance.storage_list
+      update_mixins_in_coll(@storages)
     end
 
     respond_with(@storages)
@@ -21,6 +22,7 @@ class StorageController < ApplicationController
     @storage << backend_instance.storage_get(params[:id])
 
     unless @storage.empty?
+      update_mixins_in_coll(@storage)
       respond_with(@storage)
     else
       respond_with(Occi::Collection.new, status: 404)
@@ -71,6 +73,7 @@ class StorageController < ApplicationController
       storage << backend_instance.storage_get(params[:id])
 
       unless storage.empty?
+        update_mixins_in_coll(storage)
         respond_with(storage)
       else
         respond_with(Occi::Collection.new, status: 404)

@@ -10,6 +10,7 @@ class ComputeController < ApplicationController
     else
       @computes = Occi::Collection.new
       @computes.resources = backend_instance.compute_list
+      update_mixins_in_coll(@computes)
     end
 
     respond_with(@computes)
@@ -21,6 +22,7 @@ class ComputeController < ApplicationController
     @compute << backend_instance.compute_get(params[:id])
 
     unless @compute.empty?
+      update_mixins_in_coll(@compute)
       respond_with(@compute)
     else
       respond_with(Occi::Collection.new, status: 404)
@@ -71,6 +73,7 @@ class ComputeController < ApplicationController
       compute << backend_instance.compute_get(params[:id])
 
       unless compute.empty?
+        update_mixins_in_coll(compute)
         respond_with(compute)
       else
         respond_with(Occi::Collection.new, status: 404)

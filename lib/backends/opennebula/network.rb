@@ -4,7 +4,7 @@ module Backends
   module Opennebula
     module Network
       # Gets all network instance IDs, no details, no duplicates. Returned
-      # identifiers must corespond to those found in the occi.core.id
+      # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Network instances.
       #
       # @example
@@ -90,6 +90,10 @@ module Backends
       # @return [String] final identifier of the new network instance
       def network_create(network)
         @logger.debug "[Backends] [OpennebulaBackend] Creating network #{network.inspect}"
+
+        # include some basic mixins
+        network.mixins << 'http://opennebula.org/occi/infrastructure#network'
+
         template_location = File.join(@options.templates_dir, 'network.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(network: network)
 
@@ -156,7 +160,7 @@ module Backends
         true
       end
 
-      # Partialy updates an existing network instance, instance to be updated
+      # Partially updates an existing network instance, instance to be updated
       # is specified by network_id.
       # If the requested instance cannot be updated, an error describing the
       # problem must be raised, @see Backends::Errors.

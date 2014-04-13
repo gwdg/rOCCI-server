@@ -38,7 +38,7 @@ class ApplicationController < ActionController::API
   include Mixins::ErrorHandling
 
   # Wrap actions in a request logger, only in non-production envs
-  around_filter :global_request_logging unless Rails.env.production?
+  around_filter :global_request_logging if ROCCI_SERVER_CONFIG.common.log_requests_in_debug
 
   # Force authentication, if not already authenticated
   before_action :authenticate!
@@ -116,7 +116,7 @@ class ApplicationController < ActionController::API
     request_collection ||= Occi::Collection.new
 
     request_collection.model = OcciModel.get(backend_instance)
-    request_collection.check(check_categories = true)
+    request_collection.check(check_categories = true, set_default_attrs = true)
 
     request_collection
   end
@@ -135,10 +135,57 @@ class ApplicationController < ActionController::API
   def check_ai!(ai, query_string)
     action_param = action_from_query_string(query_string)
     fail ::Errors::ArgumentError, 'Provided action does not have a term!' unless ai && ai.action && ai.action.term
-    fail ::Errors::ArgumentTypeMismatchError, 'Action terms in params and body do not match!' unless ai.action.term == action_param
+    fail ::Errors::ArgumentTypeMismatchError, "Action terms in params and body do not " \
+                                              "match! #{action_param.inspect} vs. #{ai.action.term.inspect}" unless ai.action.term == action_param
+  end
+
+  # Updates resource mixins in the given collection by looking them
+  # up in the model and replacing empty titles and wrong locations.
+  #
+  # @param collection [Occi::Collection] an OCCI collection
+  # @return [Occi::Collection] an updated OCCI collection (== input collection)
+  def update_mixins_in_coll(collection)
+    return collection if collection.blank?
+    return collection if collection.resources.blank? && collection.links.blank?
+
+    model = OcciModel.get(backend_instance)
+    collection.resources.to_a.each do |resource|
+      next if resource.mixins.blank? && resource.links.blank?
+      resource.mixins.to_a.each { |mxn| update_mixin_from_model(mxn, model) }
+
+      resource.links.to_a.each do |link|
+        next if link.mixins.blank?
+        link.mixins.to_a.each { |lnk_mxn| update_mixin_from_model(lnk_mxn, model) }
+      end
+    end
+
+    collection.links.to_a.each do |link|
+      next if link.mixins.blank?
+      link.mixins.to_a.each { |lnk_mxn| update_mixin_from_model(lnk_mxn, model) }
+    end
+
+    collection
   end
 
   private
+
+  # Updates mixin with its original definition in the model.
+  # It will replace location and an empty title attribute.
+  #
+  # @param mixin [Occi::Core::Mixin] mixin to update
+  # @param model [Occi::Model] model for mixin lookup
+  # @return [Occi::Core::Mixin] updated mixin (== input mixin)
+  def update_mixin_from_model(mixin, model)
+    return if mixin.blank?
+
+    orig_mixin = model.get_by_id(mixin.type_identifier)
+    if orig_mixin
+      mixin.location = orig_mixin.location
+      mixin.title = orig_mixin.title if mixin.title.blank?
+    end
+
+    mixin
+  end
 
   # Action wrapper providing logging capabilities, mostly for debugging purposes.
   def global_request_logging
@@ -146,7 +193,9 @@ class ApplicationController < ActionController::API
     http_request_headers = request.headers.select { |header_name, header_value| http_request_header_keys.index(header_name) }
 
     logger.debug "[ApplicationController] Processing with params #{params.inspect}"
-    if request.body.respond_to?(:read) && request.body.respond_to?(:rewind)
+    if request.body.respond_to?(:string)
+      logger.debug "[ApplicationController] Processing with body #{request.body.string.inspect}" unless request.body.string.blank?
+    elsif request.body.respond_to?(:read) && request.body.respond_to?(:rewind)
       request.body.rewind
       logger.debug "[ApplicationController] Processing with body #{request.body.read.inspect}"
     end
@@ -158,7 +207,7 @@ class ApplicationController < ActionController::API
       yield
     ensure
       logger.debug "[ApplicationController] Responding with headers #{response.headers.inspect}"
-      logger.debug "[ApplicationController] Responding with body #{response.body.inspect}"
+      logger.debug "[ApplicationController] Responding with body #{response.body.inspect}" unless response.body.blank?
     end
   end
 
@@ -170,6 +219,7 @@ class ApplicationController < ActionController::API
   # @param query_string [String] query string
   # @return [String] action term
   def action_from_query_string(query_string)
+    logger.debug "[ApplicationController] Parsing action term from query string #{query_string.inspect}"
     return '' if query_string.blank?
 
     matched = /^action=(?<act>\S+)$/.match(query_string)

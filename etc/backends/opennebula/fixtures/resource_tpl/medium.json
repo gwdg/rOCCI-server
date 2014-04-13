@@ -2,8 +2,8 @@
   "mixins":[
     {
       "term":"medium",
-      "scheme":"http://sitespecific.cesnet.cz/occi/infrastructure/resource_tpl#",
-      "title":"Medium Instance",
+      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "title":"Medium Instance - 2 cores and 3.75 GB of RAM",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],

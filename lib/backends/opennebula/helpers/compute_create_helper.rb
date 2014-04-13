@@ -9,6 +9,9 @@ module Backends
         def compute_create_with_os_tpl(compute)
           @logger.debug "[Backends] [OpennebulaBackend] Deploying #{compute.inspect}"
 
+          # include some basic mixins
+          compute.mixins << 'http://opennebula.org/occi/infrastructure#compute'
+
           os_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::OsTpl.mixin.type_identifier)
           os_tpl = os_tpl_mixins.first
 
@@ -73,7 +76,11 @@ module Backends
           rc = backend_object.info
           check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-          backend_object['ID']
+          compute_id = backend_object['ID']
+          rc = backend_object.update("OCCI_ID=\"#{compute_id}\"", true)
+          check_retval(rc, Backends::Errors::ResourceActionError)
+
+          compute_id
         end
 
         def compute_create_with_links(compute)
@@ -100,6 +107,9 @@ module Backends
           if compute.attributes.org.openstack.compute!.user_data
             template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
             template.add_element('TEMPLATE/CONTEXT', 'USER_DATA' => compute.attributes['org.openstack.compute.user_data'])
+
+            template.delete_element('TEMPLATE/CONTEXT/USERDATA_ENCODING')
+            template.add_element('TEMPLATE/CONTEXT', 'USERDATA_ENCODING' => 'base64')
           end
         end
 
@@ -110,13 +120,13 @@ module Backends
           end
 
           if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
-              COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
+            fail Backends::Errors::ResourceNotValidError, "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" unless \
+              compute.attributes['org.openstack.compute.user_data'].bytesize <= COMPUTE_USER_DATA_SIZE_LIMIT
           end
 
           if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, "User data exeeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" unless \
-              compute.attributes['org.openstack.compute.user_data'].bytesize <= COMPUTE_USER_DATA_SIZE_LIMIT
+            fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
+              COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
           end
         end
       end

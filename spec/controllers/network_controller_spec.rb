@@ -68,28 +68,151 @@ describe NetworkController do
 
   end
 
-  # TODO: impl
   describe "POST 'create'" do
 
-    it 'returns http bad request without body' #do
-    #   @request.env['rocci_server.request.parser'] = ::RequestParsers::OcciParser.new
-    #   post 'create', format: :text
-    #   expect(response).to be_bad_request
-    # end
-    it 'returns http bad request with invalid body'
-    it 'returns http created on success'
-    it 'returns a link on success'
+    let(:fake_app) { Proc.new {} }
+    let(:body) {
+      %Q|Category: network;scheme="http://schemas.ogf.org/occi/infrastructure#";class="kind"
+X-OCCI-Attribute: occi.core.id="0444ecfc-a518-47a4-b5ca-c9a7320ecccc"
+X-OCCI-Attribute: occi.core.title="Network1"
+X-OCCI-Attribute: occi.core.summary="Private subnet"
+X-OCCI-Attribute: occi.network.vlan=609|
+    }
+    let(:body_invalid) { 'not OCCI' }
+
+    let(:setup_success) do
+      env = @request.env
+      env['rack.input'] = StringIO.new(body)
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    let(:setup_empty_fail) do
+      env = @request.env
+      env['rack.input'] = StringIO.new('')
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    let(:setup_invl_fail) do
+      env = @request.env
+      env['rack.input'] = StringIO.new(body_invalid)
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    before(:each){
+      @request.env['rocci_server.request.parser'] ||= ::RequestParsers::OcciParser.new(fake_app)
+    }
+
+    it 'returns http bad request without body' do
+      setup_empty_fail
+
+      post 'create', format: :text
+      expect(response).to be_bad_request
+    end
+
+    it 'returns http bad request with invalid body' do
+      setup_invl_fail
+
+      post 'create', format: :text
+      expect(response).to be_bad_request
+    end
+
+    it 'returns http created on success' do
+      setup_success
+
+      post 'create', format: :text
+      expect(response.status).to eq 201
+    end
+
+    it 'returns a link on success' do
+      setup_success
+
+      post 'create', format: :text
+      expect(response.body).to include('http://localhost:3000/network/0444ecfc-a518-47a4-b5ca-c9a7320ecccc')
+    end
 
   end
 
   # TODO: impl
   describe "POST 'trigger'"
 
-  # TODO: impl
-  describe "POST 'partial_update'"
+  describe "POST 'partial_update'" do
 
-  # TODO: impl
-  describe "PUT 'update'"
+    it 'return http 501 not implemented' do
+      post 'partial_update', format: :text, id: '23cd7d72-eb86-4036-8969-4c902014bbc6'
+      expect(response.status).to eq 501
+    end
+
+  end
+
+  describe "PUT 'update'" do
+
+    let(:fake_app) { Proc.new {} }
+    let(:body) {
+      %Q|Category: network;scheme="http://schemas.ogf.org/occi/infrastructure#";class="kind"
+X-OCCI-Attribute: occi.core.id="23cd7d72-eb86-4036-8969-4c902014bbc6"
+X-OCCI-Attribute: occi.core.title="Network1"
+X-OCCI-Attribute: occi.core.summary="Private subnet"
+X-OCCI-Attribute: occi.network.vlan=609|
+    }
+    let(:body_invalid) { 'not OCCI' }
+
+    let(:setup_success) do
+      env = @request.env
+      env['rack.input'] = StringIO.new(body)
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    let(:setup_empty_fail) do
+      env = @request.env
+      env['rack.input'] = StringIO.new('')
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    let(:setup_invl_fail) do
+      env = @request.env
+      env['rack.input'] = StringIO.new(body_invalid)
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    before(:each){
+      @request.env['rocci_server.request.parser'] ||= ::RequestParsers::OcciParser.new(fake_app)
+    }
+
+    it 'returns http bad request without body' do
+      setup_empty_fail
+
+      put 'update', format: :text, id: '23cd7d72-eb86-4036-8969-4c902014bbc6'
+      expect(response).to be_bad_request
+    end
+
+    it 'returns http bad request with invalid body' do
+      setup_invl_fail
+
+      put 'update', format: :text, id: '23cd7d72-eb86-4036-8969-4c902014bbc6'
+      expect(response).to be_bad_request
+    end
+
+    it 'returns http created on success' do
+      setup_success
+
+      put 'update', format: :text, id: '23cd7d72-eb86-4036-8969-4c902014bbc6'
+      expect(response).to be_success
+    end
+
+    it 'returns http not found on non-existing resource' do
+      setup_success
+
+      put 'update', format: :text, id: 'not_there'
+      expect(response).to be_not_found
+    end
+
+  end
 
   describe "DELETE 'delete'" do
 

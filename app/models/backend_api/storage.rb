@@ -1,7 +1,7 @@
 module BackendApi
   module Storage
     # Gets all storage instance IDs, no details, no duplicates. Returned
-    # identifiers must corespond to those found in the occi.core.id
+    # identifiers must correspond to those found in the occi.core.id
     # attribute of Occi::Infrastructure::Storage instances.
     #
     # @example
@@ -104,7 +104,7 @@ module BackendApi
       @backend_instance.storage_delete(storage_id)
     end
 
-    # Partialy updates an existing storage instance, instance to be updated
+    # Partially updates an existing storage instance, instance to be updated
     # is specified by storage_id.
     # If the requested instance cannot be updated, an error describing the
     # problem must be raised, @see Backends::Errors.

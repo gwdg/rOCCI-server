@@ -5,6 +5,7 @@ authn_strategies: <%= ENV['ROCCI_SERVER_AUTHN_STRATEGIES'] || 'voms x509 basic' 
 hooks: <%= ENV['ROCCI_SERVER_HOOKS'] || 'dummy' %>
 backend: <%= ENV['ROCCI_SERVER_BACKEND'] || 'dummy' %>
 log_level: <%= ENV['ROCCI_SERVER_LOG_LEVEL'] || 'info' %>
+log_requests_in_debug: <%= ENV['ROCCI_SERVER_LOG_REQUESTS_IN_DEBUG'].blank? ? 'false' : ENV['ROCCI_SERVER_LOG_REQUESTS_IN_DEBUG'] %>
 tempdir: <%= ENV['ROCCI_SERVER_TMP'] || '/tmp/rocci_server' %>
 force_ssl: <%= (ENV['ROCCI_SERVER_PROTOCOL'] == 'https') ? 'true' : 'false' %>
 memcaches: <%= ENV['ROCCI_SERVER_MEMCACHES'] || 'localhost:11211' %>
