@@ -139,7 +139,53 @@ class ApplicationController < ActionController::API
                                               "match! #{action_param.inspect} vs. #{ai.action.term.inspect}" unless ai.action.term == action_param
   end
 
+  # Updates resource mixins in the given collection by looking them
+  # up in the model and replacing empty titles and wrong locations.
+  #
+  # @param collection [Occi::Collection] an OCCI collection
+  # @return [Occi::Collection] an updated OCCI collection (== input collection)
+  def update_mixins_in_coll(collection)
+    return collection if collection.blank?
+    return collection if collection.resources.blank? && collection.links.blank?
+
+    model = OcciModel.get(backend_instance)
+    collection.resources.to_a.each do |resource|
+      next if resource.mixins.blank? && resource.links.blank?
+      resource.mixins.to_a.each { |mxn| update_mixin_from_model(mxn, model) }
+
+      resource.links.to_a.each do |link|
+        next if link.mixins.blank?
+        link.mixins.to_a.each { |lnk_mxn| update_mixin_from_model(lnk_mxn, model) }
+      end
+    end
+
+    collection.links.to_a.each do |link|
+      next if link.mixins.blank?
+      link.mixins.to_a.each { |lnk_mxn| update_mixin_from_model(lnk_mxn, model) }
+    end
+
+    collection
+  end
+
   private
+
+  # Updates mixin with its original definition in the model.
+  # It will replace location and an empty title attribute.
+  #
+  # @param mixin [Occi::Core::Mixin] mixin to update
+  # @param model [Occi::Model] model for mixin lookup
+  # @return [Occi::Core::Mixin] updated mixin (== input mixin)
+  def update_mixin_from_model(mixin, model)
+    return if mixin.blank?
+
+    orig_mixin = model.get_by_id(mixin.type_identifier)
+    if orig_mixin
+      mixin.location = orig_mixin.location
+      mixin.title = orig_mixin.title if mixin.title.blank?
+    end
+
+    mixin
+  end
 
   # Action wrapper providing logging capabilities, mostly for debugging purposes.
   def global_request_logging

@@ -10,6 +10,7 @@ class NetworkController < ApplicationController
     else
       @networks = Occi::Collection.new
       @networks.resources = backend_instance.network_list
+      update_mixins_in_coll(@networks)
     end
 
     respond_with(@networks)
@@ -21,6 +22,7 @@ class NetworkController < ApplicationController
     @network << backend_instance.network_get(params[:id])
 
     unless @network.empty?
+      update_mixins_in_coll(@network)
       respond_with(@network)
     else
       respond_with(Occi::Collection.new, status: 404)
@@ -71,6 +73,7 @@ class NetworkController < ApplicationController
       network << backend_instance.network_get(params[:id])
 
       unless network.empty?
+        update_mixins_in_coll(network)
         respond_with(network)
       else
         respond_with(Occi::Collection.new, status: 404)
