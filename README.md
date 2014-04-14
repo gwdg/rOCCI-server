@@ -1,9 +1,9 @@
 rOCCI-server - A Ruby OCCI Server
 =============================
 
-The rOCCI-server 
+The rOCCI-server
 
-[![Build Status](https://secure.travis-ci.org/gwdg/rOCCI-server.png)](http://travis-ci.org/gwdg/rOCCI-server) [![Dependency Status](https://gemnasium.com/gwdg/rOCCI-server.png)](https://gemnasium.com/gwdg/rOCCI-server)
+[![Build Status](https://secure.travis-ci.org/EGI-FCTF/rOCCI-server.png)](http://travis-ci.org/EGI-FCTF/rOCCI-server) [![Dependency Status](https://gemnasium.com/EGI-FCTF/rOCCI-server.png)](https://gemnasium.com/EGI-FCTF/rOCCI-server)
 
 Requirements
 ------------
@@ -29,11 +29,11 @@ Development
 
 ### Code Documentation
 
-[Code Documentation for rOCCI by YARD](http://rubydoc.info/github/gwdg/rOCCI-server/)
+[Code Documentation for rOCCI by YARD](http://rubydoc.info/github/EGI-FCTF/rOCCI-server/)
 
 ### Continuous integration
 
-[Continuous integration for rOCCI by Travis-CI](http://travis-ci.org/gwdg/rOCCI-server/)
+[Continuous integration for rOCCI by Travis-CI](http://travis-ci.org/EGI-FCTF/rOCCI-server/)
 
 ### Contribute
 
