@@ -6,9 +6,18 @@ class OsTplController < ApplicationController
     # TODO: work with :term*
     mixins = Occi::Core::Mixins.new << Occi::Infrastructure::OsTpl.mixin
 
-    @computes = Occi::Collection.new
-    @computes.resources = backend_instance.compute_list(mixins)
-    respond_with(@computes)
+    if INDEX_LINK_FORMATS.include?(request.format)
+      @computes = backend_instance.compute_list_ids(mixins)
+      @computes.map! { |c| "#{server_url}/compute/#{c}" }
+      options = { flag: :links_only }
+    else
+      @computes = Occi::Collection.new
+      @computes.resources = backend_instance.compute_list(mixins)
+      update_mixins_in_coll(@computes)
+      options = {}
+    end
+
+    respond_with(@computes, options)
   end
 
   # POST /mixin/os_tpl/:term*/?action=:action

@@ -14,12 +14,14 @@ describe OcciModelController do
       expect(response).to be_success
     end
 
-    it 'returns http not acceptable with PLAIN' do
-      expect { get 'index', format: :text }.to raise_error
+    it 'returns http success with PLAIN' do
+      get 'index', format: :text
+      expect(response).to be_success
     end
 
-    it 'returns http not acceptable with OCCI' do
-      expect { get 'index', format: :occi_header }.to raise_error
+    it 'returns http success with OCCI' do
+      get 'index', format: :occi_header
+      expect(response).to be_success
     end
 
   end
