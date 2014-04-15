@@ -4,21 +4,23 @@
 class OcciModelController < ApplicationController
   # GET /
   def index
-    if request.format == 'text/uri-list'
+    if INDEX_LINK_FORMATS.include?(request.format)
       @resources = []
 
       @resources.concat(backend_instance.compute_list_ids.map { |c| "#{server_url}/compute/#{c}" })
       @resources.concat(backend_instance.network_list_ids.map { |n| "#{server_url}/network/#{n}" })
       @resources.concat(backend_instance.storage_list_ids.map { |s| "#{server_url}/storage/#{s}" })
+      options = { flag: :links_only }
     else
       @resources = Occi::Collection.new
 
       @resources.resources.merge backend_instance.compute_list
       @resources.resources.merge backend_instance.network_list
       @resources.resources.merge backend_instance.storage_list
+      options = {}
     end
 
-    respond_with(@resources)
+    respond_with(@resources, options)
   end
 
   # GET /-/

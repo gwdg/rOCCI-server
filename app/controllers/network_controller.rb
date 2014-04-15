@@ -4,16 +4,18 @@
 class NetworkController < ApplicationController
   # GET /network/
   def index
-    if request.format == 'text/uri-list'
+    if INDEX_LINK_FORMATS.include?(request.format)
       @networks = backend_instance.network_list_ids
       @networks.map! { |c| "#{server_url}/network/#{c}" }
+      options = { flag: :links_only }
     else
       @networks = Occi::Collection.new
       @networks.resources = backend_instance.network_list
       update_mixins_in_coll(@networks)
+      options = {}
     end
 
-    respond_with(@networks)
+    respond_with(@networks, options)
   end
 
   # GET /network/:id

@@ -5,6 +5,9 @@ ActionController::Renderers.add :occi_header do |obj, options|
   if options[:flag] == :link_only
     headers['Location'] = obj
     'OK'
+  elsif options[:flag] == :links_only
+    headers['Location'] = obj.join(',')
+    ''
   elsif obj.respond_to?(:to_header)
     headers.merge!(obj.to_header)
     ''
@@ -23,6 +26,8 @@ ActionController::Renderers.add :text do |obj, options|
 
   if options[:flag] == :link_only
     "X-OCCI-Location: #{obj}"
+  elsif options[:flag] == :links_only
+    obj.collect { |link| "X-OCCI-Location: #{link}" }.join("\n")
   else
     obj.respond_to?(:to_text) ? obj.to_text : obj.to_s
   end

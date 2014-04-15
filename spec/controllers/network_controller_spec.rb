@@ -19,6 +19,16 @@ describe NetworkController do
       expect(assigns(:networks)).to be_kind_of(Array)
     end
 
+    it 'returns an array for text/plain' do
+      get 'index', format: :text
+      expect(assigns(:networks)).to be_kind_of(Array)
+    end
+
+    it 'returns an array for text/occi' do
+      get 'index', format: :occi_header
+      expect(assigns(:networks)).to be_kind_of(Array)
+    end
+
     it 'returns a collection with instances by default' do
       get 'index', format: :html
       expect(assigns(:networks)).not_to be_empty
