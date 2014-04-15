@@ -19,6 +19,16 @@ describe StorageController do
       expect(assigns(:storages)).to be_kind_of(Array)
     end
 
+    it 'returns an array for text/plain' do
+      get 'index', format: :text
+      expect(assigns(:storages)).to be_kind_of(Array)
+    end
+
+    it 'returns an array for text/occi' do
+      get 'index', format: :occi_header
+      expect(assigns(:storages)).to be_kind_of(Array)
+    end
+
     it 'returns a collection with instances by default' do
       get 'index', format: :html
       expect(assigns(:storages)).not_to be_empty

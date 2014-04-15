@@ -4,16 +4,18 @@
 class StorageController < ApplicationController
   # GET /storage/
   def index
-    if request.format == 'text/uri-list'
+    if INDEX_LINK_FORMATS.include?(request.format)
       @storages = backend_instance.storage_list_ids
       @storages.map! { |c| "#{server_url}/storage/#{c}" }
+      options = { flag: :links_only }
     else
       @storages = Occi::Collection.new
       @storages.resources = backend_instance.storage_list
       update_mixins_in_coll(@storages)
+      options = {}
     end
 
-    respond_with(@storages)
+    respond_with(@storages, options)
   end
 
   # GET /storage/:id

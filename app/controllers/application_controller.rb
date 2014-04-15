@@ -48,10 +48,12 @@ class ApplicationController < ActionController::API
 
   # Register supported MIME formats
   # @see 'config/initializers/mime_types.rb' for details
-  respond_to :json, :occi_json #, :xml, :occi_xml
-  respond_to :occi_header, :text, except: [:index]
+  respond_to :json, :occi_json, :occi_header, :text #, :xml, :occi_xml
   respond_to :uri_list, only: [:index]
   respond_to :html, only: [:index, :show]
+
+  # List of format targets for rendering into links only
+  INDEX_LINK_FORMATS = ['text/plain', 'text/occi', 'text/uri-list'].freeze
 
   # Provides access to a structure containing authentication data
   # intended for delegation to the backend.

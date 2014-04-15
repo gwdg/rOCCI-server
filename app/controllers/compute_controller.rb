@@ -4,16 +4,18 @@
 class ComputeController < ApplicationController
   # GET /compute/
   def index
-    if request.format == 'text/uri-list'
+    if INDEX_LINK_FORMATS.include?(request.format)
       @computes = backend_instance.compute_list_ids
       @computes.map! { |c| "#{server_url}/compute/#{c}" }
+      options = { flag: :links_only }
     else
       @computes = Occi::Collection.new
       @computes.resources = backend_instance.compute_list
       update_mixins_in_coll(@computes)
+      options = {}
     end
 
-    respond_with(@computes)
+    respond_with(@computes, options)
   end
 
   # GET /compute/:id
