@@ -26,7 +26,7 @@ gem 'debugger', group: [:development, :test]
 gem 'whenever', require: false
 
 # Use passenger for deployment (standalone or in Apache2)
-gem 'passenger', '~> 4.0.40'
+gem 'passenger', '~> 4.0.41'
 
 # Use simplecov for coverage reports
 gem 'simplecov', group: [:development, :test]
@@ -84,7 +84,7 @@ gem 'hashie'
 gem 'ice_nine'
 
 # Use occi-core for OCCI stuff
-gem 'occi-core', '~> 4.2.13'
+gem 'occi-core', '~> 4.2.14'
 
 # Install gems for each auth. strategy from Rails.root/lib/authentication_strategies/bundles
 Dir.glob(File.join(File.dirname(__FILE__), 'lib', 'authentication_strategies', 'bundles', "Gemfile.*")) do |gemfile|
