@@ -4,10 +4,10 @@ describe OcciModelController do
 
   describe "GET 'index'" do
 
-    it 'returns http success with JSON' do
-      get 'index', format: :occi_json
-      expect(response).to be_success
-    end
+    # it 'returns http success with JSON' do
+    #   get 'index', format: :occi_json
+    #   expect(response).to be_success
+    # end
 
     it 'returns http success with URI-LIST' do
       get 'index', format: :uri_list
@@ -34,10 +34,10 @@ describe OcciModelController do
       @request.env['rocci_server.request.parser'].call(@request.env)
     }
 
-    it 'returns http success with JSON' do
-      get 'show', format: :occi_json
-      expect(response).to be_success
-    end
+    # it 'returns http success with JSON' do
+    #   get 'show', format: :occi_json
+    #   expect(response).to be_success
+    # end
 
     it 'returns http success with PLAIN' do
       get 'show', format: :text

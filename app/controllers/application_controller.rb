@@ -48,7 +48,7 @@ class ApplicationController < ActionController::API
 
   # Register supported MIME formats
   # @see 'config/initializers/mime_types.rb' for details
-  respond_to :json, :occi_json, :occi_header, :text #, :xml, :occi_xml
+  respond_to :occi_header, :text #, :json, :occi_json, :xml, :occi_xml
   respond_to :uri_list, only: [:index]
   respond_to :html, only: [:index, :show]
 
