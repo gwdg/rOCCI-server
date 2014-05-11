@@ -168,8 +168,21 @@ module Backends
             link.id = id
             link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
-            target = storage_get(disk['IMAGE_ID']) if disk['IMAGE_ID']
-            unless target
+            if disk['IMAGE_ID']
+              begin
+                target = storage_get(disk['IMAGE_ID'])
+              rescue Backends::Errors::UserNotAuthorizedError
+                # image exists but isn't available for this user
+                target = Occi::Infrastructure::Storage.new
+                target.id = "#{STORAGE_GENERATED_PREFIX}#{id}"
+                target.title = 'Generated target for a disk based on an outdated and unpublished image'
+              rescue Backends::Errors::ResourceNotFoundError
+                # image doesn't exist anymore
+                target = Occi::Infrastructure::Storage.new
+                target.id = "#{STORAGE_GENERATED_PREFIX}#{id}"
+                target.title = 'Generated target for a disk based on a removed image'
+              end
+            else
               target = Occi::Infrastructure::Storage.new
               target.id = "#{STORAGE_GENERATED_PREFIX}#{id}"
               target.title = 'Generated target for an on-the-fly created non-persistent disk'
@@ -209,11 +222,24 @@ module Backends
             link.id = id
             link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
-            target = network_get(nic['NETWORK_ID']) if nic['NETWORK_ID']
-            unless target
+            if nic['NETWORK_ID']
+              begin
+                target = network_get(nic['NETWORK_ID'])
+              rescue Backends::Errors::UserNotAuthorizedError
+                # network exists but isn't available for this user
+                target = Occi::Infrastructure::Network.new
+                target.id = "#{NETWORK_GENERATED_PREFIX}#{id}"
+                target.title = 'Generated target for an interface based on an outdated and unpublished network'
+              rescue Backends::Errors::ResourceNotFoundError
+                # network doesn't exist anymore
+                target = Occi::Infrastructure::Network.new
+                target.id = "#{NETWORK_GENERATED_PREFIX}#{id}"
+                target.title = 'Generated target for an interface based on a removed network'
+              end
+            else
               target = Occi::Infrastructure::Network.new
               target.id = "#{NETWORK_GENERATED_PREFIX}#{id}"
-              target.title = 'Generated target for a non-existent network (probably removed)'
+              target.title = 'Generated target for an interface based on a non-existent network'
             end
 
             link.target = target
