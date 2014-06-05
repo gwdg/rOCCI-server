@@ -26,13 +26,13 @@ gem 'debugger', group: [:development, :test]
 gem 'whenever', require: false
 
 # Use passenger for deployment (standalone or in Apache2)
-gem 'passenger', '~> 4.0.41'
+gem 'passenger', '~> 4.0.44'
 
 # Use simplecov for coverage reports
 gem 'simplecov', group: [:development, :test]
 
 # Use RSpec for unit tests
-gem 'rspec-rails', group: [:development, :test]
+gem 'rspec-rails', '~> 2.99.0', group: [:development, :test]
 gem 'fuubar', group: [:development, :test]
 
 # Use Pry for debugging
