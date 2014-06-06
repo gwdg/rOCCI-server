@@ -37,6 +37,9 @@ class ApplicationController < ActionController::API
 
   include Mixins::ErrorHandling
 
+  # Set default media type/format if necessary
+  before_filter :set_default_format
+
   # Wrap actions in a request logger, only in non-production envs
   around_filter :global_request_logging if ROCCI_SERVER_CONFIG.common.log_requests_in_debug
 
@@ -226,5 +229,13 @@ class ApplicationController < ActionController::API
 
     matched = /^action=(?<act>\S+)$/.match(query_string)
     matched[:act]
+  end
+
+  # Checks request format and sets the default 'text/plain' if necessary.
+  def set_default_format
+    if request.format.symbol.nil? || request.format.to_s == '*/*'
+      logger.debug "[ApplicationController] Request format set to #{request.format.to_s.inspect}, forcing 'text/plain'"
+      request.format = :text
+    end
   end
 end
