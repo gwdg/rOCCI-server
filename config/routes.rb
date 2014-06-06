@@ -1,5 +1,11 @@
 ROCCIServer::Application.routes.draw do
   ####################################################
+  ## Support for CORS (HTTP OPTIONS method)
+  ####################################################
+  match '/', to: 'cors#index', via: :options
+  match '/*dummy', to: 'cors#index', via: :options
+
+  ####################################################
   ## Discovery interface
   ####################################################
   get '/-/', to: 'occi_model#show', as: 'occi_model'

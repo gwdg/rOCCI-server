@@ -9,3 +9,6 @@ log_requests_in_debug: <%= ENV['ROCCI_SERVER_LOG_REQUESTS_IN_DEBUG'].blank? ? 'f
 tempdir: <%= ENV['ROCCI_SERVER_TMP'] || '/tmp/rocci_server' %>
 force_ssl: <%= (ENV['ROCCI_SERVER_PROTOCOL'] == 'https') ? 'true' : 'false' %>
 memcaches: <%= ENV['ROCCI_SERVER_MEMCACHES'] || 'localhost:11211' %>
+cors_support:
+  enable: <%= ENV['ROCCI_SERVER_CORS_SUPPORT_ENABLE'].blank? ? 'false' : ENV['ROCCI_SERVER_CORS_SUPPORT_ENABLE'] %>
+  origins: <%= ENV['ROCCI_SERVER_CORS_SUPPORT_ORIGINS'] || 'localhost 127.0.0.1' %>
