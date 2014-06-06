@@ -9,7 +9,12 @@ describe ComputeController do
       expect(response).to be_success
     end
 
-    it 'returns a collection by default' do
+    it 'returns an array by default' do
+      get 'index', format: '*/*'
+      expect(assigns(:computes)).to be_kind_of(Array)
+    end
+
+    it 'returns a collection for text/html' do
       get 'index', format: :html
       expect(assigns(:computes)).to be_kind_of(Occi::Collection)
     end
@@ -29,7 +34,12 @@ describe ComputeController do
       expect(assigns(:computes)).to be_kind_of(Array)
     end
 
-    it 'returns a collection with instances by default' do
+    it 'returns an array with instances by default' do
+      get 'index', format: '*/*'
+      expect(assigns(:computes)).not_to be_empty
+    end
+
+    it 'returns a collection with instances for text/html' do
       get 'index', format: :html
       expect(assigns(:computes)).not_to be_empty
     end
