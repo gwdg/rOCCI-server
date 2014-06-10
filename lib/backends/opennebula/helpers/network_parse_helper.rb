@@ -38,28 +38,16 @@ module Backends
 
           basic_attrs['occi.core.id']    = backend_network['ID']
           basic_attrs['occi.core.title'] = backend_network['NAME'] if backend_network['NAME']
-          basic_attrs['occi.core.summary'] = backend_network['TEMPLATE/DESCRIPTION'] if backend_network['TEMPLATE/DESCRIPTION']
+          basic_attrs['occi.core.summary'] = backend_network['TEMPLATE/DESCRIPTION'] unless backend_network['TEMPLATE/DESCRIPTION'].blank?
 
           basic_attrs['occi.network.gateway'] = backend_network['TEMPLATE/GATEWAY'] if backend_network['TEMPLATE/GATEWAY']
-          basic_attrs['occi.network.vlan'] = backend_network['VLAN_ID'].to_i if backend_network['VLAN_ID']
+          basic_attrs['occi.network.vlan'] = backend_network['VLAN_ID'].to_i unless backend_network['VLAN_ID'].blank?
 
-          if backend_network['TEMPLATE/NETWORK_ADDRESS'].blank?
-            basic_attrs['occi.network.allocation'] = 'static'
-          else
+          if backend_network.type_str == 'RANGED'
             basic_attrs['occi.network.allocation'] = 'dynamic'
-
-            if backend_network['TEMPLATE/NETWORK_ADDRESS'].include? '/'
-              basic_attrs['occi.network.address'] = backend_network['TEMPLATE/NETWORK_ADDRESS']
-            else
-              unless backend_network['TEMPLATE/NETWORK_MASK'].blank?
-                basic_attrs['occi.network.address'] =  if backend_network['TEMPLATE/NETWORK_MASK'].include?('.')
-                  cidr = IPAddr.new(backend_network['TEMPLATE/NETWORK_MASK']).to_i.to_s(2).count('1')
-                  "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/#{cidr}"
-                else
-                  "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/#{backend_network['TEMPLATE/NETWORK_MASK']}"
-                end
-              end
-            end
+            basic_attrs['occi.network.address'] = calculate_cidr(backend_network)
+          else
+            basic_attrs['occi.network.allocation'] = 'static'
           end
 
           basic_attrs
@@ -96,6 +84,50 @@ module Backends
 
           result
         end
+
+        def calculate_cidr(backend_network)
+          return nil unless backend_network && backend_network['TEMPLATE/NETWORK_ADDRESS']
+          return nil if backend_network['TEMPLATE/NETWORK_ADDRESS'].blank?
+
+          if backend_network['TEMPLATE/NETWORK_ADDRESS'].include? '/'
+            # already is in CIDR notation
+            backend_network['TEMPLATE/NETWORK_ADDRESS']
+          elsif backend_network['TEMPLATE/NETWORK_MASK']
+            # calculate CIDR from mask
+            calculate_cidr_from_mask(backend_network)
+          elsif backend_network['TEMPLATE/NETWORK_SIZE']
+            # calculate CIDR from network size
+            calculate_cidr_from_size(backend_network)
+          else
+            # no idea what to do
+            nil
+          end
+        end
+        private :calculate_cidr
+
+        def calculate_cidr_from_mask(backend_network)
+          if backend_network['TEMPLATE/NETWORK_MASK'].include?('.')
+            cidr = IPAddr.new(backend_network['TEMPLATE/NETWORK_MASK']).to_i.to_s(2).count('1')
+            "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/#{cidr}"
+          else
+            "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/#{backend_network['TEMPLATE/NETWORK_MASK']}"
+          end
+        end
+        private :calculate_cidr_from_mask
+
+        def calculate_cidr_from_size(backend_network)
+          case backend_network['TEMPLATE/NETWORK_SIZE']
+          when 'A'
+            "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/8"
+          when 'B'
+            "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/16"
+          when 'C', 254, '254'
+            "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/24"
+          else
+            nil
+          end
+        end
+        private :calculate_cidr_from_size
       end
     end
   end
