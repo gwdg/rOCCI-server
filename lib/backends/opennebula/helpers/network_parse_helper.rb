@@ -6,6 +6,7 @@ module Backends
           network = Occi::Infrastructure::Network.new
 
           # include some basic mixins
+          network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
           network.mixins << 'http://opennebula.org/occi/infrastructure#network'
 
           # include mixins stored in ON's VN template
