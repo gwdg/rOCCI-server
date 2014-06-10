@@ -10,7 +10,10 @@ module Backends
           @logger.debug "[Backends] [OpennebulaBackend] Deploying #{compute.inspect}"
 
           # include some basic mixins
+          # WARNING: adding mix-ins will re-set their attributes
+          attr_backup = Occi::Core::Attributes.new(compute.attributes)
           compute.mixins << 'http://opennebula.org/occi/infrastructure#compute'
+          compute.attributes = attr_backup
 
           os_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::OsTpl.mixin.type_identifier)
           os_tpl = os_tpl_mixins.first

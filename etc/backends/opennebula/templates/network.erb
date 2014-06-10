@@ -31,9 +31,10 @@ LEASES = [IP = "<%= lease.to_s %>"]
 <% else %>
 TYPE = "RANGED"
 
-  <% addr, net = @network.address.split('/') %>
-NETWORK_ADDRESS = "<%= addr %>"
-NETWORK_SIZE = "<%= case net; when '8'; "A"; when '16'; "B"; when '24'; "C"; end %>"
+  <% if @network.address && @network.address.include?('/') %>
+NETWORK_ADDRESS = "<%= IPAddr.new(@network.address).to_s %>"
+NETWORK_MASK    = "<%= IPAddr.new('255.255.255.255').mask(@network.address.split('/').last).to_s %>"
+  <% end %>
 
   <% if @network.attributes.org_.opennebula_.network_.ip_start && @network.attributes.org_.opennebula_.network_.ip_end %>
 IP_START = "<%= @network.attributes['org.opennebula.network.ip_start'] %>"
