@@ -92,7 +92,11 @@ module Backends
         @logger.debug "[Backends] [OpennebulaBackend] Creating network #{network.inspect}"
 
         # include some basic mixins
+        # WARNING: adding mix-ins will re-set their attributes
+        attr_backup = Occi::Core::Attributes.new(network.attributes)
+        network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
         network.mixins << 'http://opennebula.org/occi/infrastructure#network'
+        network.attributes = attr_backup
 
         template_location = File.join(@options.templates_dir, 'network.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(network: network)
