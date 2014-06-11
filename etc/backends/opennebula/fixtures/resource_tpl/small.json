@@ -2,8 +2,9 @@
   "mixins":[
     {
       "term":"small",
-      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
-      "title":"Small Instance - 1 core and 1.7 GB of RAM",
+      "scheme":"http://schema.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "title":"Small Instance - 1 core and 2 GB RAM",
+      "location":"/mixin/resource_tpl/small/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -14,9 +15,11 @@
         "occi":{
           "compute":{
             "architecture":{
-              "Mutable":false,
+              "Mutable":true,
+              "Required":false,
               "Type":"string",
-              "Default":"x64"
+              "Pattern":"x86|x64",
+              "Default":"x86"
             },
             "cores":{
               "Mutable":false,
@@ -31,7 +34,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":1.7
+              "Default":2
             }
           }
         }
