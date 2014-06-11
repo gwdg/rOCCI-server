@@ -2,8 +2,9 @@
   "mixins":[
     {
       "term":"medium",
-      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
-      "title":"Medium Instance - 2 cores and 3.75 GB of RAM",
+      "scheme":"http://schema.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "title":"Medium Instance - 2 cores and 4 GB RAM",
+      "location":"/mixin/resource_tpl/medium/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -14,9 +15,11 @@
         "occi":{
           "compute":{
             "architecture":{
-              "Mutable":false,
+              "Mutable":true,
+              "Required":false,
               "Type":"string",
-              "Default":"x64"
+              "Pattern":"x86|x64",
+              "Default":"x86"
             },
             "cores":{
               "Mutable":false,
@@ -31,7 +34,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":3.75
+              "Default":4
             }
           }
         }
