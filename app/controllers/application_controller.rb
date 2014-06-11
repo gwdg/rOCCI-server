@@ -177,19 +177,28 @@ class ApplicationController < ActionController::API
   # Updates mixin with its original definition in the model.
   # It will replace location and an empty title attribute.
   #
-  # @param mixin [Occi::Core::Mixin] mixin to update
+  # @param mixin [Occi::Core::Mixin, String] mixin to update
   # @param model [Occi::Model] model for mixin lookup
   # @return [Occi::Core::Mixin] updated mixin (== input mixin)
   def update_mixin_from_model(mixin, model)
     return if mixin.blank?
 
-    orig_mixin = model.get_by_id(mixin.type_identifier)
-    if orig_mixin
-      mixin.location = orig_mixin.location
-      mixin.title = orig_mixin.title if mixin.title.blank?
-    end
+    if mixin.kind_of? String
+      # it's just an identifier
+      model.get_by_id(mixin)
+    elsif mixin.kind_of?(::Occi::Core::Mixin)
+      # it's already a mix-in
+      orig_mixin = model.get_by_id(mixin.type_identifier)
+      if orig_mixin
+        mixin.location = orig_mixin.location
+        mixin.title = orig_mixin.title if mixin.title.blank?
+      end
 
-    mixin
+      mixin
+    else
+      # nothing we can do here
+      nil
+    end
   end
 
   # Action wrapper providing logging capabilities, mostly for debugging purposes.
