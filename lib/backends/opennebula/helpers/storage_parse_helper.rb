@@ -37,7 +37,7 @@ module Backends
 
           basic_attrs['occi.core.id']  = backend_storage['ID']
           basic_attrs['occi.core.title'] = backend_storage['NAME'] if backend_storage['NAME']
-          basic_attrs['occi.core.summary'] = backend_storage['TEMPLATE/DESCRIPTION'] if backend_storage['TEMPLATE/DESCRIPTION']
+          basic_attrs['occi.core.summary'] = backend_storage['TEMPLATE/DESCRIPTION'] unless backend_storage['TEMPLATE/DESCRIPTION'].blank?
 
           basic_attrs['occi.storage.size'] = backend_storage['SIZE'].to_f / 1024 if backend_storage['SIZE']
 
