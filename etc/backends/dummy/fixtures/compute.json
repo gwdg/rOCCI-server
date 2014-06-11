@@ -2,6 +2,9 @@
   "resources": [
     {
       "kind": "http://schemas.ogf.org/occi/infrastructure#compute",
+      "mixins": [
+        "http://occi.example.org/occi/infrastructure/os_tpl#debian6"
+      ],
       "attributes": {
         "occi": {
           "core": {
@@ -21,6 +24,9 @@
     },
     {
       "kind": "http://schemas.ogf.org/occi/infrastructure#compute",
+      "mixins": [
+        "http://occi.example.org/occi/infrastructure/os_tpl#debian6"
+      ],
       "attributes": {
         "occi": {
           "core": {
@@ -40,6 +46,9 @@
     },
     {
       "kind": "http://schemas.ogf.org/occi/infrastructure#compute",
+      "mixins": [
+        "http://occi.example.org/occi/infrastructure/os_tpl#debian6"
+      ],
       "attributes": {
         "occi": {
           "core": {
