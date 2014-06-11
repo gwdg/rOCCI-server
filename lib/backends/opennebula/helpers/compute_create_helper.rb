@@ -139,15 +139,15 @@ module Backends
 
           new_desc = if !compute.summary.blank?
             compute.summary
-          elsif !template['USER_TEMPLATE/DESCRIPTION'].blank?
-            "#{template['USER_TEMPLATE/DESCRIPTION']}#{template['USER_TEMPLATE/DESCRIPTION'].end_with?('.') ? '' : '.' }" \
+          elsif !template['TEMPLATE/DESCRIPTION'].blank?
+            "#{template['TEMPLATE/DESCRIPTION']}#{template['TEMPLATE/DESCRIPTION'].end_with?('.') ? '' : '.' }" \
             " Instantiated with rOCCI-server on #{::DateTime.now.readable_inspect}."
           else
             "Instantiated with rOCCI-server on #{::DateTime.now.readable_inspect}."
           end
 
-          template.delete_element('USER_TEMPLATE/DESCRIPTION')
-          template.add_element('USER_TEMPLATE', 'DESCRIPTION' => new_desc)
+          template.delete_element('TEMPLATE/DESCRIPTION')
+          template.add_element('TEMPLATE', 'DESCRIPTION' => new_desc)
         end
       end
     end
