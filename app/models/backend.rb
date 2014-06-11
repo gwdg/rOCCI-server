@@ -15,7 +15,7 @@ class Backend
     @options = options || ROCCI_SERVER_CONFIG.backends.send(@backend_name.to_sym)
     @server_properties = server_properties || ROCCI_SERVER_CONFIG.common
 
-    Rails.logger.debug "[#{self}] Instantiating #{@backend_class} " <<
+    Rails.logger.debug "[#{self.class}] Instantiating #{@backend_class} " <<
                        "for delegated_user=#{delegated_user.inspect} " <<
                        "with options=#{@options} and server_properties=#{@server_properties}"
 
