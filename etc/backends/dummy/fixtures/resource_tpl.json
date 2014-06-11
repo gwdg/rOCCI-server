@@ -1,9 +1,85 @@
 {
   "mixins":[
     {
+      "term":"goliath",
+      "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
+      "title":"Goliath Instance - 16 cores and 64 GB RAM",
+      "location":"/mixin/resource_tpl/goliath/",
+      "depends":[
+        "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "attributes":{
+        "occi":{
+          "compute":{
+            "architecture":{
+              "Mutable":false,
+              "Type":"string",
+              "Default":"x64"
+            },
+            "cores":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":16
+            },
+            "speed":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":1
+            },
+            "memory":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":64
+            }
+          }
+        }
+      }
+    },
+    {
+      "term":"mammoth",
+      "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
+      "title":"Mammoth Instance - 8 cores and 32 GB RAM",
+      "location":"/mixin/resource_tpl/mammoth/",
+      "depends":[
+        "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "attributes":{
+        "occi":{
+          "compute":{
+            "architecture":{
+              "Mutable":false,
+              "Type":"string",
+              "Default":"x64"
+            },
+            "cores":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":8
+            },
+            "speed":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":1
+            },
+            "memory":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":32
+            }
+          }
+        }
+      }
+    },
+    {
       "term":"extra_large",
       "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
-      "title":"Extra Large Instance",
+      "title":"Extra Large Instance - 4 cores and 16 GB RAM",
       "location":"/mixin/resource_tpl/extra_large/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
@@ -32,7 +108,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":15
+              "Default":16
             }
           }
         }
@@ -41,7 +117,7 @@
     {
       "term":"large",
       "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
-      "title":"Large Instance",
+      "title":"Large Instance - 4 cores and 8 GB RAM",
       "location":"/mixin/resource_tpl/large/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
@@ -60,7 +136,7 @@
             "cores":{
               "Mutable":false,
               "Type":"number",
-              "Default":2
+              "Default":4
             },
             "speed":{
               "Mutable":false,
@@ -70,7 +146,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":7.5
+              "Default":8
             }
           }
         }
@@ -79,7 +155,7 @@
     {
       "term":"medium",
       "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
-      "title":"Medium Instance",
+      "title":"Medium Instance - 2 cores and 4 GB RAM",
       "location":"/mixin/resource_tpl/medium/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
@@ -110,7 +186,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":3.75
+              "Default":4
             }
           }
         }
@@ -119,7 +195,7 @@
     {
       "term":"small",
       "scheme":"http://occi.example.org/occi/infrastructure/resource_tpl#",
-      "title":"Small Instance",
+      "title":"Small Instance - 1 core and 2 GB RAM",
       "location":"/mixin/resource_tpl/small/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
@@ -150,7 +226,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":1.7
+              "Default":2
             }
           }
         }

@@ -53,6 +53,7 @@ module Backends
 
           compute_create_check_context(compute)
           compute_create_add_context(compute, template)
+          compute_create_add_description(compute, template)
 
           mixins = compute.mixins.to_a.map { |m| m.type_identifier }
           template.add_element('TEMPLATE',  'OCCI_COMPUTE_MIXINS' => mixins.join(' '))
@@ -131,6 +132,22 @@ module Backends
             fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
               COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
           end
+        end
+
+        def compute_create_add_description(compute, template)
+          return if compute.blank? || template.nil?
+
+          new_desc = if !compute.summary.blank?
+            compute.summary
+          elsif !template['TEMPLATE/DESCRIPTION'].blank?
+            "#{template['TEMPLATE/DESCRIPTION']}#{template['TEMPLATE/DESCRIPTION'].end_with?('.') ? '' : '.' }" \
+            " Instantiated with rOCCI-server on #{::DateTime.now.readable_inspect}."
+          else
+            "Instantiated with rOCCI-server on #{::DateTime.now.readable_inspect}."
+          end
+
+          template.delete_element('TEMPLATE/DESCRIPTION')
+          template.add_element('TEMPLATE', 'DESCRIPTION' => new_desc)
         end
       end
     end
