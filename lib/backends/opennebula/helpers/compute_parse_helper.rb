@@ -62,7 +62,7 @@ module Backends
 
           compute_attrs['occi.core.id']    = backend_compute['ID']
           compute_attrs['occi.core.title'] = backend_compute['NAME']
-          compute_attrs['occi.core.summary'] = backend_compute['USER_TEMPLATE/DESCRIPTION'] if backend_compute['USER_TEMPLATE/DESCRIPTION']
+          compute_attrs['occi.core.summary'] = backend_compute['USER_TEMPLATE/DESCRIPTION'] unless backend_compute['USER_TEMPLATE/DESCRIPTION'].blank?
 
           compute_attrs['occi.compute.cores'] = (backend_compute['TEMPLATE/VCPU'] || 1).to_i
           compute_attrs['occi.compute.memory'] = (backend_compute['TEMPLATE/MEMORY'].to_f / 1024)

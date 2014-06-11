@@ -1,7 +1,7 @@
 OCCI_STORAGE_MIXINS = "<%= @storage.mixins.to_a.collect { |m| m.type_identifier }.join(' ') %>"
 
 NAME = "<%= @storage.title %>"
-DESCRIPTION = "<%= @storage.summary || "STORAGE created using rOCCI-server" %>"
+DESCRIPTION = "<%= @storage.summary || "STORAGE created using rOCCI-server on #{::DateTime.now.readable_inspect}." %>"
 
 <% case @storage.attributes.org_.opennebula_.storage_.type %>
 <% when "OS" %>
