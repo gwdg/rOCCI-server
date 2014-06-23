@@ -1,0 +1,5 @@
+model_extensions_dir: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'ec2', 'model') %>
+fixtures_dir: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'ec2', 'fixtures') %>
+access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+aws_region: us-east-1

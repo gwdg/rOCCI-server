@@ -10,7 +10,7 @@ module Backends
       #
       # @return [Occi::Core::Mixins] a collection of mixins
       def resource_tpl_list
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        @resource_tpl
       end
 
       # Gets a specific resource_tpl mixin instance as Occi::Core::Mixin.
@@ -24,7 +24,7 @@ module Backends
       # @param term [String] OCCI term of the requested resource_tpl mixin instance
       # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
       def resource_tpl_get(term)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        resource_tpl_list.to_a.select { |m| m.term == term }.first
       end
     end
   end
