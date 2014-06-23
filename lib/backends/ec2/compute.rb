@@ -13,7 +13,12 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available compute instances
       def compute_list_ids(mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        id_list = []
+
+        instance_statuses = @ec2_client.describe_instance_status.instance_statuses
+        instance_statuses.each { |istatus| id_list << istatus[:instance_id] }
+
+        id_list
       end
 
       # Gets all compute instances, instances must be filtered
@@ -31,7 +36,14 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of compute instances
       def compute_list(mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        computes = Occi::Core::Resources.new
+
+        rsrvts = @ec2_client.describe_instances.reservations
+        rsrvts.each do |reservation|
+          reservation.instances.each { |instance| computes << compute_parse_backend_obj(instance) }
+        end
+
+        computes
       end
 
       # Gets a specific compute instance as Occi::Infrastructure::Compute.
@@ -46,7 +58,11 @@ module Backends
       # @param compute_id [String] OCCI identifier of the requested compute instance
       # @return [Occi::Infrastructure::Compute, nil] a compute instance or `nil`
       def compute_get(compute_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        filters = []
+        filters << { name: 'instance-id', values: [compute_id] }
+
+        rsrvt = @ec2_client.describe_instances(filters: filters).reservations.first
+        compute_parse_backend_obj(rsrvt.instances.first)
       end
 
       # Instantiates a new compute instance from Occi::Infrastructure::Compute.
@@ -257,6 +273,11 @@ module Backends
       def compute_trigger_action(compute_id, action_instance)
         fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
       end
+
+      private
+
+      # Load methods called from compute_list/compute_get
+      include Backends::Ec2::Helpers::ComputeParseHelper
     end
   end
 end
