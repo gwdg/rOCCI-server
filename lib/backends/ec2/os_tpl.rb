@@ -1,6 +1,9 @@
 module Backends
   module Ec2
     module OsTpl
+
+      DALLI_OS_TPL_KEY = 'ec2_os_tpls'
+
       # Gets backend-specific `os_tpl` mixins which should be merged
       # into Occi::Model of the server.
       #
@@ -10,20 +13,26 @@ module Backends
       #
       # @return [Occi::Core::Mixins] a collection of mixins
       def os_tpl_list
-        os_tpl = Occi::Core::Mixins.new
+        os_tpl = nil
         filters = []
         filters << { name: 'image-type', values: ['machine'] }
 
-        ec2_images = @ec2_client.describe_images({ filters: filters }).images
-        ec2_images.each do |ec2_image|
-          depends = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
-          term = os_tpl_list_image_to_term(ec2_image)
-          scheme = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
-          title = ec2_image[:name] || 'unknown'
-          location = "/mixin/os_tpl/#{term}/"
-          applies = %w|http://schemas.ogf.org/occi/infrastructure#compute|
+        unless os_tpl = Backends::Helpers::CachingHelper.load(@dalli_cache, DALLI_OS_TPL_KEY)
+          os_tpl = Occi::Core::Mixins.new
+          ec2_images = @ec2_client.describe_images({ filters: filters }).images
 
-          os_tpl << Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
+          ec2_images.each do |ec2_image|
+            depends = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
+            term = os_tpl_list_image_to_term(ec2_image)
+            scheme = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
+            title = ec2_image[:name] || 'unknown'
+            location = "/mixin/os_tpl/#{term}/"
+            applies = %w|http://schemas.ogf.org/occi/infrastructure#compute|
+
+            os_tpl << Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
+          end
+
+          Backends::Helpers::CachingHelper.save(@dalli_cache, DALLI_OS_TPL_KEY, os_tpl)
         end
 
         os_tpl
