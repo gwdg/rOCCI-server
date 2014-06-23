@@ -9,7 +9,7 @@ module Backends
       @logger = logger || Rails.logger
       @dalli_cache = dalli_cache
 
-      ::Aws.config[:region] = @options.aws_region || "us-east-1"
+      ::Aws.config[:region] = @options.aws_region || "eu-west-1"
       @ec2_client = nil
 
       @options.backend_scheme ||= "http://occi.#{@server_properties.hostname || 'localhost'}"
