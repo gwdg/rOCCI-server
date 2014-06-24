@@ -1,10 +1,10 @@
 {
   "mixins":[
     {
-      "term":"mammoth",
+      "term":"r3_xlarge",
       "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
-      "title":"Mammoth Instance - 8 cores and 32 GB RAM",
-      "location":"/mixin/resource_tpl/mammoth/",
+      "title":"r3.xlarge - 4 cores and 30.5 GB RAM",
+      "location":"/mixin/resource_tpl/r3_xlarge/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -22,7 +22,7 @@
             "cores":{
               "Mutable":false,
               "Type":"number",
-              "Default":8
+              "Default":4
             },
             "speed":{
               "Mutable":false,
@@ -32,7 +32,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":32
+              "Default":30.5
             }
           }
         }

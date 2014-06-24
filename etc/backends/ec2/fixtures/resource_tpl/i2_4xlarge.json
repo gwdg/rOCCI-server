@@ -1,0 +1,42 @@
+{
+  "mixins":[
+    {
+      "term":"i2_4xlarge",
+      "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
+      "title":"i2.4xlarge - 16 cores and 122 GB RAM",
+      "location":"/mixin/resource_tpl/i2_4xlarge/",
+      "depends":[
+        "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "attributes":{
+        "occi":{
+          "compute":{
+            "architecture":{
+              "Mutable":false,
+              "Type":"string",
+              "Default":"x64"
+            },
+            "cores":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":16
+            },
+            "speed":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":1
+            },
+            "memory":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":122
+            }
+          }
+        }
+      }
+    }
+  ]
+}

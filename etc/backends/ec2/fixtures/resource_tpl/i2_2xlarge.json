@@ -1,10 +1,10 @@
 {
   "mixins":[
     {
-      "term":"goliath",
+      "term":"i2_2xlarge",
       "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
-      "title":"Goliath Instance - 16 cores and 64 GB RAM",
-      "location":"/mixin/resource_tpl/goliath/",
+      "title":"i2.2xlarge - 8 cores and 61 GB RAM",
+      "location":"/mixin/resource_tpl/i2_2xlarge/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -22,7 +22,7 @@
             "cores":{
               "Mutable":false,
               "Type":"number",
-              "Default":16
+              "Default":8
             },
             "speed":{
               "Mutable":false,
@@ -32,7 +32,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":64
+              "Default":61
             }
           }
         }

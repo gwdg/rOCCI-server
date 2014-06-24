@@ -1,10 +1,10 @@
 {
   "mixins":[
     {
-      "term":"small",
+      "term":"r3_8xlarge",
       "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
-      "title":"Small Instance - 1 core and 2 GB RAM",
-      "location":"/mixin/resource_tpl/small/",
+      "title":"r3.8xlarge - 32 cores and 244 GB RAM",
+      "location":"/mixin/resource_tpl/r3_8xlarge/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -15,16 +15,14 @@
         "occi":{
           "compute":{
             "architecture":{
-              "Mutable":true,
-              "Required":false,
+              "Mutable":false,
               "Type":"string",
-              "Pattern":"x86|x64",
-              "Default":"x86"
+              "Default":"x64"
             },
             "cores":{
               "Mutable":false,
               "Type":"number",
-              "Default":1
+              "Default":32
             },
             "speed":{
               "Mutable":false,
@@ -34,7 +32,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":2
+              "Default":244
             }
           }
         }

@@ -1,10 +1,10 @@
 {
   "mixins":[
     {
-      "term":"large",
+      "term":"c3_2xlarge",
       "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
-      "title":"Large Instance - 4 cores and 8 GB RAM",
-      "location":"/mixin/resource_tpl/large/",
+      "title":"c3.2xlarge - 8 cores and 15 GB RAM",
+      "location":"/mixin/resource_tpl/c3_2xlarge/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -22,7 +22,7 @@
             "cores":{
               "Mutable":false,
               "Type":"number",
-              "Default":4
+              "Default":8
             },
             "speed":{
               "Mutable":false,
@@ -32,7 +32,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":8
+              "Default":15
             }
           }
         }

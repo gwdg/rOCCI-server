@@ -1,10 +1,10 @@
 {
   "mixins":[
     {
-      "term":"medium",
+      "term":"m3_large",
       "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
-      "title":"Medium Instance - 2 cores and 4 GB RAM",
-      "location":"/mixin/resource_tpl/medium/",
+      "title":"m3.large - 2 cores and 7.5 GB RAM",
+      "location":"/mixin/resource_tpl/m3_large/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -15,11 +15,9 @@
         "occi":{
           "compute":{
             "architecture":{
-              "Mutable":true,
-              "Required":false,
+              "Mutable":false,
               "Type":"string",
-              "Pattern":"x86|x64",
-              "Default":"x86"
+              "Default":"x64"
             },
             "cores":{
               "Mutable":false,
@@ -34,7 +32,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":4
+              "Default":7.5
             }
           }
         }
