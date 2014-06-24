@@ -26,6 +26,18 @@ module Backends
       def resource_tpl_get(term)
         resource_tpl_list.to_a.select { |m| m.term == term }.first
       end
+
+      #
+      #
+      def resource_tpl_list_itype_to_term(ec2_itype)
+        ec2_itype ? ec2_itype.gsub('.', '_') : nil
+      end
+
+      #
+      #
+      def resource_tpl_list_term_to_itype(term)
+        term ? term.gsub('_', '.') : nil
+      end
     end
   end
 end

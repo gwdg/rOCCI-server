@@ -52,16 +52,20 @@ module Backends
         end
       end
 
-      private
-
+      #
+      #
       def os_tpl_list_image_to_term(ec2_image)
         ec2_image[:image_id]
       end
 
+      #
+      #
       def os_tpl_list_term_to_image_id(term)
         term
       end
 
+      #
+      #
       def os_tpl_list_mixin_from_image(ec2_image)
         depends = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
         term = os_tpl_list_image_to_term(ec2_image)
