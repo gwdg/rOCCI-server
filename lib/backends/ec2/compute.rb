@@ -106,7 +106,13 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def compute_delete_all(mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        all_ids = compute_list_ids(mixins)
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          @ec2_client.terminate_instances(instance_ids: all_ids)
+        end unless all_ids.blank?
+
+        true
       end
 
       # Deletes a specific compute instance, instance to be deleted is
@@ -121,7 +127,11 @@ module Backends
       # @param compute_id [String] an identifier of a compute instance to be deleted
       # @return [true, false] result of the operation
       def compute_delete(compute_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          @ec2_client.terminate_instances(instance_ids: [compute_id])
+        end
+
+        true
       end
 
       # Partially updates an existing compute instance, instance to be updated
