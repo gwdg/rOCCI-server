@@ -15,8 +15,10 @@ module Backends
       def compute_list_ids(mixins = nil)
         id_list = []
 
-        instance_statuses = @ec2_client.describe_instance_status.instance_statuses
-        instance_statuses.each { |istatus| id_list << istatus[:instance_id] }
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          instance_statuses = @ec2_client.describe_instance_status.instance_statuses
+          instance_statuses.each { |istatus| id_list << istatus[:instance_id] } if instance_statuses
+        end
 
         id_list
       end
@@ -38,9 +40,12 @@ module Backends
       def compute_list(mixins = nil)
         computes = Occi::Core::Resources.new
 
-        rsrvts = @ec2_client.describe_instances.reservations
-        rsrvts.each do |reservation|
-          reservation.instances.each { |instance| computes << compute_parse_backend_obj(instance) }
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          rsrvts = @ec2_client.describe_instances.reservations
+          rsrvts.each do |reservation|
+            next unless reservation && reservation.instances
+            reservation.instances.each { |instance| computes << compute_parse_backend_obj(instance) }
+          end if rsrvts
         end
 
         computes
@@ -61,8 +66,13 @@ module Backends
         filters = []
         filters << { name: 'instance-id', values: [compute_id] }
 
-        rsrvt = @ec2_client.describe_instances(filters: filters).reservations.first
-        compute_parse_backend_obj(rsrvt.instances.first)
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          rsrvts = @ec2_client.describe_instances(filters: filters).reservations
+          rsrvt = rsrvts ? rsrvts.first : nil
+          return nil unless rsrvt && rsrvt.instances
+
+          compute_parse_backend_obj(rsrvt.instances.first)
+        end
       end
 
       # Instantiates a new compute instance from Occi::Infrastructure::Compute.

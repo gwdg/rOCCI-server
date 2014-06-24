@@ -19,17 +19,10 @@ module Backends
 
         unless os_tpl = Backends::Helpers::CachingHelper.load(@dalli_cache, DALLI_OS_TPL_KEY)
           os_tpl = Occi::Core::Mixins.new
-          ec2_images = @ec2_client.describe_images({ filters: filters }).images
 
-          ec2_images.each do |ec2_image|
-            depends = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
-            term = os_tpl_list_image_to_term(ec2_image)
-            scheme = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
-            title = ec2_image[:name] || 'unknown'
-            location = "/mixin/os_tpl/#{term}/"
-            applies = %w|http://schemas.ogf.org/occi/infrastructure#compute|
-
-            os_tpl << Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+            ec2_images = @ec2_client.describe_images({ filters: filters }).images
+            ec2_images.each { |ec2_image| os_tpl << os_tpl_list_mixin_from_image(ec2_image) } if ec2_images
           end
 
           Backends::Helpers::CachingHelper.save(@dalli_cache, DALLI_OS_TPL_KEY, os_tpl)
@@ -49,8 +42,14 @@ module Backends
       # @param term [String] OCCI term of the requested os_tpl mixin instance
       # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
       def os_tpl_get(term)
-        # TODO: more effective impl
-        os_tpl_list.to_a.select { |m| m.term == term }.first
+        filters = []
+        filters << { name: 'image-type', values: ['machine'] }
+        filters << { name: 'image-id', values: [term] }
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          ec2_images = @ec2_client.describe_images({ filters: filters }).images
+          (ec2_images && ec2_images.first) ? os_tpl_list_mixin_from_image(ec2_images.first) : nil
+        end
       end
 
       private
@@ -59,8 +58,19 @@ module Backends
         ec2_image[:image_id]
       end
 
-      def os_tpl_list_term_to_image(term)
+      def os_tpl_list_term_to_image_id(term)
         term
+      end
+
+      def os_tpl_list_mixin_from_image(ec2_image)
+        depends = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
+        term = os_tpl_list_image_to_term(ec2_image)
+        scheme = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
+        title = ec2_image[:name] || 'unknown'
+        location = "/mixin/os_tpl/#{term}/"
+        applies = %w|http://schemas.ogf.org/occi/infrastructure#compute|
+
+        Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
       end
     end
   end
