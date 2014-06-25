@@ -13,22 +13,25 @@ module Backends
       #
       # @return [Occi::Core::Mixins] a collection of mixins
       def os_tpl_list
-        os_tpl = nil
         filters = []
         filters << { name: 'image-type', values: ['machine'] }
 
-        unless os_tpl = Backends::Helpers::CachingHelper.load(@dalli_cache, DALLI_OS_TPL_KEY)
-          os_tpl = Occi::Core::Mixins.new
+        ec2_images_ary = nil
+        unless ec2_images_ary = Backends::Helpers::CachingHelper.load(@dalli_cache, DALLI_OS_TPL_KEY)
+          ec2_images_ary = []
 
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
             ec2_images = @ec2_client.describe_images({ filters: filters }).images
-            ec2_images.each { |ec2_image| os_tpl << os_tpl_list_mixin_from_image(ec2_image) } if ec2_images
+            ec2_images.each { |ec2_image| ec2_images_ary << { image_id: ec2_image[:image_id], name: ec2_image[:name] } } if ec2_images
           end
 
-          Backends::Helpers::CachingHelper.save(@dalli_cache, DALLI_OS_TPL_KEY, os_tpl)
+          Backends::Helpers::CachingHelper.save(@dalli_cache, DALLI_OS_TPL_KEY, ec2_images_ary)
         end
 
-        os_tpl
+        os_tpls = Occi::Core::Mixins.new
+        ec2_images_ary.each { |ec2_image| os_tpls << os_tpl_list_mixin_from_image(ec2_image) }
+
+        os_tpls
       end
 
       # Gets a specific os_tpl mixin instance as Occi::Core::Mixin.
