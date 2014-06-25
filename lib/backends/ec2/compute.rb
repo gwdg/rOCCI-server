@@ -89,7 +89,18 @@ module Backends
       # @param compute [Occi::Infrastructure::Compute] compute instance containing necessary attributes
       # @return [String] final identifier of the new compute instance
       def compute_create(compute)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        compute_id = compute.id
+
+        os_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::OsTpl.mixin.type_identifier)
+        if os_tpl_mixins.empty?
+          fail Backends::Errors::ResourceNotValidError,
+               "Given instance does not contain an os_tpl " \
+               "mixin necessary to create a virtual machine!"
+        else
+          compute_id = compute_create_with_os_tpl(compute)
+        end
+
+        compute_id
       end
 
       # Deletes all compute instances, instances to be deleted must be filtered
@@ -298,6 +309,9 @@ module Backends
 
       # Load methods called from compute_list/compute_get
       include Backends::Ec2::Helpers::ComputeParseHelper
+
+      # Load methods called from compute_create
+      include Backends::Ec2::Helpers::ComputeCreateHelper
     end
   end
 end
