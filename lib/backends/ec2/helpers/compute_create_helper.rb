@@ -3,6 +3,9 @@ module Backends
     module Helpers
       module ComputeCreateHelper
 
+        COMPUTE_BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
+        COMPUTE_USER_DATA_SIZE_LIMIT = 16384
+
         def compute_create_with_os_tpl(compute)
           @logger.debug "[Backends] [Ec2Backend] Deploying #{compute.inspect}"
 
@@ -22,7 +25,7 @@ module Backends
               image_id: os_tpl,
               instance_type: resource_tpl,
               min_count: 1, max_count: 1,
-              user_data: '',
+              user_data: compute_create_user_data(compute),
               monitoring: {
                 enabled: false,
               },
@@ -31,6 +34,22 @@ module Backends
 
             ec2_response.instances.first[:instance_id]
           end
+        end
+
+        private
+
+        def compute_create_user_data(compute)
+          if compute.attributes.org!.openstack!.compute!.user_data
+            fail Backends::Errors::ResourceNotValidError, "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" unless \
+              compute.attributes['org.openstack.compute.user_data'].bytesize <= COMPUTE_USER_DATA_SIZE_LIMIT
+          end
+
+          if compute.attributes.org!.openstack!.compute!.user_data
+            fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
+              COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
+          end
+
+          compute.attributes.org!.openstack!.compute!.user_data || ''
         end
 
       end
