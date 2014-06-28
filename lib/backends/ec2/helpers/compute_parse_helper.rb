@@ -63,11 +63,71 @@ module Backends
         end
 
         def compute_parse_links_storage(backend_compute, compute)
-          #
+          blks = backend_compute[:block_device_mappings] || []
+          result_storage_links = []
+
+          blks.each do |blk|
+            id = "compute_#{backend_compute[:instance_id]}_disk_#{blk[:ebs][:volume_id]}"
+
+            link = Occi::Infrastructure::Storagelink.new
+            link.id = id
+            link.state = (compute.state == 'active') ? 'active' : 'inactive'
+
+            target = Occi::Infrastructure::Storage.new
+            target.id = blk[:ebs][:volume_id]
+            target.title = 'EBS block device'
+
+            link.target = target
+            link.rel = target.kind
+            link.title = target.title if target.title
+            link.source = compute
+
+            link.deviceid = blk[:device_name] if blk[:device_name]
+
+            result_storage_links << link
+          end
+
+          result_storage_links
         end
 
         def compute_parse_links_network(backend_compute, compute)
-          #
+          intfs = backend_compute[:network_interfaces] || []
+          result_network_links = []
+
+          intfs.each do |intf|
+            id = "compute_#{backend_compute[:instance_id]}_nic_#{intf[:network_interface_id]}"
+
+            link = Occi::Infrastructure::Networkinterface.new
+            link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
+
+            link.id = id
+            link.state = (compute.state == 'active') ? 'active' : 'inactive'
+
+            target = Occi::Infrastructure::Network.new
+
+            if intf[:association][:public_ip]
+              target.id = "public"
+              target.title = 'Generated target for an interface based on a public EC2 network'
+            else
+              target.id = "private"
+              target.title = 'Generated target for an interface based on a private EC2 network'
+            end
+
+            link.target = target
+            link.rel = target.kind
+            link.title = target.title if target.title
+            link.source = compute
+
+            link.address = if intf[:association][:public_ip]
+              intf[:association][:public_ip]
+            else
+              intf[:private_ip_address]
+            end
+
+            result_network_links << link
+          end
+
+          result_network_links
         end
 
       end
