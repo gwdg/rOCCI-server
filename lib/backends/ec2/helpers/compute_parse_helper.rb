@@ -94,40 +94,54 @@ module Backends
           intfs = backend_compute[:network_interfaces] || []
           result_network_links = []
 
-          intfs.each do |intf|
-            id = "compute_#{backend_compute[:instance_id]}_nic_#{intf[:network_interface_id]}"
+          if intfs.empty?
+            # public
+            intf = { network_interface_id: 0, association: {} }
+            intf[:association][:public_ip] = backend_compute[:public_ip_address]
+            intf[:private_ip_address] = nil
+            result_network_links << compute_parse_link_networkinterface(compute, intf)
 
-            link = Occi::Infrastructure::Networkinterface.new
-            link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
-
-            link.id = id
-            link.state = (compute.state == 'active') ? 'active' : 'inactive'
-
-            target = Occi::Infrastructure::Network.new
-
-            if intf[:association][:public_ip]
-              target.id = "public"
-              target.title = 'Generated target for an interface based on a public EC2 network'
-            else
-              target.id = "private"
-              target.title = 'Generated target for an interface based on a private EC2 network'
-            end
-
-            link.target = target
-            link.rel = target.kind
-            link.title = target.title if target.title
-            link.source = compute
-
-            link.address = if intf[:association][:public_ip]
-              intf[:association][:public_ip]
-            else
-              intf[:private_ip_address]
-            end
-
-            result_network_links << link
+            # private
+            intf = { network_interface_id: 1, association: {} }
+            intf[:association][:public_ip] = nil
+            intf[:private_ip_address] = backend_compute[:private_ip_address]
+            result_network_links << compute_parse_link_networkinterface(compute, intf)
+          else
+            intfs.each { |intf| result_network_links << compute_parse_link_networkinterface(compute, intf) }
           end
 
           result_network_links
+        end
+
+        def compute_parse_link_networkinterface(compute, intf)
+          id = "compute_#{compute.id}_nic_#{intf[:network_interface_id]}"
+
+          link = Occi::Infrastructure::Networkinterface.new
+          link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
+
+          link.id = id
+          link.state = (compute.state == 'active') ? 'active' : 'inactive'
+
+          target = Occi::Infrastructure::Network.new
+
+          if intf[:association][:public_ip]
+            target.id = "public"
+            target.title = 'Generated target for an interface based on a public EC2 network'
+
+            link.address = intf[:association][:public_ip]
+          else
+            target.id = "private"
+            target.title = 'Generated target for an interface based on a private EC2 network'
+
+            link.address = intf[:private_ip_address]
+          end
+
+          link.target = target
+          link.rel = target.kind
+          link.title = target.title if target.title
+          link.source = compute
+
+          link
         end
 
       end
