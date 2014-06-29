@@ -1,6 +1,7 @@
 module Backends
   class Ec2Backend
     API_VERSION = '0.0.1'
+    IMAGE_FILTERING_POLICIES = ['all', 'only_owned', 'only_listed'].freeze
 
     def initialize(delegated_user, options, server_properties, logger, dalli_cache)
       @delegated_user = Hashie::Mash.new(delegated_user)
@@ -16,7 +17,26 @@ module Backends
 
       path = @options.fixtures_dir || ''
       read_resource_tpl_fixtures(path)
+
+      set_image_filtering_policy
     end
+
+    def set_image_filtering_policy
+      policy = @options.image_filtering!.policy
+      image_list = @options.image_filtering!.image_list
+
+      fail Backends::Errors::ConfigurationError, "Image policy #{policy.inspect} is not supported by the EC2 backend! #{IMAGE_FILTERING_POLICIES.inspect}" \
+        unless IMAGE_FILTERING_POLICIES.include?(policy)
+
+      fail Backends::Errors::ConfigurationError, "Image policy 'only_listed' requires a list of images!" \
+        if policy == 'only_listed' && image_list.blank?
+
+      @logger.info "[Backends] [Ec2Backend] EC2 image filtering policy #{policy.inspect} with image list #{image_list.inspect}"
+
+      @image_filtering_policy = policy
+      @image_filtering_image_list = image_list.is_a?(Array) ? image_list : image_list.split(' ')
+    end
+    private :set_image_filtering_policy
 
     def read_resource_tpl_fixtures(base_path)
       path = File.join(base_path, 'resource_tpl', '*.json')

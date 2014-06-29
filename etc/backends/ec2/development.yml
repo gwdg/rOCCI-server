@@ -3,3 +3,9 @@ fixtures_dir: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'back
 access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
 secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
 aws_region: eu-west-1
+image_filtering:
+  policy: only_listed  # 'only_listed' or 'only_owned' or 'all'
+  image_list:
+  - ami-896c96fe
+  - ami-f7f03d80
+  - ami-4a5fb53d
