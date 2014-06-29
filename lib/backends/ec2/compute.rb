@@ -44,7 +44,7 @@ module Backends
           rsrvts = @ec2_client.describe_instances.reservations
           rsrvts.each do |reservation|
             next unless reservation && reservation.instances
-            reservation.instances.each { |instance| computes << compute_parse_backend_obj(instance) }
+            reservation.instances.each { |instance| computes << compute_parse_backend_obj(instance, reservation[:reservation_id]) }
           end if rsrvts
         end
 
@@ -71,7 +71,7 @@ module Backends
           rsrvt = rsrvts ? rsrvts.first : nil
           return nil unless rsrvt && rsrvt.instances
 
-          compute_parse_backend_obj(rsrvt.instances.first)
+          compute_parse_backend_obj(rsrvt.instances.first, rsrvt[:reservation_id])
         end
       end
 

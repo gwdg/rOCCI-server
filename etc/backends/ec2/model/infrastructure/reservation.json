@@ -1,0 +1,27 @@
+{
+  "mixins":[
+    {
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "term":"reservation",
+      "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/compute#",
+      "title":"AWS EC2 extension - reservation",
+      "location":"/mixin/reservation/",
+      "attributes":{
+        "com":{
+          "amazon":{
+            "aws":{
+              "ec2":{
+                "reservation_id":{
+                  "Mutable":false,
+                  "Description":"AWS reservation identifier."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -3,12 +3,15 @@ module Backends
     module Helpers
       module ComputeParseHelper
 
-        def compute_parse_backend_obj(backend_compute)
+        def compute_parse_backend_obj(backend_compute, reservation_id)
           compute = Occi::Infrastructure::Compute.new
 
           compute.attributes['occi.core.id'] = backend_compute[:instance_id]
           compute.mixins << "#{@options.backend_scheme}/occi/infrastructure/os_tpl##{os_tpl_list_image_to_term(backend_compute)}"
           compute.mixins << "http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl##{resource_tpl_list_itype_to_term(backend_compute[:instance_type])}"
+          compute.mixins << 'http://schemas.ec2.aws.amazon.com/occi/infrastructure/compute#reservation'
+
+          compute.attributes['com.amazon.aws.ec2.reservation_id'] = reservation_id unless reservation_id.blank?
 
           # include state information and available actions
           result = compute_parse_state(backend_compute)
