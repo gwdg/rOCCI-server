@@ -40,7 +40,7 @@ module Backends
           case backend_compute[:state][:code].to_i
           when 16
             result.state = 'active'
-            result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
+            result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
           when 80
             result.state = 'suspended'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
