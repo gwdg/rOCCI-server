@@ -96,16 +96,20 @@ module Backends
 
           if intfs.empty?
             # public
-            intf = { network_interface_id: 0, association: {} }
-            intf[:association][:public_ip] = backend_compute[:public_ip_address]
-            intf[:private_ip_address] = nil
-            result_network_links << compute_parse_link_networkinterface(compute, intf)
+            if backend_compute[:public_ip_address]
+              intf = { network_interface_id: 0, association: {} }
+              intf[:association][:public_ip] = backend_compute[:public_ip_address]
+              intf[:private_ip_address] = nil
+              result_network_links << compute_parse_link_networkinterface(compute, intf)
+            end
 
             # private
-            intf = { network_interface_id: 1, association: {} }
-            intf[:association][:public_ip] = nil
-            intf[:private_ip_address] = backend_compute[:private_ip_address]
-            result_network_links << compute_parse_link_networkinterface(compute, intf)
+            if backend_compute[:private_ip_address]
+              intf = { network_interface_id: 1, association: {} }
+              intf[:association][:public_ip] = nil
+              intf[:private_ip_address] = backend_compute[:private_ip_address]
+              result_network_links << compute_parse_link_networkinterface(compute, intf)
+            end
           else
             intfs.each { |intf| result_network_links << compute_parse_link_networkinterface(compute, intf) }
           end
