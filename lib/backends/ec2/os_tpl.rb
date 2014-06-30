@@ -3,6 +3,8 @@ module Backends
     module OsTpl
 
       DALLI_OS_TPL_KEY = 'ec2_os_tpls'
+      IMAGE_FILTERING_POLICIES_OWNED = ['only_owned', 'owned_and_listed'].freeze
+      IMAGE_FILTERING_POLICIES_LISTED = ['only_listed', 'owned_and_listed'].freeze
 
       # Gets backend-specific `os_tpl` mixins which should be merged
       # into Occi::Model of the server.
@@ -15,8 +17,8 @@ module Backends
       def os_tpl_list
         filters = []
         filters << { name: 'image-type', values: ['machine'] }
-        filters << { name: 'image-id', values: @image_filtering_image_list } if @image_filtering_policy == 'only_listed'
-        owners = (@image_filtering_policy == 'only_owned') ? [ 'self' ] : nil
+        filters << { name: 'image-id', values: @image_filtering_image_list } if IMAGE_FILTERING_POLICIES_LISTED.include?(@image_filtering_policy)
+        owners = IMAGE_FILTERING_POLICIES_OWNED.include?(@image_filtering_policy) ? [ 'self' ] : nil
 
         ec2_images_ary = nil
         unless ec2_images_ary = Backends::Helpers::CachingHelper.load(@dalli_cache, DALLI_OS_TPL_KEY)

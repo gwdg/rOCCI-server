@@ -1,7 +1,7 @@
 module Backends
   class Ec2Backend
     API_VERSION = '0.0.1'
-    IMAGE_FILTERING_POLICIES = ['all', 'only_owned', 'only_listed'].freeze
+    IMAGE_FILTERING_POLICIES = ['all', 'only_owned', 'only_listed', 'owned_and_listed'].freeze
 
     def initialize(delegated_user, options, server_properties, logger, dalli_cache)
       @delegated_user = Hashie::Mash.new(delegated_user)
@@ -28,8 +28,8 @@ module Backends
       fail Backends::Errors::ConfigurationError, "Image policy #{policy.inspect} is not supported by the EC2 backend! #{IMAGE_FILTERING_POLICIES.inspect}" \
         unless IMAGE_FILTERING_POLICIES.include?(policy)
 
-      fail Backends::Errors::ConfigurationError, "Image policy 'only_listed' requires a list of images!" \
-        if policy == 'only_listed' && image_list.blank?
+      fail Backends::Errors::ConfigurationError, "Image policies 'only_listed' and 'owned_and_listed' require a list of images!" \
+        if (policy == 'only_listed' || policy == 'owned_and_listed') && image_list.blank?
 
       @logger.info "[Backends] [Ec2Backend] EC2 image filtering policy #{policy.inspect} with image list #{image_list.inspect}"
 
