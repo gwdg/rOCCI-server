@@ -178,6 +178,7 @@ module Backends
       # @param compute [Occi::Infrastructure::Compute] instance containing updated information
       # @return [true, false] result of the operation
       def compute_update(compute)
+        # TODO: impl
         fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
       end
 

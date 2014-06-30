@@ -13,7 +13,14 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available storage instances
       def storage_list_ids(mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        id_list = []
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          volume_statuses = @ec2_client.describe_volume_status.volume_statuses
+          volume_statuses.each { |vstatus| id_list << vstatus[:volume_id] } if volume_statuses
+        end
+
+        id_list
       end
 
       # Gets all storage instances, instances must be filtered
@@ -31,7 +38,17 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of storage instances
       def storage_list(mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        storages = Occi::Core::Resources.new
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          volumes = @ec2_client.describe_volumes.volumes
+          volumes.each do |volume|
+            next unless volume
+            storages << storage_parse_backend_obj(volume)
+          end if volumes
+        end
+
+        storages
       end
 
       # Gets a specific storage instance as Occi::Infrastructure::Storage.
@@ -46,7 +63,16 @@ module Backends
       # @param storage_id [String] OCCI identifier of the requested storage instance
       # @return [Occi::Infrastructure::Storage, nil] a storage instance or `nil`
       def storage_get(storage_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        filters = []
+        filters << { name: 'volume-id', values: [storage_id] }
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          volumes = @ec2_client.describe_volumes(filters: filters).volumes
+          volume = volumes ? volumes.first : nil
+          return nil unless volume
+
+          storage_parse_backend_obj(volume)
+        end
       end
 
       # Instantiates a new storage instance from Occi::Infrastructure::Storage.
@@ -169,6 +195,11 @@ module Backends
       def storage_trigger_action(storage_id, action_instance)
         fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
       end
+
+      private
+
+      # Load methods called from storage_list/storage_get
+      include Backends::Ec2::Helpers::StorageParseHelper
     end
   end
 end
