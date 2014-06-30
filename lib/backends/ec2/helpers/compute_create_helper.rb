@@ -29,6 +29,9 @@ module Backends
               monitoring: {
                 enabled: false,
               },
+              placement: {
+                availability_zone: @options.aws_availability_zone,
+              },
               additional_info: serialized_mixins,
             )
 

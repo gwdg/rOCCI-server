@@ -4,10 +4,10 @@
       "applies":[
         "http://schemas.ogf.org/occi/infrastructure#storage"
       ],
-      "term":"ebs_volume",
+      "term":"aws_ec2_ebs_volume",
       "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/storage#",
       "title":"AWS EC2 extension - EBS volume",
-      "location":"/mixin/ebs_volume/",
+      "location":"/mixin/aws_ec2_ebs_volume/",
       "attributes":{
         "com":{
           "amazon":{

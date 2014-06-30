@@ -5,6 +5,9 @@ module Backends
 
         def storage_parse_backend_obj(backend_storage)
           storage = Occi::Infrastructure::Storage.new
+
+          storage.mixins << 'http://schemas.ec2.aws.amazon.com/occi/infrastructure/storage#aws_ec2_ebs_volume'
+
           storage.attributes['occi.core.id'] = backend_storage[:volume_id]
           storage.attributes['occi.storage.size'] = backend_storage[:size]
 
