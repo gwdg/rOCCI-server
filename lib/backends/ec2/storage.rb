@@ -89,7 +89,15 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] storage instance containing necessary attributes
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          volume = @ec2_client.create_volume(
+            size: storage.size || 1,
+            availability_zone: @options.aws_availability_zone,
+            volume_type: "standard"
+          )
+
+          volume[:volume_id]
+        end
       end
 
       # Deletes all storage instances, instances to be deleted must be filtered
@@ -106,7 +114,10 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def storage_delete_all(mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        volume_ids = storage_list_ids(mixins)
+        volume_ids.each { |volume_id| storage_delete(volume_id) }
+
+        true
       end
 
       # Deletes a specific storage instance, instance to be deleted is
@@ -121,7 +132,11 @@ module Backends
       # @param storage_id [String] an identifier of a storage instance to be deleted
       # @return [true, false] result of the operation
       def storage_delete(storage_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          @ec2_client.delete_volume(volume_id: storage_id)
+        end
+
+        true
       end
 
       # Partially updates an existing storage instance, instance to be updated
