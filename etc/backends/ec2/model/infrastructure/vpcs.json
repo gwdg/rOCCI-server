@@ -1,0 +1,36 @@
+{
+  "mixins":[
+    {
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#network"
+      ],
+      "term":"aws_ec2_vpc",
+      "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/network#",
+      "title":"AWS EC2 extension - VPC",
+      "location":"/mixin/aws_ec2_vpc/",
+      "attributes":{
+        "com":{
+          "amazon":{
+            "aws":{
+              "ec2":{
+                "state":{
+                  "Mutable":false,
+                  "Description":"AWS VPC state."
+                },
+                "instance_tenancy":{
+                  "Mutable":false,
+                  "Description":"AWS tenancy."
+                },
+                "is_default":{
+                  "Mutable":false,
+                  "Type":"boolean",
+                  "Description":"This VPC is the default VPC."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

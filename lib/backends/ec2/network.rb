@@ -13,7 +13,14 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available network instances
       def network_list_ids(mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        id_list = []
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          vpcs = @ec2_client.describe_vpcs.vpcs
+          vpcs.each { |vpc| id_list << vpc[:vpc_id] } if vpcs
+        end
+
+        id_list
       end
 
       # Gets all network instances, instances must be filtered
@@ -31,7 +38,14 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of network instances
       def network_list(mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        networks = Occi::Core::Resources.new
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          vpcs = @ec2_client.describe_vpcs.vpcs
+          vpcs.each { |vpc| networks << network_parse_backend_obj(vpc) } if vpcs
+        end
+
+        networks
       end
 
       # Gets a specific network instance as Occi::Infrastructure::Network.
@@ -46,7 +60,16 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
       def network_get(network_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        filters = []
+        filters << { name: 'vpc-id', values: [network_id] }
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          vpcs = @ec2_client.describe_vpcs(filters: filters).vpcs
+          vpc = vpcs ? vpcs.first : nil
+          return nil unless vpc
+
+          network_parse_backend_obj(vpc)
+        end
       end
 
       # Instantiates a new network instance from Occi::Infrastructure::Network.
@@ -169,6 +192,11 @@ module Backends
       def network_trigger_action(network_id, action_instance)
         fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
       end
+
+      private
+
+      # Load methods called from network_list/network_get
+      include Backends::Ec2::Helpers::NetworkParseHelper
     end
   end
 end
