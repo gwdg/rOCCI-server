@@ -60,16 +60,8 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
       def network_get(network_id)
-        filters = []
-        filters << { name: 'vpc-id', values: [network_id] }
-
-        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
-          vpcs = @ec2_client.describe_vpcs(filters: filters).vpcs
-          vpc = vpcs ? vpcs.first : nil
-          return nil unless vpc
-
-          network_parse_backend_obj(vpc)
-        end
+        vpc = network_get_raw(network_id)
+        network_parse_backend_obj(vpc)
       end
 
       # Instantiates a new network instance from Occi::Infrastructure::Network.
@@ -137,6 +129,12 @@ module Backends
       # @param network_id [String] an identifier of a network instance to be deleted
       # @return [true, false] result of the operation
       def network_delete(network_id)
+        vpc = network_get_raw(network_id)
+
+        network_delete_dhcp_options(vpc)
+        network_delete_route_tables(vpc)
+        network_delete_acls(vpc)
+
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
           @ec2_client.delete_vpc(vpc_id: network_id)
         end
@@ -220,6 +218,9 @@ module Backends
 
       # Load methods called from network_list/network_get
       include Backends::Ec2::Helpers::NetworkParseHelper
+
+      # Load methods called from network_delete
+      include Backends::Ec2::Helpers::NetworkDeleteHelper
     end
   end
 end

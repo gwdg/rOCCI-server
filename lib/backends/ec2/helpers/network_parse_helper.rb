@@ -48,6 +48,16 @@ module Backends
           result
         end
 
+        def network_get_raw(network_id)
+          filters = []
+          filters << { name: 'vpc-id', values: [network_id] }
+
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+            vpcs = @ec2_client.describe_vpcs(filters: filters).vpcs
+            vpcs ? vpcs.first : nil
+          end
+        end
+
       end
     end
   end
