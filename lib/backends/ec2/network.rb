@@ -86,7 +86,23 @@ module Backends
       # @param network [Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
       def network_create(network)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        fail Backends::Errors::ResourceNotValidError, "Network address in CIDR notation is required!" if network.address.blank?
+        tags = []
+        tags << { key: 'Name', value: (network.title || "rOCCI-server VPC #{network.address}") }
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          vpc = @ec2_client.create_vpc(
+            cidr_block: network.address,
+            instance_tenancy: "default"
+          ).vpc
+
+          @ec2_client.create_tags(
+            resources: [vpc[:vpc_id]],
+            tags: tags
+          )
+
+          vpc[:vpc_id]
+        end
       end
 
       # Deletes all network instances, instances to be deleted must be filtered
@@ -103,7 +119,10 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def network_delete_all(mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        vpc_ids = network_list_ids(mixins)
+        vpc_ids.each { |vpc_id| network_delete(vpc_id) }
+
+        true
       end
 
       # Deletes a specific network instance, instance to be deleted is
@@ -118,7 +137,11 @@ module Backends
       # @param network_id [String] an identifier of a network instance to be deleted
       # @return [true, false] result of the operation
       def network_delete(network_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          @ec2_client.delete_vpc(vpc_id: network_id)
+        end
+
+        true
       end
 
       # Partially updates an existing network instance, instance to be updated

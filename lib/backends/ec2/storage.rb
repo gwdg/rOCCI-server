@@ -89,11 +89,19 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] storage instance containing necessary attributes
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
+        tags = []
+        tags << { key: 'Name', value: (storage.title || "rOCCI-server volume #{storage.size || 1}GB") }
+
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
           volume = @ec2_client.create_volume(
             size: storage.size || 1,
             availability_zone: @options.aws_availability_zone,
             volume_type: "standard"
+          )
+
+          @ec2_client.create_tags(
+            resources: [volume[:volume_id]],
+            tags: tags
           )
 
           volume[:volume_id]
