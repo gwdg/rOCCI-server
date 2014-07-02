@@ -61,7 +61,7 @@ module Backends
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
       def network_get(network_id)
         vpc = network_get_raw(network_id)
-        network_parse_backend_obj(vpc)
+        vpc ? network_parse_backend_obj(vpc) : nil
       end
 
       # Instantiates a new network instance from Occi::Infrastructure::Network.
@@ -131,13 +131,18 @@ module Backends
       def network_delete(network_id)
         vpc = network_get_raw(network_id)
 
-        network_delete_dhcp_options(vpc)
-        network_delete_route_tables(vpc)
+        network_delete_security_groups(vpc)
+        network_delete_internet_gateways(vpc)
+        network_delete_vpn_gateways(vpc)
         network_delete_acls(vpc)
+        network_delete_route_tables(vpc)
+        network_delete_subnets(vpc)
 
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
           @ec2_client.delete_vpc(vpc_id: network_id)
         end
+
+        network_delete_dhcp_options(vpc)
 
         true
       end

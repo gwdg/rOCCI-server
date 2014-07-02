@@ -69,7 +69,7 @@ module Backends
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
           rsrvts = @ec2_client.describe_instances(filters: filters).reservations
           rsrvt = rsrvts ? rsrvts.first : nil
-          return nil unless rsrvt && rsrvt.instances
+          return nil unless rsrvt && rsrvt.instances && rsrvt.instances.first
 
           compute_parse_backend_obj(rsrvt.instances.first, rsrvt[:reservation_id])
         end
