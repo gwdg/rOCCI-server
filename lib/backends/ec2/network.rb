@@ -78,6 +78,9 @@ module Backends
       # @param network [Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
       def network_create(network)
+        fail Backends::Errors::UserNotAuthorizedError, "Creating networks has been disabled in server's configuration!" \
+          unless @options.network_create_allowed
+
         fail Backends::Errors::ResourceNotValidError, "Network address in CIDR notation is required!" if network.address.blank?
         tags = []
         tags << { key: 'Name', value: (network.title || "rOCCI-server VPC #{network.address}") }
@@ -129,6 +132,9 @@ module Backends
       # @param network_id [String] an identifier of a network instance to be deleted
       # @return [true, false] result of the operation
       def network_delete(network_id)
+        fail Backends::Errors::UserNotAuthorizedError, "Deleting networks has been disabled in server's configuration!" \
+          unless @options.network_destroy_allowed
+
         vpc = network_get_raw(network_id)
         fail Backends::Errors::ResourceNotFoundError, "The VPC #{network_id.inspect} does not exist." unless vpc
 

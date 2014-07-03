@@ -10,3 +10,6 @@ image_filtering:
   - ami-896c96fe
   - ami-f7f03d80
   - ami-4a5fb53d
+network_create_allowed: false
+network_destroy_allowed: false
+network_destroy_vpn_gws: false

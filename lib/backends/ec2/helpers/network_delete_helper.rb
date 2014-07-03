@@ -85,9 +85,12 @@ module Backends
             vpn_gateways = @ec2_client.describe_vpn_gateways(filters: filters).vpn_gateways
             vpn_gateways.each do |vpn_gateway|
               @ec2_client.detach_vpn_gateway(vpn_gateway_id: vpn_gateway[:vpn_gateway_id], vpc_id: vpc[:vpc_id])
-              # TODO: sidekiq job
-              #network_delete_vpn_connections(vpn_gateway)
-              #@ec2_client.delete_vpn_gateway(vpn_gateway_id: vpn_gateway[:vpn_gateway_id]) if vpn_gateway[:vpc_attachments].length == 1
+              network_delete_vpn_gateways_wait4detach(vpn_gateway, vpc[:vpc_id])
+
+              if @options.network_destroy_vpn_gws
+                network_delete_vpn_connections(vpn_gateway)
+                @ec2_client.delete_vpn_gateway(vpn_gateway_id: vpn_gateway[:vpn_gateway_id]) if vpn_gateway[:vpc_attachments].length == 1
+              end
             end if vpn_gateways
           end
 
@@ -113,6 +116,28 @@ module Backends
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
             vpn_connections = @ec2_client.describe_vpn_connections(filters: filters).vpn_connections
             vpn_connections.each { |vpn_connection| @ec2_client.delete_vpn_connection(vpn_connection_id: vpn_connection[:vpn_connection_id]) } if vpn_connections
+          end
+
+          # TODO: wait for connections to actually detach
+
+          true
+        end
+
+        def network_delete_vpn_gateways_wait4detach(vpn_gateway, vpc_id)
+          return unless vpn_gateway && vpc_id
+
+          filters = []
+          filters << { name: 'vpn-gateway-id', values: [vpn_gateway[:vpn_gateway_id]] }
+          filters << { name: 'attachment.vpc-id', values: [vpc_id] }
+          filters << { name: 'attachment.state', values: ['attaching', 'attached', 'detaching'] }
+
+          until vpn_gateway.blank?
+            sleep 5.0
+
+            Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+              vpn_gateways = @ec2_client.describe_vpn_gateways(filters: filters).vpn_gateways
+              vpn_gateway = vpn_gateways ? vpn_gateways.first : nil
+            end
           end
 
           true
