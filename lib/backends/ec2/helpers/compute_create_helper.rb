@@ -31,11 +31,19 @@ module Backends
               },
               placement: {
                 availability_zone: @options.aws_availability_zone,
-              },
-              additional_info: serialized_mixins,
+              }
             )
 
-            ec2_response.instances.first[:instance_id]
+            instance_id = ec2_response.instances.first[:instance_id]
+            tags = []
+            tags << { key: 'Name', value: (compute.title || "rOCCI-server instance #{resource_tpl} + #{os_tpl}") }
+            tags << { key: 'ComputeMixins', value: serialized_mixins } if serialized_mixins.length < 255
+            @ec2_client.create_tags(
+              resources: [instance_id],
+              tags: tags
+            )
+
+            instance_id
           end
         end
 
