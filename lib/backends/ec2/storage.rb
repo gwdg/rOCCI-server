@@ -198,7 +198,8 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def storage_trigger_action_on_all(action_instance, mixins = nil)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        storage_list_ids(mixins).each { |strg| storage_trigger_action(strg, action_instance) }
+        true
       end
 
       # Triggers an action on an existing storage instance, the storage instance in question
@@ -216,13 +217,24 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def storage_trigger_action(storage_id, action_instance)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        case action_instance.action.type_identifier
+        when 'http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot'
+          storage_trigger_action_snapshot(storage_id, action_instance.attributes)
+        else
+          fail Backends::Errors::ActionNotImplementedError,
+               "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+        end
+
+        true
       end
 
       private
 
       # Load methods called from storage_list/storage_get
       include Backends::Ec2::Helpers::StorageParseHelper
+
+      # Load methods called from storage_trigger_action
+      include Backends::Ec2::Helpers::StorageActionHelper
     end
   end
 end
