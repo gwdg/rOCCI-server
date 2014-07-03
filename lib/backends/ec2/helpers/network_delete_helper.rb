@@ -86,6 +86,7 @@ module Backends
             vpn_gateways.each do |vpn_gateway|
               @ec2_client.detach_vpn_gateway(vpn_gateway_id: vpn_gateway[:vpn_gateway_id], vpc_id: vpc[:vpc_id])
               # TODO: sidekiq job
+              #network_delete_vpn_connections(vpn_gateway)
               #@ec2_client.delete_vpn_gateway(vpn_gateway_id: vpn_gateway[:vpn_gateway_id]) if vpn_gateway[:vpc_attachments].length == 1
             end if vpn_gateways
           end
@@ -100,6 +101,18 @@ module Backends
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
             subnets = @ec2_client.describe_subnets(filters: filters).subnets
             subnets.each { |subnet| @ec2_client.delete_subnet(subnet_id: subnet[:subnet_id]) } if subnets
+          end
+
+          true
+        end
+
+        def network_delete_vpn_connections(vpn_gateway)
+          filters = []
+          filters << { name: 'vpn-gateway-id', values: [vpn_gateway[:vpn_gateway_id]] }
+
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+            vpn_connections = @ec2_client.describe_vpn_connections(filters: filters).vpn_connections
+            vpn_connections.each { |vpn_connection| @ec2_client.delete_vpn_connection(vpn_connection_id: vpn_connection[:vpn_connection_id]) } if vpn_connections
           end
 
           true

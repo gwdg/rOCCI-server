@@ -130,6 +130,7 @@ module Backends
       # @return [true, false] result of the operation
       def network_delete(network_id)
         vpc = network_get_raw(network_id)
+        fail Backends::Errors::ResourceNotFoundError, "The VPC #{network_id.inspect} does not exist." unless vpc
 
         network_delete_security_groups(vpc)
         network_delete_internet_gateways(vpc)
