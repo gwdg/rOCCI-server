@@ -258,7 +258,8 @@ module Backends
         matched = COMPUTE_NINTF_REGEXP.match(networkinterface_id)
         fail Backends::Errors::IdentifierNotValidError, 'ID of the given networkinterface is not valid!' unless matched
 
-        intf = compute_get(matched[:compute_id]).links.to_a.select { |l| l.id == networkinterface_id }
+        compute = compute_get(matched[:compute_id]) || Occi::Infrastructure::Compute.new
+        intf = compute.links.to_a.select { |l| l.id == networkinterface_id }
         fail Backends::Errors::ResourceNotFoundError, 'Networkinterface with the given ID does not exist!' if intf.blank?
 
         intf.first
@@ -279,7 +280,8 @@ module Backends
         matched = COMPUTE_SLINK_REGEXP.match(storagelink_id)
         fail Backends::Errors::IdentifierNotValidError, 'ID of the given storagelink is not valid!' unless matched
 
-        link = compute_get(matched[:compute_id]).links.to_a.select { |l| l.id == storagelink_id }
+        compute = compute_get(matched[:compute_id]) || Occi::Infrastructure::Compute.new
+        link = compute.links.to_a.select { |l| l.id == storagelink_id }
         fail Backends::Errors::ResourceNotFoundError, 'Storagelink with the given ID does not exist!' if link.blank?
 
         link.first
