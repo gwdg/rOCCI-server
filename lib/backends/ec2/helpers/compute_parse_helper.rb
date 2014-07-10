@@ -3,6 +3,8 @@ module Backends
     module Helpers
       module ComputeParseHelper
 
+        COMPUTE_FAKE_INTFS = ['eni-0', 'eni-1'].freeze
+
         def compute_parse_backend_obj(backend_compute, reservation_id)
           compute = Occi::Infrastructure::Compute.new
 
@@ -89,9 +91,7 @@ module Backends
             link.id = id
             link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
-            target = Occi::Infrastructure::Storage.new
-            target.id = blk[:ebs][:volume_id]
-            target.title = 'EBS block device'
+            target = storage_get(blk[:ebs][:volume_id])
 
             link.target = target
             link.rel = target.kind
@@ -113,7 +113,7 @@ module Backends
           if intfs.empty?
             # public
             if backend_compute[:public_ip_address]
-              intf = { network_interface_id: 0, association: {} }
+              intf = { network_interface_id: 'eni-0', association: {} }
               intf[:association][:public_ip] = backend_compute[:public_ip_address]
               intf[:private_ip_address] = nil
               result_network_links << compute_parse_link_networkinterface(compute, intf)
@@ -121,7 +121,7 @@ module Backends
 
             # private
             if backend_compute[:private_ip_address]
-              intf = { network_interface_id: 1, association: {} }
+              intf = { network_interface_id: 'eni-1', association: {} }
               intf[:association][:public_ip] = nil
               intf[:private_ip_address] = backend_compute[:private_ip_address]
               result_network_links << compute_parse_link_networkinterface(compute, intf)
@@ -142,16 +142,20 @@ module Backends
           link.id = id
           link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
-          target = Occi::Infrastructure::Network.new
+          target = intf[:vpc_id] ? network_get(intf[:vpc_id]) : Occi::Infrastructure::Network.new
 
           if intf[:association][:public_ip]
-            target.id = "public"
-            target.title = 'Generated target for an interface based on a public EC2 network'
+            if intf[:vpc_id].blank?
+              target.id = "public"
+              target.title = 'Generated target for an interface based on a public EC2 network'
+            end
 
             link.address = intf[:association][:public_ip]
           else
-            target.id = "private"
-            target.title = 'Generated target for an interface based on a private EC2 network'
+            if intf[:vpc_id].blank?
+              target.id = "private"
+              target.title = 'Generated target for an interface based on a private EC2 network'
+            end
 
             link.address = intf[:private_ip_address]
           end

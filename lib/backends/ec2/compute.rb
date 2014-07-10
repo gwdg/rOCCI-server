@@ -1,6 +1,9 @@
 module Backends
   module Ec2
     module Compute
+      COMPUTE_NINTF_REGEXP = /compute_(?<compute_id>i-[[:alnum:]]+)_nic_(?<compute_nic_id>eni-[[:alnum:]]+)/
+      COMPUTE_SLINK_REGEXP = /compute_(?<compute_id>i-[[:alnum:]]+)_disk_(?<compute_disk_id>vol-[[:alnum:]]+)/
+
       # Gets all compute instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Compute instances.
@@ -163,7 +166,7 @@ module Backends
       # @return [true, false] result of the operation
       def compute_partial_update(compute_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
-        fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
+        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
       end
 
       # Updates an existing compute instance, instance to be updated is specified
@@ -252,7 +255,13 @@ module Backends
       # @param networkinterface_id [String] network interface identifier
       # @return [Occi::Infrastructure::Networkinterface] instance of the found networkinterface
       def compute_get_network(networkinterface_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        matched = COMPUTE_NINTF_REGEXP.match(networkinterface_id)
+        fail Backends::Errors::IdentifierNotValidError, 'ID of the given networkinterface is not valid!' unless matched
+
+        intf = compute_get(matched[:compute_id]).links.to_a.select { |l| l.id == networkinterface_id }
+        fail Backends::Errors::ResourceNotFoundError, 'Networkinterface with the given ID does not exist!' if intf.blank?
+
+        intf.first
       end
 
       # Gets a storage from an existing compute instance, the compute instance in question
@@ -267,7 +276,13 @@ module Backends
       # @param storagelink_id [String] storage link identifier
       # @return [Occi::Infrastructure::Storagelink] instance of the found storagelink
       def compute_get_storage(storagelink_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        matched = COMPUTE_SLINK_REGEXP.match(storagelink_id)
+        fail Backends::Errors::IdentifierNotValidError, 'ID of the given storagelink is not valid!' unless matched
+
+        link = compute_get(matched[:compute_id]).links.to_a.select { |l| l.id == storagelink_id }
+        fail Backends::Errors::ResourceNotFoundError, 'Storagelink with the given ID does not exist!' if link.blank?
+
+        link.first
       end
 
       # Triggers an action on all existing compute instance, instances must be filtered
