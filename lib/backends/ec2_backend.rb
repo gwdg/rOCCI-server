@@ -66,7 +66,7 @@ module Backends
       fail Backends::Errors::AuthenticationError, 'User could not be authenticated, access_key_id is missing!' if @options.access_key_id.blank?
       fail Backends::Errors::AuthenticationError, 'User could not be authenticated, secret_access_key is missing!' if @options.secret_access_key.blank?
 
-      @ec2_client = ::Aws::EC2.new(
+      @ec2_client = ::Aws::EC2::Client.new(
         credentials: ::Aws::Credentials.new(@options.access_key_id, @options.secret_access_key),
         logger: @logger,
         log_level: :debug
