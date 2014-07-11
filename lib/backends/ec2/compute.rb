@@ -212,7 +212,23 @@ module Backends
       # @param storagelink [Occi::Infrastructure::Storagelink] SL instance containing necessary attributes
       # @return [String] final identifier of the new storage link
       def compute_attach_storage(storagelink)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        fail Backends::Errors::ResourceNotValidError, 'Attribute \'occi.storagelink.deviceid\' is required!' \
+          if storagelink.attributes['occi.storagelink.deviceid'].blank?
+
+        target_id = storagelink.target.kind_of?(Occi::Core::Resource) ? storagelink.target.id : storagelink.target.split('/').last
+        source_id = storagelink.source.kind_of?(Occi::Core::Resource) ? storagelink.source.id : storagelink.source.split('/').last
+        fail Backends::Errors::ResourceNotValidError, 'Attributes source and target are required!' \
+          if target_id.blank? || source_id.blank?
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          @ec2_client.attach_volume(
+            volume_id: target_id,
+            instance_id: source_id,
+            device: storagelink.attributes['occi.storagelink.deviceid'],
+          )
+        end
+
+        "compute_#{source_id}_disk_#{target_id}"
       end
 
       # Dettaches a network from an existing compute instance, the compute instance in question
@@ -240,7 +256,18 @@ module Backends
       # @param storagelink_id [String] storage link identifier
       # @return [true, false] result of the operation
       def compute_detach_storage(storagelink_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        matched = COMPUTE_SLINK_REGEXP.match(storagelink_id)
+        fail Backends::Errors::IdentifierNotValidError, 'ID of the given storagelink is not valid!' unless matched
+
+        Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          @ec2_client.detach_volume(
+            volume_id: matched[:compute_disk_id],
+            instance_id: matched[:compute_id],
+            force: true,
+          )
+        end
+
+        true
       end
 
       # Gets a network from an existing compute instance, the compute instance in question
