@@ -15,24 +15,28 @@ module Backends
         end
 
         def self.handle_service_error(error, logger)
-          error_code = error.to_s.split('::').last
+          error_code = error.class.to_s.split('::').last
           message = "#{error_code}: #{error.message}"
 
           case error_code
+          when 'Unavailable'
+            fail Backends::Errors::ServiceUnavailableError, message
           when 'AuthFailure', 'Blocked'
             fail Backends::Errors::AuthenticationError, message
           when 'CannotDelete', 'DependencyViolation', 'IncorrectState', 'DiskImageSizeTooLarge', 'IncorrectInstanceState'
             fail Backends::Errors::ResourceStateError, message
-          when /^(.+)Malformed$/, /^(.+)Format$/, /^(.+)ZoneMismatch$/, /^(.+)AlreadyExists$/, /^(.+)Duplicate$/
+          when /^(.+)Format$/, /^(.+)ZoneMismatch$/, /^(.+)AlreadyExists$/, /^(.+)Duplicate$/
             fail Backends::Errors::ResourceNotValidError, message
           when /^(.+)InUse$/, /^(.+)Conflict$/, /^(.+)NotSupported$/
             fail Backends::Errors::ResourceStateError, message
           when /^Insufficient(.+)Capacity$/, /^(.+)LimitExceeded$/
             fail Backends::Errors::ResourceCreationError, message
+          when /^(.+)Malformed$/
+            fail Backends::Errors::IdentifierNotValidError, message
           when /^(.+)NotFound$/
             fail Backends::Errors::ResourceNotFoundError, message
           else
-            # 'InternalError', 'Unavailable', ...
+            # 'InternalError', ...
             fail Backends::Errors::ResourceActionError, message
           end
         end
