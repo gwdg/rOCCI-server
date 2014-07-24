@@ -1,0 +1,42 @@
+{
+  "mixins":[
+    {
+      "term":"i2_xlarge",
+      "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
+      "title":"i2.xlarge - 4 cores and 30.5 GB RAM",
+      "location":"/mixin/resource_tpl/i2_xlarge/",
+      "depends":[
+        "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "attributes":{
+        "occi":{
+          "compute":{
+            "architecture":{
+              "Mutable":false,
+              "Type":"string",
+              "Default":"x64"
+            },
+            "cores":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":4
+            },
+            "speed":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":1
+            },
+            "memory":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":30.5
+            }
+          }
+        }
+      }
+    }
+  ]
+}

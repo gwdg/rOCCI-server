@@ -1,0 +1,42 @@
+{
+  "mixins":[
+    {
+      "term":"c3_2xlarge",
+      "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
+      "title":"c3.2xlarge - 8 cores and 15 GB RAM",
+      "location":"/mixin/resource_tpl/c3_2xlarge/",
+      "depends":[
+        "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "attributes":{
+        "occi":{
+          "compute":{
+            "architecture":{
+              "Mutable":false,
+              "Type":"string",
+              "Default":"x64"
+            },
+            "cores":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":8
+            },
+            "speed":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":1
+            },
+            "memory":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":15
+            }
+          }
+        }
+      }
+    }
+  ]
+}

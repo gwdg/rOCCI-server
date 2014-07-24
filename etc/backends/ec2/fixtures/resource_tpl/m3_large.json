@@ -1,0 +1,42 @@
+{
+  "mixins":[
+    {
+      "term":"m3_large",
+      "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
+      "title":"m3.large - 2 cores and 7.5 GB RAM",
+      "location":"/mixin/resource_tpl/m3_large/",
+      "depends":[
+        "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "attributes":{
+        "occi":{
+          "compute":{
+            "architecture":{
+              "Mutable":false,
+              "Type":"string",
+              "Default":"x64"
+            },
+            "cores":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":2
+            },
+            "speed":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":1
+            },
+            "memory":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":7.5
+            }
+          }
+        }
+      }
+    }
+  ]
+}

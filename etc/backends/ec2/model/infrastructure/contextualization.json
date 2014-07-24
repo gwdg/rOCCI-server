@@ -1,0 +1,52 @@
+{
+  "mixins":[
+    {
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "term":"public_key",
+      "scheme":"http://schemas.openstack.org/instance/credentials#",
+      "title":"OpenStack's contextualization extension - credentials",
+      "location":"/mixin/public_key/",
+      "attributes":{
+        "org":{
+          "openstack":{
+            "credentials":{
+              "publickey":{
+                "name":{
+                  "Mutable":true,
+                  "Description":"User-defined name for the given public key."
+                },
+                "data":{
+                  "Mutable":true,
+                  "Description":"SSH public key formatted as it appears in authorized_keys."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "term":"user_data",
+      "scheme":"http://schemas.openstack.org/compute/instance#",
+      "title":"OpenStack's contextualization extension - user_data",
+      "location":"/mixin/user_data/",
+      "attributes":{
+        "org":{
+          "openstack":{
+            "compute":{
+              "user_data":{
+                "Mutable":true,
+                "Description":"Base64 encoded content passed to the compute instance as USER_DATA."
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

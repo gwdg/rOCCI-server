@@ -62,6 +62,14 @@ module Mixins
       render text: exception.message, status: 500
     end
 
+    # Handler responding with HTTP 503 and the exception message.
+    #
+    # @param exception [Exception] exception to convert into a response
+    def handle_backend_unavailable_err(exception)
+      logger.error "[Backend] Failed to connect to the underlying CMF: #{exception.message}"
+      render text: exception.message, status: 503
+    end
+
     # Handler responding with HTTP 401 and the exception message.
     #
     # @param exception [Exception] exception to convert into a response
