@@ -4,8 +4,14 @@ module Backends
       module NetworkDeleteHelper
 
         def network_delete_dhcp_options(vpc)
+          return false if vpc[:dhcp_options_id].blank?
+
+          filters = []
+          filters << { name: 'dhcp-options-id', values: [vpc[:dhcp_options_id]] }
+
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
-            @ec2_client.delete_dhcp_options(dhcp_options_id: vpc[:dhcp_options_id]) if vpc[:dhcp_options_id]
+            vpcs = @ec2_client.describe_vpcs(filters: filters).vpcs
+            @ec2_client.delete_dhcp_options(dhcp_options_id: vpc[:dhcp_options_id]) if vpcs.blank?
           end
 
           true
@@ -124,7 +130,7 @@ module Backends
         end
 
         def network_delete_vpn_gateways_wait4detach(vpn_gateway, vpc_id)
-          return unless vpn_gateway && vpc_id
+          return false unless vpn_gateway && vpc_id
 
           filters = []
           filters << { name: 'vpn-gateway-id', values: [vpn_gateway[:vpn_gateway_id]] }

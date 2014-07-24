@@ -91,8 +91,14 @@ module Backends
             instance_tenancy: "default"
           ).vpc
 
+          vpc_subnet = @ec2_client.create_subnet(
+            vpc_id: vpc[:vpc_id],
+            cidr_block: network.address,
+            availability_zone: @options.aws_availability_zone
+          ).subnet
+
           @ec2_client.create_tags(
-            resources: [vpc[:vpc_id]],
+            resources: [vpc[:vpc_id], vpc_subnet[:subnet_id]],
             tags: tags
           )
 
