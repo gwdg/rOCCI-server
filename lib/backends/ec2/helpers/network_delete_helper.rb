@@ -124,7 +124,7 @@ module Backends
             vpn_connections.each { |vpn_connection| @ec2_client.delete_vpn_connection(vpn_connection_id: vpn_connection[:vpn_connection_id]) } if vpn_connections
           end
 
-          # TODO: wait for connections to actually detach
+          network_delete_vpn_connections_wait4detach(vpn_gateway)
 
           true
         end
@@ -143,6 +143,26 @@ module Backends
             Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
               vpn_gateways = @ec2_client.describe_vpn_gateways(filters: filters).vpn_gateways
               vpn_gateway = vpn_gateways ? vpn_gateways.first : nil
+            end
+          end
+
+          true
+        end
+
+        def network_delete_vpn_connections_wait4detach(vpn_gateway)
+          return false unless vpn_gateway
+
+          filters = []
+          filters << { name: 'vpn-gateway-id', values: [vpn_gateway[:vpn_gateway_id]] }
+          filters << { name: 'state', values: ['pending', 'deleting'] }
+
+          vpn_connection = 'dummy'
+          until vpn_connection.blank?
+            sleep 5.0
+
+            Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+              vpn_connections = @ec2_client.describe_vpn_connections(filters: filters).vpn_connections
+              vpn_connection = vpn_connections ? vpn_connections.first : nil
             end
           end
 
