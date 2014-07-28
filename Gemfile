@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 4.0.0'
+gem 'rails', '~> 4.0.8'
 gem 'rails-api', '~> 0.2.0'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
@@ -29,7 +29,7 @@ gem 'debugger', group: [:development, :test]
 gem 'whenever', require: false
 
 # Use passenger for deployment (standalone or in Apache2)
-gem 'passenger', '~> 4.0.44'
+gem 'passenger', '~> 4.0.48'
 
 # Use simplecov for coverage reports
 gem 'simplecov', group: [:development, :test]
@@ -87,7 +87,7 @@ gem 'hashie'
 gem 'ice_nine'
 
 # Use occi-core for OCCI stuff
-gem 'occi-core', '~> 4.2.15'
+gem 'occi-core', '~> 4.2.16'
 
 # Install gems for each auth. strategy from Rails.root/lib/authentication_strategies/bundles
 Dir.glob(File.join(File.dirname(__FILE__), 'lib', 'authentication_strategies', 'bundles', "Gemfile.*")) do |gemfile|
