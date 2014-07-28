@@ -63,11 +63,9 @@ module Backends
 
     def run_authn
       return if @ec2_client
-      fail Backends::Errors::AuthenticationError, 'User could not be authenticated, access_key_id is missing!' if @options.access_key_id.blank?
-      fail Backends::Errors::AuthenticationError, 'User could not be authenticated, secret_access_key is missing!' if @options.secret_access_key.blank?
 
       @ec2_client = ::Aws::EC2::Client.new(
-        credentials: ::Aws::Credentials.new(@options.access_key_id, @options.secret_access_key),
+        credentials: Backends::Ec2::Authn::Ec2CredentialsHelper.get_credentials(@options, @delegated_user, @logger),
         logger: @logger,
         log_level: :debug
       )
