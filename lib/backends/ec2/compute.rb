@@ -256,7 +256,22 @@ module Backends
       # @param networkinterface_id [String] network interface identifier
       # @return [true, false] result of the operation
       def compute_detach_network(networkinterface_id)
-        fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
+        networkinterface = compute_get_network(networkinterface_id)
+        network_id = networkinterface.attributes['occi.core.target'].split('/').last
+
+        case network_id
+        when 'public'
+          # detaching a floating public IP address
+          compute_detach_network_public(networkinterface)
+        when 'private'
+          # detaching a floating private IP address
+          compute_detach_network_private(networkinterface)
+        else
+          # detaching a VPC
+          compute_detach_network_vpc(networkinterface)
+        end
+
+        true
       end
 
       # Dettaches a storage from an existing compute instance, the compute instance in question
@@ -388,8 +403,8 @@ module Backends
       # Load methods called from compute_trigger_action
       include Backends::Ec2::Helpers::ComputeActionHelper
 
-      # Load methods called from compute_attach_network
-      include Backends::Ec2::Helpers::ComputeAttachNetworkHelper
+      # Load methods called from compute_(at|de)tach_network
+      include Backends::Ec2::Helpers::ComputeNetworkHelper
     end
   end
 end
