@@ -19,6 +19,9 @@ module Backends
 
           begin
             yield
+          rescue ::Aws::EC2::Errors::DryRunOperation => e
+            logger.warn "[Backends] [Ec2Backend] DryRun: #{e.message}"
+            fail Backends::Errors::MethodNotImplementedError, e.message
           rescue ::Aws::EC2::Errors::ServiceError => e
             handle_service_error(e, logger)
           rescue ::Seahorse::Client::Http::Error => e
