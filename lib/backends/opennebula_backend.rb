@@ -51,6 +51,8 @@ module Backends
         fail Backends::Errors::UserNotAuthorizedError, rc.message
       when ::OpenNebula::Error::ENO_EXISTS
         fail Backends::Errors::ResourceNotFoundError, rc.message
+      when ::OpenNebula::Error::EACTION
+        fail Backends::Errors::ResourceStateError, rc.message
       else
         fail e_klass, rc.message
       end
