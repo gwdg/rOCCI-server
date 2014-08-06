@@ -21,40 +21,20 @@ module Backends
           @logger.debug "[Backends] [OpennebulaBackend] Deploying with OS template: #{os_tpl.term}"
           os_tpl = os_tpl_list_term_to_id(os_tpl.term)
 
+          # get template
           template_alloc = ::OpenNebula::Template.build_xml(os_tpl)
           template = ::OpenNebula::Template.new(template_alloc, @client)
           rc = template.info
           check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-          template.delete_element('TEMPLATE/NAME')
-          template.add_element('TEMPLATE',  'NAME' => compute.title)
-
-          if compute.cores
-            template.delete_element('TEMPLATE/VCPU')
-            template.add_element('TEMPLATE',  'VCPU' => compute.cores.to_i)
-          end
-
-          if compute.memory
-            memory = compute.memory.to_f * 1024
-            template.delete_element('TEMPLATE/MEMORY')
-            template.add_element('TEMPLATE',  'MEMORY' => memory.to_i)
-          end
-
-          if compute.architecture
-            template.delete_element('TEMPLATE/ARCHITECTURE')
-            template.add_element('TEMPLATE',  'ARCHITECTURE' => compute.architecture)
-          end
-
-          if compute.speed
-            calc_speed = compute.speed.to_f * (template['TEMPLATE/VCPU'] || 1).to_i
-            template.delete_element('TEMPLATE/CPU')
-            template.add_element('TEMPLATE',  'CPU' => calc_speed)
-          end
-
+          # update template
+          compute_create_set_attrs(compute, template)
           compute_create_check_context(compute)
           compute_create_add_context(compute, template)
           compute_create_add_description(compute, template)
+          compute_create_add_inline_links(compute, template)
 
+          # add mixins
           mixins = compute.mixins.to_a.map { |m| m.type_identifier }
           template.add_element('TEMPLATE',  'OCCI_COMPUTE_MIXINS' => mixins.join(' '))
 
@@ -94,6 +74,33 @@ module Backends
         end
 
         private
+
+        def compute_create_set_attrs(compute, template)
+          template.delete_element('TEMPLATE/NAME')
+          template.add_element('TEMPLATE',  'NAME' => compute.title)
+
+          if compute.cores
+            template.delete_element('TEMPLATE/VCPU')
+            template.add_element('TEMPLATE',  'VCPU' => compute.cores.to_i)
+          end
+
+          if compute.memory
+            memory = compute.memory.to_f * 1024
+            template.delete_element('TEMPLATE/MEMORY')
+            template.add_element('TEMPLATE',  'MEMORY' => memory.to_i)
+          end
+
+          if compute.architecture
+            template.delete_element('TEMPLATE/ARCHITECTURE')
+            template.add_element('TEMPLATE',  'ARCHITECTURE' => compute.architecture)
+          end
+
+          if compute.speed
+            calc_speed = compute.speed.to_f * (template['TEMPLATE/VCPU'] || 1).to_i
+            template.delete_element('TEMPLATE/CPU')
+            template.add_element('TEMPLATE',  'CPU' => calc_speed)
+          end
+        end
 
         def compute_create_add_context(compute, template)
           return unless compute.attributes.org!.openstack
@@ -148,6 +155,32 @@ module Backends
 
           template.delete_element('TEMPLATE/DESCRIPTION')
           template.add_element('TEMPLATE', 'DESCRIPTION' => new_desc)
+        end
+
+        def compute_create_add_inline_links(compute, template)
+          return if compute.blank? || compute.links.blank?
+
+          compute.links.to_a.each do |link|
+            next unless link.kind_of? Occi::Core::Link
+            @logger.debug "[Backends] [OpennebulaBackend] Handling inline link #{link.to_s.inspect}"
+
+            case link.kind.type_identifier
+            when 'http://schemas.ogf.org/occi/infrastructure#storagelink'
+              compute_create_add_inline_storagelink(compute, template)
+            when 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
+              compute_create_add_inline_networkinterface(compute, template)
+            else
+              fail Backends::Errors::ResourceNotValidError, "Link kind #{link.kind.type_identifier.inspect} is not supported!"
+            end
+          end
+        end
+
+        def compute_create_add_inline_storagelink(compute, template)
+          # TODO: impl
+        end
+
+        def compute_create_add_inline_networkinterface(compute, template)
+          # TODO: impl
         end
       end
     end
