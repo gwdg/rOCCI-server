@@ -32,7 +32,6 @@ module Backends
           compute_create_check_context(compute)
           compute_create_add_context(compute, template)
           compute_create_add_description(compute, template)
-          compute_create_add_inline_links(compute, template)
 
           # add mixins
           mixins = compute.mixins.to_a.map { |m| m.type_identifier }
@@ -48,9 +47,13 @@ module Backends
           template.delete_element('PERMISSIONS')
           template.delete_element('TEMPLATE/TEMPLATE_ID')
 
+          # convert template structure to a pure String
           template = template.template_str
-          @logger.debug "[Backends] [OpennebulaBackend] Template #{template.inspect}"
 
+          # add inline links
+          template = compute_create_add_inline_links(compute, template)
+
+          @logger.debug "[Backends] [OpennebulaBackend] Template #{template.inspect}"
           vm_alloc = ::OpenNebula::VirtualMachine.build_xml
           backend_object = ::OpenNebula::VirtualMachine.new(vm_alloc, @client)
 
@@ -166,21 +169,31 @@ module Backends
 
             case link.kind.type_identifier
             when 'http://schemas.ogf.org/occi/infrastructure#storagelink'
-              compute_create_add_inline_storagelink(compute, template)
+              template = compute_create_add_inline_storagelink(template, link)
             when 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
-              compute_create_add_inline_networkinterface(compute, template)
+              template = compute_create_add_inline_networkinterface(template, link)
             else
               fail Backends::Errors::ResourceNotValidError, "Link kind #{link.kind.type_identifier.inspect} is not supported!"
             end
           end
+
+          template
         end
 
-        def compute_create_add_inline_storagelink(compute, template)
-          # TODO: impl
+        def compute_create_add_inline_storagelink(template, storagelink)
+          # TODO: check target
+          disktemplate_location = File.join(@options.templates_dir, 'compute_disk.erb')
+          disktemplate = Erubis::Eruby.new(File.read(disktemplate_location)).evaluate(storagelink: storagelink)
+
+          template << disktemplate
         end
 
-        def compute_create_add_inline_networkinterface(compute, template)
-          # TODO: impl
+        def compute_create_add_inline_networkinterface(template, networkinterface)
+          # TODO: check target
+          nictemplate_location = File.join(@options.templates_dir, 'compute_nic.erb')
+          nictemplate = Erubis::Eruby.new(File.read(nictemplate_location)).evaluate(networkinterface: networkinterface)
+
+          template << nictemplate
         end
       end
     end
