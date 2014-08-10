@@ -83,8 +83,13 @@ module Backends
           template.add_element('TEMPLATE',  'NAME' => compute.title)
 
           if compute.cores
+            # set number of cores
             template.delete_element('TEMPLATE/VCPU')
             template.add_element('TEMPLATE',  'VCPU' => compute.cores.to_i)
+
+            # set reservation ratio
+            template.delete_element('TEMPLATE/CPU')
+            template.add_element('TEMPLATE',  'CPU' => compute.cores.to_i)
           end
 
           if compute.memory
@@ -98,11 +103,10 @@ module Backends
             template.add_element('TEMPLATE',  'ARCHITECTURE' => compute.architecture)
           end
 
-          if compute.speed
-            calc_speed = compute.speed.to_f * (template['TEMPLATE/VCPU'] || 1).to_i
-            template.delete_element('TEMPLATE/CPU')
-            template.add_element('TEMPLATE',  'CPU' => calc_speed)
-          end
+          # TODO: speed should contain a CPU speed (i.e. frequency in GHz)
+          # if compute.speed
+          #   ###
+          # end
         end
 
         def compute_create_add_context(compute, template)

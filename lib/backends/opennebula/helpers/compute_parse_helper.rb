@@ -66,7 +66,8 @@ module Backends
 
           compute_attrs['occi.compute.cores'] = (backend_compute['TEMPLATE/VCPU'] || 1).to_i
           compute_attrs['occi.compute.memory'] = (backend_compute['TEMPLATE/MEMORY'].to_f / 1024)
-          compute_attrs['occi.compute.speed'] = ((backend_compute['TEMPLATE/CPU'] || 1).to_f / compute_attrs['occi.compute.cores'])
+          # TODO: speed should contain a CPU speed (i.e. frequency in GHz)
+          # compute_attrs['occi.compute.speed'] = ((backend_compute['TEMPLATE/CPU'] || 1).to_f / compute_attrs['occi.compute.cores'])
 
           compute_attrs['occi.compute.architecture'] = 'x64' if backend_compute['TEMPLATE/OS/ARCH'] == 'x86_64'
           compute_attrs['occi.compute.architecture'] = 'x86' if backend_compute['TEMPLATE/OS/ARCH'] == 'i686'
