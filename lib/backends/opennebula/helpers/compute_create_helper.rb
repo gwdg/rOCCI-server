@@ -181,7 +181,9 @@ module Backends
         end
 
         def compute_create_add_inline_storagelink(template, storagelink)
-          # TODO: check target
+          storage = storage_get(storagelink.target.split('/').last)
+          @logger.debug "[Backends] [OpennebulaBackend] Linking storage #{storage.id.inspect} - #{storage.title.inspect}"
+
           disktemplate_location = File.join(@options.templates_dir, 'compute_disk.erb')
           disktemplate = Erubis::Eruby.new(File.read(disktemplate_location)).evaluate(storagelink: storagelink)
 
@@ -189,7 +191,9 @@ module Backends
         end
 
         def compute_create_add_inline_networkinterface(template, networkinterface)
-          # TODO: check target
+          network = network_get(networkinterface.target.split('/').last)
+          @logger.debug "[Backends] [OpennebulaBackend] Linking network #{network.id.inspect} - #{network.title.inspect}"
+
           nictemplate_location = File.join(@options.templates_dir, 'compute_nic.erb')
           nictemplate = Erubis::Eruby.new(File.read(nictemplate_location)).evaluate(networkinterface: networkinterface)
 
