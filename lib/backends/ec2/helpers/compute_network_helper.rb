@@ -19,7 +19,7 @@ module Backends
                 public_ip: ec2_allocation
               )
             rescue => e
-              @logger.warn "[Backends] [Ec2Backend] An attempt to release #{ec2_allocation.inspect} after attaching to #{compute_id.inspect} failed!"
+              @logger.warn "[Backends] [Ec2Backend] An attempt to associate #{ec2_allocation.inspect} with #{compute_id.inspect} failed!"
               @ec2_client.release_address(public_ip: ec2_allocation)
               fail Backends::Errors::ResourceCreationError, e.message
             end
