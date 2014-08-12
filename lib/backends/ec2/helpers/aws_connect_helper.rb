@@ -44,7 +44,7 @@ module Backends
           when 'Unavailable'
             # service is not available, probably EC2's fault
             fail Backends::Errors::ServiceUnavailableError, message
-          when 'AuthFailure', 'Blocked'
+          when 'AuthFailure', 'Blocked', 'SignatureDoesNotMatch'
             # something is wrong with our credentials
             fail Backends::Errors::AuthenticationError, message
           when 'CannotDelete', 'DependencyViolation', 'IncorrectState', 'IncorrectInstanceState'
