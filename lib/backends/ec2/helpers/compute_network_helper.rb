@@ -40,8 +40,7 @@ module Backends
         end
 
         def compute_detach_network_public(networkinterface)
-          # TODO: fix this! we cannot expect 'occi.networkinterface.address' to be set
-          ec2_allocation = networkinterface.attributes['occi.networkinterface.address']
+          ec2_allocation = networkinterface.attributes.occi!.networkinterface!.address
           fail Backends::Errors::ResourceCreationError, 'Interfaces without an address cannot be detached!' if ec2_allocation.blank?
 
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
