@@ -76,7 +76,7 @@ module Backends
         def compute_create_add_inline_ntwrkintfs_vpc(compute, instance_opts)
           instance_opts ||= {}
           ntwrkintfs = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' }
-          ntwrkintfs.reject! { |intf| inft.target.end_with?('/network/public') || inft.target.end_with?('/network/private') }
+          ntwrkintfs.reject! { |intf| intf.target.end_with?('/network/public') || intf.target.end_with?('/network/private') }
 
           if ntwrkintfs.any?
             fail Backends::Errors::ResourceNotValidError, 'Compute instance cannot be in more than 1 VPC network!' if ntwrkintfs.count > 1
