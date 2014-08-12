@@ -9,8 +9,9 @@ module Backends
         def compute_create_with_os_tpl(compute)
           @logger.debug "[Backends] [Ec2Backend] Deploying #{compute.inspect}"
 
+          # generate and amend inst options
           instance_opts = compute_create_instance_opts(compute)
-          instance_opts = compute_create_add_inline_ntwrkintfs(compute, instance_opts)
+          instance_opts = compute_create_add_inline_ntwrkintfs_vdc(compute, instance_opts)
           tags = compute_create_instance_tags(compute, instance_opts)
 
           instance_id = nil
@@ -24,8 +25,9 @@ module Backends
             )
           end
 
-          # TODO: attach inline storagelinks
-          # compute_create_add_inline_strglnks(compute, instance_id)
+          # run post-inst actions
+          compute_create_add_inline_strglnks(compute, instance_id)
+          compute_create_add_inline_ntwrkintfs_elastic(compute, instance_id)
 
           instance_id
         end
@@ -71,13 +73,34 @@ module Backends
           }
         end
 
-        def compute_create_add_inline_ntwrkintfs(compute, instance_opts)
+        def compute_create_add_inline_ntwrkintfs_vdc(compute, instance_opts)
           # TODO: impl
+          # TODO: add subnet_id to instance_opts
+          # TODO: call compute_create_get_first_vdc_subnet(vdc_id)
           instance_opts
         end
 
         def compute_create_add_inline_strglnks(compute, instance_id)
-          # TODO: call compute_attach_storage(storagelink)
+          strglnks = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink' }
+
+          strglnks.each do |storagelink|
+            @logger.debug "[Backends] [Ec2Backend] Attaching inline storage #{storagelink.target.inspect} to \"/compute/#{instance_id}\""
+
+            storagelink.source = "/compute/#{instance_id}"
+            compute_attach_storage(storagelink)
+          end
+        end
+
+        def compute_create_add_inline_ntwrkintfs_elastic(compute, instance_id)
+          ntwrkintfs = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' }
+
+          ntwrkintfs.each do |networkinterface|
+            next unless networkinterface.target.end_with?('/network/public')
+            @logger.debug "[Backends] [Ec2Backend] Attaching inline network #{networkinterface.target.inspect} to \"/compute/#{instance_id}\""
+
+            networkinterface.source = "/compute/#{instance_id}"
+            compute_attach_network(networkinterface)
+          end
         end
 
         def compute_create_instance_tags(compute, instance_opts)
@@ -88,6 +111,10 @@ module Backends
           tags << { key: 'ComputeMixins', value: serialized_mixins } if serialized_mixins.length < 255
 
           tags
+        end
+
+        def compute_create_get_first_vdc_subnet(vdc_id)
+          # TODO: impl
         end
 
       end
