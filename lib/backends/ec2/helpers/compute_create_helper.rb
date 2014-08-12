@@ -11,7 +11,7 @@ module Backends
 
           # generate and amend inst options
           instance_opts = compute_create_instance_opts(compute)
-          instance_opts = compute_create_add_inline_ntwrkintfs_vdc(compute, instance_opts)
+          instance_opts = compute_create_add_inline_ntwrkintfs_vpc(compute, instance_opts)
           tags = compute_create_instance_tags(compute, instance_opts)
 
           instance_id = nil
@@ -73,10 +73,16 @@ module Backends
           }
         end
 
-        def compute_create_add_inline_ntwrkintfs_vdc(compute, instance_opts)
-          # TODO: impl
-          # TODO: add subnet_id to instance_opts
-          # TODO: call compute_create_get_first_vdc_subnet(vdc_id)
+        def compute_create_add_inline_ntwrkintfs_vpc(compute, instance_opts)
+          instance_opts ||= {}
+          ntwrkintfs = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' }
+          ntwrkintfs.reject! { |intf| inft.target.end_with?('/network/public') || inft.target.end_with?('/network/private') }
+
+          if ntwrkintfs.any?
+            fail Backends::Errors::ResourceNotValidError, 'Compute instance cannot be in more than 1 VPC network!' if ntwrkintfs.count > 1
+            instance_opts[:subnet_id] = compute_create_get_first_vpc_subnet(ntwrkintfs.first.target.split('/').last)
+          end
+
           instance_opts
         end
 
@@ -113,8 +119,20 @@ module Backends
           tags
         end
 
-        def compute_create_get_first_vdc_subnet(vdc_id)
-          # TODO: impl
+        def compute_create_get_first_vpc_subnet(vpc_id)
+          fail Backends::Errors::ResourceNotValidError, 'Networkinterface is missing a valid target attribute!' if vpc_id.blank?
+
+          filters = []
+          filters << { name: 'vpc-id', values: [vpc_id] }
+
+          subnets = nil
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+            subnets = @ec2_client.describe_subnets(filters: filters).subnets
+            fail Backends::Errors::ResourceNotValidError, "VPC network #{vpc_id.inspect} has a non-standard " \
+              "number of subnets [#{subnets.count}]!" unless subnets && subnets.count == 1
+          end
+
+          subnets.first[:subnet_id]
         end
 
       end
