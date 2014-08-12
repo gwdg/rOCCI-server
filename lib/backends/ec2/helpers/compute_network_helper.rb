@@ -6,6 +6,7 @@ module Backends
         def compute_attach_network_public(networkinterface)
           compute_id = networkinterface.attributes['occi.core.source'].split('/').last
 
+          # TODO: check for existing elastic addresses, not eni-0 interfaces
           compute_instance = compute_get(compute_id)
           fail Backends::Errors::ResourceCreationError, "Resource #{compute_id.inspect} already has a public network attached!" \
             if compute_instance.links.to_a.select { |l| l.id = "compute_#{compute_id}_nic_eni-0" }.any?
@@ -29,6 +30,7 @@ module Backends
         end
 
         def compute_attach_network_private(networkinterface)
+          # TODO: explore possible solutions
           fail Backends::Errors::ResourceCreationError, 'Network "private" cannot be attached manually!'
         end
 
@@ -38,6 +40,7 @@ module Backends
         end
 
         def compute_detach_network_public(networkinterface)
+          # TODO: fix this! we cannot expect 'occi.networkinterface.address' to be set
           ec2_allocation = networkinterface.attributes['occi.networkinterface.address']
           fail Backends::Errors::ResourceCreationError, 'Interfaces without an address cannot be detached!' if ec2_allocation.blank?
 

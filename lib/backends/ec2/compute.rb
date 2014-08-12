@@ -123,6 +123,7 @@ module Backends
         all_ids = compute_list_ids(mixins)
 
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          # TODO: release elastic IPs used by these instances, if applicable
           @ec2_client.terminate_instances(instance_ids: all_ids)
         end unless all_ids.blank?
 
@@ -142,6 +143,7 @@ module Backends
       # @return [true, false] result of the operation
       def compute_delete(compute_id)
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          # TODO: release elastic IP used by this instance, if applicable
           @ec2_client.terminate_instances(instance_ids: [compute_id])
         end
 
