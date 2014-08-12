@@ -4,24 +4,36 @@ module Backends
       module ComputeNetworkHelper
 
         def compute_attach_network_public(networkinterface)
-          compute_id = networkinterface.attributes['occi.core.source'].split('/').last
+          compute_id = networkinterface.source.split('/').last
 
           # TODO: check for existing elastic addresses, not eni-0 interfaces
           compute_instance = compute_get(compute_id)
           fail Backends::Errors::ResourceCreationError, "Resource #{compute_id.inspect} already has a public network attached!" \
-            if compute_instance.links.to_a.select { |l| l.id = "compute_#{compute_id}_nic_eni-0" }.any?
+            if compute_instance.links.to_a.select { |l| l.target.end_with?('/network/public') }.any?
+
+          is_vpc = compute_instance.links.to_a.select { |l| l.target.split('/').last.include?('vpc-') }.any?
+
+          addr_opts = {}
+          addr_opts[:instance_id] = compute_id
 
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
-            ec2_allocation = @ec2_client.allocate_address(domain: "standard")[:public_ip]
+            if is_vpc
+              addr_opts[:allocation_id] = @ec2_client.allocate_address(domain: 'vpc')[:allocation_id]
+            else
+              addr_opts[:public_ip] = @ec2_client.allocate_address(domain: 'standard')[:public_ip]
+            end
 
             begin
-              @ec2_client.associate_address(
-                instance_id: compute_id,
-                public_ip: ec2_allocation
-              )
+              @ec2_client.associate_address(addr_opts)
             rescue => e
-              @logger.warn "[Backends] [Ec2Backend] An attempt to associate #{ec2_allocation.inspect} with #{compute_id.inspect} failed!"
-              @ec2_client.release_address(public_ip: ec2_allocation)
+              @logger.warn "[Backends] [Ec2Backend] An attempt to associate #{addr_opts.inspect} failed!"
+
+              if is_vpc
+                @ec2_client.release_address(allocation_id: addr_opts[:allocation_id])
+              else
+                @ec2_client.release_address(public_ip: addr_opts[:public_ip])
+              end
+
               fail Backends::Errors::ResourceCreationError, e.message
             end
           end
