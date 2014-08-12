@@ -5,6 +5,7 @@ module Backends
 
         COMPUTE_BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
         COMPUTE_USER_DATA_SIZE_LIMIT = 16384
+        COMPUTE_DONT_WAIT_FOR_STATUSES = ['shutting-down', 'terminated', 'stopping', 'stopped'].freeze
 
         def compute_create_with_os_tpl(compute)
           @logger.debug "[Backends] [Ec2Backend] Deploying #{compute.inspect}"
@@ -89,6 +90,7 @@ module Backends
         def compute_create_add_inline_strglnks(compute, instance_id)
           strglnks = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink' }
 
+          compute_create_wait4running(instance_id) if strglnks.any?
           strglnks.each do |storagelink|
             @logger.debug "[Backends] [Ec2Backend] Attaching inline storage #{storagelink.target.inspect} to \"/compute/#{instance_id}\""
 
@@ -100,6 +102,7 @@ module Backends
         def compute_create_add_inline_ntwrkintfs_elastic(compute, instance_id)
           ntwrkintfs = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' }
 
+          compute_create_wait4running(instance_id) if ntwrkintfs.any?
           ntwrkintfs.each do |networkinterface|
             next unless networkinterface.target.end_with?('/network/public')
             @logger.debug "[Backends] [Ec2Backend] Attaching inline network #{networkinterface.target.inspect} to \"/compute/#{instance_id}\""
@@ -133,6 +136,26 @@ module Backends
           end
 
           subnets.first[:subnet_id]
+        end
+
+        def compute_create_wait4running(instance_id)
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+
+            while true do
+              instance_statuses = @ec2_client.describe_instance_status(instance_ids: [instance_id]).instance_statuses
+
+              if instance_statuses && instance_statuses.first
+                instance_status = instance_statuses.first[:instance_state][:name]
+
+                break if instance_status == 'running'
+                fail Backends::Errors::ResourceNotValidError, "Cannot proceed with attaching inline links, " \
+                  "instance state is #{instance_status.inspect}!" if COMPUTE_DONT_WAIT_FOR_STATUSES.include?(instance_status)
+              end
+
+              sleep 5
+            end
+
+          end
         end
 
       end
