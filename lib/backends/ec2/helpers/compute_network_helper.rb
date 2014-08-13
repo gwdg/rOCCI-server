@@ -6,10 +6,9 @@ module Backends
         def compute_attach_network_public(networkinterface)
           compute_id = networkinterface.source.split('/').last
 
-          # TODO: check for existing elastic addresses, not eni-0 interfaces
           compute_instance = compute_get(compute_id)
           fail Backends::Errors::ResourceCreationError, "Resource #{compute_id.inspect} already has a public network attached!" \
-            if compute_instance.links.to_a.select { |l| l.target.end_with?('/network/public') }.any?
+            if compute_attach_network_public_has_elastic?(compute_id)
 
           is_vpc = compute_instance.links.to_a.select { |l| l.target.split('/').last.include?('vpc-') }.any?
 
@@ -73,6 +72,20 @@ module Backends
         def compute_detach_network_vpc(networkinterface)
           # TODO: explore possible solutions
           fail Backends::Errors::ResourceCreationError, "VPC networks cannot be detached from already running instances!"
+        end
+
+        private
+
+        def compute_attach_network_public_has_elastic?(instance_id)
+          filters = []
+          filters << { name: 'instance-id', values: [instance_id] }
+
+          addresses = nil
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+            addresses = @ec2_client.describe_addresses(filters: filters).addresses
+          end
+
+          addresses && (addresses.count > 0)
         end
 
       end
