@@ -15,6 +15,10 @@ Bundler.require(:default, Rails.env)
 # Extend Object with #deep_freeze
 require 'ice_nine/core_ext/object'
 
+# Added stuff
+require 'timeout'
+require 'ipaddr'
+
 module ROCCIServer
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.
