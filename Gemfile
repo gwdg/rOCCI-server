@@ -5,7 +5,7 @@ gem 'rails', '~> 4.0.8'
 gem 'rails-api', '~> 0.2.0'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.0.0'
+gem 'jbuilder', '~> 2.1.0'
 
 # Stuff for working with CORS in Rack
 gem 'rack-cors', :require => 'rack/cors'

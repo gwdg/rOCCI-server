@@ -5,46 +5,32 @@ module Backends
 
         COMPUTE_BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
         COMPUTE_USER_DATA_SIZE_LIMIT = 16384
+        COMPUTE_DONT_WAIT_FOR_STATUSES = ['shutting-down', 'terminated', 'stopping', 'stopped'].freeze
 
         def compute_create_with_os_tpl(compute)
           @logger.debug "[Backends] [Ec2Backend] Deploying #{compute.inspect}"
 
-          os_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::OsTpl.mixin.type_identifier)
-          os_tpl = os_tpl_mixins.first
+          # generate and amend inst options
+          instance_opts = compute_create_instance_opts(compute)
+          instance_opts = compute_create_add_inline_ntwrkintfs_vpc(compute, instance_opts)
+          tags = compute_create_instance_tags(compute, instance_opts)
 
-          resource_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::ResourceTpl.mixin.type_identifier)
-          resource_tpl = resource_tpl_mixins.first
-
-          @logger.debug "[Backends] [Ec2Backend] Deploying with template #{os_tpl.term.inspect} in size #{resource_tpl.inspect}"
-          os_tpl = os_tpl_list_term_to_image_id(os_tpl.term)
-          resource_tpl = resource_tpl_list_term_to_itype(resource_tpl ? resource_tpl.term : 't1_micro')
-          serialized_mixins = compute.mixins.to_a.map { |m| m.type_identifier }.join(' ')
-
+          instance_id = nil
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
-            ec2_response = @ec2_client.run_instances(
-              image_id: os_tpl,
-              instance_type: resource_tpl,
-              min_count: 1, max_count: 1,
-              user_data: compute_create_user_data(compute),
-              monitoring: {
-                enabled: false,
-              },
-              placement: {
-                availability_zone: @options.aws_availability_zone,
-              }
-            )
-
+            ec2_response = @ec2_client.run_instances(instance_opts)
             instance_id = ec2_response.instances.first[:instance_id]
-            tags = []
-            tags << { key: 'Name', value: (compute.title || "rOCCI-server instance #{resource_tpl} + #{os_tpl}") }
-            tags << { key: 'ComputeMixins', value: serialized_mixins } if serialized_mixins.length < 255
+
             @ec2_client.create_tags(
               resources: [instance_id],
               tags: tags
             )
-
-            instance_id
           end
+
+          # run post-inst actions
+          compute_create_add_inline_strglnks(compute, instance_id)
+          compute_create_add_inline_ntwrkintfs_elastic(compute, instance_id)
+
+          instance_id
         end
 
         private
@@ -61,6 +47,118 @@ module Backends
           end
 
           compute.attributes.org!.openstack!.compute!.user_data || ''
+        end
+
+        def compute_create_instance_opts(compute)
+          os_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::OsTpl.mixin.type_identifier)
+          os_tpl = os_tpl_mixins.first
+
+          resource_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::ResourceTpl.mixin.type_identifier)
+          resource_tpl = resource_tpl_mixins.first
+
+          @logger.debug "[Backends] [Ec2Backend] Deploying with template #{os_tpl.term.inspect} in size #{resource_tpl.inspect}"
+          os_tpl = os_tpl_list_term_to_image_id(os_tpl.term)
+          resource_tpl = resource_tpl_list_term_to_itype(resource_tpl ? resource_tpl.term : 't1_micro')
+
+          {
+            image_id: os_tpl,
+            instance_type: resource_tpl,
+            min_count: 1, max_count: 1,
+            user_data: compute_create_user_data(compute),
+            monitoring: {
+              enabled: false,
+            },
+            placement: {
+              availability_zone: @options.aws_availability_zone,
+            }
+          }
+        end
+
+        def compute_create_add_inline_ntwrkintfs_vpc(compute, instance_opts)
+          instance_opts ||= {}
+          ntwrkintfs = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' }
+          ntwrkintfs.reject! { |intf| intf.target.end_with?('/network/public') || intf.target.end_with?('/network/private') }
+
+          if ntwrkintfs.any?
+            fail Backends::Errors::ResourceNotValidError, 'Compute instance cannot be in more than 1 VPC network!' if ntwrkintfs.count > 1
+            instance_opts[:subnet_id] = compute_create_get_first_vpc_subnet(ntwrkintfs.first.target.split('/').last)
+          end
+
+          instance_opts
+        end
+
+        def compute_create_add_inline_strglnks(compute, instance_id)
+          strglnks = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink' }
+
+          compute_create_wait4running(instance_id) if strglnks.any?
+          strglnks.each do |storagelink|
+            @logger.debug "[Backends] [Ec2Backend] Attaching inline storage #{storagelink.target.inspect} to \"/compute/#{instance_id}\""
+
+            storagelink.source = "/compute/#{instance_id}"
+            compute_attach_storage(storagelink)
+          end
+        end
+
+        def compute_create_add_inline_ntwrkintfs_elastic(compute, instance_id)
+          ntwrkintfs = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' }
+
+          compute_create_wait4running(instance_id) if ntwrkintfs.any?
+          ntwrkintfs.each do |networkinterface|
+            next unless networkinterface.target.end_with?('/network/public')
+            @logger.debug "[Backends] [Ec2Backend] Attaching inline network #{networkinterface.target.inspect} to \"/compute/#{instance_id}\""
+
+            networkinterface.source = "/compute/#{instance_id}"
+            compute_attach_network(networkinterface)
+          end
+        end
+
+        def compute_create_instance_tags(compute, instance_opts)
+          serialized_mixins = compute.mixins.to_a.map { |m| m.type_identifier }.join(' ')
+
+          tags = []
+          tags << { key: 'Name', value: (compute.title || "rOCCI-server instance #{instance_opts[:instance_type]} + #{instance_opts[:image_id]}") }
+          tags << { key: 'ComputeMixins', value: serialized_mixins } if serialized_mixins.length < 255
+
+          tags
+        end
+
+        def compute_create_get_first_vpc_subnet(vpc_id)
+          fail Backends::Errors::ResourceNotValidError, 'Networkinterface is missing a valid target attribute!' if vpc_id.blank?
+
+          filters = []
+          filters << { name: 'vpc-id', values: [vpc_id] }
+
+          subnets = nil
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+            subnets = @ec2_client.describe_subnets(filters: filters).subnets
+            fail Backends::Errors::ResourceNotValidError, "VPC network #{vpc_id.inspect} has a non-standard " \
+              "number of subnets [#{subnets.count}]!" unless subnets && subnets.count == 1
+          end
+
+          subnets.first[:subnet_id]
+        end
+
+        def compute_create_wait4running(instance_id)
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+
+            # TODO: use sidekiq to perform async actions
+            Timeout::timeout(300) {
+              while true do
+                instance_statuses = @ec2_client.describe_instance_status(instance_ids: [instance_id]).instance_statuses
+
+                if instance_statuses && instance_statuses.first
+                  instance_status = instance_statuses.first[:instance_state][:name]
+
+                  break if instance_status == 'running'
+                  fail Backends::Errors::ResourceNotValidError, "Cannot proceed with attaching inline links, " \
+                    "instance state is #{instance_status.inspect}!" if COMPUTE_DONT_WAIT_FOR_STATUSES.include?(instance_status)
+                end
+
+                sleep 5
+              end
+            }
+
+          end
         end
 
       end

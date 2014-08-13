@@ -144,7 +144,7 @@ module Backends
 
           target = intf[:vpc_id] ? network_get(intf[:vpc_id]) : Occi::Infrastructure::Network.new
 
-          if intf[:association][:public_ip]
+          if intf[:association] && intf[:association][:public_ip]
             if intf[:vpc_id].blank?
               target.id = "public"
               target.title = 'Generated target for an interface based on a public EC2 network'

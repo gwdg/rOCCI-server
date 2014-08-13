@@ -123,6 +123,7 @@ module Backends
         all_ids = compute_list_ids(mixins)
 
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          # TODO: release elastic IPs used by these instances, if applicable
           @ec2_client.terminate_instances(instance_ids: all_ids)
         end unless all_ids.blank?
 
@@ -142,6 +143,7 @@ module Backends
       # @return [true, false] result of the operation
       def compute_delete(compute_id)
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+          # TODO: release elastic IP used by this instance, if applicable
           @ec2_client.terminate_instances(instance_ids: [compute_id])
         end
 
@@ -197,9 +199,10 @@ module Backends
       # @param networkinterface [Occi::Infrastructure::Networkinterface] NI instance containing necessary attributes
       # @return [String] final identifier of the new network interface
       def compute_attach_network(networkinterface)
-        fail Backends::Errors::ResourceNotValidError, 'Attribute "occi.core.target" is missing or empty!' \
-          if networkinterface.attributes['occi.core.target'].blank?
-        network_id = networkinterface.attributes['occi.core.target'].split('/').last
+        network_id = networkinterface.target.kind_of?(Occi::Core::Resource) ? networkinterface.target.id : networkinterface.target.split('/').last
+        source_id = networkinterface.source.kind_of?(Occi::Core::Resource) ? networkinterface.source.id : networkinterface.source.split('/').last
+        fail Backends::Errors::ResourceNotValidError, 'Attributes source and target are required!' \
+          if network_id.blank? || source_id.blank?
 
         case network_id
         when 'public'
@@ -226,9 +229,6 @@ module Backends
       # @param storagelink [Occi::Infrastructure::Storagelink] SL instance containing necessary attributes
       # @return [String] final identifier of the new storage link
       def compute_attach_storage(storagelink)
-        fail Backends::Errors::ResourceNotValidError, 'Attribute \'occi.storagelink.deviceid\' is required!' \
-          if storagelink.attributes['occi.storagelink.deviceid'].blank?
-
         target_id = storagelink.target.kind_of?(Occi::Core::Resource) ? storagelink.target.id : storagelink.target.split('/').last
         source_id = storagelink.source.kind_of?(Occi::Core::Resource) ? storagelink.source.id : storagelink.source.split('/').last
         fail Backends::Errors::ResourceNotValidError, 'Attributes source and target are required!' \
@@ -238,7 +238,7 @@ module Backends
           @ec2_client.attach_volume(
             volume_id: target_id,
             instance_id: source_id,
-            device: storagelink.attributes['occi.storagelink.deviceid'],
+            device: storagelink.attributes.occi!.storagelink!.deviceid || '/dev/xvdf',
           )
         end
 

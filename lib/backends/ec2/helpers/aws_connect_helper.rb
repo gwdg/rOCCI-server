@@ -44,7 +44,7 @@ module Backends
           when 'Unavailable'
             # service is not available, probably EC2's fault
             fail Backends::Errors::ServiceUnavailableError, message
-          when 'AuthFailure', 'Blocked'
+          when 'AuthFailure', 'Blocked', 'SignatureDoesNotMatch'
             # something is wrong with our credentials
             fail Backends::Errors::AuthenticationError, message
           when 'CannotDelete', 'DependencyViolation', 'IncorrectState', 'IncorrectInstanceState'
@@ -59,7 +59,7 @@ module Backends
           when /^Insufficient(.+)Capacity$/, /^(.+)LimitExceeded$/, 'DiskImageSizeTooLarge'
             # not enough resources or requesting too much for current limits
             fail Backends::Errors::ResourceCreationError, message
-          when /^(.+)Malformed$/
+          when /^(.+)Malformed$/, 'InvalidParameterValue'
             # what we sent was malformed or didn't have the proper format
             fail Backends::Errors::IdentifierNotValidError, message
           when /^(.+)NotFound$/
