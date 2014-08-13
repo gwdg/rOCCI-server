@@ -97,6 +97,8 @@ module Backends
             availability_zone: @options.aws_availability_zone
           ).subnet
 
+          # TODO: create an Internet gateway by default
+
           @ec2_client.create_tags(
             resources: [vpc[:vpc_id], vpc_subnet[:subnet_id]],
             tags: tags
