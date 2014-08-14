@@ -121,9 +121,9 @@ module Backends
       # @return [true, false] result of the operation
       def compute_delete_all(mixins = nil)
         all_ids = compute_list_ids(mixins)
+        compute_delete_release_public(all_ids)
 
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
-          # TODO: release elastic IPs used by these instances, if applicable
           @ec2_client.terminate_instances(instance_ids: all_ids)
         end unless all_ids.blank?
 
@@ -142,8 +142,9 @@ module Backends
       # @param compute_id [String] an identifier of a compute instance to be deleted
       # @return [true, false] result of the operation
       def compute_delete(compute_id)
+        compute_delete_release_public([compute_id])
+
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
-          # TODO: release elastic IP used by this instance, if applicable
           @ec2_client.terminate_instances(instance_ids: [compute_id])
         end
 
@@ -405,6 +406,9 @@ module Backends
 
       # Load methods called from compute_(at|de)tach_network
       include Backends::Ec2::Helpers::ComputeNetworkHelper
+
+      # Load methods called from compute_delete
+      include Backends::Ec2::Helpers::ComputeDeleteHelper
     end
   end
 end
