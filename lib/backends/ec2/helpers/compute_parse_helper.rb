@@ -145,9 +145,12 @@ module Backends
           target = intf[:vpc_id] ? network_get(intf[:vpc_id]) : Occi::Infrastructure::Network.new
 
           if intf[:association] && intf[:association][:public_ip]
-            if intf[:vpc_id].blank?
+            is_in_vpc = compute_parse_link_networkinterface_is_vpc_pub?(intf[:association][:public_ip])
+
+            if intf[:vpc_id].blank? || is_in_vpc
               target.id = "public"
               target.title = 'Generated target for an interface based on a public EC2 network'
+              link.id.gsub!("#{intf[:network_interface_id]}", 'eni-0') if is_in_vpc
             end
 
             link.address = intf[:association][:public_ip]
@@ -166,6 +169,22 @@ module Backends
           link.source = compute
 
           link
+        end
+
+        private
+
+        def compute_parse_link_networkinterface_is_vpc_pub?(intf_address)
+          return if intf_address.blank?
+
+          filters = []
+          filters << { name: 'public-ip', values: [intf_address] }
+
+          addresses = nil
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+            addresses = @ec2_client.describe_addresses(filters: filters).addresses
+          end
+
+          addresses.count > 0
         end
 
       end

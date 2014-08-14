@@ -53,11 +53,26 @@ module Backends
         def compute_detach_network_public(networkinterface)
           ec2_allocation = networkinterface.attributes.occi!.networkinterface!.address
           fail Backends::Errors::ResourceCreationError, 'Interfaces without an address cannot be detached!' if ec2_allocation.blank?
+          ec2_aux = compute_attach_network_public_get_as_al(ec2_allocation)
+
+          addr_opts = {}
+          if ec2_aux && ec2_aux[:association_id]
+            addr_opts[:association_id] = ec2_aux[:association_id]
+          else
+            addr_opts[:public_ip] = ec2_allocation
+          end
+
+          addr_opts_al = {}
+          if ec2_aux && ec2_aux[:allocation_id]
+            addr_opts_al[:allocation_id] = ec2_aux[:allocation_id]
+          else
+            addr_opts_al[:public_ip] = ec2_allocation
+          end
 
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
             begin
-              @ec2_client.disassociate_address(public_ip: ec2_allocation)
-              @ec2_client.release_address(public_ip: ec2_allocation)
+              @ec2_client.disassociate_address(addr_opts)
+              @ec2_client.release_address(addr_opts_al)
             rescue ::Aws::EC2::Errors::AuthFailure => e
               @logger.warn "[Backends] [Ec2Backend] An attempt to release #{ec2_allocation.inspect} failed!"
               fail Backends::Errors::UserNotAuthorizedError, e.message
@@ -86,6 +101,18 @@ module Backends
           end
 
           addresses && (addresses.count > 0)
+        end
+
+        def compute_attach_network_public_get_as_al(public_ip)
+          filters = []
+          filters << { name: 'public-ip', values: [public_ip] }
+
+          addresses = nil
+          Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+            addresses = @ec2_client.describe_addresses(filters: filters).addresses
+          end
+
+          (addresses && addresses.first) ? addresses.first : nil
         end
 
       end
