@@ -1,6 +1,9 @@
 module Backends
   module Ec2
     module Network
+
+      NETWORK_DUMMIES = ['public', 'private'].freeze
+
       # Gets all network instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Network instances.
@@ -19,6 +22,8 @@ module Backends
           vpcs = @ec2_client.describe_vpcs.vpcs
           vpcs.each { |vpc| id_list << vpc[:vpc_id] } if vpcs
         end
+
+        id_list.concat(NETWORK_DUMMIES)
 
         id_list
       end
@@ -45,6 +50,8 @@ module Backends
           vpcs.each { |vpc| networks << network_parse_backend_obj(vpc) } if vpcs
         end
 
+        networks << network_get_dummy_public << network_get_dummy_private
+
         networks
       end
 
@@ -60,6 +67,9 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
       def network_get(network_id)
+        return network_get_dummy_public if network_id == 'public'
+        return network_get_dummy_private if network_id == 'private'
+
         vpc = network_get_raw(network_id)
         vpc ? network_parse_backend_obj(vpc) : nil
       end
@@ -144,6 +154,9 @@ module Backends
         fail Backends::Errors::UserNotAuthorizedError, "Deleting networks has been disabled in server's configuration!" \
           unless @options.network_destroy_allowed
 
+        fail Backends::Errors::UserNotAuthorizedError, "You cannot delete EC2-provided networks! [#{network_id.inspect}]" \
+          if NETWORK_DUMMIES.include?(network_id)
+
         vpc = network_get_raw(network_id)
         fail Backends::Errors::ResourceNotFoundError, "The VPC #{network_id.inspect} does not exist." unless vpc
 
@@ -180,7 +193,6 @@ module Backends
       # @param links [Occi::Core::Links] a collection of links to be added
       # @return [true, false] result of the operation
       def network_partial_update(network_id, attributes = nil, mixins = nil, links = nil)
-        # TODO: impl
         fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
       end
 
@@ -248,6 +260,9 @@ module Backends
 
       # Load methods called from network_create
       include Backends::Ec2::Helpers::NetworkCreateHelper
+
+      # Load methods called for dummy networks from network_get/network_list
+      include Backends::Ec2::Helpers::NetworkDummyHelper
     end
   end
 end
