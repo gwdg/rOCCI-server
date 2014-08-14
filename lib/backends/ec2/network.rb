@@ -85,6 +85,7 @@ module Backends
         tags = []
         tags << { key: 'Name', value: (network.title || "rOCCI-server VPC #{network.address}") }
 
+        vpc = nil
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
           vpc = @ec2_client.create_vpc(
             cidr_block: network.address,
@@ -97,15 +98,15 @@ module Backends
             availability_zone: @options.aws_availability_zone
           ).subnet
 
-          # TODO: create an Internet gateway by default
-
           @ec2_client.create_tags(
             resources: [vpc[:vpc_id], vpc_subnet[:subnet_id]],
             tags: tags
           )
-
-          vpc[:vpc_id]
         end
+
+        network_create_add_igw(vpc[:vpc_id], tags)
+
+        vpc[:vpc_id]
       end
 
       # Deletes all network instances, instances to be deleted must be filtered
@@ -244,6 +245,9 @@ module Backends
 
       # Load methods called from network_delete
       include Backends::Ec2::Helpers::NetworkDeleteHelper
+
+      # Load methods called from network_create
+      include Backends::Ec2::Helpers::NetworkCreateHelper
     end
   end
 end
