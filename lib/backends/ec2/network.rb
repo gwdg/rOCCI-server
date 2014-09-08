@@ -15,6 +15,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available network instances
+      # @effects Gets the status of existing VPC instances
       def network_list_ids(mixins = nil)
         id_list = []
 
@@ -42,6 +43,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of network instances
+      # @effects Gets the status of existing VPC instances
       def network_list(mixins = nil)
         networks = Occi::Core::Resources.new
 
@@ -66,6 +68,7 @@ module Backends
       #
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
+      # @effects TODO network_get_raw()
       def network_get(network_id)
         return network_get_dummy_public if network_id == 'public'
         return network_get_dummy_private if network_id == 'private'
@@ -87,6 +90,10 @@ module Backends
       #
       # @param network [Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
+      # @effects Creates a VPC
+      # @effects Creates a subnet
+      # @effects Creates tags
+      # @effects TODO network_create_add_igw()
       def network_create(network)
         fail Backends::Errors::UserNotAuthorizedError, "Creating networks has been disabled in server's configuration!" \
           unless @options.network_create_allowed
@@ -132,6 +139,8 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
+      # @effects Deletes all items for all VPCs (security groups, internet gateways, VPN gateways, ACLs, routing tables, subnets, and DHCP options)
+      # @effects Deletes all VPCs
       def network_delete_all(mixins = nil)
         vpc_ids = network_list_ids(mixins)
         vpc_ids.each { |vpc_id| network_delete(vpc_id) }
@@ -150,6 +159,8 @@ module Backends
       #
       # @param network_id [String] an identifier of a network instance to be deleted
       # @return [true, false] result of the operation
+      # @effects Deletes all items for a given VPC (security groups, internet gateways, VPN gateways, ACLs, routing tables, subnets, and DHCP options)
+      # @effects Deletes the given VPC
       def network_delete(network_id)
         fail Backends::Errors::UserNotAuthorizedError, "Deleting networks has been disabled in server's configuration!" \
           unless @options.network_destroy_allowed
@@ -192,6 +203,7 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a collection of mixins to be added
       # @param links [Occi::Core::Links] a collection of links to be added
       # @return [true, false] result of the operation
+      # @todo Not supported
       def network_partial_update(network_id, attributes = nil, mixins = nil, links = nil)
         fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
       end
@@ -207,6 +219,7 @@ module Backends
       #
       # @param network [Occi::Infrastructure::Network] instance containing updated information
       # @return [true, false] result of the operation
+      # @todo Not implemented
       def network_update(network)
         fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
       end
@@ -225,6 +238,7 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
+      # @todo Underlying method not implemented
       def network_trigger_action_on_all(action_instance, mixins = nil)
         network_list_ids(mixins).each { |ntwrk| network_trigger_action(ntwrk, action_instance) }
         true
@@ -244,6 +258,7 @@ module Backends
       # @param network_id [String] network instance identifier
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
+      # @todo Not implemented
       def network_trigger_action(network_id, action_instance)
         fail Backends::Errors::ActionNotImplementedError,
              "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
