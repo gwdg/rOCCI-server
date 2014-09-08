@@ -15,7 +15,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available compute instances
-      # @effects Gets the status of existing ASW instances
+      # @effects Gets the status of existing AWS instances
       def compute_list_ids(mixins = nil)
         id_list = []
 
@@ -41,7 +41,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of compute instances
-      # @effects Gets the status of existing ASW instances
+      # @effects Gets the status of existing AWS instances
       def compute_list(mixins = nil)
         computes = Occi::Core::Resources.new
 
@@ -67,7 +67,7 @@ module Backends
       #
       # @param compute_id [String] OCCI identifier of the requested compute instance
       # @return [Occi::Infrastructure::Compute, nil] a compute instance or `nil`
-      # @effects Gets the status of a existing ASW instance
+      # @effects Gets the status of a existing AWS instance
       def compute_get(compute_id)
         filters = []
         filters << { name: 'instance-id', values: [compute_id] }
@@ -123,7 +123,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
-      # @effects Shuts down multiple ASW instances
+      # @effects Shuts down multiple AWS instances
       def compute_delete_all(mixins = nil)
         all_ids = compute_list_ids(mixins)
         compute_delete_release_public(all_ids)
@@ -146,7 +146,7 @@ module Backends
       #
       # @param compute_id [String] an identifier of a compute instance to be deleted
       # @return [true, false] result of the operation
-      # @effects Shuts down the given ASW instance
+      # @effects Shuts down the given AWS instance
       def compute_delete(compute_id)
         compute_delete_release_public([compute_id])
 
