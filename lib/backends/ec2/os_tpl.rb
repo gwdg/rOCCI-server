@@ -14,6 +14,7 @@ module Backends
       #    mixins.first #=> #<Occi::Core::Mixin>
       #
       # @return [Occi::Core::Mixins] a collection of mixins
+      # @effects Gets status of machine images
       def os_tpl_list
         filters = []
         filters << { name: 'image-type', values: ['machine'] }
@@ -53,6 +54,7 @@ module Backends
       #
       # @param term [String] OCCI term of the requested os_tpl mixin instance
       # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
+      # @effects Gets status of a given machine image
       def os_tpl_get(term)
         filters = []
         filters << { name: 'image-type', values: ['machine'] }
