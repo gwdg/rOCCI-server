@@ -14,6 +14,7 @@ module Backends
         #     end
         #
         # @param logger [Logger] instance of a logging facility
+        # @effects <i>none</i>: call answered from within the backend
         def self.rescue_aws_service(logger)
           fail Backends::Errors::StubError, 'AWS service-wrapper was called without a block!' unless block_given?
 
@@ -36,6 +37,7 @@ module Backends
         #
         # @param error [Aws::EC2::Errors::ServiceError] EC2 error instance
         # @param logger [Logger] instance of a logging facility
+        # @effects <i>none</i>: call answered from within the backend
         def self.handle_service_error(error, logger)
           error_code = error.class.to_s.split('::').last
           message = "#{error_code}: #{error.message}"
