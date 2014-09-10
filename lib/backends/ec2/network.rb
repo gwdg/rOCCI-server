@@ -68,7 +68,7 @@ module Backends
       #
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [Occi::Infrastructure::Network, nil] a network instance or `nil`
-      # @effects TODO network_get_raw()
+      # @effects Gets status of the given VPC
       def network_get(network_id)
         return network_get_dummy_public if network_id == 'public'
         return network_get_dummy_private if network_id == 'private'
@@ -159,6 +159,7 @@ module Backends
       #
       # @param network_id [String] an identifier of a network instance to be deleted
       # @return [true, false] result of the operation
+      # @effects Gets status of the given VPC
       # @effects Deletes all items for a given VPC (security groups, internet gateways, VPN gateways, ACLs, routing tables, subnets, and DHCP options)
       # @effects Deletes the given VPC
       def network_delete(network_id)
