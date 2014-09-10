@@ -91,9 +91,9 @@ module Backends
       # @param network [Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
       # @effects Creates a VPC
-      # @effects Creates a subnet
-      # @effects Creates tags
-      # @effects TODO network_create_add_igw()
+      # @effects Creates a subnet and creates tags for it
+      # @effects Creates a new Internet gateway nd creates tags for it
+      # @effects Attaches the Internet gateway to the VPC
       def network_create(network)
         fail Backends::Errors::UserNotAuthorizedError, "Creating networks has been disabled in server's configuration!" \
           unless @options.network_create_allowed
