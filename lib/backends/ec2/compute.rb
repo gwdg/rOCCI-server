@@ -94,7 +94,10 @@ module Backends
       #
       # @param compute [Occi::Infrastructure::Compute] compute instance containing necessary attributes
       # @return [String] final identifier of the new compute instance
-      # @effects TODO wrt. compute_create_with_os_tpl()
+      # @effects Launches an instance
+      # @effects Creates tags for it
+      # @effects Attaches storage
+      # @effects Attaches network interfaces
       def compute_create(compute)
         compute_id = compute.id
 
@@ -123,6 +126,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
+      # @effects Disassociates and releases elastic IP addresses
       # @effects Shuts down multiple AWS instances
       def compute_delete_all(mixins = nil)
         all_ids = compute_list_ids(mixins)
