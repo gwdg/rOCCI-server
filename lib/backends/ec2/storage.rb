@@ -206,7 +206,7 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
-      # @effects For action <i>snapshot</i>: TODO storage_trigger_action_snapshot()
+      # @effects For action <i>snapshot</i>: Creates a snapshot of the given volume
       # @effects <i>no effect</i> for other actions (not implemented)
       def storage_trigger_action_on_all(action_instance, mixins = nil)
         storage_list_ids(mixins).each { |strg| storage_trigger_action(strg, action_instance) }
@@ -227,7 +227,7 @@ module Backends
       # @param storage_id [String] storage instance identifier
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
-      # @effects For action <i>snapshot</i>: TODO storage_trigger_action_snapshot()
+      # @effects For action <i>snapshot</i>: Creates a snapshot of the given volume
       # @effects <i>no effect</i> for other actions (not implemented)
       def storage_trigger_action(storage_id, action_instance)
         case action_instance.action.type_identifier
