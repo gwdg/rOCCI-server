@@ -41,12 +41,12 @@ module Backends
         end
 
         def compute_attach_network_private(networkinterface)
-          # TODO: explore possible solutions
+          # TODO: explore possible solutions, do not forget to update the effects tag for compute_attach_network()
           fail Backends::Errors::ResourceCreationError, 'Network "private" cannot be attached manually!'
         end
 
         def compute_attach_network_vpc(networkinterface)
-          # TODO: explore possible solutions
+          # TODO: explore possible solutions, do not forget to update the effects tag for compute_attach_network()
           fail Backends::Errors::ResourceCreationError, "VPC networks cannot be attached to already running instances!"
         end
 

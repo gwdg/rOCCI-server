@@ -211,7 +211,8 @@ module Backends
       #
       # @param networkinterface [Occi::Infrastructure::Networkinterface] NI instance containing necessary attributes
       # @return [String] final identifier of the new network interface
-      # @effects TODO compute_attach_network_public(), compute_attach_network_private(), compute_attach_network_vpc()
+      # @effects Allocates ellastic IP address
+      # @effects Associates the allocated address
       def compute_attach_network(networkinterface)
         network_id = networkinterface.target.kind_of?(Occi::Core::Resource) ? networkinterface.target.id : networkinterface.target.split('/').last
         source_id = networkinterface.source.kind_of?(Occi::Core::Resource) ? networkinterface.source.id : networkinterface.source.split('/').last
@@ -270,7 +271,8 @@ module Backends
       #
       # @param networkinterface_id [String] network interface identifier
       # @return [true, false] result of the operation
-      # @effects TODO compute_detach_network_public(), compute_detach_network_private(), compute_detach_network_vpc()
+      # @effects Dissasociates an ellastic IP address
+      # @effects Releases an elastic IP address
       def compute_detach_network(networkinterface_id)
         networkinterface = compute_get_network(networkinterface_id)
         network_id = networkinterface.attributes['occi.core.target'].split('/').last
