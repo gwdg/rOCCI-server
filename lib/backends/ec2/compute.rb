@@ -151,6 +151,7 @@ module Backends
       # @param compute_id [String] an identifier of a compute instance to be deleted
       # @return [true, false] result of the operation
       # @effects Shuts down the given AWS instance
+      # @effects Disassociates and releases elastic IP address assigned to the given instance
       def compute_delete(compute_id)
         compute_delete_release_public([compute_id])
 
@@ -211,7 +212,7 @@ module Backends
       #
       # @param networkinterface [Occi::Infrastructure::Networkinterface] NI instance containing necessary attributes
       # @return [String] final identifier of the new network interface
-      # @effects Allocates ellastic IP address
+      # @effects Allocates elastic IP address
       # @effects Associates the allocated address
       def compute_attach_network(networkinterface)
         network_id = networkinterface.target.kind_of?(Occi::Core::Resource) ? networkinterface.target.id : networkinterface.target.split('/').last
@@ -271,7 +272,7 @@ module Backends
       #
       # @param networkinterface_id [String] network interface identifier
       # @return [true, false] result of the operation
-      # @effects Dissasociates an ellastic IP address
+      # @effects Dissasociates an elastic IP address
       # @effects Releases an elastic IP address
       def compute_detach_network(networkinterface_id)
         networkinterface = compute_get_network(networkinterface_id)
