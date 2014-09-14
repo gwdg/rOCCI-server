@@ -15,6 +15,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available compute instances
+      # @effects Gets the status of existing AWS instances
       def compute_list_ids(mixins = nil)
         id_list = []
 
@@ -40,6 +41,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of compute instances
+      # @effects Gets the status of existing AWS instances
       def compute_list(mixins = nil)
         computes = Occi::Core::Resources.new
 
@@ -65,6 +67,7 @@ module Backends
       #
       # @param compute_id [String] OCCI identifier of the requested compute instance
       # @return [Occi::Infrastructure::Compute, nil] a compute instance or `nil`
+      # @effects Gets the status of a existing AWS instance
       def compute_get(compute_id)
         filters = []
         filters << { name: 'instance-id', values: [compute_id] }
@@ -91,6 +94,10 @@ module Backends
       #
       # @param compute [Occi::Infrastructure::Compute] compute instance containing necessary attributes
       # @return [String] final identifier of the new compute instance
+      # @effects Launches an instance
+      # @effects Creates tags for it
+      # @effects Attaches storage
+      # @effects Attaches network interfaces
       def compute_create(compute)
         compute_id = compute.id
 
@@ -119,6 +126,8 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
+      # @effects Disassociates and releases elastic IP addresses
+      # @effects Shuts down multiple AWS instances
       def compute_delete_all(mixins = nil)
         all_ids = compute_list_ids(mixins)
         compute_delete_release_public(all_ids)
@@ -141,6 +150,8 @@ module Backends
       #
       # @param compute_id [String] an identifier of a compute instance to be deleted
       # @return [true, false] result of the operation
+      # @effects Shuts down the given AWS instance
+      # @effects Disassociates and releases elastic IP address assigned to the given instance
       def compute_delete(compute_id)
         compute_delete_release_public([compute_id])
 
@@ -167,8 +178,9 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a collection of mixins to be added
       # @param links [Occi::Core::Links] a collection of links to be added
       # @return [true, false] result of the operation
+      # @todo Method not yet implemented
       def compute_partial_update(compute_id, attributes = nil, mixins = nil, links = nil)
-        # TODO: impl
+        # TODO: impl, do not forget the effects tag
         fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
       end
 
@@ -183,8 +195,9 @@ module Backends
       #
       # @param compute [Occi::Infrastructure::Compute] instance containing updated information
       # @return [true, false] result of the operation
+      # @todo Method not yet implemented
       def compute_update(compute)
-        # TODO: impl
+        # TODO: impl, do not forget the effects tag
         fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
       end
 
@@ -199,6 +212,8 @@ module Backends
       #
       # @param networkinterface [Occi::Infrastructure::Networkinterface] NI instance containing necessary attributes
       # @return [String] final identifier of the new network interface
+      # @effects Allocates elastic IP address
+      # @effects Associates the allocated address
       def compute_attach_network(networkinterface)
         network_id = networkinterface.target.kind_of?(Occi::Core::Resource) ? networkinterface.target.id : networkinterface.target.split('/').last
         source_id = networkinterface.source.kind_of?(Occi::Core::Resource) ? networkinterface.source.id : networkinterface.source.split('/').last
@@ -229,6 +244,7 @@ module Backends
       #
       # @param storagelink [Occi::Infrastructure::Storagelink] SL instance containing necessary attributes
       # @return [String] final identifier of the new storage link
+      # @effects Attaches an existing volume to a running instance
       def compute_attach_storage(storagelink)
         target_id = storagelink.target.kind_of?(Occi::Core::Resource) ? storagelink.target.id : storagelink.target.split('/').last
         source_id = storagelink.source.kind_of?(Occi::Core::Resource) ? storagelink.source.id : storagelink.source.split('/').last
@@ -256,6 +272,8 @@ module Backends
       #
       # @param networkinterface_id [String] network interface identifier
       # @return [true, false] result of the operation
+      # @effects Dissasociates an elastic IP address
+      # @effects Releases an elastic IP address
       def compute_detach_network(networkinterface_id)
         networkinterface = compute_get_network(networkinterface_id)
         network_id = networkinterface.attributes['occi.core.target'].split('/').last
@@ -285,6 +303,7 @@ module Backends
       #
       # @param storagelink_id [String] storage link identifier
       # @return [true, false] result of the operation
+      # @effects Detaches a volume from a running instance
       def compute_detach_storage(storagelink_id)
         matched = COMPUTE_SLINK_REGEXP.match(storagelink_id)
         fail Backends::Errors::IdentifierNotValidError, 'ID of the given storagelink is not valid!' unless matched
@@ -311,6 +330,7 @@ module Backends
       #
       # @param networkinterface_id [String] network interface identifier
       # @return [Occi::Infrastructure::Networkinterface] instance of the found networkinterface
+      # @effects Gets the status of an existing instance
       def compute_get_network(networkinterface_id)
         matched = COMPUTE_NINTF_REGEXP.match(networkinterface_id)
         fail Backends::Errors::IdentifierNotValidError, 'ID of the given networkinterface is not valid!' unless matched
@@ -333,6 +353,7 @@ module Backends
       #
       # @param storagelink_id [String] storage link identifier
       # @return [Occi::Infrastructure::Storagelink] instance of the found storagelink
+      # @effects Gets the status of an existing instance
       def compute_get_storage(storagelink_id)
         matched = COMPUTE_SLINK_REGEXP.match(storagelink_id)
         fail Backends::Errors::IdentifierNotValidError, 'ID of the given storagelink is not valid!' unless matched
@@ -344,7 +365,7 @@ module Backends
         link.first
       end
 
-      # Triggers an action on all existing compute instance, instances must be filtered
+      # Triggers an action on all existing compute instances, instances must be filtered
       # by the specified filter, filter (if set) must contain an Occi::Core::Mixins instance,
       # action is identified by the action.term attribute of the action instance passed as an argument.
       # If the requested action cannot be triggered, an error describing the
@@ -358,6 +379,7 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
+      # @effects Makes all instances start, restart or stop
       def compute_trigger_action_on_all(action_instance, mixins = nil)
         compute_list_ids(mixins).each { |cmpt| compute_trigger_action(cmpt, action_instance) }
         true
@@ -377,6 +399,7 @@ module Backends
       # @param compute_id [String] compute instance identifier
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
+      # @effects Makes an instance start, restart or stop
       def compute_trigger_action(compute_id, action_instance)
         case action_instance.action.type_identifier
         when 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop'

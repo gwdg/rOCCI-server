@@ -12,6 +12,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available storage instances
+      # @effects Gets status of volumes
       def storage_list_ids(mixins = nil)
         id_list = []
 
@@ -37,6 +38,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [Occi::Core::Resources] a collection of storage instances
+      # @effects Gets status of volumes
       def storage_list(mixins = nil)
         storages = Occi::Core::Resources.new
 
@@ -62,6 +64,7 @@ module Backends
       #
       # @param storage_id [String] OCCI identifier of the requested storage instance
       # @return [Occi::Infrastructure::Storage, nil] a storage instance or `nil`
+      # @effects Gets status of volumes
       def storage_get(storage_id)
         filters = []
         filters << { name: 'volume-id', values: [storage_id] }
@@ -88,6 +91,8 @@ module Backends
       #
       # @param storage [Occi::Infrastructure::Storage] storage instance containing necessary attributes
       # @return [String] final identifier of the new storage instance
+      # @effects Initializes a volume
+      # @effects Creates tags for the volume
       def storage_create(storage)
         tags = []
         tags << { key: 'Name', value: (storage.title || "rOCCI-server volume #{storage.size || 1}GB") }
@@ -121,6 +126,7 @@ module Backends
       #
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
+      # @effects Deletes volumes
       def storage_delete_all(mixins = nil)
         volume_ids = storage_list_ids(mixins)
         volume_ids.each { |volume_id| storage_delete(volume_id) }
@@ -139,6 +145,7 @@ module Backends
       #
       # @param storage_id [String] an identifier of a storage instance to be deleted
       # @return [true, false] result of the operation
+      # @effects Deletes a volume
       def storage_delete(storage_id)
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
           @ec2_client.delete_volume(volume_id: storage_id)
@@ -163,6 +170,7 @@ module Backends
       # @param mixins [Occi::Core::Mixins] a collection of mixins to be added
       # @param links [Occi::Core::Links] a collection of links to be added
       # @return [true, false] result of the operation
+      # @todo Method not yet implemented
       def storage_partial_update(storage_id, attributes = nil, mixins = nil, links = nil)
         # TODO: impl
         fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
@@ -179,6 +187,7 @@ module Backends
       #
       # @param storage [Occi::Infrastructure::Storage] instance containing updated information
       # @return [true, false] result of the operation
+      # @todo Method not implemented
       def storage_update(storage)
         fail Backends::Errors::MethodNotImplementedError, 'Not Implemented!'
       end
@@ -197,6 +206,8 @@ module Backends
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @param mixins [Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
+      # @effects For action <i>snapshot</i>: Creates a snapshot of the given volume
+      # @effects <i>no effect</i> for other actions (not implemented)
       def storage_trigger_action_on_all(action_instance, mixins = nil)
         storage_list_ids(mixins).each { |strg| storage_trigger_action(strg, action_instance) }
         true
@@ -216,6 +227,8 @@ module Backends
       # @param storage_id [String] storage instance identifier
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
+      # @effects For action <i>snapshot</i>: Creates a snapshot of the given volume
+      # @effects <i>no effect</i> for other actions (not implemented)
       def storage_trigger_action(storage_id, action_instance)
         case action_instance.action.type_identifier
         when 'http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot'

@@ -9,6 +9,7 @@ module Backends
       #    mixins.first  #=> #<Occi::Core::Mixin>
       #
       # @return [Occi::Core::Mixins] a collection of mixins
+      # @effects <i>none</i>: call answered from within the backend
       def resource_tpl_list
         @resource_tpl
       end
@@ -23,6 +24,7 @@ module Backends
       #
       # @param term [String] OCCI term of the requested resource_tpl mixin instance
       # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
+      # @effects <i>none</i>: call answered from within the backend
       def resource_tpl_get(term)
         resource_tpl_list.to_a.select { |m| m.term == term }.first
       end

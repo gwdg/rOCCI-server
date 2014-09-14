@@ -9,6 +9,7 @@ module Backends::Ec2::Authn
     # @param delegated_user [Hash] current authenticated user
     # @param logger [Logger] instance of the logging facility
     # @return [::Aws::Credentials] credentials for the AWS EC2 client
+    # @effects <i>none</i>: call answered from within the backend
     def self.get_credentials(options, delegated_user, logger)
       case delegated_user.auth_.type
       when 'basic'
