@@ -11,6 +11,7 @@ module Backends
       @dalli_cache = dalli_cache
 
       ::Aws.config[:region] = @options.aws_region || "eu-west-1"
+      ::Aws.config[:endpoint] = @options.aws_endpoint unless @options.aws_endpoint.blank?
       @ec2_client = nil
 
       @options.backend_scheme ||= "http://occi.#{@server_properties.hostname || 'localhost'}"
