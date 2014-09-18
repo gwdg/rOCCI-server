@@ -82,7 +82,8 @@
     SetEnv ROCCI_SERVER_EC2_AWS_ACCESS_KEY_ID          myec2accesskeyid
     SetEnv ROCCI_SERVER_EC2_AWS_SECRET_ACCESS_KEY      yourincrediblylonganddifficulttoguesspassword
     SetEnv ROCCI_SERVER_EC2_AWS_REGION                 eu-west-1
-    SetEnv ROCCI_SERVER_EC2_AWS_ENDPOINT               "" # Do NOT change this value unless you know exactly what you are doing!
+    # Do NOT change this value unless you know exactly what you are doing!
+    SetEnv ROCCI_SERVER_EC2_AWS_ENDPOINT               ""
     SetEnv ROCCI_SERVER_EC2_AWS_AVAILABILITY_ZONE      eu-west-1a
     SetEnv ROCCI_SERVER_EC2_IMAGE_FILTERING_POLICY     only_listed
     SetEnv ROCCI_SERVER_EC2_IMAGE_FILTERING_IMAGE_LIST "ami-896c96fe ami-f7f03d80 ami-4a5fb53d"
