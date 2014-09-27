@@ -56,7 +56,7 @@ GEM
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
     arel (4.0.2)
-    aws-sdk-core (2.0.0.rc16)
+    aws-sdk-core (2.0.0)
       builder (~> 3.0)
       jamespath (>= 0.5.1)
       multi_json (~> 1.0)
@@ -260,7 +260,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  aws-sdk-core (~> 2.0.0.rc16)
+  aws-sdk-core (~> 2.0.0)
   bond
   capistrano
   dalli
