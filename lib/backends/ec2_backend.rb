@@ -23,8 +23,8 @@ module Backends
     end
 
     def set_image_filtering_policy
-      policy = @options.image_filtering!.policy
-      image_list = @options.image_filtering!.image_list
+      policy = @options.image_filtering!.policy || 'all'
+      image_list = @options.image_filtering!.image_list || []
 
       fail Backends::Errors::ConfigurationError, "Image policy #{policy.inspect} is not supported by the EC2 backend! #{IMAGE_FILTERING_POLICIES.inspect}" \
         unless IMAGE_FILTERING_POLICIES.include?(policy)
