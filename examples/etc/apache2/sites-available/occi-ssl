@@ -83,11 +83,13 @@
     SetEnv ROCCI_SERVER_EC2_AWS_SECRET_ACCESS_KEY      yourincrediblylonganddifficulttoguesspassword
     SetEnv ROCCI_SERVER_EC2_AWS_REGION                 eu-west-1
     # Do NOT change this value unless you know exactly what you are doing!
-    SetEnv ROCCI_SERVER_EC2_AWS_ENDPOINT               ""
+    # Endpoint must be a valid URL starting with http:// or https://
+    #SetEnv ROCCI_SERVER_EC2_AWS_ENDPOINT               ""
     SetEnv ROCCI_SERVER_EC2_AWS_AVAILABILITY_ZONE      eu-west-1a
     SetEnv ROCCI_SERVER_EC2_IMAGE_FILTERING_POLICY     only_listed
     SetEnv ROCCI_SERVER_EC2_IMAGE_FILTERING_IMAGE_LIST "ami-896c96fe ami-f7f03d80 ami-4a5fb53d"
     SetEnv ROCCI_SERVER_EC2_NETWORK_CREATE_ALLOWED     no
     SetEnv ROCCI_SERVER_EC2_NETWORK_DESTROY_ALLOWED    no
     SetEnv ROCCI_SERVER_EC2_NETWORK_DESTROY_VPN_GWS    no
+    SetEnv ROCCI_SERVER_EC2_VO_AWS_MAPFILE             ""
 </VirtualHost>

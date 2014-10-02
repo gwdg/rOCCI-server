@@ -1,0 +1,9 @@
+# VO => AWS credentials mapping entries
+#
+# Use the following format:
+#
+# vo_name_here:
+#   access_key_id:     myawskeyid
+#   secret_access_key: mysecretaccesskey
+#
+# You should separate VO entries by a blank line for readability purposes.
