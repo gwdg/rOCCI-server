@@ -14,4 +14,4 @@ image_filtering:
 network_create_allowed: false
 network_destroy_allowed: false
 network_destroy_vpn_gws: false
-vo_aws_mapfile: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'ec2', 'files', 'mapfile.yaml') %>
+vo_aws_mapfile: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'ec2', 'files', 'mapfile.yml') %>
