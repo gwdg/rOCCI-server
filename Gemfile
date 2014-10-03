@@ -5,7 +5,7 @@ gem 'rails', '~> 4.0.8'
 gem 'rails-api', '~> 0.2.0'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.1.0'
+#gem 'jbuilder', '~> 2.1.0'
 
 # Stuff for working with CORS in Rack
 gem 'rack-cors', :require => 'rack/cors'
@@ -29,7 +29,7 @@ gem 'debugger', group: [:development, :test], :platforms => :ruby if RUBY_VERSIO
 gem 'whenever', require: false
 
 # Use passenger for deployment (standalone or in Apache2)
-gem 'passenger', '~> 4.0.48'
+gem 'passenger', '~> 4.0.53'
 
 # Use simplecov for coverage reports
 gem 'simplecov', group: [:development, :test]
