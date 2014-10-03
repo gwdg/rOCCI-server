@@ -1,0 +1,5 @@
+user_blacklist: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'hooks', 'user_blacklist', 'files', 'blacklist.yml') %>
+filtered_strategies:
+  - basic
+  - x509
+  - voms
