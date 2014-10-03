@@ -7,6 +7,9 @@ module Hooks
       @app = app
       @options = options
       @filtered_strategies = options.filtered_strategies.kind_of?(String) ? options.filtered_strategies.split(' ') : options.filtered_strategies
+
+      Rails.logger.debug "[Hooks] [UserBlacklistHook] Enabling blacklisting for " \
+                         "#{@filtered_strategies.inspect} with #{@options.user_blacklist.inspect}"
     end
 
     def call(env)
@@ -18,9 +21,14 @@ module Hooks
         user_stuct = request.env['warden'].user || ::Hashie::Mash.new
 
         # look up blocked users only for specified strategies
+        Rails.logger.debug "[Hooks] [UserBlacklistHook] Looking up #{user_stuct.inspect} in the blacklist"
         if user_stuct.auth_.type && @filtered_strategies.include?(user_stuct.auth_.type)
-          user_blacklist = AuthenticationStrategies::Helpers::YamlHelper.read_yaml(@options.user_blacklist)
-          return STATIC_RESPONSE if user_blacklist.include?(user_stuct.identity)
+          user_blacklist = ::AuthenticationStrategies::Helpers::YamlHelper.read_yaml(@options.user_blacklist)
+
+          if user_blacklist && user_blacklist.include?(user_stuct.identity)
+            Rails.logger.warn "[Hooks] [UserBlacklistHook] Blocked a request from #{user_stuct.identity.inspect}"
+            return STATIC_RESPONSE
+          end
         end
       end
 
