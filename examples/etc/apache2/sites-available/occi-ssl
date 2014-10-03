@@ -73,6 +73,10 @@
     SetEnv ROCCI_SERVER_TMP                   /tmp/rocci_server
     SetEnv ROCCI_SERVER_MEMCACHES             localhost:11211
 
+    ## hooks
+    #SetEnv ROCCI_SERVER_USER_BLACKLIST_HOOK_USER_BLACKLIST          "/path/to/yml/file.yml"
+    #SetEnv ROCCI_SERVER_USER_BLACKLIST_HOOK_FILTERED_STRATEGIES     "voms x509 basic"
+
     ## ONE backend
     SetEnv ROCCI_SERVER_ONE_XMLRPC  http://localhost:2633/RPC2
     SetEnv ROCCI_SERVER_ONE_USER    rocci
