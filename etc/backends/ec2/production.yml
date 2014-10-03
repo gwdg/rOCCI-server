@@ -11,4 +11,4 @@ image_filtering:
 network_create_allowed: <%= ENV['ROCCI_SERVER_EC2_NETWORK_CREATE_ALLOWED'].blank? ? 'false' : ENV['ROCCI_SERVER_EC2_NETWORK_CREATE_ALLOWED'] %>
 network_destroy_allowed: <%= ENV['ROCCI_SERVER_EC2_NETWORK_DESTROY_ALLOWED'].blank? ? 'false' : ENV['ROCCI_SERVER_EC2_NETWORK_DESTROY_ALLOWED'] %>
 network_destroy_vpn_gws: <%= ENV['ROCCI_SERVER_EC2_NETWORK_DESTROY_VPN_GWS'].blank? ? 'false' : ENV['ROCCI_SERVER_EC2_NETWORK_DESTROY_VPN_GWS'] %>
-vo_aws_mapfile: <%= ENV['ROCCI_SERVER_EC2_VO_AWS_MAPFILE'] || File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'ec2', 'files', 'mapfile.yaml') %>
+vo_aws_mapfile: <%= ENV['ROCCI_SERVER_EC2_VO_AWS_MAPFILE'] || '' %>
