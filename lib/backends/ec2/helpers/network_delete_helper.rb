@@ -132,6 +132,7 @@ module Backends
         def network_delete_vpn_gateways_wait4detach(vpn_gateway, vpc_id)
           return false unless vpn_gateway && vpc_id
 
+          # TODO: use @ec2_client.wait_until if a waiter becomes available
           filters = []
           filters << { name: 'vpn-gateway-id', values: [vpn_gateway[:vpn_gateway_id]] }
           filters << { name: 'attachment.vpc-id', values: [vpc_id] }
@@ -152,6 +153,7 @@ module Backends
         def network_delete_vpn_connections_wait4detach(vpn_gateway)
           return false unless vpn_gateway
 
+          # TODO: use @ec2_client.wait_until if a waiter becomes available
           filters = []
           filters << { name: 'vpn-gateway-id', values: [vpn_gateway[:vpn_gateway_id]] }
           filters << { name: 'state', values: ['pending', 'deleting'] }

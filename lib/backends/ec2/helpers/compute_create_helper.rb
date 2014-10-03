@@ -140,24 +140,20 @@ module Backends
 
         def compute_create_wait4running(instance_id)
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
+            begin
+              @ec2_client.wait_until(:instance_running, instance_ids:[instance_id]) do |waiter|
+                timeout_deadline = Time.now + 5.minutes
+                waiter.interval = 5      # number of seconds to sleep between attempts
+                waiter.max_attempts = nil # maximum number of polling attempts
 
-            # TODO: use sidekiq to perform async actions
-            Timeout::timeout(300) {
-              while true do
-                instance_statuses = @ec2_client.describe_instance_status(instance_ids: [instance_id]).instance_statuses
-
-                if instance_statuses && instance_statuses.first
-                  instance_status = instance_statuses.first[:instance_state][:name]
-
-                  break if instance_status == 'running'
-                  fail Backends::Errors::ResourceNotValidError, "Cannot proceed with attaching inline links, " \
-                    "instance state is #{instance_status.inspect}!" if COMPUTE_DONT_WAIT_FOR_STATUSES.include?(instance_status)
+                waiter.before_attempt do |attempt|
+                  throw(:failure, 'waited too long') if Time.now > timeout_deadline
                 end
-
-                sleep 5
               end
-            }
-
+            rescue ::Aws::Waiters::Errors::WaiterFailed
+              fail Backends::Errors::ResourceNotValidError, 'Cannot proceed with attaching inline links, ' \
+                                                            'instance is still not running. Timeout triggered!'
+            end
           end
         end
 
