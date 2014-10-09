@@ -30,7 +30,7 @@ gem 'whenever', require: false
 
 # Use passenger for deployment (standalone or in Apache2)
 gem 'passenger', '~> 4.0.53'
-gem 'rake', '= 10.1.0'
+gem 'rake', '~> 10.3.2'
 
 # Use simplecov for coverage reports
 gem 'simplecov', group: [:development, :test]
