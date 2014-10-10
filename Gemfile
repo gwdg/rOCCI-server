@@ -12,50 +12,50 @@ gem 'rack-cors', :require => 'rack/cors'
 
 group :doc do
   # bundle exec rake doc:rails generates the API under doc/api.
-  gem 'sdoc', require: false
+  gem 'sdoc', :require => false
 end
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
 
 # Use Capistrano for deployment
-gem 'capistrano', group: :development
-gem 'rvm-capistrano', group: :development
+gem 'capistrano', :group => :development
+gem 'rvm-capistrano', :group => :development
 
 # Use debugger
-gem 'debugger', group: [:development, :test], :platforms => :ruby if RUBY_VERSION == '1.9.3'
+gem 'debugger', :group => [:development, :test], :platforms => :ruby if RUBY_VERSION == '1.9.3'
 
 # Use whenever for scheduled jobs
-gem 'whenever', require: false
+gem 'whenever', :require => false
 
 # Use passenger for deployment (standalone or in Apache2)
 gem 'passenger', '~> 4.0.53'
 gem 'rake', '~> 10.3.2'
 
 # Use simplecov for coverage reports
-gem 'simplecov', group: [:development, :test]
+gem 'simplecov', :group => [:development, :test]
 
 # Use RSpec for unit tests
-gem 'rspec-rails', '~> 2.99.0', group: [:development, :test]
-gem 'fuubar', group: [:development, :test]
+gem 'rspec-rails', '~> 2.99.0', :group => [:development, :test]
+gem 'fuubar', :group => [:development, :test]
 
 # Use Pry for debugging
-gem 'pry-rails', group: [:development, :test]
-gem 'pry-rescue', group: [:development, :test]
-gem 'pry-stack_explorer', group: [:development, :test]
+gem 'pry-rails', :group => [:development, :test]
+gem 'pry-rescue', :group => [:development, :test]
+gem 'pry-stack_explorer', :group => [:development, :test]
 
 # Use guard to speed-up devel process
-gem 'guard-bundler', group: :development
-gem 'guard-test', group: :development
-gem 'guard-rails', group: :development
+gem 'guard-bundler', :group => :development
+gem 'guard-test', :group => :development
+gem 'guard-rails', :group => :development
 
 # Use notification libs to integrate guard with pop-ups
-gem 'rb-inotify', require: false, group: :development
-gem 'libnotify', group: :development
+gem 'rb-inotify', :require => false, :group => :development
+gem 'libnotify', :group => :development
 
 # Use YARD for documentation
-gem 'yard', group: :development
-gem 'redcarpet', group: :development
+gem 'yard', :group => :development
+gem 'redcarpet', :group => :development
 
 # Use bond+hirb to extend irb
 #
@@ -68,18 +68,18 @@ gem 'redcarpet', group: :development
 # Hirb.enable
 #
 # Or type it in the current irb session.
-gem 'bond', group: :development
-gem 'hirb', group: :development
+gem 'bond', :group => :development
+gem 'hirb', :group => :development
 
 # Caching stuff
 gem 'dalli'
-gem 'kgio', group: :stuff_breaking_travis_ci
+gem 'kgio', :group => :stuff_breaking_travis_ci
 
 # AuthN middleware
 gem 'warden', '~> 1.2.3'
 
 # Sensible logging with LogStash support
-gem 'logstasher', git: "git://github.com/arax/logstasher.git", branch: "master"
+gem 'logstasher', :git => "git://github.com/arax/logstasher.git", :branch => "master"
 
 # Use Hashie::Mash to simplify hash-related stuff
 gem 'hashie'
