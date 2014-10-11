@@ -12,12 +12,13 @@ The following setup is required
 * Ruby >= 1.9.3
 * Bundler gem installed (use ```gem install bundler```)
 * OpenNebula >= 4.4 if the OpenNebula backend is used
+* AWS EC2 account if the EC2 backend is used
 
 
 Installation
 ------------
 
-To install, configure or update rOCCI-server, consult the [rOCCI-server Admin Guide](https://github.com/EGI-FCTF/rOCCI-server/wiki/rOCCI-Server-Admin-Guide)
+To install, configure or update rOCCI-server, consult the [rOCCI-server Admin Guide](https://wiki.egi.eu/wiki/rOCCI:ROCCI-server_Admin_Guide)
 
 Issues
 ------------
