@@ -165,7 +165,7 @@ module Backends
         end
 
         def compute_create_add_inline_links(compute, template)
-          return if compute.blank? || compute.links.blank?
+          return template if compute.blank? || compute.links.blank?
 
           compute.links.to_a.each do |link|
             next unless link.kind_of? Occi::Core::Link
