@@ -88,7 +88,7 @@ gem 'hashie'
 gem 'ice_nine'
 
 # Use occi-core for OCCI stuff
-gem 'occi-core', '~> 4.3.1'
+gem 'occi-core', '~> 4.3.2'
 
 # Install gems for each auth. strategy from Rails.root/lib/authentication_strategies/bundles
 Dir.glob(File.join(File.dirname(__FILE__), 'lib', 'authentication_strategies', 'bundles', "Gemfile.*")) do |gemfile|
