@@ -64,11 +64,11 @@ describe AuthenticationStrategies::VomsStrategy do
     end
 
     it "is not valid without SSL_CLIENT_S_DN and GRST_CRED_* headers present" do
-      expect(strategy.valid?).to be_false
+      expect(strategy.valid?).to be false
     end
 
     it "is valid with SSL_CLIENT_S_DN and GRST_CRED_* headers present" do
-      expect(strategy_w_voms.valid?).to be_true
+      expect(strategy_w_voms.valid?).to be true
     end
 
     it "responds to store?" do
@@ -76,7 +76,7 @@ describe AuthenticationStrategies::VomsStrategy do
     end
 
     it "is never stored" do
-      expect(strategy.store?).to be_false
+      expect(strategy.store?).to be false
     end
 
     it "responds to authenticate!" do
@@ -172,13 +172,13 @@ describe AuthenticationStrategies::VomsStrategy do
     it "recognize ENV with VOMS attributes" do
       expect(
         AuthenticationStrategies::VomsStrategy.voms_extensions?(wrapped_env_valid)
-      ).to be_true
+      ).to be true
     end
 
     it "recognize ENV without VOMS attributes" do
       expect(
         AuthenticationStrategies::VomsStrategy.voms_extensions?(wrapped_env_novoms)
-      ).to be_false
+      ).to be false
     end
 
     it "parse VOMS attributes" do
@@ -205,11 +205,11 @@ describe AuthenticationStrategies::VomsStrategy do
     it "correctly refuse access to empty VO names" do
       expect(
         AuthenticationStrategies::VomsStrategy.allowed_access?('')
-      ).to be_false
+      ).to be false
 
       expect(
         AuthenticationStrategies::VomsStrategy.allowed_access?(nil)
-      ).to be_false
+      ).to be false
     end
 
     it "correctly apply whitelist rules" do
@@ -218,11 +218,11 @@ describe AuthenticationStrategies::VomsStrategy do
 
       expect(
         AuthenticationStrategies::VomsStrategy.allowed_access?('whitelisted_vo')
-      ).to be_true
+      ).to be true
 
       expect(
         AuthenticationStrategies::VomsStrategy.allowed_access?('not_whitelisted_vo')
-      ).to be_false
+      ).to be false
     end
 
     it "correctly apply blacklist rules" do
@@ -231,11 +231,11 @@ describe AuthenticationStrategies::VomsStrategy do
 
       expect(
         AuthenticationStrategies::VomsStrategy.allowed_access?('not_blacklisted_vo')
-      ).to be_true
+      ).to be true
 
       expect(
         AuthenticationStrategies::VomsStrategy.allowed_access?('blacklisted_vo')
-      ).to be_false
+      ).to be false
     end
 
     it "fail on unsupported access policy rules" do

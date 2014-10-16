@@ -11,7 +11,7 @@ describe Backend do
     it 'raises an error with a message containing the method name' do
       begin
         Backend.new.does_not_exist
-        expect(true).to be_false
+        expect(true).to be false
       rescue Errors::MethodNotImplementedError => err
         expect(err.message).to include('does_not_exist')
       end
@@ -41,11 +41,11 @@ describe Backend do
     end
 
     it 'reports success on minor mismatch' do
-      expect(Backend.check_version('2.1', '2.0')).to be_true
+      expect(Backend.check_version('2.1', '2.0')).to be true
     end
 
     it 'reports success on match' do
-      expect(Backend.check_version('2.1', '2.1')).to be_true
+      expect(Backend.check_version('2.1', '2.1')).to be true
     end
   end
 

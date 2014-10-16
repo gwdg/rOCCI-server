@@ -31,7 +31,7 @@ describe AuthenticationStrategies::DummyStrategy do
     end
 
     it "is always valid" do
-      expect(strategy.valid?).to be_true
+      expect(strategy.valid?).to be true
     end
 
     it "responds to store?" do
@@ -39,7 +39,7 @@ describe AuthenticationStrategies::DummyStrategy do
     end
 
     it "is never stored" do
-      expect(strategy.store?).to be_false
+      expect(strategy.store?).to be false
     end
 
     it "responds to authenticate!" do
