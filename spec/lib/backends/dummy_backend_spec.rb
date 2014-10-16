@@ -9,7 +9,7 @@ describe Backends::DummyBackend do
   end
 
   before(:each) { dalli.flush }
-  after(:all) { dalli.flush }
+  after(:all) { Dalli::Client.new.flush }
 
   describe '#new' do
     it 'fails to instantiate without a fixtures_dir' do
