@@ -35,11 +35,11 @@ describe AuthenticationStrategies::BasicStrategy do
     end
 
     it "is not valid without authorization header present" do
-      expect(strategy.valid?).to be_false
+      expect(strategy.valid?).to be false
     end
 
     it "is valid with authorization header present" do
-      expect(strategy_w_basic.valid?).to be_true
+      expect(strategy_w_basic.valid?).to be true
     end
 
     it "responds to store?" do
@@ -47,7 +47,7 @@ describe AuthenticationStrategies::BasicStrategy do
     end
 
     it "is never stored" do
-      expect(strategy.store?).to be_false
+      expect(strategy.store?).to be false
     end
 
     it "responds to authenticate!" do
