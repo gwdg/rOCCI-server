@@ -36,8 +36,8 @@ gem 'rake', '~> 10.3.2'
 gem 'simplecov', :group => [:development, :test]
 
 # Use RSpec for unit tests
-gem 'rspec-rails', '~> 2.99.0', :group => [:development, :test]
-gem 'fuubar', :group => [:development, :test]
+gem 'rspec-rails', '~> 3.1.0', :group => [:development, :test]
+gem 'fuubar', '~> 2.0.0', :group => [:development, :test]
 
 # Use Pry for debugging
 gem 'pry-rails', :group => [:development, :test]
