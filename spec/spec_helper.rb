@@ -40,4 +40,7 @@ RSpec.configure do |config|
   # the seed, which is printed after each run.
   #     --seed 1234
   config.order = 'random'
+
+  #automatically infer an example group's spec type from the file location.
+  config.infer_spec_type_from_file_location!
 end
