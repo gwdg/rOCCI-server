@@ -20,7 +20,7 @@ module Backends
         id_list = []
 
         Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
-          instance_statuses = @ec2_client.describe_instance_status.instance_statuses
+          instance_statuses = @ec2_client.describe_instance_status(include_all_instances: true).instance_statuses
           instance_statuses.each { |istatus| id_list << istatus[:instance_id] } if instance_statuses
         end
 
