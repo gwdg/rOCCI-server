@@ -3,10 +3,6 @@
 # declares supported media formats and handles raised errors.
 class ApplicationController < ActionController::API
   # Include some stuff present in the full ActionController
-  # include ActionController::UrlFor
-  # include ActionController::Redirecting
-  include ActionController::Rendering
-  include ActionController::Renderers::All
   include ActionController::ImplicitRender
   include ActionController::MimeResponds
 
