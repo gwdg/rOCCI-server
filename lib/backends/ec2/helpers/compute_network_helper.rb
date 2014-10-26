@@ -47,7 +47,7 @@ module Backends
 
         def compute_attach_network_vpc(networkinterface)
           # TODO: explore possible solutions, do not forget to update the effects tag for compute_attach_network()
-          fail Backends::Errors::ResourceCreationError, "VPC networks cannot be attached to already running instances!"
+          fail Backends::Errors::ResourceCreationError, "VPC networks cannot be attached to existing instances!"
         end
 
         def compute_detach_network_public(networkinterface)
@@ -86,7 +86,7 @@ module Backends
 
         def compute_detach_network_vpc(networkinterface)
           # TODO: explore possible solutions
-          fail Backends::Errors::ResourceCreationError, "VPC networks cannot be detached from already running instances!"
+          fail Backends::Errors::ResourceCreationError, "VPC networks cannot be detached from existing instances!"
         end
 
         private
