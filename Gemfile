@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 4.1.6'
+gem 'rails', '~> 4.1.7'
 gem 'rails-api', '~> 0.3.1'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
