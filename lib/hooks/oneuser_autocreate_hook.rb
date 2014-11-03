@@ -73,25 +73,23 @@ module Hooks
     end
 
     def cloud_auth_client
-      @cloud_auth_client ||= begin
-        conf = Hashie::Mash.new
-        conf.auth = 'basic'
-        conf.one_xmlrpc = @options.xmlrpc_endpoint
+      conf = Hashie::Mash.new
+      conf.auth = 'basic'
+      conf.one_xmlrpc = @options.xmlrpc_endpoint
 
-        conf.srv_auth = 'cipher'
-        conf.srv_user = @options.username
-        conf.srv_passwd = @options.password
+      conf.srv_auth = 'cipher'
+      conf.srv_user = @options.username
+      conf.srv_passwd = @options.password
 
-        ::Backends::Opennebula::Authn::CloudAuthClient.new(conf)
-      end
+      ::Backends::Opennebula::Authn::CloudAuthClient.new(conf)
     end
 
     def client
-      @client ||= cloud_auth_client.client
+      cloud_auth_client.client
     end
 
     def user_pool
-      @user_pool ||= ::OpenNebula::UserPool.new(client)
+      ::OpenNebula::UserPool.new(client)
     end
 
     def get_first_dn_candidate(user_struct, allowed_vo_names)
