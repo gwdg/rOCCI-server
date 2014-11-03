@@ -8,9 +8,6 @@ module Hooks
       @options = options
       @vo_names = @options.vo_names.kind_of?(Array) ? @options.vo_names : @options.vo_names.split(' ')
 
-      init_cloud_auth_client
-      init_client
-
       Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Enabling autocreate for " \
                          "authentication strategies #{ALLOWED_AUTH_STRATEGIES.inspect} " \
                          "with VOs #{@vo_names.inspect}"
@@ -31,7 +28,11 @@ module Hooks
           old_or_new_user = get_or_create(user_struct)
 
           # did we create a new user?
-          if old_or_new_user.is_new
+          if old_or_new_user.nil? || old_or_new_user.blank?
+            Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Ignoring user " \
+                               "#{user_struct.identity.inspect}, not eligible for " \
+                               "autocreate"
+          elsif old_or_new_user.is_new
             Rails.logger.warn "[Hooks] [OneuserAutocreateHook] Created new user for " \
                               "#{user_struct.identity.inspect} as " \
                               "ID: #{old_or_new_user.id.inspect} " \
@@ -57,30 +58,21 @@ module Hooks
     private
 
     def get_or_create(user_struct)
-      username = get_first_dn_candidate(user_struct)
-      return if username.blank?
+      user_dn = get_first_dn_candidate(user_struct, @vo_names)
+      return if user_dn.blank?
+      user_dn = ::Backends::Opennebula::Authn::CloudAuth::X509Auth.escape_dn(user_dn)
 
-      username = @cloud_auth_client.get_username(::Backends::Opennebula::Authn::CloudAuth::X509Auth.escape_dn(username))
-      if username.nil?
-        user = Hashie::Mash.new
-        user.id = "bla"
-        user.username = "blabla"
-        user.group = "blablabla"
-
-        user.is_new = true
+      username = cloud_auth_client.get_username(user_dn)
+      user = if username.nil?
+        create_user(user_dn, user_struct)
       else
-        user = Hashie::Mash.new
-        user.id = "bla"
-        user.username = "blabla"
-        user.group = "blablabla"
-
-        user.is_new = false
+        get_user(username)
       end
 
       user
     end
 
-    def init_cloud_auth_client
+    def cloud_auth_client
       @cloud_auth_client ||= begin
         conf = Hashie::Mash.new
         conf.auth = 'basic'
@@ -94,13 +86,17 @@ module Hooks
       end
     end
 
-    def init_client
-      @client ||= begin
-        init_cloud_auth_client.client
-      end
+    def client
+      @client ||= cloud_auth_client.client
     end
 
-    def get_first_dn_candidate(user_struct)
+    def user_pool
+      @user_pool ||= ::OpenNebula::UserPool.new(client)
+    end
+
+    def get_first_dn_candidate(user_struct, allowed_vo_names)
+      return if allowed_vo_names.blank?
+
       credentials = user_struct.auth_.credentials
       return if credentials.blank?
       return if credentials[:client_cert_voms_attrs].blank? || credentials[:client_cert_dn].blank?
@@ -109,8 +105,48 @@ module Hooks
       first_voms = credentials[:client_cert_voms_attrs].first
       return if first_voms[:vo].blank? || first_voms[:role].blank? || first_voms[:capability].blank?
 
+      # apply VO restrictions
+      return unless allowed_vo_names.include?(first_voms[:vo])
+
       # DN with VOMS attrs appended and whitespaces removed
       "#{credentials[:client_cert_dn]}/VO=#{first_voms[:vo]}/Role=#{first_voms[:role]}/Capability=#{first_voms[:capability]}"
+    end
+
+    def create_user(user_dn, user_struct)
+      user = Hashie::Mash.new
+      user.is_new = true
+      user.username = ::Digest::SHA1.hexdigest(user_dn)
+
+      one_user = ::OpenNebula::User.new(::OpenNebula::User.build_xml, client)
+      one_user.allocate(user.username, user_dn, ::OpenNebula::User::X509_AUTH)
+      one_user.info
+
+      # TODO: add custom metadata
+
+      # TODO: do chgrp
+      # one_user.chgrp(INTEGER)
+
+      user.group = "users"
+      user.id = one_user['ID']
+
+      user
+    end
+
+    def get_user(username)
+      user = Hashie::Mash.new
+      user.is_new = false
+
+      if @options.debug_mode
+        # refresh the pool and select the right user
+        user_pool.info
+        one_user = user_pool.select { |user| user['NAME'] == username }
+
+        user.id = one_user['ID']
+        user.username = one_user['NAME']
+        user.group = one_user['GNAME']
+      end
+
+      user
     end
 
   end
