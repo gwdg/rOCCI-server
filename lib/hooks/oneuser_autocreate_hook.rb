@@ -72,18 +72,15 @@ module Hooks
     end
 
     def perform_get_or_create(user_struct)
-      user_dn = get_first_dn_candidate(user_struct, @vo_names)
-      return if user_dn.blank?
-      user_dn = ::Backends::Opennebula::Authn::CloudAuth::X509Auth.escape_dn(user_dn)
+      # process user data and get an augmented DN and VO info
+      identity = get_first_identity_candidate(user_struct, @vo_names)
+      return if identity.blank?
 
-      username = cloud_auth_client.get_username(user_dn)
-      user = if username.nil?
-        create_user(user_dn, user_struct)
-      else
-        get_user(username)
-      end
+      # look-up account in ONE
+      identity.dn = ::Backends::Opennebula::Authn::CloudAuth::X509Auth.escape_dn(identity.dn)
+      username = cloud_auth_client.get_username(identity.dn)
 
-      user
+      username.blank? ? create_account(identity, user_struct) : get_account(username)
     end
 
     def cloud_auth_client
@@ -110,7 +107,7 @@ module Hooks
       ::OpenNebula::GroupPool.new(client)
     end
 
-    def get_first_dn_candidate(user_struct, allowed_vo_names)
+    def get_first_identity_candidate(user_struct, allowed_vo_names)
       return if allowed_vo_names.blank?
 
       credentials = user_struct.auth_.credentials
@@ -125,24 +122,35 @@ module Hooks
       return unless allowed_vo_names.include?(first_voms[:vo])
 
       # DN with VOMS attrs appended and whitespaces removed
-      "#{credentials[:client_cert_dn]}/VO=#{first_voms[:vo]}/Role=#{first_voms[:role]}/Capability=#{first_voms[:capability]}"
+      identity = Hashie::Mash.new
+      identity.dn = "#{credentials[:client_cert_dn]}/VO=#{first_voms[:vo]}/Role=#{first_voms[:role]}/Capability=#{first_voms[:capability]}"
+      identity.vo = first_voms[:vo]
+      identity.base_dn = credentials[:client_cert_dn]
+
+      identity
     end
 
-    def create_user(user_dn, user_struct)
+    def create_account(identity, user_struct)
       user = Hashie::Mash.new
       user.is_new = true
-      user.username = ::Digest::SHA1.hexdigest(user_dn)
+      user.username = ::Digest::SHA1.hexdigest(identity.dn)
 
       one_user = ::OpenNebula::User.new(::OpenNebula::User.build_xml, client)
-      rc = one_user.allocate(user.username, user_dn, ::OpenNebula::User::X509_AUTH)
+      rc = one_user.allocate(user.username, identity.dn, ::OpenNebula::User::X509_AUTH)
       check_retval(rc)
 
       rc = one_user.info
       check_retval(rc)
 
-      # TODO: add custom metadata
+      # TODO: add custom metadata, at least X509_DN = identity.base_dn
 
-      one_group = get_group("users")
+      one_group = get_group(identity.vo)
+      unless one_group
+        Rails.logger.warn "[Hooks] [OneuserAutocreateHook] Group #{identity.vo.inspect} " \
+                          "doesn't exists, user could not be created automatically"
+        return
+      end
+
       rc = one_user.chgrp(one_group['ID'])
       check_retval(rc)
 
@@ -152,7 +160,7 @@ module Hooks
       user
     end
 
-    def get_user(username)
+    def get_account(username)
       user = Hashie::Mash.new
       user.is_new = false
 
