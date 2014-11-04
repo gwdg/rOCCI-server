@@ -14,42 +14,9 @@ module Hooks
     end
 
     def call(env)
+      # get the request and explore it
       request = ::ActionDispatch::Request.new(env)
-
-      unless @vo_names.blank?
-        # trigger Warden early to get user information
-        request.env['warden'].authenticate!
-        user_struct = request.env['warden'].user || ::Hashie::Mash.new
-
-        # attempt autocreate for eligible users
-        Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Evaluating incoming " \
-                           "user: #{user_struct.inspect}"
-        if ALLOWED_AUTH_STRATEGIES.include?(user_struct.auth_.type)
-          old_or_new_user = get_or_create(user_struct)
-
-          # did we create a new user?
-          if old_or_new_user.nil? || old_or_new_user.blank?
-            Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Ignoring user " \
-                               "#{user_struct.identity.inspect}, not eligible for " \
-                               "autocreate"
-          elsif old_or_new_user.is_new
-            Rails.logger.warn "[Hooks] [OneuserAutocreateHook] Created new user for " \
-                              "#{user_struct.identity.inspect} as " \
-                              "ID: #{old_or_new_user.id.inspect} " \
-                              "NAME: #{old_or_new_user.username.inspect} " \
-                              "GROUP: #{old_or_new_user.group.inspect}"
-          else
-            Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Ignoring user " \
-                               "#{user_struct.identity.inspect}, already exists as " \
-                               "ID: #{old_or_new_user.id.inspect} " \
-                               "NAME: #{old_or_new_user.username.inspect} " \
-                               "GROUP: #{old_or_new_user.group.inspect}"
-          end
-        else
-          Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Ignoring " \
-                             "#{user_struct.identity.inspect}, unsupported authentication strategy"
-        end
-      end
+      start_autocreate(request) unless @vo_names.blank?
 
       # pass control back to the application
       @app.call(env)
@@ -57,7 +24,54 @@ module Hooks
 
     private
 
-    def get_or_create(user_struct)
+    def start_autocreate(request)
+      # trigger Warden early to get user information
+      request.env['warden'].authenticate!
+      user_struct = request.env['warden'].user || ::Hashie::Mash.new
+
+      # should we do something here?
+      unless ALLOWED_AUTH_STRATEGIES.include?(user_struct.auth_.type)
+        Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Ignoring " \
+                           "#{user_struct.identity.inspect}, " \
+                           "not using #{ALLOWED_AUTH_STRATEGIES.inspect}"
+
+        return
+      end
+
+      # pass it along
+      Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Evaluating incoming " \
+                         "user: #{user_struct.inspect}"
+      do_autocreate(user_struct)
+    end
+
+    def do_autocreate(user_struct)
+      # do not proceed if warden didn't provide user data
+      return if user_struct.blank?
+
+      # attempt autocreate for eligible users
+      user_account = perform_get_or_create(user_struct)
+      if user_account.nil? || user_account.blank?
+        Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Ignoring user " \
+                           "#{user_struct.identity.inspect}, not eligible for " \
+                           "autocreate"
+      elsif user_account.is_new
+        Rails.logger.warn "[Hooks] [OneuserAutocreateHook] Created new user for " \
+                          "#{user_struct.identity.inspect} as " \
+                          "ID: #{user_account.id.inspect} " \
+                          "NAME: #{user_account.username.inspect} " \
+                          "GROUP: #{user_account.group.inspect}"
+      elsif @options.debug_mode
+        Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Ignoring user " \
+                           "#{user_struct.identity.inspect}, already exists as " \
+                           "ID: #{user_account.id.inspect} " \
+                           "NAME: #{user_account.username.inspect} " \
+                           "GROUP: #{user_account.group.inspect}"
+      end
+
+      true
+    end
+
+    def perform_get_or_create(user_struct)
       user_dn = get_first_dn_candidate(user_struct, @vo_names)
       return if user_dn.blank?
       user_dn = ::Backends::Opennebula::Authn::CloudAuth::X509Auth.escape_dn(user_dn)
