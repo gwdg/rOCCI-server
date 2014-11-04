@@ -66,6 +66,9 @@ module Hooks
                            "ID: #{user_account.id.inspect} " \
                            "NAME: #{user_account.username.inspect} " \
                            "GROUP: #{user_account.group.inspect}"
+      else
+        Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Ignoring user " \
+                           "#{user_struct.identity.inspect}"
       end
 
       true
@@ -78,7 +81,7 @@ module Hooks
 
       # look-up account in ONE
       identity.dn = ::Backends::Opennebula::Authn::CloudAuth::X509Auth.escape_dn(identity.dn)
-      username = cloud_auth_client.get_username(identity.dn)
+      username = cloud_auth_client.send(:get_username, identity.dn)
 
       username.blank? ? create_account(identity, user_struct) : get_account(username)
     end
@@ -92,7 +95,10 @@ module Hooks
       conf.srv_user = @options.username
       conf.srv_passwd = @options.password
 
-      ::Backends::Opennebula::Authn::CloudAuthClient.new(conf)
+      cloud_auth_client = ::Backends::Opennebula::Authn::CloudAuthClient.new(conf)
+      cloud_auth_client.send :update_userpool_cache
+
+      cloud_auth_client
     end
 
     def client
@@ -100,11 +106,17 @@ module Hooks
     end
 
     def user_pool
-      ::OpenNebula::UserPool.new(client)
+      user_pool = ::OpenNebula::UserPool.new(client)
+      check_retval user_pool.info
+
+      user_pool
     end
 
     def group_pool
-      ::OpenNebula::GroupPool.new(client)
+      group_pool = ::OpenNebula::GroupPool.new(client)
+      check_retval group_pool.info
+
+      group_pool
     end
 
     def get_first_identity_candidate(user_struct, allowed_vo_names)
@@ -113,6 +125,9 @@ module Hooks
       credentials = user_struct.auth_.credentials
       return if credentials.blank?
       return if credentials[:client_cert_voms_attrs].blank? || credentials[:client_cert_dn].blank?
+
+      # TODO: check for SUCCESS in credentials[:verification_status]
+      # TODO: add logging to all return in this method
 
       # TODO: interate through all available sets of attrs?
       first_voms = credentials[:client_cert_voms_attrs].first
@@ -135,24 +150,29 @@ module Hooks
       user.is_new = true
       user.username = ::Digest::SHA1.hexdigest(identity.dn)
 
+      Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Creating account for " \
+                         "#{identity.dn.inspect}"
       one_user = ::OpenNebula::User.new(::OpenNebula::User.build_xml, client)
       rc = one_user.allocate(user.username, identity.dn, ::OpenNebula::User::X509_AUTH)
       check_retval(rc)
 
-      rc = one_user.info
-      check_retval(rc)
+      begin
+        one_group = get_group(identity.vo)
+        fail "Group #{identity.vo.inspect} doesn't exists" if one_group.blank? || one_group['ID'].blank?
 
-      # TODO: add custom metadata, at least X509_DN = identity.base_dn
+        rc = one_user.info
+        check_retval(rc)
 
-      one_group = get_group(identity.vo)
-      unless one_group
-        Rails.logger.warn "[Hooks] [OneuserAutocreateHook] Group #{identity.vo.inspect} " \
-                          "doesn't exists, user could not be created automatically"
+        rc = one_user.chgrp(one_group['ID'].to_i)
+        check_retval(rc)
+
+        # TODO: add custom metadata, at least X509_DN = identity.base_dn
+      rescue => e
+        Rails.logger.error "[Hooks] [OneuserAutocreateHook] #{e.message}! User " \
+                          "could not be created automatically."
+        one_user.delete
         return
       end
-
-      rc = one_user.chgrp(one_group['ID'])
-      check_retval(rc)
 
       user.group = one_group['NAME']
       user.id = one_user['ID']
@@ -165,10 +185,6 @@ module Hooks
       user.is_new = false
 
       if @options.debug_mode
-        # refresh the pool and select the right user
-        rc = user_pool.info
-        check_retval(rc)
-
         one_user = user_pool.select { |user| user['NAME'] == username }.first
 
         if one_user
@@ -182,10 +198,6 @@ module Hooks
     end
 
     def get_group(groupname)
-      # refresh the pool and select the right group
-      rc = group_pool.info
-      check_retval(rc)
-
       group_pool.select { |group| group['NAME'] == groupname }.first
     end
 
