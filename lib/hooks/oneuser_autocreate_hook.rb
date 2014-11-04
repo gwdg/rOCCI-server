@@ -92,6 +92,10 @@ module Hooks
       ::OpenNebula::UserPool.new(client)
     end
 
+    def group_pool
+      ::OpenNebula::GroupPool.new(client)
+    end
+
     def get_first_dn_candidate(user_struct, allowed_vo_names)
       return if allowed_vo_names.blank?
 
@@ -116,15 +120,19 @@ module Hooks
       user.username = ::Digest::SHA1.hexdigest(user_dn)
 
       one_user = ::OpenNebula::User.new(::OpenNebula::User.build_xml, client)
-      one_user.allocate(user.username, user_dn, ::OpenNebula::User::X509_AUTH)
-      one_user.info
+      rc = one_user.allocate(user.username, user_dn, ::OpenNebula::User::X509_AUTH)
+      check_retval(rc)
+
+      rc = one_user.info
+      check_retval(rc)
 
       # TODO: add custom metadata
 
-      # TODO: do chgrp
-      # one_user.chgrp(INTEGER)
+      one_group = get_group("users")
+      rc = one_user.chgrp(one_group['ID'])
+      check_retval(rc)
 
-      user.group = "users"
+      user.group = one_group['NAME']
       user.id = one_user['ID']
 
       user
@@ -136,15 +144,46 @@ module Hooks
 
       if @options.debug_mode
         # refresh the pool and select the right user
-        user_pool.info
-        one_user = user_pool.select { |user| user['NAME'] == username }
+        rc = user_pool.info
+        check_retval(rc)
 
-        user.id = one_user['ID']
-        user.username = one_user['NAME']
-        user.group = one_user['GNAME']
+        one_user = user_pool.select { |user| user['NAME'] == username }.first
+
+        if one_user
+          user.id = one_user['ID']
+          user.username = one_user['NAME']
+          user.group = one_user['GNAME']
+        end
       end
 
       user
+    end
+
+    def get_group(groupname)
+      # refresh the pool and select the right group
+      rc = group_pool.info
+      check_retval(rc)
+
+      group_pool.select { |group| group['NAME'] == groupname }.first
+    end
+
+    def check_retval(rc)
+      return true unless ::OpenNebula.is_error?(rc)
+
+      Rails.logger.fatal "[Hooks] [OneuserAutocreateHook] Call to OpenNebula failed: #{rc.message}"
+
+      case rc.errno
+      when ::OpenNebula::Error::EAUTHENTICATION
+        fail "AuthenticationError: #{rc.message}"
+      when ::OpenNebula::Error::EAUTHORIZATION
+        fail "AuthorizationError: #{rc.message}"
+      when ::OpenNebula::Error::ENO_EXISTS
+        fail "NotFoundError: #{rc.message}"
+      when ::OpenNebula::Error::EACTION
+        fail "ActionError: #{rc.message}"
+      else
+        fail "UnknownError: #{rc.message}"
+      end
     end
 
   end
