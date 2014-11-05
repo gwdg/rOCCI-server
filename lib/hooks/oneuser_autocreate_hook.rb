@@ -282,7 +282,7 @@ module Hooks
       template << "X509_DN = #{identity.base_dn.inspect}"
       template << "ROCCI_AUTOCREATE = \"YES\""
       template << "VO = #{identity.vo.inspect}"
-      template << "TIMESTAMP = #{DateTime.now.inspect}"
+      template << "TIMESTAMP = #{DateTime.now.to_s.inspect}"
       template << "LOGIN_X509_DN = #{identity.dn.inspect}"
       template << "AUTH_STRATEGY = \"voms\""
       template << "ROCCI_SERVER = #{::ROCCIServer::VERSION.inspect}"
