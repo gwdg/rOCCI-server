@@ -278,7 +278,17 @@ module Hooks
     # @param identity [Hashie::Mash]
     # @param user_struct [Hashie::Mash]
     def add_account_metadata(one_user, identity, user_struct)
-      # TODO: at least X509_DN = identity.base_dn
+      template = []
+      template << "X509_DN = #{identity.base_dn.inspect}"
+      template << "ROCCI_AUTOCREATE = \"YES\""
+      template << "VO = #{identity.vo.inspect}"
+      template << "TIMESTAMP = #{DateTime.now.inspect}"
+      template << "LOGIN_X509_DN = #{identity.dn.inspect}"
+      template << "AUTH_STRATEGY = \"voms\""
+      template << "ROCCI_SERVER = #{::ROCCIServer::VERSION.inspect}"
+
+      rc = one_user.update(template.join("\n"), true)
+      check_retval(rc)
     end
 
     # Gets an existing account from OpenNebula.
