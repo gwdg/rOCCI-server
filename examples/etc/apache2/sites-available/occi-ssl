@@ -80,6 +80,7 @@
     ## hooks
     #SetEnv ROCCI_SERVER_USER_BLACKLIST_HOOK_USER_BLACKLIST          "/path/to/yml/file.yml"
     #SetEnv ROCCI_SERVER_USER_BLACKLIST_HOOK_FILTERED_STRATEGIES     "voms x509 basic"
+    #SetEnv ROCCI_SERVER_ONEUSER_AUTOCREATE_HOOK_VO_NAMES            "dteam ops"
 
     ## ONE backend
     SetEnv ROCCI_SERVER_ONE_XMLRPC  http://localhost:2633/RPC2
