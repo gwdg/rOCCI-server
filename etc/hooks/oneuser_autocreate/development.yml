@@ -1,0 +1,7 @@
+required_backend: opennebula
+xmlrpc_endpoint: <%= ENV['ROCCI_SERVER_ONE_XMLRPC'] %>
+username: <%= ENV['ROCCI_SERVER_ONE_USER'] %>
+password: <%= ENV['ROCCI_SERVER_ONE_PASSWD'] %>
+debug_mode: true
+vo_names:
+ - devel
