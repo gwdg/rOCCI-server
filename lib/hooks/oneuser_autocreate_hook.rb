@@ -221,7 +221,7 @@ module Hooks
       identity.vo = first_voms[:vo]
       identity.base_dn = credentials[:client_cert_dn]
 
-      Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Generated identity metadata" \
+      Rails.logger.debug "[Hooks] [OneuserAutocreateHook] Generated identity metadata " \
                          "for #{user_struct.identity.inspect}: #{identity.inspect}"
 
       identity
