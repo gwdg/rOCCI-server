@@ -1,5 +1,4 @@
 require 'spec_helper'
-#require 'ruby-debug'
 
 describe Backends::Ec2Backend do
   let(:dalli) { Dalli::Client.new }
@@ -22,10 +21,9 @@ describe Backends::Ec2Backend do
       end
 
       it 'Receives compute instance list correctly' do
-        ec2_dummy_client.stub_responses("DescribeInstanceStatus", instance_status_set:[{instance_id:'ID',availability_zone:"zone"}])
+        ec2_dummy_client.stub_responses(:describe_instance_status, instance_statuses:[{instance_id:'ID',availability_zone:"zone"}])
 
-#        debugger
-        expect(ec2_backend_instance.compute_list_ids).to eq([])
+        expect(ec2_backend_instance.compute_list_ids).to eq(["ID"])
       end
 
     end
