@@ -1,0 +1,1 @@
+[{"instance_id":"ID","availability_zone":"zone","events":[{"code":"event1","description":"Description of event1","not_before":"2014-11-11 11:22:29 +0100"}]},{"instance_id":"ID2","availability_zone":"zone"}]
