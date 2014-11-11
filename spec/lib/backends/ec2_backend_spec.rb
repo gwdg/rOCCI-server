@@ -35,7 +35,7 @@ describe Backends::Ec2Backend do
       end
 
       it 'Receives compute instance list correctly' do
-        ec2_dummy_client.stub_responses(:describe_instance_status, reservations:reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations:reservations_stub)
         expect(ec2_backend_instance.compute_list).to eq(["ID", "ID2"])
       end
     end
