@@ -1,11 +1,11 @@
 require 'spec_helper'
-require 'json'
+require 'yaml'
 
 describe Backends::Ec2Backend do
   let(:dalli) { Dalli::Client.new }
   let(:aws_creds) { ::Aws::Credentials.new('a', 'b') }
   let(:ec2_dummy_client) { ::Aws::EC2::Client.new(credentials: aws_creds, stub_responses: true) }
-  let(:instance_statuses_stub) { File.open("spec/lib/backends/ec2_stubs/instance_statuses_stub.json", "rt") { |f| JSON.parse(f.read) } }
+  let(:instance_statuses_stub) { YAML.load_file("spec/lib/backends/ec2_stubs/instance_statuses_stub.yaml") }
   let(:ec2_backend_instance) do
     instance = Backends::Ec2Backend.new nil, nil, nil, nil, dalli
     instance.instance_variable_set(:@ec2_client, ec2_dummy_client)
