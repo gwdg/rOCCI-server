@@ -1,0 +1,11 @@
+---
+- :reservation_id: reservation1
+  :owner_id: owner1
+  :requester_id: requester1
+  :groups:
+  - :group_name: TestGroup
+    :group_id: group1
+  :instances:
+  - :instance_id: Instance1
+    :image_id: Image1
+
