@@ -23,7 +23,7 @@ gem 'capistrano', :group => :development
 gem 'rvm-capistrano', :group => :development
 
 # Use debugger
-gem 'debugger', :group => [:development, :test], :platforms => :ruby if RUBY_VERSION == '1.9.3'
+gem 'debugger', :group => :development, :platforms => :ruby if RUBY_VERSION == '1.9.3'
 
 # Use whenever for scheduled jobs
 gem 'whenever', :require => false
