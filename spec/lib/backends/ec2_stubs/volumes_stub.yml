@@ -1,0 +1,34 @@
+---
+:volumes:
+- :volume_id: vol-0b15340c
+  :size: 8
+  :snapshot_id: snap-3efdf3c4
+  :availability_zone: eu-west-1a
+  :state: in-use
+  :create_time: 2014-11-11 16:35:27.552000000 Z
+  :attachments:
+  - :volume_id: vol-0b15340c
+    :instance_id: i-22af91c7
+    :device: "/dev/xvda"
+    :state: attached
+    :attach_time: 2014-11-11 16:35:27.000000000 Z
+    :delete_on_termination: true
+  :volume_type: gp2
+  :iops: 24
+  :encrypted: false
+- :volume_id: vol-b42b08b3
+  :size: 8
+  :snapshot_id: snap-3efdf3c4
+  :availability_zone: eu-west-1a
+  :state: in-use
+  :create_time: 2014-11-13 14:43:22.435000000 Z
+  :attachments:
+  - :volume_id: vol-b42b08b3
+    :instance_id: i-5a8cb7bf
+    :device: "/dev/xvda"
+    :state: attached
+    :attach_time: 2014-11-13 14:43:22.000000000 Z
+    :delete_on_termination: true
+  :volume_type: gp2
+  :iops: 24
+  :encrypted: false
