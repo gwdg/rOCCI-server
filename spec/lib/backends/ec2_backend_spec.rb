@@ -8,6 +8,7 @@ describe Backends::Ec2Backend do
   let(:instance_statuses_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/instance_statuses_stub.yml") }
   let(:reservations_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stub.yml") }
   let(:volumes_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_stub.yml") }
+  let(:vpcs_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpcs_stub.yml") }
   let(:ec2_backend_instance) do
     instance = Backends::Ec2Backend.new nil, nil, nil, nil, dalli
     instance.instance_variable_set(:@ec2_client, ec2_dummy_client)
@@ -43,7 +44,13 @@ describe Backends::Ec2Backend do
       it 'Receives compute instance list correctly' do
         ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
-        expect(ec2_backend_instance.compute_list).to eq(["ID", "ID2"])
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        returned = ""
+        ec2_backend_instance.compute_list.each { |resource| returned = "#{returned}#{resource.to_text}\n" }
+
+        expected = File.open("spec/lib/backends/ec2_samples/compute_list.expected","rt").read
+        
+        expect(returned).to eq expected
       end
     end
   end
