@@ -58,7 +58,7 @@ GEM
       thread_safe (~> 0.1)
       tzinfo (~> 1.1)
     arel (5.0.1.20140414130214)
-    aws-sdk-core (2.0.7)
+    aws-sdk-core (2.0.9)
       builder (~> 3.0)
       jmespath (~> 1.0)
       multi_json (~> 1.0)
@@ -88,7 +88,7 @@ GEM
     fuubar (2.0.0)
       rspec (~> 3.0)
       ruby-progressbar (~> 1.4)
-    guard (2.8.1)
+    guard (2.8.2)
       formatador (>= 0.2.4)
       listen (~> 2.7)
       lumberjack (~> 1.0)
@@ -97,7 +97,7 @@ GEM
     guard-bundler (2.0.0)
       bundler (~> 1.0)
       guard (~> 2.2)
-    guard-rails (0.6.1)
+    guard-rails (0.7.0)
       guard (~> 2.0)
     guard-test (2.0.5)
       guard (~> 2.0)
@@ -116,7 +116,7 @@ GEM
     kgio (2.9.2)
     libnotify (0.8.4)
       ffi (>= 1.0.11)
-    listen (2.7.11)
+    listen (2.7.12)
       celluloid (>= 0.15.2)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
@@ -127,7 +127,7 @@ GEM
     method_source (0.8.2)
     mime-types (2.4.3)
     mini_portile (0.6.1)
-    minitest (5.4.2)
+    minitest (5.4.3)
     multi_json (1.10.1)
     multi_xml (0.5.5)
     net-scp (1.2.1)
@@ -256,7 +256,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  aws-sdk-core (~> 2.0.7)
+  aws-sdk-core (~> 2.0.9)
   bond
   capistrano
   dalli
