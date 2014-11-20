@@ -7,6 +7,7 @@ describe Backends::Ec2Backend do
   let(:ec2_dummy_client) { ::Aws::EC2::Client.new(credentials: aws_creds, stub_responses: true) }
   let(:instance_statuses_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/instance_statuses_stub.yml") }
   let(:reservations_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stub.yml") }
+  let(:reservation_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservation_stub.yml") }
   let(:volumes_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_stub.yml") }
   let(:vpcs_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpcs_stub.yml") }
   let(:ec2_backend_instance) do
@@ -79,14 +80,16 @@ describe Backends::Ec2Backend do
       end
 
       it 'creates compute resource correctyly' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+
         ostemplate = Occi::Core::Mixin.new("http://occi.localhost/occi/infrastructure/os_tpl#", "ami-6e7bd919")
         ostemplate.depends=[Occi::Core::Mixin.new("http://schemas.ogf.org/occi/infrastructure#", "os_tpl")]
-#        restemplate = Occi::Core::Mixin.new("http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#", "t2_micro")
-#        restemplate.depends=["http://schemas.ogf.org/occi/infrastructure#resource_tpl"]
+        restemplate = Occi::Core::Mixin.new("http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#", "t2_micro")
+        restemplate.depends=[Occi::Core::Mixin.new("http://schemas.ogf.org/occi/infrastructure#", "resource_tpl")]
         compute = Occi::Infrastructure::Compute.new
         compute.mixins << ostemplate
-#        compute.mixins << restemplate
-        expect(ec2_backend_instance.compute_create(compute)).to eq []
+        compute.mixins << restemplate
+        expect(ec2_backend_instance.compute_create(compute)).to eq "i-5a8cb7bf"
       end
     end
   end
