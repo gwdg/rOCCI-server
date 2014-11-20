@@ -80,9 +80,12 @@ describe Backends::Ec2Backend do
 
       it 'creates compute resource correctyly' do
         ostemplate = Occi::Core::Mixin.new("http://occi.localhost/occi/infrastructure/os_tpl#", "ami-6e7bd919")
-        ostemplate.depends=["http://schemas.ogf.org/occi/infrastructure#os_tpl"]
+        ostemplate.depends=[Occi::Core::Mixin.new("http://schemas.ogf.org/occi/infrastructure#", "os_tpl")]
+#        restemplate = Occi::Core::Mixin.new("http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#", "t2_micro")
+#        restemplate.depends=["http://schemas.ogf.org/occi/infrastructure#resource_tpl"]
         compute = Occi::Infrastructure::Compute.new
         compute.mixins << ostemplate
+#        compute.mixins << restemplate
         expect(ec2_backend_instance.compute_create(compute)).to eq []
       end
     end
