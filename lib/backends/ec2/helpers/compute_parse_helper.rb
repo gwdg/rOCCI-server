@@ -91,17 +91,16 @@ module Backends
             link.id = id
             link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
-            if (target = storage_get(blk[:ebs][:volume_id])) 
+            target = storage_get(blk[:ebs][:volume_id])
 
-              link.target = target
-              link.rel = target.kind
-              link.title = target.title if target.title
-              link.source = compute
+            link.target = target
+            link.rel = target.kind
+            link.title = target.title if target.title
+            link.source = compute
 
-              link.deviceid = blk[:device_name] if blk[:device_name]
+            link.deviceid = blk[:device_name] if blk[:device_name]
 
-              result_storage_links << link
-            end
+            result_storage_links << link
           end
 
           result_storage_links
@@ -164,12 +163,10 @@ module Backends
             link.address = intf[:private_ip_address]
           end
 
-          if (target)
-            link.target = target
-            link.rel = target.kind
-            link.title = target.title if target.title
-            link.source = compute
-          end
+          link.target = target
+          link.rel = target.kind
+          link.title = target.title if target.title
+          link.source = compute
 
           link
         end
