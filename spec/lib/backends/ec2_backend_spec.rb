@@ -10,6 +10,7 @@ describe Backends::Ec2Backend do
   let(:reservation_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservation_stub.yml") }
   let(:volumes_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_stub.yml") }
   let(:vpcs_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpcs_stub.yml") }
+  let(:terminating_instances_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/terminating_instances_stub.yml") }
   let(:ec2_backend_instance) do
     instance = Backends::Ec2Backend.new nil, nil, nil, nil, dalli
     instance.instance_variable_set(:@ec2_client, ec2_dummy_client)
@@ -92,6 +93,16 @@ describe Backends::Ec2Backend do
         expect(ec2_backend_instance.compute_create(compute)).to eq "i-5a8cb7bf"
       end
     end
+
+
+    describe '.compute_delete_all' do
+      it 'deletes all instances' do
+        ec2_dummy_client.stub_responses(:terminate_instances, terminating_instances_stub)
+        ec2_dummy_client.stub_responses(:describe_instance_status, instance_statuses:instance_statuses_stub)
+        expect(ec2_backend_instance.compute_delete_all()).to be true
+      end
+    end
+
   end
 
 end
