@@ -61,8 +61,13 @@ describe Backends::Ec2Backend do
 
       it 'gets compute instance description correctly' do
         ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         returned = ec2_backend_instance.compute_get("i-22af91c7").to_text
-        expected = expected = File.open("spec/lib/backends/ec2_samples/compute_list_single_instance.expected","rt").read
+        F = File.open("spec/lib/backends/ec2_samples/compute_list_single_instance.expected","wt")
+        F.write(returned)
+        F.close
+        expected = File.open("spec/lib/backends/ec2_samples/compute_list_single_instance.expected","rt").read
         expect(returned).to eq expected
       end
     end
