@@ -1,0 +1,9 @@
+---
+:terminating_instances:
+- :instance_id: i-5a8cb7bf
+  :current_state:
+    :code: 32
+    :name: shutting-down
+  :previous_state:
+    :code: 16
+    :name: running
