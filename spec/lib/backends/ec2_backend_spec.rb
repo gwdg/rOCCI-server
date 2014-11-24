@@ -85,9 +85,9 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
 
         ostemplate = Occi::Core::Mixin.new("http://occi.localhost/occi/infrastructure/os_tpl#", "ami-6e7bd919")
-        ostemplate.depends=[Occi::Core::Mixin.new("http://schemas.ogf.org/occi/infrastructure#", "os_tpl")]
+        ostemplate.depends=[Occi::Infrastructure::OsTpl.mixin]
         restemplate = Occi::Core::Mixin.new("http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#", "t2_micro")
-        restemplate.depends=[Occi::Core::Mixin.new("http://schemas.ogf.org/occi/infrastructure#", "resource_tpl")]
+        restemplate.depends=[Occi::Infrastructure::ResourceTpl.mixin]
         compute = Occi::Infrastructure::Compute.new
         compute.mixins << ostemplate
         compute.mixins << restemplate
