@@ -121,4 +121,13 @@ describe Backends::Ec2Backend do
 
   end
 
+
+  context 'network' do
+    describe '.network_create' #do
+
+
+#    end
+  
+  end
+
 end
