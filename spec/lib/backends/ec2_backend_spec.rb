@@ -22,6 +22,7 @@ describe Backends::Ec2Backend do
 
     instance
   end
+  let(:default_options) { ec2_backend_instance.instance_variable_get(:@options) }
 
   before(:each) { dalli.flush }
   after(:all) { Dalli::Client.new.flush }
@@ -128,7 +129,7 @@ describe Backends::Ec2Backend do
 
   context 'network' do
 
-    before(:each) { @options={:network_create_allowed => false} }
+    after(:each) { ec2_backend_instance.instance_variable_set(:@options, default_options) }
 
     describe '.network_create' do
       it 'creates a network instance' do
@@ -140,7 +141,9 @@ describe Backends::Ec2Backend do
 
         network = Occi::Infrastructure::Network.new
         network.address='10.0.0.0/24'
-        @options={:network_create_allowed => true}
+        opts=ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_create_allowed=true
+        ec2_backend_instance.instance_variable_set(:@options, opts)
         expect(ec2_backend_instance.network_create(network)).to eq "vpc-a08b44c5"
       end
 
@@ -149,7 +152,9 @@ describe Backends::Ec2Backend do
       end
 
       it 'throws exception if address unspecified' do
-        @options={:network_create_allowed => true}
+        opts=ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_create_allowed=true
+        ec2_backend_instance.instance_variable_set(:@options, opts)
         expect{ec2_backend_instance.network_create(Occi::Infrastructure::Network.new)}.to raise_exception(Backends::Errors::ResourceNotValidError)
       end
 
