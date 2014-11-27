@@ -1,0 +1,11 @@
+Category: network;scheme="http://schemas.ogf.org/occi/infrastructure#";class="kind";location="/network/";title="network resource"
+Category: aws_ec2_vpc;scheme="http://schemas.ec2.aws.amazon.com/occi/infrastructure/network#";class="mixin";location="/mixin/aws_ec2_vpc/";title=""
+Category: ipnetwork;scheme="http://schemas.ogf.org/occi/infrastructure/network#";class="mixin";location="/mixin/ipnetwork/";title="IP network mixin"
+X-OCCI-Attribute: occi.core.id="vpc-7d884a18"
+X-OCCI-Attribute: occi.core.title="rOCCI-server VPC 172.30.0.0/16"
+X-OCCI-Attribute: occi.network.label="AWS VPC vpc-7d884a18"
+X-OCCI-Attribute: occi.network.state="online"
+X-OCCI-Attribute: occi.network.address="172.30.0.0/16"
+X-OCCI-Attribute: com.amazon.aws.ec2.instance_tenancy="default"
+X-OCCI-Attribute: com.amazon.aws.ec2.state="available"
+X-OCCI-Attribute: com.amazon.aws.ec2.is_default=false
