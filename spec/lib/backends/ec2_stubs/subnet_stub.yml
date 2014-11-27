@@ -1,0 +1,8 @@
+---
+:subnet:
+  :subnet_id: subnet-66299603
+  :state: pending
+  :vpc_id: vpc-a08b44c5
+  :cidr_block: 10.0.0.0/24
+  :available_ip_address_count: 251
+  :availability_zone: eu-west-1a
