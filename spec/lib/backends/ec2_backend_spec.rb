@@ -173,6 +173,16 @@ describe Backends::Ec2Backend do
         expect(ec2_backend_instance.network_list_ids()).to eq ["vpc-7d884a18", "public", "private"]
       end
     end
+
+    describe '.network_list' do
+      it 'returns network instances' do
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        ids=[]
+        list=ec2_backend_instance.network_list().each { |network| ids << network.id }
+        expect(ec2_backend_instance.network_list_ids()).to eq ["vpc-7d884a18", "public", "private"]
+      end
+    end
+
   end
 
 end
