@@ -10,6 +10,10 @@ describe Backends::Ec2Backend do
   let(:reservation_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservation_stub.yml") }
   let(:volumes_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_stub.yml") }
   let(:vpcs_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpcs_stub.yml") }
+  let(:vpc_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpc_stub.yml") }
+  let(:subnet_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/subnet_stub.yml") }
+  let(:empty_struct_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/empty_struct_stub.yml") }
+  let(:internet_gateway_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/internet_gateway_stub.yml") }
   let(:terminating_instances_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/terminating_instances_stub.yml") }
   let(:terminating_instances_single_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/terminating_instances_single_stub.yml") }
   let(:ec2_backend_instance) do
@@ -123,10 +127,34 @@ describe Backends::Ec2Backend do
 
 
   context 'network' do
-    describe '.network_create' #do
+
+    before(:each) { @options={:network_create_allowed => false} }
+
+    describe '.network_create' do
+      it 'creates a network instance' do
+        ec2_dummy_client.stub_responses(:create_vpc, vpc_stub)
+        ec2_dummy_client.stub_responses(:create_subnet, subnet_stub)
+        ec2_dummy_client.stub_responses(:create_tags, empty_struct_stub)
+        ec2_dummy_client.stub_responses(:create_internet_gateway, internet_gateway_stub)
+        ec2_dummy_client.stub_responses(:attach_internet_gateway, empty_struct_stub)
+
+        network = Occi::Infrastructure::Network.new
+        network.address='10.0.0.0/24'
+        @options={:network_create_allowed => true}
+        expect(ec2_backend_instance.network_create(network)).to eq "vpc-a08b44c5"
+      end
+
+      it 'refuses creation on missing permissions' do
+        expect{ec2_backend_instance.network_create(Occi::Infrastructure::Network.new)}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
+      end
+
+      it 'throws exception if address unspecified' do
+        @options={:network_create_allowed => true}
+        expect{ec2_backend_instance.network_create(Occi::Infrastructure::Network.new)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
 
 
-#    end
+    end
   
   end
 
