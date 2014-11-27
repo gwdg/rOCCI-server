@@ -157,8 +157,14 @@ describe Backends::Ec2Backend do
         ec2_backend_instance.instance_variable_set(:@options, opts)
         expect{ec2_backend_instance.network_create(Occi::Infrastructure::Network.new)}.to raise_exception(Backends::Errors::ResourceNotValidError)
       end
+    end
 
-
+    describe '.network_get' do
+      it 'gets network detail' do
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expected = File.open("spec/lib/backends/ec2_samples/network_get.expected","rt").read
+        expect(ec2_backend_instance.network_get("vpc-7d884a18").to_text).to eq expected
+      end
     end
   
   end
