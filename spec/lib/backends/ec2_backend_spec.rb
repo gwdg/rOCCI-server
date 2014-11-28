@@ -172,6 +172,32 @@ describe Backends::Ec2Backend do
       end
     end
 
+
+    # Dummy tests for unimplemented functions, there to:
+    #   1)  Complete coverage
+    #   2)  Make sure developers are reminded of specs
+    #       when the methods are finally implemented :)
+    # On implementing, consider moving the spec among the implemented ones
+    describe '.network_update' do
+      it 'currently returns "Not Supported" message' do
+        expect{ec2_backend_instance.network_update(Occi::Infrastructure::Network.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
+      end
+    end
+
+    describe '.network_partial_update' do
+      it 'currently returns "Not Supported" message' do
+        expect{ec2_backend_instance.network_partial_update(Occi::Infrastructure::Network.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
+      end
+    end
+
+    describe '.network_trigger_action' #do
+#      it 'currently returns "Not Supported" message' do
+#        attrs = Occi::Core::Attributes.new
+#        attrs["occi.core.title"] = "test"
+#        expect{ec2_backend_instance.network_trigger_action(Occi::Infrastructure::Network.new.id,Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::MethodNotImplementedError)
+#      end
+#    end
+
   end
 
 end
