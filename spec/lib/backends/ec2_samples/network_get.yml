@@ -1,0 +1,22 @@
+--- !ruby/hash:Hashie::Mash
+kind: http://schemas.ogf.org/occi/infrastructure#network
+mixins:
+- http://schemas.ec2.aws.amazon.com/occi/infrastructure/network#aws_ec2_vpc
+- http://schemas.ogf.org/occi/infrastructure/network#ipnetwork
+attributes: !ruby/hash:Hashie::Mash
+  occi: !ruby/hash:Hashie::Mash
+    core: !ruby/hash:Hashie::Mash
+      id: vpc-7d884a18
+      title: rOCCI-server VPC 172.30.0.0/16
+    network: !ruby/hash:Hashie::Mash
+      label: AWS VPC vpc-7d884a18
+      state: online
+      address: 172.30.0.0/16
+  com: !ruby/hash:Hashie::Mash
+    amazon: !ruby/hash:Hashie::Mash
+      aws: !ruby/hash:Hashie::Mash
+        ec2: !ruby/hash:Hashie::Mash
+          instance_tenancy: default
+          state: available
+          is_default: false
+id: vpc-7d884a18

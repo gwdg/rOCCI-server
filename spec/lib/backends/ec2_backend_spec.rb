@@ -53,12 +53,7 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
-        returned = ""
-        ec2_backend_instance.compute_list.each { |resource| returned = "#{returned}#{resource.to_text}\n" }
-
-        expected = File.open("spec/lib/backends/ec2_samples/compute_list.expected","rt").read
-        
-        expect(returned).to eq expected
+        expect(ec2_backend_instance.compute_list.as_json).to eq YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/compute_list.yml")
       end
     end
 
@@ -71,12 +66,7 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
-        returned = ec2_backend_instance.compute_get("i-22af91c7").to_text
-        F = File.open("spec/lib/backends/ec2_samples/compute_list_single_instance.expected","wt")
-        F.write(returned)
-        F.close
-        expected = File.open("spec/lib/backends/ec2_samples/compute_list_single_instance.expected","rt").read
-        expect(returned).to eq expected
+        expect(ec2_backend_instance.compute_get("i-22af91c7").as_json).to eq YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/compute_list_single_instance.yml")
       end
     end
 
@@ -162,8 +152,7 @@ describe Backends::Ec2Backend do
     describe '.network_get' do
       it 'gets network detail' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
-        expected = File.open("spec/lib/backends/ec2_samples/network_get.expected","rt").read
-        expect(ec2_backend_instance.network_get("vpc-7d884a18").to_text).to eq expected
+        expect(ec2_backend_instance.network_get("vpc-7d884a18").as_json).to eq expected=YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/network_get.yml")
       end
     end
 
