@@ -1,0 +1,68 @@
+---
+:images:
+- :image_id: ami-4a5fb53d
+  :image_location: amazon/suse-sles-11-sp3-hvm-v1.00.x86_64
+  :state: available
+  :owner_id: 013907871322
+  :public: true
+  :architecture: x86_64
+  :image_type: machine
+  :image_owner_alias: amazon
+  :name: suse-sles-11-sp3-hvm-v1.00.x86_64
+  :description: SUSE Linux Enterprise Server 11 Service Pack 3 for x86_64 (Build 2.1)
+  :root_device_type: ebs
+  :root_device_name: "/dev/sda1"
+  :block_device_mappings:
+  - :device_name: "/dev/sda1"
+    :ebs:
+      :snapshot_id: snap-facba218
+      :volume_size: 10
+      :delete_on_termination: true
+      :volume_type: standard
+      :encrypted: false
+  :virtualization_type: hvm
+  :hypervisor: xen
+- :image_id: ami-896c96fe
+  :image_location: 099720109477/ubuntu/images/ebs/ubuntu-trusty-14.04-amd64-server-20140416.1
+  :state: available
+  :owner_id: 099720109477
+  :public: true
+  :architecture: x86_64
+  :image_type: machine
+  :kernel_id: aki-52a34525
+  :name: ubuntu/images/ebs/ubuntu-trusty-14.04-amd64-server-20140416.1
+  :root_device_type: ebs
+  :root_device_name: "/dev/sda1"
+  :block_device_mappings:
+  - :device_name: "/dev/sda1"
+    :ebs:
+      :snapshot_id: snap-305cbad7
+      :volume_size: 8
+      :delete_on_termination: true
+      :volume_type: standard
+      :encrypted: false
+  - :virtual_name: ephemeral0
+    :device_name: "/dev/sdb"
+  :virtualization_type: paravirtual
+  :hypervisor: xen
+- :image_id: ami-f7f03d80
+  :image_location: 309956199498/RHEL-7.0_GA_HVM-x86_64-3-Hourly2
+  :state: available
+  :owner_id: '309956199498'
+  :public: true
+  :architecture: x86_64
+  :image_type: machine
+  :name: RHEL-7.0_GA_HVM-x86_64-3-Hourly2
+  :description: Provided by Red Hat, Inc.
+  :root_device_type: ebs
+  :root_device_name: "/dev/sda1"
+  :block_device_mappings:
+  - :device_name: "/dev/sda1"
+    :ebs:
+      :snapshot_id: snap-10c464f6
+      :volume_size: 10
+      :delete_on_termination: true
+      :volume_type: standard
+      :encrypted: false
+  :virtualization_type: hvm
+  :hypervisor: xen
