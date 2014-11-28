@@ -105,7 +105,7 @@ describe Backends::Ec2Backend do
       it 'deletes all instances' do
         ec2_dummy_client.stub_responses(:terminate_instances, terminating_instances_stub)
         ec2_dummy_client.stub_responses(:describe_instance_status, instance_statuses:instance_statuses_stub)
-        expect(ec2_backend_instance.compute_delete_all()).to be true
+        expect(ec2_backend_instance.compute_delete_all).to be true
       end
     end
 
@@ -170,7 +170,7 @@ describe Backends::Ec2Backend do
     describe '.network_list_ids' do
       it 'lists network IDs' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
-        expect(ec2_backend_instance.network_list_ids()).to eq ["vpc-7d884a18", "public", "private"]
+        expect(ec2_backend_instance.network_list_ids).to eq ["vpc-7d884a18", "public", "private"]
       end
     end
 
@@ -178,7 +178,7 @@ describe Backends::Ec2Backend do
       it 'returns network instances' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         ids=[]
-        list=ec2_backend_instance.network_list().each { |network| ids << network.id }
+        list=ec2_backend_instance.network_list.each { |network| ids << network.id }
         expect(ids).to eq ["vpc-7d884a18", "public", "private"]
       end
     end
