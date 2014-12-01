@@ -1,0 +1,61 @@
+--- !ruby/hash:Hashie::Mash
+kind: http://schemas.ogf.org/occi/infrastructure#compute
+mixins:
+- http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#t2_micro
+- http://occi.localhost/occi/infrastructure/os_tpl#ami-6e7bd919
+- http://schemas.ec2.aws.amazon.com/occi/infrastructure/compute#aws_ec2_instance
+actions:
+- http://schemas.ogf.org/occi/infrastructure/compute/action#stop
+- http://schemas.ogf.org/occi/infrastructure/compute/action#restart
+attributes: !ruby/hash:Hashie::Mash
+  occi: !ruby/hash:Hashie::Mash
+    core: !ruby/hash:Hashie::Mash
+      id: i-5a8cb7bf
+    compute: !ruby/hash:Hashie::Mash
+      architecture: x64
+      state: active
+  com: !ruby/hash:Hashie::Mash
+    amazon: !ruby/hash:Hashie::Mash
+      aws: !ruby/hash:Hashie::Mash
+        ec2: !ruby/hash:Hashie::Mash
+          reservation_id: r-2e51d26e
+          availability_zone: eu-west-1a
+          state: running
+          hypervisor: xen
+          virtualization_type: hvm
+id: i-5a8cb7bf
+links:
+- !ruby/hash:Hashie::Mash
+  kind: http://schemas.ogf.org/occi/infrastructure#storagelink
+  attributes: !ruby/hash:Hashie::Mash
+    occi: !ruby/hash:Hashie::Mash
+      core: !ruby/hash:Hashie::Mash
+        id: compute_i-5a8cb7bf_disk_vol-b42b08b3
+        title: rOCCI-server volume 8GB
+        target: "/storage/vol-0b15340c"
+        source: "/compute/i-5a8cb7bf"
+      storagelink: !ruby/hash:Hashie::Mash
+        deviceid: "/dev/xvda"
+        state: active
+  id: compute_i-5a8cb7bf_disk_vol-b42b08b3
+  rel: http://schemas.ogf.org/occi/infrastructure#storage
+  source: "/compute/i-5a8cb7bf"
+  target: "/storage/vol-0b15340c"
+- !ruby/hash:Hashie::Mash
+  kind: http://schemas.ogf.org/occi/infrastructure#networkinterface
+  mixins:
+  - http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface
+  attributes: !ruby/hash:Hashie::Mash
+    occi: !ruby/hash:Hashie::Mash
+      core: !ruby/hash:Hashie::Mash
+        id: compute_i-5a8cb7bf_nic_eni-7827331d
+        title: rOCCI-server VPC 172.30.0.0/16
+        target: "/network/vpc-7d884a18"
+        source: "/compute/i-5a8cb7bf"
+      networkinterface: !ruby/hash:Hashie::Mash
+        state: active
+        address: 54.77.254.66
+  id: compute_i-5a8cb7bf_nic_eni-7827331d
+  rel: http://schemas.ogf.org/occi/infrastructure#network
+  source: "/compute/i-5a8cb7bf"
+  target: "/network/vpc-7d884a18"

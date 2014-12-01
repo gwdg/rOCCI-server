@@ -1,0 +1,7 @@
+---
+:vpc:
+  :vpc_id: vpc-a08b44c5
+  :state: pending
+  :cidr_block: 10.0.0.0/24
+  :dhcp_options_id: dopt-2ca6bb4e
+  :instance_tenancy: default

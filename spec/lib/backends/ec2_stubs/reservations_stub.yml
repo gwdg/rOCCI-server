@@ -1,0 +1,152 @@
+---
+:reservations:
+- :reservation_id: r-2e51d26e
+  :owner_id: '315503098552'
+  :groups: []
+  :instances:
+  - :instance_id: i-5a8cb7bf
+    :image_id: ami-6e7bd919
+    :state:
+      :code: 16
+      :name: running
+    :private_dns_name: ip-172-30-0-129.eu-west-1.compute.internal
+    :public_dns_name: ''
+    :state_transition_reason: ''
+    :key_name: sustr4
+    :ami_launch_index: 0
+    :product_codes: []
+    :instance_type: t2.micro
+    :launch_time: 2014-11-13 14:43:19.000000000 Z
+    :placement:
+      :availability_zone: eu-west-1a
+      :group_name: ''
+      :tenancy: default
+    :monitoring:
+      :state: disabled
+    :subnet_id: subnet-ff6ede9a
+    :vpc_id: vpc-7d884a18
+    :private_ip_address: 172.30.0.129
+    :public_ip_address: 54.77.254.66
+    :architecture: x86_64
+    :root_device_type: ebs
+    :root_device_name: "/dev/xvda"
+    :block_device_mappings:
+    - :device_name: "/dev/xvda"
+      :ebs:
+        :volume_id: vol-b42b08b3
+        :status: attached
+        :attach_time: 2014-11-13 14:43:22.000000000 Z
+        :delete_on_termination: true
+    :virtualization_type: hvm
+    :client_token: YAoWX1415889798678
+    :security_groups:
+    - :group_name: launch-wizard-2
+      :group_id: sg-a751d7c2
+    :source_dest_check: true
+    :hypervisor: xen
+    :network_interfaces:
+    - :network_interface_id: eni-7827331d
+      :subnet_id: subnet-ff6ede9a
+      :vpc_id: vpc-7d884a18
+      :description: Primary network interface
+      :owner_id: '315503098552'
+      :status: in-use
+      :mac_address: 02:7d:80:e7:ca:e8
+      :private_ip_address: 172.30.0.129
+      :source_dest_check: true
+      :groups:
+      - :group_name: launch-wizard-2
+        :group_id: sg-a751d7c2
+      :attachment:
+        :attachment_id: eni-attach-ca582784
+        :device_index: 0
+        :status: attached
+        :attach_time: 2014-11-13 14:43:19.000000000 Z
+        :delete_on_termination: true
+      :association:
+        :public_ip: 54.77.254.66
+        :public_dns_name: ''
+        :ip_owner_id: amazon
+      :private_ip_addresses:
+      - :private_ip_address: 172.30.0.129
+        :primary: true
+        :association:
+          :public_ip: 54.77.254.66
+          :public_dns_name: ''
+          :ip_owner_id: amazon
+    :ebs_optimized: false
+- :reservation_id: r-ebfc7dab
+  :owner_id: '315503098552'
+  :groups: []
+  :instances:
+  - :instance_id: i-22af91c7
+    :image_id: ami-6e7bd919
+    :state:
+      :code: 16
+      :name: running
+    :private_dns_name: ip-172-30-0-190.eu-west-1.compute.internal
+    :public_dns_name: ''
+    :state_transition_reason: ''
+    :key_name: sustr4
+    :ami_launch_index: 0
+    :product_codes: []
+    :instance_type: t2.micro
+    :launch_time: 2014-11-11 16:43:57.000000000 Z
+    :placement:
+      :availability_zone: eu-west-1a
+      :group_name: ''
+      :tenancy: default
+    :monitoring:
+      :state: disabled
+    :subnet_id: subnet-ff6ede9a
+    :vpc_id: vpc-7d884a18
+    :private_ip_address: 172.30.0.190
+    :public_ip_address: 54.76.56.161
+    :architecture: x86_64
+    :root_device_type: ebs
+    :root_device_name: "/dev/xvda"
+    :block_device_mappings:
+    - :device_name: "/dev/xvda"
+      :ebs:
+        :volume_id: vol-0b15340c
+        :status: attached
+        :attach_time: 2014-11-11 16:35:27.000000000 Z
+        :delete_on_termination: true
+    :virtualization_type: hvm
+    :client_token: pZpPK1415723723225
+    :security_groups:
+    - :group_name: launch-wizard-1
+      :group_id: sg-aa4dcacf
+    :source_dest_check: true
+    :hypervisor: xen
+    :network_interfaces:
+    - :network_interface_id: eni-a3515bc6
+      :subnet_id: subnet-ff6ede9a
+      :vpc_id: vpc-7d884a18
+      :description: Primary network interface
+      :owner_id: '315503098552'
+      :status: in-use
+      :mac_address: 02:e7:a6:58:24:5c
+      :private_ip_address: 172.30.0.190
+      :source_dest_check: true
+      :groups:
+      - :group_name: launch-wizard-1
+        :group_id: sg-aa4dcacf
+      :attachment:
+        :attachment_id: eni-attach-a6c1bce8
+        :device_index: 0
+        :status: attached
+        :attach_time: 2014-11-11 16:35:23.000000000 Z
+        :delete_on_termination: true
+      :association:
+        :public_ip: 54.76.56.161
+        :public_dns_name: ''
+        :ip_owner_id: amazon
+      :private_ip_addresses:
+      - :private_ip_address: 172.30.0.190
+        :primary: true
+        :association:
+          :public_ip: 54.76.56.161
+          :public_dns_name: ''
+          :ip_owner_id: amazon
+    :ebs_optimized: false
