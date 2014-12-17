@@ -58,7 +58,7 @@ GEM
       thread_safe (~> 0.1)
       tzinfo (~> 1.1)
     arel (5.0.1.20140414130214)
-    aws-sdk-core (2.0.13)
+    aws-sdk-core (2.0.14)
       builder (~> 3.0)
       jmespath (~> 1.0)
       multi_json (~> 1.0)
@@ -67,6 +67,10 @@ GEM
       debug_inspector (>= 0.0.1)
     bond (0.5.1)
     builder (3.2.2)
+    byebug (3.5.1)
+      columnize (~> 0.8)
+      debugger-linecache (~> 1.2)
+      slop (~> 3.6)
     capistrano (2.15.5)
       highline
       net-scp (>= 1.0.0)
@@ -77,9 +81,11 @@ GEM
       timers (~> 4.0.0)
     chronic (0.10.2)
     coderay (1.1.0)
+    columnize (0.9.0)
     daemon_controller (1.2.0)
     dalli (2.7.2)
     debug_inspector (0.0.2)
+    debugger-linecache (1.2.0)
     diff-lcs (1.2.5)
     docile (1.1.5)
     erubis (2.7.0)
@@ -88,15 +94,18 @@ GEM
     fuubar (2.0.0)
       rspec (~> 3.0)
       ruby-progressbar (~> 1.4)
-    guard (2.10.2)
+    guard (2.10.4)
       formatador (>= 0.2.4)
       listen (~> 2.7)
       lumberjack (~> 1.0)
+      nenv (~> 0.1)
       pry (>= 0.9.12)
       thor (>= 0.18.1)
-    guard-bundler (2.0.0)
+    guard-bundler (2.1.0)
       bundler (~> 1.0)
       guard (~> 2.2)
+      guard-compat (~> 1.1)
+    guard-compat (1.1.0)
     guard-rails (0.7.0)
       guard (~> 2.0)
     guard-test (2.0.5)
@@ -114,7 +123,7 @@ GEM
       multi_json (~> 1.0)
     json (1.8.1)
     kgio (2.9.2)
-    libnotify (0.8.4)
+    libnotify (0.9.0)
       ffi (>= 1.0.11)
     listen (2.8.3)
       celluloid (>= 0.15.2)
@@ -127,9 +136,10 @@ GEM
     method_source (0.8.2)
     mime-types (2.4.3)
     mini_portile (0.6.1)
-    minitest (5.4.3)
+    minitest (5.5.0)
     multi_json (1.10.1)
     multi_xml (0.5.5)
+    nenv (0.1.1)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)
@@ -149,7 +159,7 @@ GEM
       json
       nokogiri
     ox (2.1.4)
-    passenger (4.0.53)
+    passenger (4.0.55)
       daemon_controller (>= 1.2.0)
       rack
       rake (>= 0.8.1)
@@ -193,7 +203,7 @@ GEM
       ffi (>= 0.5.0)
     rdoc (4.2.0)
       json (~> 1.4)
-    redcarpet (3.2.1)
+    redcarpet (3.2.2)
     request_store (1.1.0)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
@@ -256,8 +266,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  aws-sdk-core (~> 2.0.13)
+  aws-sdk-core (~> 2.0.14)
   bond
+  byebug
   capistrano
   dalli
   erubis
@@ -277,7 +288,7 @@ DEPENDENCIES
   openssl_cms_2_0_0!
   openssl_cms_2_1!
   ox
-  passenger (~> 4.0.53)
+  passenger (~> 4.0.55)
   pry-rails
   pry-rescue
   pry-stack_explorer
