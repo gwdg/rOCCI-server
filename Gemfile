@@ -24,12 +24,13 @@ gem 'rvm-capistrano', :group => :development
 
 # Use debugger
 gem 'debugger', :group => :development, :platforms => :ruby if RUBY_VERSION == '1.9.3'
+gem 'byebug', :group => :development, :platforms => :ruby if RUBY_VERSION.split('.').first == '2'
 
 # Use whenever for scheduled jobs
 gem 'whenever', :require => false
 
 # Use passenger for deployment (standalone or in Apache2)
-gem 'passenger', '~> 4.0.53'
+gem 'passenger', '~> 4.0.55'
 gem 'rake', '~> 10.3.2'
 
 # Use simplecov for coverage reports
