@@ -92,6 +92,7 @@ module Backends
             link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
             target = storage_get(blk[:ebs][:volume_id])
+            next unless target # there is no way to render a link without a target
 
             link.target = target
             link.rel = target.kind
@@ -103,7 +104,7 @@ module Backends
             result_storage_links << link
           end
 
-          result_storage_links
+          result_storage_links.compact
         end
 
         def compute_parse_links_network(backend_compute, compute)
@@ -130,7 +131,7 @@ module Backends
             intfs.each { |intf| result_network_links << compute_parse_link_networkinterface(compute, intf) }
           end
 
-          result_network_links
+          result_network_links.compact
         end
 
         def compute_parse_link_networkinterface(compute, intf)
@@ -143,6 +144,7 @@ module Backends
           link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
           target = intf[:vpc_id] ? network_get(intf[:vpc_id]) : Occi::Infrastructure::Network.new
+          return unless target # there is no way to render a link without a target
 
           if intf[:association] && intf[:association][:public_ip]
             is_in_vpc = compute_parse_link_networkinterface_is_vpc_pub?(intf[:association][:public_ip])
