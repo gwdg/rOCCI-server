@@ -73,6 +73,7 @@ module Backends
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
+        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{compute_id} does not exist!" if virtual_machine.state_str == 'DONE'
         compute_parse_backend_obj(virtual_machine)
       end
 
