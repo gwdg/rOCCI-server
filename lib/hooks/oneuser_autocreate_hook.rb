@@ -206,7 +206,7 @@ module Hooks
 
       # apply VO restrictions
       unless allowed_vo_names.include?(first_voms[:vo])
-        Rails.logger.error "[Hooks] [OneuserAutocreateHook] VO #{first_voms[:vo].inspect} is " \
+        Rails.logger.info "[Hooks] [OneuserAutocreateHook] VO #{first_voms[:vo].inspect} is " \
                            "not among the allowed VOs #{allowed_vo_names.inspect}, exiting"
 
         return
