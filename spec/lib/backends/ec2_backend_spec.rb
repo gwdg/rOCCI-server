@@ -33,7 +33,7 @@ describe Backends::Ec2Backend do
         expect(ec2_backend_instance.compute_list_ids).to eq([])
       end
 
-      it 'Receives compute instance list correctly' do
+      it 'receives compute instance list correctly' do
         ec2_dummy_client.stub_responses(:describe_instance_status, instance_statuses:instance_statuses_stub)
         expect(ec2_backend_instance.compute_list_ids).to eq(["ID", "ID2"])
       end
@@ -44,12 +44,21 @@ describe Backends::Ec2Backend do
         expect(ec2_backend_instance.compute_list).to eq([])
       end
 
-      it 'Receives compute instance list correctly with nil storage description' #do
-#        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
-#        expect(ec2_backend_instance.compute_list).to eq(["ID", "ID2"])
-#      end
+      it 'receives compute instance list correctly with nil volume description' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect { ec2_backend_instance.compute_list }.not_to raise_exception
+        expect(ec2_backend_instance.compute_list.count).to eq(2)
+      end
 
-      it 'Receives compute instance list correctly' do
+      it 'receives compute instance list correctly with nil vpc description' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        expect { ec2_backend_instance.compute_list }.not_to raise_exception
+        expect(ec2_backend_instance.compute_list.count).to eq(2)
+      end
+
+      it 'receives compute instance list correctly' do
         ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
