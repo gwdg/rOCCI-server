@@ -16,30 +16,40 @@
 
 module Backends::Opennebula::Authn::CloudAuth
   module VomsCloudAuth
+
+    # Performs authentication for VOMS-based user credentials supplied
+    # in the `params` argument. Returns `nil` on failure or username
+    # on success. In case of multiple VOMS attribute sets, the first
+    # successful match is accepted (i.e., the most generic one).
+    #
+    # @param params [Hash] hash with authN parameters
+    # @return [String, NilClass] username of the authenticated user
     def do_auth(params = {})
       fail Backends::Errors::AuthenticationError, 'Credentials for X.509 not set!' unless params && params[:client_cert_dn]
       fail Backends::Errors::AuthenticationError, 'Attributes for VOMS not set!' unless params[:client_cert_voms_attrs] && params[:client_cert_voms_attrs].first
 
-      # TODO: interate through all available sets of attrs?
-      first_voms = params[:client_cert_voms_attrs].first
+      # loop through available credentials and find a match in OpenNebula
+      username = nil
+      params[:client_cert_voms_attrs].each do |voms_attr_set|
+        if voms_attr_set[:vo].blank? || voms_attr_set[:role].blank? || voms_attr_set[:capability].blank?
+          fail Backends::Errors::AuthenticationError, "Invalid VOMS attributes! #{voms_attr_set.inspect}"
+        end
 
-      if first_voms[:vo].blank? || first_voms[:role].blank? || first_voms[:capability].blank?
-        fail Backends::Errors::AuthenticationError, "Invalid VOMS attributes! #{first_voms.inspect}"
+        # password should be a DN with VOMS attrs appended and whitespaces removed
+        constructed_dn = "#{params[:client_cert_dn]}/VO=#{voms_attr_set[:vo]}/Role=#{voms_attr_set[:role]}/Capability=#{voms_attr_set[:capability]}"
+
+        # try an escaped DN or a DN with whitespace chars removed
+        # TODO: remove this hack after Perun propagation scripts are updated
+        username = get_username(X509Auth.escape_dn(constructed_dn)) || get_username(constructed_dn.gsub(/\s+/, ''))
+        username = nil if username.blank?
+
+        # found a user with matching credentials, stop looking
+        # TODO: is this an acceptable approach?
+        break if username
       end
 
-      # Password should be a DN with VOMS attrs appended and whitespaces removed.
-      constructed_dn = "#{params[:client_cert_dn]}/VO=#{first_voms[:vo]}/Role=#{first_voms[:role]}/Capability=#{first_voms[:capability]}"
-      username = get_username(X509Auth.escape_dn(constructed_dn))
-
-      # TODO: remove this hack after Perun propagation scripts are updated
-      if username.blank?
-        # try a DN with whitespace chars removed
-        username = get_username(constructed_dn.gsub(/\s+/, ''))
-      end
-
-      return nil if username.blank?
-
-      username
+      username.blank? ? nil : username
     end
+
   end
 end
