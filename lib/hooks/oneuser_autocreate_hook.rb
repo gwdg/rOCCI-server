@@ -105,6 +105,7 @@ module Hooks
     # @return [Hashie::Mash, NilClass] user account info or +nil+ on failure
     def perform_get_or_create(user_struct)
       # process user data and get an augmented DN and VO info
+      # TODO: is this the right approach? using the most generic credentials?
       identity = get_first_identity_candidate(user_struct, @vo_names)
       return if identity.blank?
 
@@ -195,7 +196,7 @@ module Hooks
         return
       end
 
-      # TODO: interate through all available sets of attrs?
+      # TODO: iterate through all available sets of attrs?
       first_voms = credentials[:client_cert_voms_attrs].first
       if first_voms[:vo].blank? || first_voms[:role].blank? || first_voms[:capability].blank?
         Rails.logger.error "[Hooks] [OneuserAutocreateHook] User data from Warden is missing " \
