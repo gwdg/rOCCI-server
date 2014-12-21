@@ -16,8 +16,13 @@ describe Backends::Ec2Backend do
   let(:internet_gateway_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/internet_gateway_stub.yml") }
   let(:terminating_instances_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/terminating_instances_stub.yml") }
   let(:terminating_instances_single_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/terminating_instances_single_stub.yml") }
+  let(:ec2_backend_delegated_user) do
+    user = Hashie::Mash.new
+    user.identity = "dummy_test_user"
+    user
+  end
   let(:ec2_backend_instance) do
-    instance = Backends::Ec2Backend.new nil, nil, nil, nil, dalli
+    instance = Backends::Ec2Backend.new ec2_backend_delegated_user, nil, nil, nil, dalli
     instance.instance_variable_set(:@ec2_client, ec2_dummy_client)
 
     instance

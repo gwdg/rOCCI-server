@@ -6,6 +6,7 @@ module Backends
         COMPUTE_BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
         COMPUTE_USER_DATA_SIZE_LIMIT = 16384
         COMPUTE_DONT_WAIT_FOR_STATUSES = ['shutting-down', 'terminated', 'stopping', 'stopped'].freeze
+        COMPUTE_DN_BASED_AUTHS = %w(x509 voms).freeze
 
         def compute_create_with_os_tpl(compute)
           @logger.debug "[Backends] [Ec2Backend] Deploying #{compute.inspect}"
@@ -118,6 +119,11 @@ module Backends
           tags = []
           tags << { key: 'Name', value: (compute.title || "rOCCI-server instance #{instance_opts[:instance_type]} + #{instance_opts[:image_id]}") }
           tags << { key: 'ComputeMixins', value: serialized_mixins } if serialized_mixins.length < 255
+          tags << { key: 'UserIdentity', value: @delegated_user.identity } if @delegated_user.identity.length < 255
+
+          if COMPUTE_DN_BASED_AUTHS.include?(@delegated_user.auth_.type)
+            tags << { key: 'UserX509DN', value: @delegated_user.identity } if @delegated_user.identity.length < 255
+          end
 
           tags
         end

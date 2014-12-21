@@ -5,6 +5,7 @@ module Backends
         COMPUTE_SSH_REGEXP = /^(command=.+\s)?((?:ssh\-|ecds)[\w-]+\s.+)$/
         COMPUTE_BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
         COMPUTE_USER_DATA_SIZE_LIMIT = 16384
+        COMPUTE_DN_BASED_AUTHS = %w(x509 voms).freeze
 
         def compute_create_with_os_tpl(compute)
           @logger.debug "[Backends] [OpennebulaBackend] Deploying #{compute.inspect}"
@@ -32,10 +33,7 @@ module Backends
           compute_create_check_context(compute)
           compute_create_add_context(compute, template)
           compute_create_add_description(compute, template)
-
-          # add mixins
-          mixins = compute.mixins.to_a.map { |m| m.type_identifier }
-          template.add_element('TEMPLATE',  'OCCI_COMPUTE_MIXINS' => mixins.join(' '))
+          compute_create_add_custom_template_vars(compute, template)
 
           # remove template-specific values
           template.delete_element('ID')
@@ -202,6 +200,18 @@ module Backends
           nictemplate = Erubis::Eruby.new(File.read(nictemplate_location)).evaluate(networkinterface: networkinterface)
 
           template << nictemplate
+        end
+
+        def compute_create_add_custom_template_vars(compute, template)
+          # add mixins
+          mixins = compute.mixins.to_a.map { |m| m.type_identifier }
+          template.add_element('TEMPLATE',  'OCCI_COMPUTE_MIXINS' => mixins.join(' '))
+
+          # add user identity info
+          template.add_element('TEMPLATE',  'USER_IDENTITY' => @delegated_user.identity)
+          if COMPUTE_DN_BASED_AUTHS.include?(@delegated_user.auth_.type)
+            template.add_element('TEMPLATE',  'USER_X509_DN' => @delegated_user.identity)
+          end
         end
       end
     end
