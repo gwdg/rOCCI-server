@@ -9,7 +9,7 @@ vo_mapfile: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_
 # Allow all VOs except the ones in the blacklist
 # or allow only those found in the whitelist. Evaluation
 # is done BEFORE the VO name mapping is applied!
-access_policy: 'blacklist' # or 'whitelist' 
+access_policy: 'blacklist' # or 'whitelist'
 # YAML files with the following syntax
 #
 # - vo_name
@@ -17,3 +17,6 @@ access_policy: 'blacklist' # or 'whitelist'
 # - yet_another_vo_name
 whitelist: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'voms', 'files', 'whitelist.yml') %>
 blacklist: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'authn_strategies', 'voms', 'files', 'blacklist.yml') %>
+
+# Enable user identity from robot sub-proxies
+robot_subproxy_identity: <%= ENV['ROCCI_SERVER_AUTHN_VOMS_ROBOT_SUBPROXY_IDENTITY_ENABLE'].blank? ? 'false' : ENV['ROCCI_SERVER_AUTHN_VOMS_ROBOT_SUBPROXY_IDENTITY_ENABLE'] %>
