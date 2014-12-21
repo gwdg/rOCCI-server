@@ -77,6 +77,9 @@
     SetEnv ROCCI_SERVER_TMP                   /tmp/rocci_server
     SetEnv ROCCI_SERVER_MEMCACHES             localhost:11211
 
+    ## authN configuration
+    #SetEnv ROCCI_SERVER_AUTHN_VOMS_ROBOT_SUBPROXY_IDENTITY_ENABLE   no
+
     ## hooks
     #SetEnv ROCCI_SERVER_USER_BLACKLIST_HOOK_USER_BLACKLIST          "/path/to/yml/file.yml"
     #SetEnv ROCCI_SERVER_USER_BLACKLIST_HOOK_FILTERED_STRATEGIES     "voms x509 basic"
