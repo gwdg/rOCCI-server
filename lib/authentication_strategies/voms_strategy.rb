@@ -3,6 +3,7 @@ module AuthenticationStrategies
     VOMS_RANGE = (0..100)
     GRST_CRED_REGEXP = /^(.+)\s(\d+)\s(\d+)\s(\d)\s(.+)$/
     GRST_VOMS_REGEXP = /^\/(.+)\/Role=(.+)\/Capability=(.+)$/
+    ROBOT_SUBPROXY_REGEXP = /^\/(.+)\/CN=Robot(:|\/| - )(?<robot_name>.+)\/CN=eToken:(?<subuser_name>.+)\/(.+)$/
 
     def auth_request
       @auth_request ||= ::ActionDispatch::Request.new(env)
@@ -48,7 +49,14 @@ module AuthenticationStrategies
       user.auth!.credentials!.client_cert_voms_attrs = voms_cert_attrs
       user.auth!.credentials!.client_cert = auth_request.env['SSL_CLIENT_CERT'] unless auth_request.env['SSL_CLIENT_CERT'].blank?
       user.auth!.credentials!.verification_status = auth_request.env['SSL_CLIENT_VERIFY']
-      user.identity = user.auth.credentials.client_cert_dn
+
+      # Use sub-proxy DN as user identity if we are handling robots
+      # and the DN in question matches our restrictions
+      user.identity = if self.class.handle_robots? && auth_request.env['SSL_CLIENT_S_DN'].match(ROBOT_SUBPROXY_REGEXP)
+        auth_request.env['SSL_CLIENT_S_DN']
+      else
+        user.auth.credentials.client_cert_dn
+      end
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
       success! user.deep_freeze
@@ -137,6 +145,10 @@ module AuthenticationStrategies
 
         Rails.logger.debug "[AuthN] [#{self}] VO name mapped #{vo_name.inspect} -> #{new_vo_name.inspect}"
         new_vo_name
+      end
+
+      def handle_robots?
+        OPTIONS.robot_subproxy_identity
       end
     end
   end
