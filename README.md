@@ -9,7 +9,7 @@ Requirements
 ------------
 
 The following setup is required
-* Ruby >= 1.9.3
+* Ruby >= 2.0
 * Bundler gem installed (use ```gem install bundler```)
 * OpenNebula >= 4.4 if the OpenNebula backend is used
 * AWS EC2 account if the EC2 backend is used
