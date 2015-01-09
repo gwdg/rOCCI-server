@@ -142,7 +142,7 @@ module Backends
       # @effects Deletes all items for all VPCs (security groups, internet gateways, VPN gateways, ACLs, routing tables, subnets, and DHCP options)
       # @effects Deletes all VPCs
       def network_delete_all(mixins = nil)
-        vpc_ids = network_list_ids(mixins)
+        vpc_ids = network_list_ids(mixins) - NETWORK_DUMMIES
         vpc_ids.each { |vpc_id| network_delete(vpc_id) }
 
         true

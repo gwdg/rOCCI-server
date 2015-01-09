@@ -1,0 +1,24 @@
+---
+kind: http://schemas.ogf.org/occi/infrastructure#storage
+mixins:
+- http://schemas.ec2.aws.amazon.com/occi/infrastructure/storage#aws_ec2_ebs_volume
+actions:
+- http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot
+attributes:
+  occi:
+    core:
+      id: vol-0b15340c
+      title: rOCCI-server volume 8GB
+    storage:
+      size: 8
+      state: online
+  com:
+    amazon:
+      aws:
+        ec2:
+          availability_zone: eu-west-1a
+          state: in-use
+          volume_type: gp2
+          iops: 24
+          encrypted: false
+id: vol-0b15340c

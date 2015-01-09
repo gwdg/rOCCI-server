@@ -9,6 +9,8 @@ describe Backends::Ec2Backend do
   let(:reservations_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stub.yml") }
   let(:reservation_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservation_stub.yml") }
   let(:volumes_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_stub.yml") }
+  let(:volume_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_stub.yml") }
+  let(:volume_statuses_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_statuses_stub.yml") }
   let(:vpcs_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpcs_stub.yml") }
   let(:vpc_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpc_stub.yml") }
   let(:subnet_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/subnet_stub.yml") }
@@ -16,18 +18,24 @@ describe Backends::Ec2Backend do
   let(:internet_gateway_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/internet_gateway_stub.yml") }
   let(:terminating_instances_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/terminating_instances_stub.yml") }
   let(:terminating_instances_single_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/terminating_instances_single_stub.yml") }
+  let(:images_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/images_stub.yml") }
+  let(:association_id_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/association_id_stub.yml") }
+  let(:allocation_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/allocation_stub.yml") }
+  let(:addresses_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/addresses_stub.yml") }
   let(:ec2_backend_delegated_user) do
     user = Hashie::Mash.new
     user.identity = "dummy_test_user"
     user
   end
   let(:ec2_backend_instance) do
-    instance = Backends::Ec2Backend.new ec2_backend_delegated_user, nil, nil, nil, dalli
+    options = YAML.load_file("#{Rails.root}/etc/backends/ec2/test.yml")
+    instance = Backends::Ec2Backend.new ec2_backend_delegated_user, options, nil, nil, dalli
     instance.instance_variable_set(:@ec2_client, ec2_dummy_client)
 
     instance
   end
   let(:default_options) { ec2_backend_instance.instance_variable_get(:@options) }
+  let(:default_image_filtering_policy) { ec2_backend_instance.instance_variable_get(:@image_filtering_policy) }
 
   before(:each) { dalli.flush }
   after(:all) { Dalli::Client.new.flush }
@@ -128,12 +136,102 @@ describe Backends::Ec2Backend do
       end
     end
 
+    describe '.compute_attach_network' do
+      it 'Correctly reports unsupported operation trying to attach VPC' do
+        network = Occi::Infrastructure::Network.new
+        network.address='10.0.0.0/24'
+        networkinterface = Occi::Infrastructure::Networkinterface.new
+        networkinterface.target = network
+        networkinterface.source = Occi::Infrastructure::Compute.new
+        expect{ec2_backend_instance.compute_attach_network(networkinterface)}.to raise_exception(Backends::Errors::ResourceCreationError)
+      end
+
+      it 'Reports correctly on missing source' do
+        network = Occi::Infrastructure::Network.new
+        network.address='10.0.0.0/24'
+        networkinterface = Occi::Infrastructure::Networkinterface.new
+        networkinterface.target = network
+        networkinterface.source = ""
+        expect{ec2_backend_instance.compute_attach_network(networkinterface)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'Reports correctly on missing target' do
+        networkinterface = Occi::Infrastructure::Networkinterface.new
+        networkinterface.target = ""
+        networkinterface.source = Occi::Infrastructure::Compute.new
+        expect{ec2_backend_instance.compute_attach_network(networkinterface)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+      describe 'regarding public network' do
+
+        let(:compute) {
+          ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+          ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+          ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+          compute = ec2_backend_instance.compute_get("i-22af91c7")
+        }
+        let(:compute_no_vpc) {
+          ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+          ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+          compute = ec2_backend_instance.compute_get("i-22af91c7")
+        }
+        let(:network) { ec2_backend_instance.network_get("public") }
+        let(:networkinterface) {
+          networkinterface = Occi::Infrastructure::Networkinterface.new
+          networkinterface.target = network
+          networkinterface.source = compute
+          networkinterface
+        } 
+        let(:networkinterface_no_vpc) {
+          networkinterface = Occi::Infrastructure::Networkinterface.new
+          networkinterface.target = network
+          networkinterface.source = compute_no_vpc
+          networkinterface
+        } 
+
+        it 'attaches "public" network, vpc domain' do
+          ec2_dummy_client.stub_responses(:allocate_address, allocation_stub)
+          ec2_dummy_client.stub_responses(:associate_address, association_id_stub)
+          expect(ec2_backend_instance.compute_attach_network(networkinterface)).to eq "compute_i-5a8cb7bf_nic_eni-0"
+        end
+
+        it 'attaches "public" network, standard domain' do
+          ec2_dummy_client.stub_responses(:allocate_address, allocation_stub)
+          ec2_dummy_client.stub_responses(:associate_address, association_id_stub)
+          expect(ec2_backend_instance.compute_attach_network(networkinterface_no_vpc)).to eq "compute_i-5a8cb7bf_nic_eni-0"
+        end
+
+        it 'copes with failure on attach, vpc domain' do
+          ec2_dummy_client.stub_responses(:allocate_address, allocation_stub)
+          ec2_dummy_client.stub_responses(:associate_address, Aws::EC2::Errors::InvalidParameter)
+          ec2_dummy_client.stub_responses(:release_address, empty_struct_stub)
+          expect{ec2_backend_instance.compute_attach_network(networkinterface)}.to raise_exception(Backends::Errors::ResourceCreationError)
+        end
+
+        it 'copes with failure on attach, standard domain' do
+          ec2_dummy_client.stub_responses(:allocate_address, allocation_stub)
+          ec2_dummy_client.stub_responses(:associate_address, Aws::EC2::Errors::InvalidParameter)
+          ec2_dummy_client.stub_responses(:release_address, empty_struct_stub)
+          expect{ec2_backend_instance.compute_attach_network(networkinterface_no_vpc)}.to raise_exception(Backends::Errors::ResourceCreationError)
+        end
+
+        it 'reports on ellastic IP already attached' do
+          ec2_dummy_client.stub_responses(:allocate_address, allocation_stub)
+          ec2_dummy_client.stub_responses(:associate_address, association_id_stub)
+          ec2_dummy_client.stub_responses(:describe_addresses, addresses_stub)
+          expect{ec2_backend_instance.compute_attach_network(networkinterface)}.to raise_exception(Backends::Errors::ResourceCreationError)
+        end
+      end
+
+    end
+
   end
 
 
   context 'network' do
 
-    after(:each) { ec2_backend_instance.instance_variable_set(:@options, default_options) }
+    after(:each) { ec2_backend_instance.instance_variable_set(:@options, default_options) 
+                   ec2_backend_instance.instance_variable_set(:@image_filtering_policy, default_image_filtering_policy) }
 
     describe '.network_create' do
       it 'creates a network instance' do
@@ -186,7 +284,164 @@ describe Backends::Ec2Backend do
       end
     end
 
+    describe '.network_delete_all' do
+      it 'deletes networks' do
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        ec2_dummy_client.stub_responses(:delete_vpc, true)
 
+        opts=ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed=true
+        ec2_backend_instance.instance_variable_set(:@options, opts)
+
+        expect expect(ec2_backend_instance.network_delete_all).to be true
+      end
+    end
+
+    describe '.network_delete' do
+      it 'deletes a network instance' do
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        ec2_dummy_client.stub_responses(:delete_vpc, true)
+
+        opts=ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed=true
+        ec2_backend_instance.instance_variable_set(:@options, opts)
+
+        expect(ec2_backend_instance.network_delete("vpc-a08b44c5")).to be true
+      end
+
+      it 'copes with operation failing at AWS side' do
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        ec2_dummy_client.stub_responses(:delete_vpc, Aws::EC2::Errors::InvalidVpcIDNotFound)
+
+        opts=ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed=true
+        ec2_backend_instance.instance_variable_set(:@options, opts)
+
+        expect{ec2_backend_instance.network_delete("vpc-a08b44c5")}.to raise_exception(Backends::Errors::ResourceNotFoundError)
+      end
+
+      it 'refuses deletion on missing permissions' do
+        expect{ec2_backend_instance.network_delete("vpc-a08b44c5")}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
+      end
+
+      it 'reports correctly on non-existent network' do
+        opts=ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed=true
+        ec2_backend_instance.instance_variable_set(:@options, opts)
+
+        expect{ec2_backend_instance.network_delete("nonexistent")}.to raise_exception(Backends::Errors::ResourceNotFoundError)
+      end
+
+      it 'reports correctly on AWS standard networks' do
+        opts=ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed=true
+        ec2_backend_instance.instance_variable_set(:@options, opts)
+
+        expect{ec2_backend_instance.network_delete("public")}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
+        expect{ec2_backend_instance.network_delete("private")}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
+      end
+
+    end
+
+  end
+
+  context 'storage' do
+    describe 'storage_list_ids' do
+      it 'gets a list of storage resources' do
+        ec2_dummy_client.stub_responses(:describe_volume_status, volume_statuses_stub)
+        expect(ec2_backend_instance.storage_list_ids).to eq ["vol-b86c67bf", "vol-0d1b100a", "vol-0c1b100b"]
+      end
+    end
+
+    describe 'storage_list' do
+      it 'gets a list of storage resources' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        expect(ec2_backend_instance.storage_list.as_json).to eq YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/storage_list.yml")
+      end
+    end
+
+    describe '.storage_get' do
+      it 'gets storage object' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        expect(ec2_backend_instance.storage_get("vol-b42b08b3").as_json).to eq YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/storage_get.yml")
+      end
+    end
+
+    describe '.storage_create' do
+      it 'creates storage with default size (1 GB)' do
+        ec2_dummy_client.stub_responses(:create_volume, volume_stub)
+        ec2_dummy_client.stub_responses(:create_tags, empty_struct_stub)
+        storage = Occi::Infrastructure::Storage.new
+        expect(ec2_backend_instance.storage_create(storage)).to eq "vol-b86c67bf"
+      end
+    end
+
+    describe '.storage_delete' do
+      it 'deletes the given storage resource' do
+        ec2_dummy_client.stub_responses(:delete_volume, empty_struct_stub)
+        expect(ec2_backend_instance.storage_delete("vol-b86c67bf")).to be true
+      end
+    end
+
+    describe '.storage_delete_all' do
+      it 'deletes storage resources' do
+        ec2_dummy_client.stub_responses(:describe_volume_status, volume_statuses_stub)
+        ec2_dummy_client.stub_responses(:delete_volume, empty_struct_stub)
+        expect(ec2_backend_instance.storage_delete_all).to be true
+      end
+    end
+
+    describe '.storage_trigger_action' do
+
+      it 'triggers "snapshot" action correctly' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+
+        expect(ec2_backend_instance.storage_trigger_action("vol-b42b08b3",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))).to be true
+      end
+
+      it 'returns correctly on unsupported action' do
+        attrs = Occi::Core::Attributes.new
+        attrs["occi.core.title"] = "test"
+        expect{ec2_backend_instance.storage_trigger_action("vol-b42b08b3",Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
+      end
+    end
+
+    describe '.storage_trigger_action_on_all' do
+      it 'triggers "snapshot" action correctly' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+
+        expect(ec2_backend_instance.storage_trigger_action_on_all(Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))).to be true
+      end
+    end
+  end
+
+  context 'os_tpl' do
+    describe '.os_tpl_list' do
+      it 'gets list of images, not filtered by owner' do
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+        expect(ec2_backend_instance.os_tpl_list.count).to eq 3
+      end
+
+      it 'gets list of images, filtered by owner' do
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+        ifpol=ec2_backend_instance.instance_variable_get(:@image_filtering_policy)
+        ifpol='only_owned'
+        ec2_backend_instance.instance_variable_set(:@image_filtering_policy, ifpol)
+
+        expect(ec2_backend_instance.os_tpl_list.count).to eq 3
+      end
+    end
+
+    describe '.os_tpl_get' do
+      it 'gets template mixin' do
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+        expect(ec2_backend_instance.os_tpl_get("ami-4a5fb53d").as_json).to eq YAML.load_file("spec/lib/backends/ec2_samples/os_tpl_get.yml")
+      end
+    end
+  end
+
+
+  context 'Unimplemented' do
     # Dummy tests for unimplemented functions, there to:
     #   1)  Complete coverage
     #   2)  Make sure developers are reminded of specs
@@ -204,13 +459,33 @@ describe Backends::Ec2Backend do
       end
     end
 
-    describe '.network_trigger_action' #do
-#      it 'currently returns "Not Supported" message' do
-#        attrs = Occi::Core::Attributes.new
-#        attrs["occi.core.title"] = "test"
-#        expect{ec2_backend_instance.network_trigger_action(Occi::Infrastructure::Network.new.id,Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::MethodNotImplementedError)
-#      end
-#    end
+    describe '.network_trigger_action' do
+      it 'currently returns "Not Supported" message' do
+        attrs = Occi::Core::Attributes.new
+        attrs["occi.core.title"] = "test"
+        expect{ec2_backend_instance.network_trigger_action(Occi::Infrastructure::Network.new.id,Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
+      end
+    end
+
+    describe '.network_trigger_action_on_all' do
+      it 'currently returns "Not Supported" message' do
+        attrs = Occi::Core::Attributes.new
+        attrs["occi.core.title"] = "test"
+        expect{ec2_backend_instance.network_trigger_action_on_all(Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
+      end
+    end
+
+    describe '.storage_partial_update' do
+      it 'currently returns "Not Supported" message' do
+        expect{ec2_backend_instance.storage_partial_update(Occi::Infrastructure::Storage.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
+      end
+    end
+
+    describe '.storage_update' do
+      it 'currently returns "Not Supported" message' do
+        expect{ec2_backend_instance.storage_update(Occi::Infrastructure::Storage.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
+      end
+    end
 
   end
 

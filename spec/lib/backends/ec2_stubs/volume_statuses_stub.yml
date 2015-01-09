@@ -1,0 +1,35 @@
+---
+:volume_statuses:
+- :volume_id: vol-b86c67bf
+  :availability_zone: eu-west-1a
+  :volume_status:
+    :status: ok
+    :details:
+    - :name: io-enabled
+      :status: passed
+    - :name: io-performance
+      :status: not-applicable
+  :events: []
+  :actions: []
+- :volume_id: vol-0d1b100a
+  :availability_zone: eu-west-1a
+  :volume_status:
+    :status: ok
+    :details:
+    - :name: io-enabled
+      :status: passed
+    - :name: io-performance
+      :status: not-applicable
+  :events: []
+  :actions: []
+- :volume_id: vol-0c1b100b
+  :availability_zone: eu-west-1a
+  :volume_status:
+    :status: ok
+    :details:
+    - :name: io-enabled
+      :status: passed
+    - :name: io-performance
+      :status: not-applicable
+  :events: []
+  :actions: []

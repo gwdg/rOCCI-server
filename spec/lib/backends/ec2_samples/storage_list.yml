@@ -1,0 +1,49 @@
+---
+- !ruby/hash:Hashie::Mash
+  kind: http://schemas.ogf.org/occi/infrastructure#storage
+  mixins:
+  - http://schemas.ec2.aws.amazon.com/occi/infrastructure/storage#aws_ec2_ebs_volume
+  actions:
+  - http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot
+  attributes: !ruby/hash:Hashie::Mash
+    occi: !ruby/hash:Hashie::Mash
+      core: !ruby/hash:Hashie::Mash
+        id: vol-0b15340c
+        title: rOCCI-server volume 8GB
+      storage: !ruby/hash:Hashie::Mash
+        size: 8
+        state: online
+    com: !ruby/hash:Hashie::Mash
+      amazon: !ruby/hash:Hashie::Mash
+        aws: !ruby/hash:Hashie::Mash
+          ec2: !ruby/hash:Hashie::Mash
+            availability_zone: eu-west-1a
+            state: in-use
+            volume_type: gp2
+            iops: 24
+            encrypted: false
+  id: vol-0b15340c
+- !ruby/hash:Hashie::Mash
+  kind: http://schemas.ogf.org/occi/infrastructure#storage
+  mixins:
+  - http://schemas.ec2.aws.amazon.com/occi/infrastructure/storage#aws_ec2_ebs_volume
+  actions:
+  - http://schemas.ogf.org/occi/infrastructure/storage/action#snapshot
+  attributes: !ruby/hash:Hashie::Mash
+    occi: !ruby/hash:Hashie::Mash
+      core: !ruby/hash:Hashie::Mash
+        id: vol-b42b08b3
+        title: rOCCI-server volume 8GB
+      storage: !ruby/hash:Hashie::Mash
+        size: 8
+        state: online
+    com: !ruby/hash:Hashie::Mash
+      amazon: !ruby/hash:Hashie::Mash
+        aws: !ruby/hash:Hashie::Mash
+          ec2: !ruby/hash:Hashie::Mash
+            availability_zone: eu-west-1a
+            state: in-use
+            volume_type: gp2
+            iops: 24
+            encrypted: false
+  id: vol-b42b08b3
