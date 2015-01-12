@@ -1,0 +1,12 @@
+---
+:volumes:
+- :volume_id: vol-22574725
+  :size: 1
+  :snapshot_id: ''
+  :availability_zone: eu-west-1a
+  :state: deleted
+  :create_time: 2015-01-14 12:12:23.254000000 Z
+  :attachments:
+  :volume_type: gp2
+  :iops: 3
+  :encrypted: false

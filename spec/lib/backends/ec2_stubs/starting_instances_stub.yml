@@ -1,0 +1,9 @@
+---
+:starting_instances:
+- :instance_id: i-22af91c7
+  :current_state:
+    :code: 0
+    :name: pending
+  :previous_state:
+    :code: 80
+    :name: stopped
