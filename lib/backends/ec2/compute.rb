@@ -215,6 +215,8 @@ module Backends
       # @effects Allocates elastic IP address
       # @effects Associates the allocated address
       def compute_attach_network(networkinterface)
+        fail Backends::Errors::ResourceNotValidError, 'Attributes source and target are required!' \
+          if networkinterface.target.blank? || networkinterface.source.blank?
         network_id = networkinterface.target.kind_of?(Occi::Core::Resource) ? networkinterface.target.id : networkinterface.target.split('/').last
         source_id = networkinterface.source.kind_of?(Occi::Core::Resource) ? networkinterface.source.id : networkinterface.source.split('/').last
         fail Backends::Errors::ResourceNotValidError, 'Attributes source and target are required!' \
@@ -246,6 +248,8 @@ module Backends
       # @return [String] final identifier of the new storage link
       # @effects Attaches an existing volume to a running instance
       def compute_attach_storage(storagelink)
+        fail Backends::Errors::ResourceNotValidError, 'Attributes source and target are required!' \
+          if storagelink.target.blank? || storagelink.source.blank?
         target_id = storagelink.target.kind_of?(Occi::Core::Resource) ? storagelink.target.id : storagelink.target.split('/').last
         source_id = storagelink.source.kind_of?(Occi::Core::Resource) ? storagelink.source.id : storagelink.source.split('/').last
         fail Backends::Errors::ResourceNotValidError, 'Attributes source and target are required!' \
