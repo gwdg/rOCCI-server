@@ -8,9 +8,15 @@ describe Backends::Ec2Backend do
   let(:instance_statuses_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/instance_statuses_stub.yml") }
   let(:reservations_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stub.yml") }
   let(:reservation_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservation_stub.yml") }
+  let(:reservations_storagelink_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_storagelink_stub.yml") }
+  let(:reservations_stopped_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stopped_stub.yml") }
   let(:volumes_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_stub.yml") }
+  let(:volumes_storagelink_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_storagelink_stub.yml") }
+  let(:volumes_deleted_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_deleted_stub.yml") }
   let(:volume_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_stub.yml") }
   let(:volume_statuses_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_statuses_stub.yml") }
+  let(:volume_attaching_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_attaching_stub.yml") }
+  let(:volume_detaching_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_detaching_stub.yml") }
   let(:vpcs_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpcs_stub.yml") }
   let(:vpc_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpc_stub.yml") }
   let(:subnet_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/subnet_stub.yml") }
@@ -22,6 +28,9 @@ describe Backends::Ec2Backend do
   let(:association_id_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/association_id_stub.yml") }
   let(:allocation_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/allocation_stub.yml") }
   let(:addresses_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/addresses_stub.yml") }
+  let(:stopping_instances_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/stopping_instances_stub.yml") }
+  let(:starting_instances_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/starting_instances_stub.yml") }
+
   let(:ec2_backend_delegated_user) do
     user = Hashie::Mash.new
     user.identity = "dummy_test_user"
@@ -151,13 +160,11 @@ describe Backends::Ec2Backend do
         network.address='10.0.0.0/24'
         networkinterface = Occi::Infrastructure::Networkinterface.new
         networkinterface.target = network
-        networkinterface.source = ""
         expect{ec2_backend_instance.compute_attach_network(networkinterface)}.to raise_exception(Backends::Errors::ResourceNotValidError)
       end
 
       it 'Reports correctly on missing target' do
         networkinterface = Occi::Infrastructure::Networkinterface.new
-        networkinterface.target = ""
         networkinterface.source = Occi::Infrastructure::Compute.new
         expect{ec2_backend_instance.compute_attach_network(networkinterface)}.to raise_exception(Backends::Errors::ResourceNotValidError)
       end
@@ -223,8 +230,218 @@ describe Backends::Ec2Backend do
         end
       end
 
+      describe 'regarding private network' do
+        let(:network) { ec2_backend_instance.network_get("private") }
+        let(:compute) {
+          ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+          ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+          ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+          compute = ec2_backend_instance.compute_get("i-22af91c7")
+        }
+        let(:networkinterface) {
+          networkinterface = Occi::Infrastructure::Networkinterface.new
+          networkinterface.target = network
+          networkinterface.source = compute
+          networkinterface
+        } 
+
+        it 'reports back correctly as unsupported operation' do
+          expect{ec2_backend_instance.compute_attach_network(networkinterface)}.to raise_exception(Backends::Errors::ResourceCreationError)
+        end
+      end
+
     end
 
+    describe '.compute_attach_storage' do
+      let(:compute) {
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        compute = ec2_backend_instance.compute_get("i-22af91c7")
+      }
+      let(:storage) {
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_backend_instance.storage_get("vol-b42b08b3")
+      }
+
+      it 'attaches a volume' do
+        storagelink = Occi::Infrastructure::Storagelink.new
+        storagelink.source = compute
+        storagelink.target = storage
+
+        ec2_dummy_client.stub_responses(:attach_volume, volume_attaching_stub)
+        expect(ec2_backend_instance.compute_attach_storage(storagelink)).to eq "compute_i-5a8cb7bf_disk_vol-0b15340c"
+      end
+
+      it 'reports correctly on unspecified source' do
+        storagelink = Occi::Infrastructure::Storagelink.new
+        storagelink.source = compute
+
+        ec2_dummy_client.stub_responses(:attach_volume, volume_attaching_stub)
+        expect{ec2_backend_instance.compute_attach_storage(storagelink)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'reports correctly on unspecified target' do
+        storagelink = Occi::Infrastructure::Storagelink.new
+        storagelink.target = storage
+
+        ec2_dummy_client.stub_responses(:attach_volume, volume_attaching_stub)
+        expect{ec2_backend_instance.compute_attach_storage(storagelink)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+    end
+
+    describe '.compute_detach_network' do
+      context 'regarding vpc' do
+        it 'reports unsupported operation when detaching VPC' do
+          ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+          ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+          ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+          ec2_dummy_client.stub_responses(:disassociate_address, empty_struct_stub)
+          ec2_dummy_client.stub_responses(:release_address, empty_struct_stub)
+          expect{ec2_backend_instance.compute_detach_network("compute_i-5a8cb7bf_nic_eni-7827331d")}.to raise_error(Backends::Errors::ResourceCreationError)
+        end
+      end
+
+      context 'regarding public network' do
+        it 'detaches public network' # TODO: Awaiting Issue#99
+
+      end
+
+      context 'regarding private network' do
+        it 'reports unsupported operation when detaching private network' # TODO: Awaiting Issue#99
+
+      end
+    end
+
+
+    describe '.compute_detach_storage' do
+
+      it 'detaches a volume' do
+        ec2_dummy_client.stub_responses(:detach_volume, volume_detaching_stub)
+        expect(ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")).to be true
+      end
+
+      it 'reports correctly on invalid link ID' do
+        expect{ec2_backend_instance.compute_detach_storage("invalid")}.to raise_error(Backends::Errors::IdentifierNotValidError)
+      end
+
+      it 'reports correctly on non-existent volume' do
+        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidVolumeNotFound)
+        expect{ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")}.to raise_error(Backends::Errors::ResourceNotFoundError)
+      end
+
+      it 'reports correctly on non-existent instance' do
+        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidInstanceNotFound)
+        expect{ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")}.to raise_error(Backends::Errors::ResourceNotFoundError)
+      end
+
+      it 'reports correctly on non-existent link' do
+        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::IncorrectState)
+        expect{ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")}.to raise_error(Backends::Errors::ResourceStateError)
+      end
+
+    end
+
+    describe '.compute_get_network' do
+
+      it 'gets a network' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect(ec2_backend_instance.compute_get_network("compute_i-5a8cb7bf_nic_eni-7827331d").id).to eq "compute_i-5a8cb7bf_nic_eni-7827331d"
+        expect(ec2_backend_instance.compute_get_network("compute_i-5a8cb7bf_nic_eni-7827331d").source).to eq "/compute/i-5a8cb7bf"
+        expect(ec2_backend_instance.compute_get_network("compute_i-5a8cb7bf_nic_eni-7827331d").target).to eq "/network/vpc-7d884a18"
+      end
+
+      it 'reports correctly on invalid ID' do
+        expect{ec2_backend_instance.compute_get_network("invalid")}.to raise_error (Backends::Errors::IdentifierNotValidError)
+      end
+
+      it 'reports correctly on non-existent network' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect{ec2_backend_instance.compute_get_network("compute_i-5a8cb7bf_nic_eni-00000000")}.to raise_error(Backends::Errors::ResourceNotFoundError)
+      end
+
+    end
+
+    describe '.compute_get_storage' do
+      it 'gets storagelink from ID' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_storagelink_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_storagelink_stub)
+
+        storagelink = ec2_backend_instance.compute_get_storage("compute_i-5a8b56be_disk_vol-22574725")
+
+        expect(storagelink.source).to eq "/compute/i-5a8b56be"
+        expect(storagelink.target).to eq "/storage/vol-22574725"
+      end
+
+      it 'reports non-existent storage link correctly' do
+        expect{ec2_backend_instance.compute_get_storage("compute_i-5a8b56be_disk_vol-22574725")}.to raise_error(Backends::Errors::ResourceNotFoundError)
+      end
+
+      it 'reports mal-formatted link ID correctly' do
+        expect{ec2_backend_instance.compute_get_storage("invalid")}.to raise_error(Backends::Errors::IdentifierNotValidError)
+      end
+    end
+
+    describe '.compute_trigger_action' do
+
+      it 'triggers "stop" action correctly' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:stop_instances, stopping_instances_stub)
+
+        expect(ec2_backend_instance.compute_trigger_action("i-22af91c7",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/compute/action#","stop")))).to be true
+      end
+
+      it 'triggers "start" action correctly' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stopped_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:start_instances, starting_instances_stub)
+
+        expect(ec2_backend_instance.compute_trigger_action("i-22af91c7",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/compute/action#","start")))).to be true
+      end
+
+      it 'triggers "restart" action correctly' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:reboot_instances, empty_struct_stub)
+
+        expect(ec2_backend_instance.compute_trigger_action("i-22af91c7",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/compute/action#","restart")))).to be true
+      end
+
+      it 'returns correctly on unsupported action' do
+        attrs = Occi::Core::Attributes.new
+        attrs["occi.core.title"] = "test"
+        expect{ec2_backend_instance.compute_trigger_action("i-22af91c7",Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
+      end
+
+      it 'refuses to perform action in incorrect state' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stopped_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+
+        expect{ec2_backend_instance.compute_trigger_action("i-22af91c7",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/compute/action#","stop")))}.to raise_error(Backends::Errors::ResourceStateError)
+
+      end
+    end
+
+    describe '.compute_trigger_action_on_all' do
+      it 'triggers "stop" action correctly' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:stop_instances, stopping_instances_stub)
+
+        expect(ec2_backend_instance.compute_trigger_action_on_all(Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/compute/action#","stop")))).to be true
+      end
+    end
   end
 
 
@@ -397,6 +614,12 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
 
         expect(ec2_backend_instance.storage_trigger_action("vol-b42b08b3",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))).to be true
+      end
+
+      it 'refuses to trigger action in incorrect state' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_deleted_stub)
+
+        expect{ec2_backend_instance.storage_trigger_action("vol-22574725",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))}.to raise_error(Backends::Errors::ResourceStateError)
       end
 
       it 'returns correctly on unsupported action' do

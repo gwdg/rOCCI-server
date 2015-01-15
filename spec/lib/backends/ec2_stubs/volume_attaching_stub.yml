@@ -1,0 +1,6 @@
+---
+:volume_id: vol-b42b08b3
+:instance_id: i-22af91c7
+:device: "/dev/xvdf"
+:state: attaching
+:attach_time: 2015-01-13 10:41:40.712000000 Z

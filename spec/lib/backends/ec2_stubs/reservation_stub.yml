@@ -36,6 +36,12 @@
       :status: attached
       :attach_time: 2014-11-13 14:43:22.000000000 Z
       :delete_on_termination: true
+  - :device_name: "/dev/sdf"
+    :ebs:
+      :volume_id: vol-22574725
+      :status: attached
+      :attach_time: 2014-11-13 14:43:22.000000000 Z
+      :delete_on_termination: false
   :virtualization_type: hvm
   :client_token: YAoWX1415889798678
   :security_groups:
