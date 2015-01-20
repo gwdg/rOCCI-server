@@ -11,6 +11,12 @@ describe Backends::Ec2Backend do
   let(:reservations_storagelink_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_storagelink_stub.yml") }
   let(:reservations_stopped_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stopped_stub.yml") }
   let(:volumes_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_stub.yml") }
+  let(:volumes_w_name_tag_stub) { volumes = volumes_stub
+    volumes[:volumes].each { |vol| vol[:tags] = [ {:key => "Name", :value => "Testname"} ] }
+    volumes }
+  let(:volumes_error_stub) { volumes = volumes_stub
+    volumes[:volumes].each { |vol| vol[:state] = "error" }
+    volumes }
   let(:volumes_storagelink_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_storagelink_stub.yml") }
   let(:volumes_deleted_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_deleted_stub.yml") }
   let(:volume_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_stub.yml") }
@@ -499,7 +505,6 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_pending_stub)
         expect(ec2_backend_instance.network_get("vpc-7d884a18").attributes.occi.network.state).to eq "offline"
       end
-
     end
 
     describe '.network_list_ids' do
@@ -598,6 +603,16 @@ describe Backends::Ec2Backend do
       it 'gets storage object' do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
         expect(ec2_backend_instance.storage_get("vol-b42b08b3").as_json).to eq YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/storage_get.yml")
+      end
+
+      it 'gets storage object with name specified' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_w_name_tag_stub)
+        expect(ec2_backend_instance.storage_get("vol-b42b08b3").attributes.occi.core.title).to eq "Testname"
+      end
+
+      it 'gets network detail while offline' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_error_stub)
+        expect(ec2_backend_instance.storage_get("vol-b42b08b3").attributes.occi.storage.state).to eq "degraded"
       end
     end
 
