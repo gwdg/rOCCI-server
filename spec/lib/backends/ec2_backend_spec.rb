@@ -18,6 +18,12 @@ describe Backends::Ec2Backend do
   let(:volume_attaching_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_attaching_stub.yml") }
   let(:volume_detaching_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_detaching_stub.yml") }
   let(:vpcs_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpcs_stub.yml") }
+  let(:vpcs_w_name_tag_stub) { vpcs = vpcs_stub
+    vpcs[:vpcs].first[:tags] = [ {:key => "Name", :value => "Testname"} ]
+    vpcs }
+  let(:vpcs_pending_stub) { vpcs = vpcs_stub
+    vpcs[:vpcs].first[:state] = "pending"
+    vpcs }
   let(:vpc_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpc_stub.yml") }
   let(:subnet_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/subnet_stub.yml") }
   let(:empty_struct_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/empty_struct_stub.yml") }
@@ -483,6 +489,17 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         expect(ec2_backend_instance.network_get("vpc-7d884a18").as_json).to eq expected=YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/network_get.yml")
       end
+
+      it 'gets network detail with network name specified' do
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_w_name_tag_stub)
+        expect(ec2_backend_instance.network_get("vpc-7d884a18").attributes.occi.core.title).to eq "Testname"
+      end
+
+      it 'gets network detail while offline' do
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_pending_stub)
+        expect(ec2_backend_instance.network_get("vpc-7d884a18").attributes.occi.network.state).to eq "offline"
+      end
+
     end
 
     describe '.network_list_ids' do
