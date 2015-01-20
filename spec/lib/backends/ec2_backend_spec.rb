@@ -49,7 +49,7 @@ describe Backends::Ec2Backend do
     user
   end
   let(:ec2_backend_instance) do
-    options = YAML.load_file("#{Rails.root}/etc/backends/ec2/test.yml")
+    options = YAML.load(ERB.new(File.read("#{Rails.root}/etc/backends/ec2/test.yml")).result)
     instance = Backends::Ec2Backend.new ec2_backend_delegated_user, options, nil, nil, dalli
     instance.instance_variable_set(:@ec2_client, ec2_dummy_client)
 
@@ -666,6 +666,14 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
 
         expect(ec2_backend_instance.storage_trigger_action_on_all(Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))).to be true
+      end
+    end
+  end
+
+  context 'resource_tpl' do
+    describe '.resource_tpl_list' do
+      it 'gets a list of resource templates' do
+        expect(ec2_backend_instance.resource_tpl_list.count).to eq 22
       end
     end
   end
