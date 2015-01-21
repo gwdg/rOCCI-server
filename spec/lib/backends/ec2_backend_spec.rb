@@ -673,7 +673,7 @@ describe Backends::Ec2Backend do
   context 'resource_tpl' do
     describe '.resource_tpl_list' do
       it 'gets a list of resource templates' do
-        expect(ec2_backend_instance.resource_tpl_list.count).to eq 22
+        expect(ec2_backend_instance.resource_tpl_list.count).to be > 0
       end
     end
 
