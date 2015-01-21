@@ -1,0 +1,44 @@
+{
+  "mixins":[
+    {
+      "term":"t2_medium",
+      "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
+      "title":"t2.medium - 2 cores and 4 GB RAM",
+      "location":"/mixin/resource_tpl/t2_medium/",
+      "depends":[
+        "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "attributes":{
+        "occi":{
+          "compute":{
+            "architecture":{
+              "Mutable":true,
+              "Required":false,
+              "Type":"string",
+              "Pattern":"x86|x64",
+              "Default":"x64"
+            },
+            "cores":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":2
+            },
+            "speed":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":1
+            },
+            "memory":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":4.0
+            }
+          }
+        }
+      }
+    }
+  ]
+}
