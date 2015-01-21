@@ -44,6 +44,7 @@ describe Backends::Ec2Backend do
     vpcs }
   let(:vpc_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpc_stub.yml") }
   let(:subnet_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/subnet_stub.yml") }
+  let(:subnets_stub) { { :subnets => [ subnet_stub[:subnet] ] } }
   let(:empty_struct_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/empty_struct_stub.yml") }
   let(:internet_gateway_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/internet_gateway_stub.yml") }
   let(:terminating_instances_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/terminating_instances_stub.yml") }
@@ -154,14 +155,7 @@ describe Backends::Ec2Backend do
     end
 
     describe '.compute_create' do
-      it 'reports correctly on missing os_tpl mixin' do
-        compute = Occi::Infrastructure::Compute.new
-        expect{ec2_backend_instance.compute_create(compute)}.to raise_exception(Backends::Errors::ResourceNotValidError)
-      end
-
-      it 'creates compute resource correctyly' do
-        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
-
+      let(:compute) {
         ostemplate = Occi::Core::Mixin.new("http://occi.localhost/occi/infrastructure/os_tpl#", "ami-6e7bd919")
         ostemplate.depends=[Occi::Infrastructure::OsTpl.mixin]
         restemplate = Occi::Core::Mixin.new("http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#", "t2_micro")
@@ -169,8 +163,74 @@ describe Backends::Ec2Backend do
         compute = Occi::Infrastructure::Compute.new
         compute.mixins << ostemplate
         compute.mixins << restemplate
+        compute
+      }
+      let(:networkinterface) {
+        network = Occi::Infrastructure::Network.new
+        network.address='10.0.0.0/24'
+        networkinterface = Occi::Infrastructure::Networkinterface.new
+        networkinterface.target = network
+        networkinterface
+      }
+
+      it 'reports correctly on missing os_tpl mixin' do
+        compute_empty = Occi::Infrastructure::Compute.new
+        expect{ec2_backend_instance.compute_create(compute_empty)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'creates compute resource correctly' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+
         expect(ec2_backend_instance.compute_create(compute)).to eq "i-5a8cb7bf"
       end
+
+      it 'accepts regular user data' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+
+        compute.attributes['org.openstack.compute.user_data'] = "dXNlciBkYXRhCg=="
+  
+        expect{ec2_backend_instance.compute_create(compute)}.not_to raise_exception
+      end
+
+      it 'reports correctly on oversize user data' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+
+        compute.attributes['org.openstack.compute.user_data'] = (0...20000).map { 'd' }.join
+  
+        expect{ec2_backend_instance.compute_create(compute)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'reports correctly on invalid user data' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+
+        compute.attributes['org.openstack.compute.user_data'] = 'inv&lid'
+
+        expect{ec2_backend_instance.compute_create(compute)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'creates compute resource with inline network link' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+        ec2_dummy_client.stub_responses(:describe_subnets, subnets_stub)
+
+        compute.links << networkinterface
+
+        expect{ec2_backend_instance.compute_create(compute)}.not_to raise_error
+      end
+
+      it 'refuses to create compute resource with multiple inline network links' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+
+        compute.links << networkinterface
+        compute.links << networkinterface
+
+        expect{ec2_backend_instance.compute_create(compute)}.to raise_error(Backends::Errors::ResourceNotValidError)
+      end
+
     end
 
 
