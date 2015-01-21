@@ -676,6 +676,12 @@ describe Backends::Ec2Backend do
         expect(ec2_backend_instance.resource_tpl_list.count).to eq 22
       end
     end
+
+    describe '.resource_tpl_get' do
+      it 'gets the given resource template' do
+        expect(ec2_backend_instance.resource_tpl_get('t1_micro').location).to eq "/mixin/resource_tpl/t1_micro/"
+      end
+    end
   end
 
   context 'os_tpl' do
