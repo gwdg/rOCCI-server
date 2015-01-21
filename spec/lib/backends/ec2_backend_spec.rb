@@ -7,6 +7,18 @@ describe Backends::Ec2Backend do
   let(:ec2_dummy_client) { ::Aws::EC2::Client.new(credentials: aws_creds, stub_responses: true) }
   let(:instance_statuses_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/instance_statuses_stub.yml") }
   let(:reservations_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stub.yml") }
+  let(:reservations_w_inval_res_tpl_stub) { reservations = reservations_stub
+    reservations[:reservations].each { |res| res[:instances].each { |ins| ins[:instance_type] = 'nofixture' }}
+    reservations }
+  let(:reservations_waiting_stub) { reservations = reservations_stub
+    reservations[:reservations].each { |res| res[:instances].each { |ins| ins[:state] = { :code => 0, :name => 'pending' }}}
+    reservations }
+  let(:reservations_inactive_stub) { reservations = reservations_stub
+    reservations[:reservations].each { |res| res[:instances].each { |ins| ins[:state] = { :code => 48, :name => 'terminated' }}}
+    reservations }
+  let(:reservations_w_o_netlinks_stub) { reservations = reservations_stub
+    reservations[:reservations].each { |res| res[:instances].each { |ins| ins[:network_interfaces] = [] }}
+    reservations }
   let(:reservation_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservation_stub.yml") }
   let(:reservations_storagelink_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_storagelink_stub.yml") }
   let(:reservations_stopped_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stopped_stub.yml") }
@@ -110,6 +122,34 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         expect(ec2_backend_instance.compute_get("i-22af91c7").as_json).to eq YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/compute_list_single_instance.yml")
+      end
+
+      it 'gets compute instance description correctly' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_w_inval_res_tpl_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect(ec2_backend_instance.compute_get("i-22af91c7").as_json.mixins).to include "http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#nofixture"
+      end
+
+      it 'gets compute instance description correctly with state waiting' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_waiting_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect(ec2_backend_instance.compute_get("i-22af91c7").attributes.occi.compute.state).to eq "waiting"
+      end
+
+      it 'gets compute instance description correctly with state inactive' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_inactive_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect(ec2_backend_instance.compute_get("i-22af91c7").attributes.occi.compute.state).to eq "inactive"
+      end
+
+      it 'gets compute instance description correctly with no network links' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_w_o_netlinks_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect(ec2_backend_instance.compute_get("i-22af91c7").links.count).to eq 3
       end
     end
 
