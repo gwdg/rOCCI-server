@@ -1,0 +1,44 @@
+{
+  "mixins":[
+    {
+      "term":"t2_small",
+      "scheme":"http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#",
+      "title":"t2.small - 1 core and 2 GB RAM",
+      "location":"/mixin/resource_tpl/t2_small/",
+      "depends":[
+        "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
+      ],
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "attributes":{
+        "occi":{
+          "compute":{
+            "architecture":{
+              "Mutable":true,
+              "Required":false,
+              "Type":"string",
+              "Pattern":"x86|x64",
+              "Default":"x64"
+            },
+            "cores":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":1
+            },
+            "speed":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":1
+            },
+            "memory":{
+              "Mutable":false,
+              "Type":"number",
+              "Default":2.0
+            }
+          }
+        }
+      }
+    }
+  ]
+}
