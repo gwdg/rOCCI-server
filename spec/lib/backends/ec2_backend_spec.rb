@@ -172,6 +172,15 @@ describe Backends::Ec2Backend do
         networkinterface.target = network
         networkinterface
       }
+      let(:storage) {
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_backend_instance.storage_get("vol-b42b08b3")
+      }
+      let(:storagelink) {
+        storagelink = Occi::Infrastructure::Storagelink.new
+        storagelink.target = storage
+        storagelink
+      }
 
       it 'reports correctly on missing os_tpl mixin' do
         compute_empty = Occi::Infrastructure::Compute.new
@@ -229,6 +238,18 @@ describe Backends::Ec2Backend do
         compute.links << networkinterface
 
         expect{ec2_backend_instance.compute_create(compute)}.to raise_error(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'creates compute resource with inline storage link' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+
+        compute.links << storagelink
+
+        expect{ec2_backend_instance.compute_create(compute)}.not_to raise_error
+
+        strglnks = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink' }
+        expect(strglnks.first.source).to eq "/compute/i-5a8cb7bf"
       end
 
     end
