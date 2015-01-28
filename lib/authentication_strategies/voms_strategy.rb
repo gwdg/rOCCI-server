@@ -3,7 +3,7 @@ module AuthenticationStrategies
     VOMS_RANGE = (0..100)
     GRST_CRED_REGEXP = /^(.+)\s(\d+)\s(\d+)\s(\d)\s(.+)$/
     GRST_VOMS_REGEXP = /^\/(.+)\/Role=(.+)\/Capability=(.+)$/
-    ROBOT_SUBPROXY_REGEXP = /^\/(.+)\/CN=Robot(:|\/| - )(?<robot_name>.+)\/CN=eToken:(?<subuser_name>.+)\/(.+)$/
+    ROBOT_SUBPROXY_REGEXP = /^(?<issuer_base>\/.+)\/CN=Robot(:|\/|\s\-\s)(?<robot_name>[^\/]+)\/CN=eToken:(?<subuser_name>[^\/]+)(\/CN=\d+)+$/
 
     def auth_request
       @auth_request ||= ::ActionDispatch::Request.new(env)
@@ -52,7 +52,9 @@ module AuthenticationStrategies
 
       # Use sub-proxy DN as user identity if we are handling robots
       # and the DN in question matches our restrictions
-      user.identity = if self.class.handle_robots? && auth_request.env['SSL_CLIENT_S_DN'].match(ROBOT_SUBPROXY_REGEXP)
+      user.identity = if self.class.handle_robots? && (matched_robot = auth_request.env['SSL_CLIENT_S_DN'].match(ROBOT_SUBPROXY_REGEXP))
+        Rails.logger.debug "[AuthN] [#{self.class}] Matched robot #{matched_robot[:robot_name].inspect} " \
+                           "and sub-user #{matched_robot[:subuser_name].inspect}"
         auth_request.env['SSL_CLIENT_S_DN']
       else
         user.auth.credentials.client_cert_dn
