@@ -53,18 +53,35 @@ module AuthenticationStrategies
       # Use sub-proxy DN as user identity if we are handling robots
       # and the DN in question matches our restrictions
       user.identity = if self.class.handle_robots? && (matched_robot = auth_request.env['SSL_CLIENT_S_DN'].match(ROBOT_SUBPROXY_REGEXP))
-        Rails.logger.debug "[AuthN] [#{self.class}] Matched robot #{matched_robot[:robot_name].inspect} " \
-                           "and sub-user #{matched_robot[:subuser_name].inspect}"
-        auth_request.env['SSL_CLIENT_S_DN']
-      else
-        user.auth.credentials.client_cert_dn
-      end
+                        etoken = self.class.extract_robot_etoken(matched_robot, auth_request)
+                        if etoken.blank?
+                          fail! 'Couldn\'t extract the first proxy DN of a robot certificate!'
+                          return
+                        end
+
+                        etoken
+                      else
+                        user.auth.credentials.client_cert_dn
+                      end
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
       success! user.deep_freeze
     end
 
     class << self
+
+      def extract_robot_etoken(matched_robot, auth_request)
+        Rails.logger.debug "[AuthN] [#{self}] Matched robot #{matched_robot[:robot_name].inspect} " \
+                           "and sub-user #{matched_robot[:subuser_name].inspect}"
+        w_etoken = GRST_CRED_REGEXP.match(auth_request.env["GRST_CRED_1"])
+        w_etoken = w_etoken.to_a.drop 1
+
+        Rails.logger.debug "[AuthN] [#{self}] Looking at GRST_CRED_1 => " \
+                           "#{auth_request.env["GRST_CRED_1"].inspect} and its last " \
+                           "element => #{w_etoken[4].inspect}"
+        w_etoken[4]
+      end
+
       def voms_extensions?(auth_request)
         voms_ext = false
 
