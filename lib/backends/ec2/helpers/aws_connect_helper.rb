@@ -25,7 +25,7 @@ module Backends
             fail Backends::Errors::MethodNotImplementedError, e.message
           rescue ::Aws::EC2::Errors::ServiceError => e
             handle_service_error(e, logger)
-          rescue ::Seahorse::Client::Http::Error => e
+          rescue ::Seahorse::Client::NetworkingError => e
             logger.error "[Backends] [Ec2Backend] HTTP Error: #{e.message}"
             fail Backends::Errors::ServiceUnavailableError, e.message
           end

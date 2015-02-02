@@ -6,3 +6,5 @@ gem "openssl_cms_1_9_3", :git => 'https://github.com/arax/openssl-cms.git', :bra
 gem "openssl_cms_2_0_0", :git => 'https://github.com/arax/openssl-cms.git', :branch => 'ruby_2_0_0', :require => false, :platforms => :ruby_20
 
 gem "openssl_cms_2_1", :git => 'https://github.com/arax/openssl-cms.git', :branch => 'ruby_2_1', :require => false, :platforms => :ruby_21
+
+gem "openssl_cms_2_2", :git => 'https://github.com/arax/openssl-cms.git', :branch => 'ruby_2_2', :require => false, :platforms => :ruby_22
