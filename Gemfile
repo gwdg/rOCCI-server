@@ -1,8 +1,9 @@
 source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 4.1.9'
-gem 'rails-api', '~> 0.3.1'
+gem 'rails', '~> 4.2.0'
+gem 'rails-api', '~> 0.4.0'
+gem 'responders', '~> 2.1.0'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 #gem 'jbuilder', '~> 2.1.0'
@@ -25,6 +26,7 @@ gem 'rvm-capistrano', :group => :development
 # Use debugger
 gem 'debugger', :group => :development, :platforms => :ruby if RUBY_VERSION == '1.9.3'
 gem 'byebug', :group => :development, :platforms => :ruby if RUBY_VERSION.split('.').first == '2'
+gem 'web-console', '~> 2.0', :group => :development
 
 # Use whenever for scheduled jobs
 gem 'whenever', :require => false
@@ -37,7 +39,7 @@ gem 'rake', '~> 10.3.2'
 gem 'simplecov', :group => [:development, :test]
 
 # Use RSpec for unit tests
-gem 'rspec-rails', '~> 3.1.0', :group => [:development, :test]
+gem 'rspec-rails', '~> 3.2.0', :group => [:development, :test]
 gem 'fuubar', '~> 2.0.0', :group => [:development, :test]
 
 # Use Pry for debugging

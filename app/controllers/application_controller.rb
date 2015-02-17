@@ -1,7 +1,11 @@
+require "application_responder"
+
 # Base class for all rOCCI-server's controllers. Implements
 # parsing and authentication callbacks, exposes user information,
 # declares supported media formats and handles raised errors.
-class ApplicationController < ActionController::API
+class ApplicationController < ActionController::Base
+  self.responder = ApplicationResponder
+
   # Include some stuff present in the full ActionController
   include ActionController::ImplicitRender
   include ActionController::MimeResponds
