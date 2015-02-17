@@ -77,6 +77,9 @@
     SetEnv ROCCI_SERVER_TMP                   /tmp/rocci_server
     SetEnv ROCCI_SERVER_MEMCACHES             localhost:11211
 
+    ## experimental
+    SetEnv ROCCI_SERVER_ALLOW_EXPERIMENTAL_MIMES no
+
     ## authN configuration
     #SetEnv ROCCI_SERVER_AUTHN_VOMS_ROBOT_SUBPROXY_IDENTITY_ENABLE   no
 
