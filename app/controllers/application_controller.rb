@@ -1,7 +1,11 @@
+require "application_responder"
+
 # Base class for all rOCCI-server's controllers. Implements
 # parsing and authentication callbacks, exposes user information,
 # declares supported media formats and handles raised errors.
-class ApplicationController < ActionController::API
+class ApplicationController < ActionController::Base
+  self.responder = ApplicationResponder
+
   # Include some stuff present in the full ActionController
   include ActionController::ImplicitRender
   include ActionController::MimeResponds
@@ -47,7 +51,8 @@ class ApplicationController < ActionController::API
 
   # Register supported MIME formats
   # @see 'config/initializers/mime_types.rb' for details
-  respond_to :occi_header, :text #, :json, :occi_json, :xml, :occi_xml
+  respond_to :json, :occi_json if ROCCI_SERVER_CONFIG.common.allow_experimental_mimes
+  respond_to :occi_header, :text #, :xml, :occi_xml
   respond_to :uri_list, only: [:index]
   respond_to :html, only: [:index, :show]
 
