@@ -68,7 +68,8 @@ class Backend
     begin
       backend_class = Backends.const_get(backend_name)
     rescue NameError => err
-      message = "There is no such backend available! [Backends::#{backend_name}]"
+      message = "There is no such valid backend available! " \
+                "[Backends::#{backend_name}] #{err.message}"
       Rails.logger.error "[#{self}] #{message}"
       raise ArgumentError, message
     end
