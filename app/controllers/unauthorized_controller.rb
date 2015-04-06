@@ -23,12 +23,6 @@ class UnauthorizedController < ActionController::Metal
 
   def set_unauth
     self.status = 401
-
-    # Include Keystone URI in the response, if applicable
-    if ROCCI_SERVER_CONFIG.common.authn_strategies.include?('keystone')
-      headers['WWW-Authenticate'] = %(Keystone uri='#{ROCCI_SERVER_CONFIG.authn_strategies.keystone_.keystone_uri || "http://localhost:5000/v2.0/"}')
-    end
-
     self.content_type = 'text/plain'
     self.response_body = warden_message
   end
