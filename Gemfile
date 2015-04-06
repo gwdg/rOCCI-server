@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 4.2.0'
+gem 'rails', '~> 4.2.1'
 gem 'rails-api', '~> 0.4.0'
 gem 'responders', '~> 2.1.0'
 
@@ -32,7 +32,7 @@ gem 'web-console', '~> 2.0', :group => :development
 gem 'whenever', :require => false
 
 # Use passenger for deployment (standalone or in Apache2)
-gem 'passenger', '~> 4.0.58'
+gem 'passenger', '~> 4.0.59'
 gem 'rake', '~> 10.3.2'
 
 # Use simplecov for coverage reports
