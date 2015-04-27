@@ -17,6 +17,9 @@
     # directory containing the Root CA certificates and their hashes
     SSLCACertificatePath /etc/grid-security/certificates
 
+    # directory containing CRLs
+    SSLCARevocationPath /etc/grid-security/certificates
+
     # set to optional, this tells Apache to attempt to verify SSL certificates if provided
     # for X.509 access with GridSite/VOMS, however, set to 'require'
     SSLVerifyClient optional
