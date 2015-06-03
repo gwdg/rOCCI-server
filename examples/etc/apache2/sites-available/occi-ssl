@@ -6,7 +6,7 @@
     SSLEngine on
 
     # for security reasons you may restrict the SSL protocol, but some clients may fail if SSLv2 is not supported
-    SSLProtocol all
+    SSLProtocol all -SSLv2 -SSLv3
 
     # this should point to your server host certificate
     SSLCertificateFile /etc/grid-security/hostcert.pem
@@ -62,6 +62,7 @@
     # configuration for Passenger
     PassengerUser rocci
     PassengerGroup rocci
+    PassengerMinInstances 3
     PassengerFriendlyErrorPages off
 
     # configuration for rOCCI-server
@@ -84,7 +85,7 @@
     SetEnv ROCCI_SERVER_ALLOW_EXPERIMENTAL_MIMES no
 
     ## authN configuration
-    #SetEnv ROCCI_SERVER_AUTHN_VOMS_ROBOT_SUBPROXY_IDENTITY_ENABLE   no
+    SetEnv ROCCI_SERVER_AUTHN_VOMS_ROBOT_SUBPROXY_IDENTITY_ENABLE   no
 
     ## hooks
     #SetEnv ROCCI_SERVER_USER_BLACKLIST_HOOK_USER_BLACKLIST          "/path/to/yml/file.yml"
