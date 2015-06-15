@@ -172,6 +172,14 @@ describe Backends::Ec2Backend do
         networkinterface.target = network
         networkinterface
       }
+      let(:networkinterface_public) {
+        network = ec2_backend_instance.network_get("public")
+        networkinterface = Occi::Infrastructure::Networkinterface.new
+        networkinterface.target = network
+        networkinterface
+      }
+
+
       let(:storage) {
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
         ec2_backend_instance.storage_get("vol-b42b08b3")
@@ -239,6 +247,15 @@ describe Backends::Ec2Backend do
 
         expect{ec2_backend_instance.compute_create(compute)}.to raise_error(Backends::Errors::ResourceNotValidError)
       end
+
+      it 'creates compute resource with inline network link to public network'# do
+#        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+#        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+#
+#        compute.links << networkinterface_public
+#
+#        expect{ec2_backend_instance.compute_create(compute)}.not_to raise_error
+#      end
 
       it 'creates compute resource with inline storage link' do
         ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
