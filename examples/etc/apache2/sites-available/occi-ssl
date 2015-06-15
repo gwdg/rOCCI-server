@@ -6,7 +6,7 @@
     SSLEngine on
 
     # for security reasons you may restrict the SSL protocol, but some clients may fail if SSLv2 is not supported
-    SSLProtocol all
+    SSLProtocol all -SSLv2 -SSLv3
 
     # this should point to your server host certificate
     SSLCertificateFile /etc/grid-security/hostcert.pem
@@ -16,6 +16,9 @@
 
     # directory containing the Root CA certificates and their hashes
     SSLCACertificatePath /etc/grid-security/certificates
+
+    # directory containing CRLs
+    SSLCARevocationPath /etc/grid-security/certificates
 
     # set to optional, this tells Apache to attempt to verify SSL certificates if provided
     # for X.509 access with GridSite/VOMS, however, set to 'require'
@@ -59,6 +62,7 @@
     # configuration for Passenger
     PassengerUser rocci
     PassengerGroup rocci
+    PassengerMinInstances 3
     PassengerFriendlyErrorPages off
 
     # configuration for rOCCI-server
@@ -77,8 +81,11 @@
     SetEnv ROCCI_SERVER_TMP                   /tmp/rocci_server
     SetEnv ROCCI_SERVER_MEMCACHES             localhost:11211
 
+    ## experimental
+    SetEnv ROCCI_SERVER_ALLOW_EXPERIMENTAL_MIMES no
+
     ## authN configuration
-    #SetEnv ROCCI_SERVER_AUTHN_VOMS_ROBOT_SUBPROXY_IDENTITY_ENABLE   no
+    SetEnv ROCCI_SERVER_AUTHN_VOMS_ROBOT_SUBPROXY_IDENTITY_ENABLE   no
 
     ## hooks
     #SetEnv ROCCI_SERVER_USER_BLACKLIST_HOOK_USER_BLACKLIST          "/path/to/yml/file.yml"

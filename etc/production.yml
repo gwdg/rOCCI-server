@@ -12,3 +12,4 @@ memcaches: <%= ENV['ROCCI_SERVER_MEMCACHES'] || 'localhost:11211' %>
 cors_support:
   enable: <%= ENV['ROCCI_SERVER_CORS_SUPPORT_ENABLE'].blank? ? 'false' : ENV['ROCCI_SERVER_CORS_SUPPORT_ENABLE'] %>
   origins: <%= ENV['ROCCI_SERVER_CORS_SUPPORT_ORIGINS'] || 'localhost 127.0.0.1' %>
+allow_experimental_mimes: <%= ENV['ROCCI_SERVER_ALLOW_EXPERIMENTAL_MIMES'].blank? ? 'false' : ENV['ROCCI_SERVER_ALLOW_EXPERIMENTAL_MIMES'] %>

@@ -3,7 +3,7 @@ module AuthenticationStrategies
     VOMS_RANGE = (0..100)
     GRST_CRED_REGEXP = /^(.+)\s(\d+)\s(\d+)\s(\d)\s(.+)$/
     GRST_VOMS_REGEXP = /^\/(.+)\/Role=(.+)\/Capability=(.+)$/
-    ROBOT_SUBPROXY_REGEXP = /^\/(.+)\/CN=Robot(:|\/| - )(?<robot_name>.+)\/CN=eToken:(?<subuser_name>.+)\/(.+)$/
+    ROBOT_SUBPROXY_REGEXP = /^(?<issuer_base>\/.+)\/CN=Robot(:|\/|\s\-\s)(?<robot_name>[^\/]+)\/CN=eToken:(?<subuser_name>[^\/]+)(\/CN=\d+)+$/
 
     def auth_request
       @auth_request ||= ::ActionDispatch::Request.new(env)
@@ -52,17 +52,36 @@ module AuthenticationStrategies
 
       # Use sub-proxy DN as user identity if we are handling robots
       # and the DN in question matches our restrictions
-      user.identity = if self.class.handle_robots? && auth_request.env['SSL_CLIENT_S_DN'].match(ROBOT_SUBPROXY_REGEXP)
-        auth_request.env['SSL_CLIENT_S_DN']
-      else
-        user.auth.credentials.client_cert_dn
-      end
+      user.identity = if self.class.handle_robots? && (matched_robot = auth_request.env['SSL_CLIENT_S_DN'].match(ROBOT_SUBPROXY_REGEXP))
+                        etoken = self.class.extract_robot_etoken(matched_robot, auth_request)
+                        if etoken.blank?
+                          fail! 'Couldn\'t extract the first proxy DN of a robot certificate!'
+                          return
+                        end
+
+                        etoken
+                      else
+                        user.auth.credentials.client_cert_dn
+                      end
 
       Rails.logger.debug "[AuthN] [#{self.class}] Authenticated #{user.to_hash.inspect}"
       success! user.deep_freeze
     end
 
     class << self
+
+      def extract_robot_etoken(matched_robot, auth_request)
+        Rails.logger.debug "[AuthN] [#{self}] Matched robot #{matched_robot[:robot_name].inspect} " \
+                           "and sub-user #{matched_robot[:subuser_name].inspect}"
+        w_etoken = GRST_CRED_REGEXP.match(auth_request.env["GRST_CRED_1"])
+        w_etoken = w_etoken.to_a.drop 1
+
+        Rails.logger.debug "[AuthN] [#{self}] Looking at GRST_CRED_1 => " \
+                           "#{auth_request.env["GRST_CRED_1"].inspect} and its last " \
+                           "element => #{w_etoken[4].inspect}"
+        w_etoken[4]
+      end
+
       def voms_extensions?(auth_request)
         voms_ext = false
 

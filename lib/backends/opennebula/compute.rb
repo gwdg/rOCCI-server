@@ -282,7 +282,7 @@ module Backends
         "compute_#{virtual_machine['ID']}_disk_#{virtual_machine['TEMPLATE/DISK[last()]/DISK_ID']}"
       end
 
-      # Dettaches a network from an existing compute instance, the compute instance in question
+      # Detaches a network from an existing compute instance, the compute instance in question
       # must be identifiable using the networkinterface ID passed as an argument.
       # If the requested link instance cannot be detached, an error describing the
       # problem must be raised, @see Backends::Errors.
@@ -308,7 +308,7 @@ module Backends
         true
       end
 
-      # Dettaches a storage from an existing compute instance, the compute instance in question
+      # Detaches a storage from an existing compute instance, the compute instance in question
       # must be identifiable using the storagelink ID passed as an argument.
       # If the requested link instance cannot be detached, an error describing the
       # problem must be raised, @see Backends::Errors.
