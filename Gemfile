@@ -80,7 +80,7 @@ gem 'kgio', :group => :stuff_breaking_travis_ci
 gem 'warden', '~> 1.2.3'
 
 # Sensible logging with LogStash support
-gem 'logstasher', :git => "git://github.com/arax/logstasher.git", :branch => "master"
+gem 'logstasher', '~> 0.6.2'
 
 # Use Hashie::Mash to simplify hash-related stuff
 gem 'hashie'

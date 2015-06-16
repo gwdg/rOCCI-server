@@ -1,13 +1,4 @@
 GIT
-  remote: git://github.com/arax/logstasher.git
-  revision: 1cbf7a6874e475c51420f50497c8526a5953ff08
-  branch: master
-  specs:
-    logstasher (0.6.1)
-      logstash-event (~> 1.1.0)
-      request_store
-
-GIT
   remote: https://github.com/arax/openssl-cms.git
   revision: b6d079c076a9b8e15c573bf6660772ee83e34dd4
   branch: ruby_1_9_3
@@ -129,7 +120,10 @@ GEM
       celluloid (>= 0.15.2)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
-    logstash-event (1.1.5)
+    logstash-event (1.2.02)
+    logstasher (0.6.5)
+      logstash-event (~> 1.2.0)
+      request_store
     lumberjack (1.0.9)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
@@ -281,7 +275,7 @@ DEPENDENCIES
   ice_nine
   kgio
   libnotify
-  logstasher!
+  logstasher (~> 0.6.2)
   occi-core (~> 4.3.2)
   opennebula (~> 4.4.0)
   openssl_cms_1_9_3!
