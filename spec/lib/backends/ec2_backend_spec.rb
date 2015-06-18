@@ -232,6 +232,7 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
         ec2_dummy_client.stub_responses(:describe_images, images_stub)
         ec2_dummy_client.stub_responses(:describe_subnets, subnets_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
 
         compute.links << networkinterface
 
@@ -260,6 +261,7 @@ describe Backends::Ec2Backend do
       it 'creates compute resource with inline storage link' do
         ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
         ec2_dummy_client.stub_responses(:describe_images, images_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
 
         compute.links << storagelink
 
