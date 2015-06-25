@@ -7,10 +7,28 @@ describe Backends::Ec2Backend do
   let(:ec2_dummy_client) { ::Aws::EC2::Client.new(credentials: aws_creds, stub_responses: true) }
   let(:instance_statuses_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/instance_statuses_stub.yml") }
   let(:reservations_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stub.yml") }
+  let(:reservations_w_inval_res_tpl_stub) { reservations = reservations_stub
+    reservations[:reservations].each { |res| res[:instances].each { |ins| ins[:instance_type] = 'nofixture' }}
+    reservations }
+  let(:reservations_waiting_stub) { reservations = reservations_stub
+    reservations[:reservations].each { |res| res[:instances].each { |ins| ins[:state] = { :code => 0, :name => 'pending' }}}
+    reservations }
+  let(:reservations_inactive_stub) { reservations = reservations_stub
+    reservations[:reservations].each { |res| res[:instances].each { |ins| ins[:state] = { :code => 48, :name => 'terminated' }}}
+    reservations }
+  let(:reservations_w_o_netlinks_stub) { reservations = reservations_stub
+    reservations[:reservations].each { |res| res[:instances].each { |ins| ins[:network_interfaces] = [] }}
+    reservations }
   let(:reservation_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservation_stub.yml") }
   let(:reservations_storagelink_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_storagelink_stub.yml") }
   let(:reservations_stopped_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/reservations_stopped_stub.yml") }
   let(:volumes_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_stub.yml") }
+  let(:volumes_w_name_tag_stub) { volumes = volumes_stub
+    volumes[:volumes].each { |vol| vol[:tags] = [ {:key => "Name", :value => "Testname"} ] }
+    volumes }
+  let(:volumes_error_stub) { volumes = volumes_stub
+    volumes[:volumes].each { |vol| vol[:state] = "error" }
+    volumes }
   let(:volumes_storagelink_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_storagelink_stub.yml") }
   let(:volumes_deleted_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volumes_deleted_stub.yml") }
   let(:volume_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_stub.yml") }
@@ -18,8 +36,15 @@ describe Backends::Ec2Backend do
   let(:volume_attaching_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_attaching_stub.yml") }
   let(:volume_detaching_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/volume_detaching_stub.yml") }
   let(:vpcs_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpcs_stub.yml") }
+  let(:vpcs_w_name_tag_stub) { vpcs = vpcs_stub
+    vpcs[:vpcs].first[:tags] = [ {:key => "Name", :value => "Testname"} ]
+    vpcs }
+  let(:vpcs_pending_stub) { vpcs = vpcs_stub
+    vpcs[:vpcs].first[:state] = "pending"
+    vpcs }
   let(:vpc_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/vpc_stub.yml") }
   let(:subnet_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/subnet_stub.yml") }
+  let(:subnets_stub) { { :subnets => [ subnet_stub[:subnet] ] } }
   let(:empty_struct_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/empty_struct_stub.yml") }
   let(:internet_gateway_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/internet_gateway_stub.yml") }
   let(:terminating_instances_stub) { YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_stubs/terminating_instances_stub.yml") }
@@ -37,7 +62,7 @@ describe Backends::Ec2Backend do
     user
   end
   let(:ec2_backend_instance) do
-    options = YAML.load_file("#{Rails.root}/etc/backends/ec2/test.yml")
+    options = YAML.load(ERB.new(File.read("#{Rails.root}/etc/backends/ec2/test.yml")).result)
     instance = Backends::Ec2Backend.new ec2_backend_delegated_user, options, nil, nil, dalli
     instance.instance_variable_set(:@ec2_client, ec2_dummy_client)
 
@@ -99,17 +124,38 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         expect(ec2_backend_instance.compute_get("i-22af91c7").as_json).to eq YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/compute_list_single_instance.yml")
       end
+
+      it 'gets compute instance description correctly' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_w_inval_res_tpl_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect(ec2_backend_instance.compute_get("i-22af91c7").as_json.mixins).to include "http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#nofixture"
+      end
+
+      it 'gets compute instance description correctly with state waiting' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_waiting_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect(ec2_backend_instance.compute_get("i-22af91c7").attributes.occi.compute.state).to eq "waiting"
+      end
+
+      it 'gets compute instance description correctly with state inactive' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_inactive_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect(ec2_backend_instance.compute_get("i-22af91c7").attributes.occi.compute.state).to eq "inactive"
+      end
+
+      it 'gets compute instance description correctly with no network links' do
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_w_o_netlinks_stub)
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
+        expect(ec2_backend_instance.compute_get("i-22af91c7").links.count).to eq 3
+      end
     end
 
     describe '.compute_create' do
-      it 'reports correctly on missing os_tpl mixin' do
-        compute = Occi::Infrastructure::Compute.new
-        expect{ec2_backend_instance.compute_create(compute)}.to raise_exception(Backends::Errors::ResourceNotValidError)
-      end
-
-      it 'creates compute resource correctyly' do
-        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
-
+      let(:compute) {
         ostemplate = Occi::Core::Mixin.new("http://occi.localhost/occi/infrastructure/os_tpl#", "ami-6e7bd919")
         ostemplate.depends=[Occi::Infrastructure::OsTpl.mixin]
         restemplate = Occi::Core::Mixin.new("http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#", "t2_micro")
@@ -117,8 +163,114 @@ describe Backends::Ec2Backend do
         compute = Occi::Infrastructure::Compute.new
         compute.mixins << ostemplate
         compute.mixins << restemplate
+        compute
+      }
+      let(:networkinterface) {
+        network = Occi::Infrastructure::Network.new
+        network.address='10.0.0.0/24'
+        networkinterface = Occi::Infrastructure::Networkinterface.new
+        networkinterface.target = network
+        networkinterface
+      }
+      let(:networkinterface_public) {
+        network = ec2_backend_instance.network_get("public")
+        networkinterface = Occi::Infrastructure::Networkinterface.new
+        networkinterface.target = network
+        networkinterface
+      }
+
+
+      let(:storage) {
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
+        ec2_backend_instance.storage_get("vol-b42b08b3")
+      }
+      let(:storagelink) {
+        storagelink = Occi::Infrastructure::Storagelink.new
+        storagelink.target = storage
+        storagelink
+      }
+
+      it 'reports correctly on missing os_tpl mixin' do
+        compute_empty = Occi::Infrastructure::Compute.new
+        expect{ec2_backend_instance.compute_create(compute_empty)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'creates compute resource correctly' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+
         expect(ec2_backend_instance.compute_create(compute)).to eq "i-5a8cb7bf"
       end
+
+      it 'accepts regular user data' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+
+        compute.attributes['org.openstack.compute.user_data'] = "dXNlciBkYXRhCg=="
+  
+        expect{ec2_backend_instance.compute_create(compute)}.not_to raise_exception
+      end
+
+      it 'reports correctly on oversize user data' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+
+        compute.attributes['org.openstack.compute.user_data'] = (0...20000).map { 'd' }.join
+  
+        expect{ec2_backend_instance.compute_create(compute)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'reports correctly on invalid user data' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+
+        compute.attributes['org.openstack.compute.user_data'] = 'inv&lid'
+
+        expect{ec2_backend_instance.compute_create(compute)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'creates compute resource with inline network link' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+        ec2_dummy_client.stub_responses(:describe_subnets, subnets_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+
+        compute.links << networkinterface
+
+        expect{ec2_backend_instance.compute_create(compute)}.not_to raise_error
+      end
+
+      it 'refuses to create compute resource with multiple inline network links' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+
+        compute.links << networkinterface
+        compute.links << networkinterface
+
+        expect{ec2_backend_instance.compute_create(compute)}.to raise_error(Backends::Errors::ResourceNotValidError)
+      end
+
+      it 'creates compute resource with inline network link to public network'# do
+#        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+#        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+#
+#        compute.links << networkinterface_public
+#
+#        expect{ec2_backend_instance.compute_create(compute)}.not_to raise_error
+#      end
+
+      it 'creates compute resource with inline storage link' do
+        ec2_dummy_client.stub_responses(:run_instances, reservation_stub)
+        ec2_dummy_client.stub_responses(:describe_images, images_stub)
+        ec2_dummy_client.stub_responses(:describe_instances, reservations_stub)
+
+        compute.links << storagelink
+
+        expect{ec2_backend_instance.compute_create(compute)}.not_to raise_error
+
+        strglnks = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink' }
+        expect(strglnks.first.source).to eq "/compute/i-5a8cb7bf"
+      end
+
     end
 
 
@@ -327,17 +479,17 @@ describe Backends::Ec2Backend do
       end
 
       it 'reports correctly on non-existent volume' do
-        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidVolumeNotFound)
+        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidVolumeNotFound.new(Seahorse::Client::RequestContext.new,"Volume does not exist"))
         expect{ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")}.to raise_error(Backends::Errors::ResourceNotFoundError)
       end
 
       it 'reports correctly on non-existent instance' do
-        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidInstanceNotFound)
+        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidInstanceNotFound.new(Seahorse::Client::RequestContext.new,"Instance does not exist"))
         expect{ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")}.to raise_error(Backends::Errors::ResourceNotFoundError)
       end
 
       it 'reports correctly on non-existent link' do
-        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::IncorrectState)
+        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::IncorrectState.new(Seahorse::Client::RequestContext.new,"Link does not exist"))
         expect{ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")}.to raise_error(Backends::Errors::ResourceStateError)
       end
 
@@ -483,6 +635,16 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         expect(ec2_backend_instance.network_get("vpc-7d884a18").as_json).to eq expected=YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/network_get.yml")
       end
+
+      it 'gets network detail with network name specified' do
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_w_name_tag_stub)
+        expect(ec2_backend_instance.network_get("vpc-7d884a18").attributes.occi.core.title).to eq "Testname"
+      end
+
+      it 'gets network detail while offline' do
+        ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_pending_stub)
+        expect(ec2_backend_instance.network_get("vpc-7d884a18").attributes.occi.network.state).to eq "offline"
+      end
     end
 
     describe '.network_list_ids' do
@@ -528,7 +690,7 @@ describe Backends::Ec2Backend do
 
       it 'copes with operation failing at AWS side' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
-        ec2_dummy_client.stub_responses(:delete_vpc, Aws::EC2::Errors::InvalidVpcIDNotFound)
+        ec2_dummy_client.stub_responses(:delete_vpc, Aws::EC2::Errors::InvalidVpcIDNotFound.new(Seahorse::Client::RequestContext.new,"VPC does not exist"))
 
         opts=ec2_backend_instance.instance_variable_get(:@options)
         opts.network_destroy_allowed=true
@@ -582,6 +744,16 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
         expect(ec2_backend_instance.storage_get("vol-b42b08b3").as_json).to eq YAML.load_file("#{Rails.root}/spec/lib/backends/ec2_samples/storage_get.yml")
       end
+
+      it 'gets storage object with name specified' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_w_name_tag_stub)
+        expect(ec2_backend_instance.storage_get("vol-b42b08b3").attributes.occi.core.title).to eq "Testname"
+      end
+
+      it 'gets network detail while offline' do
+        ec2_dummy_client.stub_responses(:describe_volumes, volumes_error_stub)
+        expect(ec2_backend_instance.storage_get("vol-b42b08b3").attributes.occi.storage.state).to eq "degraded"
+      end
     end
 
     describe '.storage_create' do
@@ -634,6 +806,20 @@ describe Backends::Ec2Backend do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
 
         expect(ec2_backend_instance.storage_trigger_action_on_all(Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))).to be true
+      end
+    end
+  end
+
+  context 'resource_tpl' do
+    describe '.resource_tpl_list' do
+      it 'gets a list of resource templates' do
+        expect(ec2_backend_instance.resource_tpl_list.count).to be > 0
+      end
+    end
+
+    describe '.resource_tpl_get' do
+      it 'gets the given resource template' do
+        expect(ec2_backend_instance.resource_tpl_get('t1_micro').location).to eq "/mixin/resource_tpl/t1_micro/"
       end
     end
   end
