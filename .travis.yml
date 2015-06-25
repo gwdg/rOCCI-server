@@ -9,7 +9,6 @@ rvm:
 
 matrix:
   allow_failures:
-    - rvm: 2.2
     - rvm: ruby-head
   fast_finish: true
 
@@ -24,7 +23,7 @@ services:
 
 script: bundle exec rake spec
 
-install: 'gem install bundler -v "~> 1.7.12" && bundle install --jobs=3 --retry=3 --without stuff_breaking_travis_ci'
+install: 'gem install bundler -v ">= 1.7.12" && bundle install --retry=10 --without stuff_breaking_travis_ci'
 
 env:
   - ON_TRAVIS_CI=yes
