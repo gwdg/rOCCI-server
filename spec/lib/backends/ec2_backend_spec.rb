@@ -479,17 +479,17 @@ describe Backends::Ec2Backend do
       end
 
       it 'reports correctly on non-existent volume' do
-        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidVolumeNotFound)
+        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidVolumeNotFound.new(Seahorse::Client::RequestContext.new,"Volume does not exist"))
         expect{ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")}.to raise_error(Backends::Errors::ResourceNotFoundError)
       end
 
       it 'reports correctly on non-existent instance' do
-        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidInstanceNotFound)
+        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::InvalidInstanceNotFound.new(Seahorse::Client::RequestContext.new,"Instance does not exist"))
         expect{ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")}.to raise_error(Backends::Errors::ResourceNotFoundError)
       end
 
       it 'reports correctly on non-existent link' do
-        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::IncorrectState)
+        ec2_dummy_client.stub_responses(:detach_volume, Aws::EC2::Errors::IncorrectState.new(Seahorse::Client::RequestContext.new,"Link does not exist"))
         expect{ec2_backend_instance.compute_detach_storage("compute_i-5a8cb7bf_disk_vol-0b15340c")}.to raise_error(Backends::Errors::ResourceStateError)
       end
 
@@ -690,7 +690,7 @@ describe Backends::Ec2Backend do
 
       it 'copes with operation failing at AWS side' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
-        ec2_dummy_client.stub_responses(:delete_vpc, Aws::EC2::Errors::InvalidVpcIDNotFound)
+        ec2_dummy_client.stub_responses(:delete_vpc, Aws::EC2::Errors::InvalidVpcIDNotFound.new(Seahorse::Client::RequestContext.new,"VPC does not exist"))
 
         opts=ec2_backend_instance.instance_variable_get(:@options)
         opts.network_destroy_allowed=true
