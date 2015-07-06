@@ -110,6 +110,8 @@ GEM
     logstasher (0.6.5)
       logstash-event (~> 1.2.0)
       request_store
+    loofah (2.0.2)
+      nokogiri (>= 1.5.9)
     lumberjack (1.0.9)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
