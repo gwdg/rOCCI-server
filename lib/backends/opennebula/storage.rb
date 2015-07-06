@@ -1,7 +1,6 @@
 module Backends
   module Opennebula
     module Storage
-      DEFAULT_DATASTORE_ID = 1
 
       # Gets all storage instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
@@ -89,7 +88,8 @@ module Backends
       # @param storage [Occi::Infrastructure::Storage] storage instance containing necessary attributes
       # @return [String] final identifier of the new storage instance
       def storage_create(storage)
-        @logger.debug "[Backends] [OpennebulaBackend] Creating storage #{storage.inspect}"
+        @logger.debug "[Backends] [OpennebulaBackend] Creating storage #{storage.inspect} "\
+                      "in DS[#{@options.storage_datastore_id}]"
 
         # include some basic mixins
         # WARNING: adding mix-ins will re-set their attributes
@@ -105,7 +105,7 @@ module Backends
         image_alloc = ::OpenNebula::Image.build_xml
         backend_object = ::OpenNebula::Image.new(image_alloc, @client)
 
-        rc = backend_object.allocate(template, DEFAULT_DATASTORE_ID)
+        rc = backend_object.allocate(template, @options.storage_datastore_id.to_i)
         check_retval(rc, Backends::Errors::ResourceCreationError)
 
         rc = backend_object.info
