@@ -96,6 +96,7 @@
     SetEnv ROCCI_SERVER_ONE_XMLRPC  http://localhost:2633/RPC2
     SetEnv ROCCI_SERVER_ONE_USER    rocci
     SetEnv ROCCI_SERVER_ONE_PASSWD  yourincrediblylonganddifficulttoguesspassword
+    #SetEnv ROCCI_SERVER_ONE_STORAGE_DATASTORE_ID 1
 
     ## EC2 backend
     SetEnv ROCCI_SERVER_EC2_AWS_ACCESS_KEY_ID          myec2accesskeyid

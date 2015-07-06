@@ -4,3 +4,4 @@ templates_dir: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'bac
 xmlrpc_endpoint: <%= ENV['ROCCI_SERVER_ONE_XMLRPC'] %>
 username: <%= ENV['ROCCI_SERVER_ONE_USER'] %>
 password: <%= ENV['ROCCI_SERVER_ONE_PASSWD'] %>
+storage_datastore_id: <%= ENV['ROCCI_SERVER_ONE_STORAGE_DATASTORE_ID'] || '1' %>
