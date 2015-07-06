@@ -1,2 +1,2 @@
 # Deps for the EC2 backend
-gem 'aws-sdk', '~> 2.1.1'
+gem 'aws-sdk', '~> 2.1.2'
