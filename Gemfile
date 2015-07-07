@@ -21,7 +21,7 @@ end
 
 # Use Capistrano for deployment
 gem 'capistrano', :group => :development
-gem 'rvm-capistrano', :group => :development
+gem 'rvm-capistrano', :group => :development, :require => false
 
 # Use debugger
 gem 'debugger', :group => :development, :platforms => :ruby if RUBY_VERSION == '1.9.3'
