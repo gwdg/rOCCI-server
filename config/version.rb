@@ -1,4 +1,4 @@
 module ROCCIServer
-  VERSION = '1.1.7'
+  VERSION = '2.0.0.alpha.1'
   ROCCI_VERSION = ::Occi::VERSION
 end
