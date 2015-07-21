@@ -1,4 +1,4 @@
-# Module housing a logging helper. Once included in a module or a class
+# Module housing a logging helper. Once extending a module or a class
 # all method inputs and outputs will be automatically logged.
 module MethodLoggerHelper
   # Extends private and public methods of the target module/class with
@@ -6,7 +6,7 @@ module MethodLoggerHelper
   # when running with DEBUG log level.
   #
   # @param base [Module, Class] a reference to the target module/class
-  def self.included(base)
+  def self.extended(base)
     # Load instance methods directly from the given class
     methods = base.instance_methods(false) + base.private_instance_methods(false)
 

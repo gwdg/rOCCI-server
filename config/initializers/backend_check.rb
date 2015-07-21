@@ -1,6 +1,5 @@
 # Check whether a backend is selected in Rails.application.config.rocci_server_etc_dir/ENV.yml
-required_backends = %w(compute storage network).freeze
-required_backends.each do |required_backend|
+Backend::BACKEND_TYPES.required_backends.each do |required_backend|
   backend = ROCCI_SERVER_CONFIG.common.backend[required_backend.to_sym]
 
   if backend.blank?
@@ -18,7 +17,7 @@ required_backends.each do |required_backend|
 
   # check backend's compliance with the current API version
   Rails.logger.debug '[Backend] Checking backend API version'
-  b_class = Backend.load_backend_class(backend)
+  b_class = Backend.load_backend_class(backend, required_backend)
 
   unless b_class.const_defined?(:API_VERSION)
     message = "#{b_class} does not expose API_VERSION and cannot be loaded"
