@@ -1,5 +1,5 @@
 # Check whether a backend is selected in Rails.application.config.rocci_server_etc_dir/ENV.yml
-Backend::BACKEND_TYPES.required_backends.each do |required_backend|
+Backend::BACKEND_TYPES.each do |required_backend|
   backend = ROCCI_SERVER_CONFIG.common.backend[required_backend.to_sym]
 
   if backend.blank?

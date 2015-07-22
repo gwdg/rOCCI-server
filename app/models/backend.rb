@@ -25,9 +25,10 @@ class Backend
   # @param backend_names [Hash] names keyed by backend type
   # @param options [Hash] backend options keyed by backend type
   # @param server_properties [Hash] global server options
-  def initialize(delegated_user = nil, backend_names = nil, options = nil, server_properties = nil)
+  def initialize(delegated_user = nil, backend_names = {}, options = {}, server_properties = nil)
     @server_properties = server_properties || ROCCI_SERVER_CONFIG.common
     @options = {}
+    @backend_instances = {}
 
     BACKEND_TYPES.each do |backend_type|
       backend_name = backend_names[backend_type] || ROCCI_SERVER_CONFIG.common.backend[backend_type]
@@ -38,7 +39,7 @@ class Backend
                          "for delegated_user=#{delegated_user.inspect} " <<
                          "with options=#{self.options[backend_type]} and server_properties=#{self.server_properties}"
 
-      @backend_instances[backend_type] = self.backend_class.new(
+      @backend_instances[backend_type] = backend_class.new(
         delegated_user, self.options[backend_type],
         self.server_properties, Rails.logger,
         self.class.dalli_instance_factory(
@@ -49,7 +50,23 @@ class Backend
         )
       )
     end
+
+    inject_backends
   end
+
+  # Adds every backend instance to every other backend for reference and internal
+  # calls to retrieve resources.
+  def inject_backends
+    BACKEND_TYPES.each do |backend_type|
+      (BACKEND_TYPES - [backend_type]).each do |injected_backend|
+        backend_instances[backend_type].add_other_backend(
+          injected_backend,
+          backend_instances[injected_backend]
+        )
+      end
+    end
+  end
+  private :inject_backends
 
   # Performs deep cloning on given Object. Returned
   # instance is completely independent.
@@ -59,6 +76,7 @@ class Backend
   def deep_clone(object)
     Marshal.load(Marshal.dump(object))
   end
+  private :deep_clone
 
   # Load API fragments
   BACKEND_TYPES.each do |backend_api|

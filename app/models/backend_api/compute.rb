@@ -302,7 +302,7 @@ module BackendApi
       os_tpl.each { |m| m.location = "/mixin/os_tpl/#{m.term}/" }
       os_tpl
     end
-    alias :list_os_tpl, :os_tpl_list
+    alias :list_os_tpl :os_tpl_list
 
     # Gets a specific os_tpl mixin instance as Occi::Core::Mixin.
     # Term given as an argument must match the term inside
@@ -320,7 +320,7 @@ module BackendApi
       os_tpl.location = "/mixin/os_tpl/#{os_tpl.term}/" if os_tpl
       os_tpl
     end
-    alias :get_os_tpl, :os_tpl_get
+    alias :get_os_tpl :os_tpl_get
 
     # Gets platform- or backend-specific `resource_tpl` mixins which should be merged
     # into Occi::Model of the server.
@@ -335,7 +335,7 @@ module BackendApi
       resource_tpl.each { |m| m.location = "/mixin/resource_tpl/#{m.term}/" }
       resource_tpl
     end
-    alias :list_resource_tpl, :resource_tpl_list
+    alias :list_resource_tpl :resource_tpl_list
 
     # Gets a specific resource_tpl mixin instance as Occi::Core::Mixin.
     # Term given as an argument must match the term inside
@@ -353,6 +353,6 @@ module BackendApi
       resource_tpl.location = "/mixin/resource_tpl/#{resource_tpl.term}/" if resource_tpl
       resource_tpl
     end
-    alias :get_resource_tpl, :resource_tpl_get
+    alias :get_resource_tpl :resource_tpl_get
   end
 end

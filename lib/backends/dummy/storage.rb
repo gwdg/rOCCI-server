@@ -1,6 +1,6 @@
 module Backends
   module Dummy
-    module Storage
+    class Storage < Backends::Dummy::Base
       # Gets all storage instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Storage instances.

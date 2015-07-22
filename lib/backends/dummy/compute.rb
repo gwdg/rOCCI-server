@@ -1,6 +1,6 @@
 module Backends
   module Dummy
-    module Compute
+    class Compute < Backends::Dummy::Base
       # Gets all compute instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Compute instances.
@@ -282,7 +282,7 @@ module Backends
         # an error, @see Backends::Errors.
         ###
         compute = compute_get(networkinterface.attributes['occi.core.source'].split('/').last)
-        network = network_get(networkinterface.attributes['occi.core.target'].split('/').last)
+        network = @other_backends['network'].network_get(networkinterface.attributes['occi.core.target'].split('/').last)
 
         fail Backends::Errors::ResourceNotFoundError, 'Given compute instance does not exist!' unless compute
         fail Backends::Errors::ResourceNotFoundError, 'Given network instance does not exist!' unless network
@@ -331,7 +331,7 @@ module Backends
         # an error, @see Backends::Errors.
         ###
         compute = compute_get(storagelink.attributes['occi.core.source'].split('/').last)
-        storage = storage_get(storagelink.attributes['occi.core.target'].split('/').last)
+        storage = @other_backends['storage'].storage_get(storagelink.attributes['occi.core.target'].split('/').last)
 
         fail Backends::Errors::ResourceNotFoundError, 'Given compute instance does not exist!' unless compute
         fail Backends::Errors::ResourceNotFoundError, 'Given storage instance does not exist!' unless storage
@@ -557,6 +557,74 @@ module Backends
         save_compute_fixtures(updated)
 
         true
+      end
+
+      # Gets backend-specific `os_tpl` mixins which should be merged
+      # into Occi::Model of the server.
+      #
+      # @example
+      #    mixins = os_tpl_list #=> #<Occi::Core::Mixins>
+      #    mixins.first #=> #<Occi::Core::Mixin>
+      #
+      # @return [Occi::Core::Mixins] a collection of mixins
+      def os_tpl_list
+        read_os_tpl_fixtures
+      end
+
+      # Gets a specific os_tpl mixin instance as Occi::Core::Mixin.
+      # Term given as an argument must match the term inside
+      # the returned Occi::Core::Mixin instance.
+      #
+      # @example
+      #    os_tpl = os_tpl_get('65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf')
+      #        #=> #<Occi::Core::Mixin>
+      #
+      # @param term [String] OCCI term of the requested os_tpl mixin instance
+      # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
+      def os_tpl_get(term)
+        ###
+        # See #os_tpl_list for details on how to create Occi::Core::Mixin instances.
+        # Here you simply select a specific instance with a matching term.
+        # Since terms must be unique, you should always return at most one instance.
+        ###
+        found = os_tpl_list.to_a.select { |m| m.term == term }.first
+        fail Backends::Errors::ResourceNotFoundError, "Mixin with term #{term.inspect} does not exist!" unless found
+
+        found
+      end
+
+      # Gets platform- or backend-specific `resource_tpl` mixins which should be merged
+      # into Occi::Model of the server.
+      #
+      # @example
+      #    mixins = resource_tpl_list #=> #<Occi::Core::Mixins>
+      #    mixins.first  #=> #<Occi::Core::Mixin>
+      #
+      # @return [Occi::Core::Mixins] a collection of mixins
+      def resource_tpl_list
+        read_resource_tpl_fixtures
+      end
+
+      # Gets a specific resource_tpl mixin instance as Occi::Core::Mixin.
+      # Term given as an argument must match the term inside
+      # the returned Occi::Core::Mixin instance.
+      #
+      # @example
+      #    resource_tpl = resource_tpl_get('65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf')
+      #        #=> #<Occi::Core::Mixin>
+      #
+      # @param term [String] OCCI term of the requested resource_tpl mixin instance
+      # @return [Occi::Core::Mixin, nil] a mixin instance or `nil`
+      def resource_tpl_get(term)
+        ###
+        # See #resource_tpl_list for details on how to create Occi::Core::Mixin instances.
+        # Here you simply select a specific instance with a matching term.
+        # Since terms must be unique, you should always return at most one instance.
+        ###
+        found = resource_tpl_list.to_a.select { |m| m.term == term }.first
+        fail Backends::Errors::ResourceNotFoundError, "Mixin with term #{term.inspect} does not exist!" unless found
+
+        found
       end
     end
   end

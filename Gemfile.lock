@@ -302,6 +302,3 @@ DEPENDENCIES
   web-console (~> 2.0)
   whenever
   yard
-
-BUNDLED WITH
-   1.10.5

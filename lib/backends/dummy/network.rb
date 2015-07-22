@@ -1,6 +1,6 @@
 module Backends
   module Dummy
-    module Network
+    class Network < Backends::Dummy::Base
       # Gets all network instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Network instances.
