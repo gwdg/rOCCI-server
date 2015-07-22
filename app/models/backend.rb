@@ -83,6 +83,20 @@ class Backend
     include BackendApi.const_get(backend_api.camelize)
   end
 
+  # Returns a collection of custom mixins introduced (and specific for)
+  # all enabled backends. Only mixins and actions are allowed.
+  #
+  # @return [Occi::Collection] all registered extensions in a collection
+  def get_extensions
+    collection = Occi::Collection.new
+    BACKEND_TYPES.each do |backend_type|
+      collection.merge! backend_instances[backend_type].send(
+        "#{backend_type}_get_extensions"
+      )
+    end
+    collection
+  end
+
   class << self
     # Matches the given backend name with the real backend class.
     # Raises an exception if such a backend does not exist.

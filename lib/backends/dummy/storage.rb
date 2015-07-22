@@ -231,6 +231,15 @@ module Backends
 
         true
       end
+
+      # Returns a collection of custom mixins introduced (and specific for)
+      # the enabled backend. Only mixins and actions are allowed.
+      #
+      # @return [Occi::Collection] collection of extensions (custom mixins and/or actions)
+      def storage_get_extensions
+        # no extensions to include
+        Occi::Collection.new
+      end
     end
   end
 end
