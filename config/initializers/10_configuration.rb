@@ -34,6 +34,7 @@ end
 
 # Load backend configuration from 'etc/backends/**/*.yml'
 ROCCI_SERVER_CONFIG.common.backend.values.each do |enabled_backend|
+  next if ROCCI_SERVER_CONFIG.backends && ROCCI_SERVER_CONFIG.backends[enabled_backend]
   ROCCI_SERVER_CONFIG.backends![enabled_backend] = get_yaml_config(Rails.application.config.rocci_server_etc_dir.join('backends', enabled_backend))
 end
 
