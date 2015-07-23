@@ -7,7 +7,7 @@ class Backend
   extend PrivateAttrAccessor
 
   # Expose API_VERSION
-  API_VERSION = '0.0.1'
+  API_VERSION = '1.0.0'
 
   # Supported backend types
   BACKEND_TYPES = %w(compute storage network).freeze

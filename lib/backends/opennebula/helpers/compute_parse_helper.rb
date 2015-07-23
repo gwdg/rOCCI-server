@@ -171,7 +171,7 @@ module Backends
 
             if disk['IMAGE_ID']
               begin
-                target = storage_get(disk['IMAGE_ID'])
+                target = @other_backends['storage'].storage_get(disk['IMAGE_ID'])
               rescue Backends::Errors::UserNotAuthorizedError
                 # image exists but isn't available for this user
                 target = Occi::Infrastructure::Storage.new
@@ -225,7 +225,7 @@ module Backends
 
             if nic['NETWORK_ID']
               begin
-                target = network_get(nic['NETWORK_ID'])
+                target = @other_backends['network'].network_get(nic['NETWORK_ID'])
               rescue Backends::Errors::UserNotAuthorizedError
                 # network exists but isn't available for this user
                 target = Occi::Infrastructure::Network.new

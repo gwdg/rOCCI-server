@@ -1,9 +1,12 @@
 module Backends
   module Dummy
     class Base
-      API_VERSION = '0.0.1'
+      API_VERSION = '1.0.0'
       FIXTURES = [:compute, :network, :storage].freeze
       FIXTURES_TPL = [:os_tpl, :resource_tpl].freeze
+
+      # load helpers for JSON -> Collection conversion
+      include Backends::Helpers::JsonCollectionHelper
 
       def initialize(delegated_user, options, server_properties, logger, dalli_cache)
         @delegated_user = Hashie::Mash.new(delegated_user)
@@ -21,6 +24,8 @@ module Backends
         fail 'Type and instance must be provided!' unless backend_type && backend_instance
         @other_backends[backend_type] = backend_instance
       end
+
+      private
 
       def read_fixtures(base_path)
         @logger.debug "[Backends] [DummyBackend] Reading fixtures from #{base_path.to_s.inspect}"
@@ -41,12 +46,10 @@ def read_#{fixture}_fixtures(path = '')
 
   #{fixture}
 end
-private :read_#{fixture}_fixtures
 
 def save_#{fixture}_fixtures(#{fixture})
   Rails.env.test? ? @#{fixture} = #{fixture} : @dalli_cache.set('dummy_#{fixture}', #{fixture})
 end
-private :save_#{fixture}_fixtures
 
 def drop_#{fixture}_fixtures(lite = true)
   if lite
@@ -55,7 +58,6 @@ def drop_#{fixture}_fixtures(lite = true)
     Rails.env.test? ? @#{fixture} = nil : @dalli_cache.delete('dummy_#{fixture}')
   end
 end
-private :drop_#{fixture}_fixtures
 |
       end
 
@@ -73,12 +75,10 @@ def read_#{fixture_tpl}_fixtures(path = '')
 
   #{fixture_tpl}
 end
-private :read_#{fixture_tpl}_fixtures
 
 def save_#{fixture_tpl}_fixtures(#{fixture_tpl})
   Rails.env.test? ? @#{fixture_tpl} = #{fixture_tpl} : @dalli_cache.set('dummy_#{fixture_tpl}', #{fixture_tpl})
 end
-private :save_#{fixture_tpl}_fixtures
 |
       end
 
@@ -93,14 +93,6 @@ private :save_#{fixture_tpl}_fixtures
 
         File.join(path, "#{fixture_type.to_s}.json")
       end
-
-      # load helpers for JSON -> Collection conversion
-      include Backends::Helpers::JsonCollectionHelper
-
-      # hide internal stuff
-      private :read_fixtures
-      private :read_from_json
-      private :path_for_fixture_file
     end
   end
 end

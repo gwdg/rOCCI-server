@@ -1,6 +1,6 @@
 module Backends
   module Opennebula
-    module Network
+    class Network < Backends::Opennebula::Base
       # Gets all network instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Network instances.
@@ -235,6 +235,14 @@ module Backends
       def network_trigger_action(network_id, action_instance)
         fail Backends::Errors::ActionNotImplementedError,
              "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
+      end
+
+      # Returns a collection of custom mixins introduced (and specific for)
+      # the enabled backend. Only mixins and actions are allowed.
+      #
+      # @return [Occi::Collection] collection of extensions (custom mixins and/or actions)
+      def network_get_extensions
+        read_extensions 'network'
       end
 
       private

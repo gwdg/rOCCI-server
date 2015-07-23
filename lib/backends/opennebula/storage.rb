@@ -1,7 +1,6 @@
 module Backends
   module Opennebula
-    module Storage
-
+    class Storage < Backends::Opennebula::Base
       # Gets all storage instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
       # attribute of Occi::Infrastructure::Storage instances.
@@ -250,6 +249,14 @@ module Backends
         end
 
         true
+      end
+
+      # Returns a collection of custom mixins introduced (and specific for)
+      # the enabled backend. Only mixins and actions are allowed.
+      #
+      # @return [Occi::Collection] collection of extensions (custom mixins and/or actions)
+      def storage_get_extensions
+        read_extensions 'storage'
       end
 
       private

@@ -183,7 +183,7 @@ module Backends
         end
 
         def compute_create_add_inline_storagelink(template, storagelink)
-          storage = storage_get(storagelink.target.split('/').last)
+          storage = @other_backends['storage'].storage_get(storagelink.target.split('/').last)
           @logger.debug "[Backends] [OpennebulaBackend] Linking storage #{storage.id.inspect} - #{storage.title.inspect}"
 
           disktemplate_location = File.join(@options.templates_dir, 'compute_disk.erb')
@@ -193,7 +193,7 @@ module Backends
         end
 
         def compute_create_add_inline_networkinterface(template, networkinterface)
-          network = network_get(networkinterface.target.split('/').last)
+          network = @other_backends['network'].network_get(networkinterface.target.split('/').last)
           @logger.debug "[Backends] [OpennebulaBackend] Linking network #{network.id.inspect} - #{network.title.inspect}"
 
           nictemplate_location = File.join(@options.templates_dir, 'compute_nic.erb')
