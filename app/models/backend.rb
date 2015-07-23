@@ -3,6 +3,9 @@
 # and delegated to the real backend.
 class Backend
 
+  # Track accessors to exclude them from debugging logs
+  extend TrackAttributes
+
   # Will need private accessors here
   extend PrivateAttrAccessor
 
@@ -177,5 +180,7 @@ class Backend
     end
   end
 
+  # Enable tracing for non-production environments
+  # requires TrackAttributes (extend)
   extend MethodLoggerHelper unless Rails.env.production?
 end

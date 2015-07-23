@@ -19,13 +19,14 @@ module MethodLoggerHelper
     methods.flatten!
 
     # Do some magic and define proxy methods on-the-fly
+    accessors = base.attr_accessors + base.attr_readers + base.attr_writers
     base.class_eval do
       methods.each do |method_name|
+        next if accessors.include? method_name
         original_method = instance_method(method_name)
 
         define_method(method_name) do |*args, &block|
           Rails.logger.debug "---> #{base}##{method_name}(#{args.inspect})"
-
           return_value = original_method.bind(self).call(*args, &block)
           Rails.logger.debug "<--- #{base}##{method_name} #=> #{return_value.inspect}"
           return_value
