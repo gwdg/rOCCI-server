@@ -13,7 +13,7 @@ module Backends
           # include some basic mixins
           # WARNING: adding mix-ins will re-set their attributes
           attr_backup = Occi::Core::Attributes.new(compute.attributes)
-          compute.mixins << 'http://opennebula.org/occi/infrastructure#compute'
+          compute.mixins << 'http://schemas.opennebula.org/occi/infrastructure#compute'
           compute.attributes = attr_backup
 
           os_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::OsTpl.mixin.type_identifier)

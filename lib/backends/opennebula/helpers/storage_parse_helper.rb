@@ -6,7 +6,7 @@ module Backends
           storage = Occi::Infrastructure::Storage.new
 
           # include some basic mixins
-          storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
+          storage.mixins << 'http://schemas.opennebula.org/occi/infrastructure#storage'
 
           # include mixins stored in ON's VN template
           unless backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'].blank?

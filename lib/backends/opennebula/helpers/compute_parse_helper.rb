@@ -13,7 +13,7 @@ module Backends
           compute = Occi::Infrastructure::Compute.new
 
           # include some basic mixins
-          compute.mixins << 'http://opennebula.org/occi/infrastructure#compute'
+          compute.mixins << 'http://schemas.opennebula.org/occi/infrastructure#compute'
 
           # include mixins stored in ON's VM template
           unless backend_compute['USER_TEMPLATE/OCCI_COMPUTE_MIXINS'].blank?
@@ -194,7 +194,7 @@ module Backends
             link.title = target.title if target.title
             link.source = compute
 
-            link.mixins << 'http://opennebula.org/occi/infrastructure#storagelink'
+            link.mixins << 'http://schemas.opennebula.org/occi/infrastructure#storagelink'
 
             unless backend_compute["USER_TEMPLATE/OCCI_STORAGELINK_MIXINS/DISK_#{disk['DISK_ID']}"].blank?
               backend_mixins = backend_compute["USER_TEMPLATE/OCCI_STORAGELINK_MIXINS/DISK_#{disk['DISK_ID']}"].split(' ')
@@ -249,7 +249,7 @@ module Backends
             link.source = compute
 
             link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
-            link.mixins << 'http://opennebula.org/occi/infrastructure#networkinterface'
+            link.mixins << 'http://schemas.opennebula.org/occi/infrastructure#networkinterface'
 
             unless backend_compute["USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS/NIC_#{nic['NIC_ID']}"].blank?
               backend_mixins = backend_compute["USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS/NIC_#{nic['NIC_ID']}"].split(' ')

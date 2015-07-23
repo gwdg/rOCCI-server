@@ -5,7 +5,7 @@
         "http://schemas.ogf.org/occi/infrastructure#storagelink"
       ],
       "term":"storagelink",
-      "scheme":"http://opennebula.org/occi/infrastructure#",
+      "scheme":"http://schemas.opennebula.org/occi/infrastructure#",
       "title":"OpenNebula specific Storagelink attributes",
       "location":"/mixin/storagelink/",
       "attributes":{

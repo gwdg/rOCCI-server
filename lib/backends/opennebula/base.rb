@@ -56,7 +56,7 @@ module Backends
         @resource_tpl = Occi::Core::Mixins.new
 
         Dir.glob(path) do |json_file|
-          @resource_tpl.merge! read_from_json(json_file).mixins if File.readable?(json_file)
+          @resource_tpl.merge read_from_json(json_file).mixins if File.readable?(json_file)
         end
       end
 

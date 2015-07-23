@@ -7,7 +7,7 @@ module Backends
 
           # include some basic mixins
           network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
-          network.mixins << 'http://opennebula.org/occi/infrastructure#network'
+          network.mixins << 'http://schemas.opennebula.org/occi/infrastructure#network'
 
           # include mixins stored in ON's VN template
           unless backend_network['TEMPLATE/OCCI_NETWORK_MIXINS'].blank?
