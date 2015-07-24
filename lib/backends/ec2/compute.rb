@@ -492,31 +492,6 @@ module Backends
         end
       end
 
-      #
-      #
-      def os_tpl_list_image_to_term(ec2_image)
-        ec2_image[:image_id]
-      end
-
-      #
-      #
-      def os_tpl_list_term_to_image_id(term)
-        term
-      end
-
-      #
-      #
-      def os_tpl_list_mixin_from_image(ec2_image)
-        depends = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
-        term = os_tpl_list_image_to_term(ec2_image)
-        scheme = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
-        title = ec2_image[:name] || 'unknown'
-        location = "/mixin/os_tpl/#{term}/"
-        applies = %w|http://schemas.ogf.org/occi/infrastructure#compute|
-
-        ::Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
-      end
-
       # Gets platform- or backend-specific `resource_tpl` mixins which should be merged
       # into Occi::Model of the server.
       #
@@ -545,6 +520,33 @@ module Backends
         resource_tpl_list.to_a.select { |m| m.term == term }.first
       end
 
+      private
+
+      #
+      #
+      def os_tpl_list_image_to_term(ec2_image)
+        ec2_image[:image_id]
+      end
+
+      #
+      #
+      def os_tpl_list_term_to_image_id(term)
+        term
+      end
+
+      #
+      #
+      def os_tpl_list_mixin_from_image(ec2_image)
+        depends = %w|http://schemas.ogf.org/occi/infrastructure#os_tpl|
+        term = os_tpl_list_image_to_term(ec2_image)
+        scheme = "#{@options.backend_scheme}/occi/infrastructure/os_tpl#"
+        title = ec2_image[:name] || 'unknown'
+        location = "/mixin/os_tpl/#{term}/"
+        applies = %w|http://schemas.ogf.org/occi/infrastructure#compute|
+
+        ::Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
+      end
+
       #
       #
       def resource_tpl_list_itype_to_term(ec2_itype)
@@ -556,8 +558,6 @@ module Backends
       def resource_tpl_list_term_to_itype(term)
         term ? term.gsub('_', '.') : nil
       end
-
-      private
 
       # Load methods called from compute_list/compute_get
       include Backends::Ec2::Helpers::ComputeParseHelper
