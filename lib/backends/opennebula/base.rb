@@ -32,28 +32,12 @@ module Backends
 
       private
 
-      # Returns a collection of custom mixins introduced (and specific for)
-      # the enabled backend. Only mixins and actions are allowed.
-      #
-      # @param backend_type [String] type of the backend
-      # @return [Occi::Collection] collection of extensions (custom mixins and/or actions)
-      def read_extensions(backend_type)
-        fail Backends::Errors::ResourceRetrievalError, 'Cannot retrieve extensions ' \
-                                                       'for an unspecified backend type!' if backend_type.blank?
-
-        collection = Occi::Collection.new
-        path = File.join(@options.model_extensions_dir, backend_type, '*.json')
-
-        Dir.glob(path).each do |json_file|
-          collection.merge! read_from_json(json_file) if File.readable?(json_file)
-        end
-
-        collection
-      end
+      # load helpers for working with OCCI extensions
+      include include Backends::Helpers::ExtensionsHelper
 
       def read_resource_tpl_fixtures(base_path)
         path = File.join(base_path, 'resource_tpl', '*.json')
-        @resource_tpl = Occi::Core::Mixins.new
+        @resource_tpl = ::Occi::Core::Mixins.new
 
         Dir.glob(path) do |json_file|
           @resource_tpl.merge read_from_json(json_file).mixins if File.readable?(json_file)
@@ -61,7 +45,7 @@ module Backends
       end
 
       def init_connection(delegated_user, options)
-        conf = Hashie::Mash.new
+        conf = ::Hashie::Mash.new
         conf.auth = delegated_user.auth_.type
         conf.one_xmlrpc = options.xmlrpc_endpoint
 

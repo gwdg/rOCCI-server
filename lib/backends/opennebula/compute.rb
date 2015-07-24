@@ -433,7 +433,7 @@ module Backends
       #
       # @return [Occi::Collection] collection of extensions (custom mixins and/or actions)
       def compute_get_extensions
-        read_extensions 'compute'
+        read_extensions 'compute', @options.model_extensions_dir
       end
 
       # Gets backend-specific `os_tpl` mixins which should be merged

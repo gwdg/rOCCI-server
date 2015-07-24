@@ -256,7 +256,7 @@ module Backends
       #
       # @return [Occi::Collection] collection of extensions (custom mixins and/or actions)
       def storage_get_extensions
-        read_extensions 'storage'
+        read_extensions 'storage', @options.model_extensions_dir
       end
 
       private

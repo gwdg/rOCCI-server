@@ -242,7 +242,7 @@ module Backends
       #
       # @return [Occi::Collection] collection of extensions (custom mixins and/or actions)
       def network_get_extensions
-        read_extensions 'network'
+        read_extensions 'network', @options.model_extensions_dir
       end
 
       private
