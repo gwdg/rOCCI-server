@@ -38,8 +38,8 @@ class Backend
       backend_class = self.class.load_backend_class(backend_name, backend_type)
       @options[backend_type] = options[backend_type] || ROCCI_SERVER_CONFIG.backends.send(backend_name.to_sym)
 
-      Rails.logger.debug "[#{self.class}] Instantiating #{backend_class} " <<
-                         "for delegated_user=#{delegated_user.inspect} " <<
+      Rails.logger.debug "[#{self.class}] Instantiating #{backend_class} " \
+                         "for delegated_user=#{delegated_user.inspect} " \
                          "with options=#{self.options[backend_type]} and server_properties=#{self.server_properties}"
 
       @backend_instances[backend_type] = backend_class.new(
