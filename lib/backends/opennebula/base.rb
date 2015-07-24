@@ -33,7 +33,7 @@ module Backends
       private
 
       # load helpers for working with OCCI extensions
-      include include Backends::Helpers::ExtensionsHelper
+      include Backends::Helpers::ExtensionsHelper
 
       def read_resource_tpl_fixtures(base_path)
         path = File.join(base_path, 'resource_tpl', '*.json')

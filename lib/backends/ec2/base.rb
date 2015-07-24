@@ -37,7 +37,7 @@ module Backends
       private
 
       # load helpers for working with OCCI extensions
-      include include Backends::Helpers::ExtensionsHelper
+      include Backends::Helpers::ExtensionsHelper
 
       def set_image_filtering_policy
         policy = @options.image_filtering!.policy || 'all'

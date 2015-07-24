@@ -28,7 +28,7 @@ module Backends
       private
 
       # load helpers for working with OCCI extensions
-      include include Backends::Helpers::ExtensionsHelper
+      include Backends::Helpers::ExtensionsHelper
 
       def read_fixtures(base_path)
         @logger.debug "[Backends] [Dummy] Reading fixtures from #{base_path.to_s.inspect}"
