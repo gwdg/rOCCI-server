@@ -1,7 +1,6 @@
 module Backends
   module Ec2
-    module Network
-
+    class Network < Backends::Ec2::Base
       NETWORK_DUMMIES = ['public', 'private'].freeze
 
       # Gets all network instance IDs, no details, no duplicates. Returned
@@ -264,6 +263,14 @@ module Backends
         fail Backends::Errors::ActionNotImplementedError,
              "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
         true
+      end
+
+      # Returns a collection of custom mixins introduced (and specific for)
+      # the enabled backend. Only mixins and actions are allowed.
+      #
+      # @return [Occi::Collection] collection of extensions (custom mixins and/or actions)
+      def network_get_extensions
+        read_extensions 'network', @options.model_extensions_dir
       end
 
       private
