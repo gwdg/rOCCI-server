@@ -9,7 +9,7 @@ module Backends
         COMPUTE_DN_BASED_AUTHS = %w(x509 voms).freeze
 
         def compute_create_with_os_tpl(compute)
-          @logger.debug "[Backends] [Ec2Backend] Deploying #{compute.inspect}"
+          @logger.debug "[Backends] [Ec2] Deploying #{compute.inspect}"
 
           # generate and amend inst options
           instance_opts = compute_create_instance_opts(compute)
@@ -57,7 +57,7 @@ module Backends
           resource_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::ResourceTpl.mixin.type_identifier)
           resource_tpl = resource_tpl_mixins.first
 
-          @logger.debug "[Backends] [Ec2Backend] Deploying with template #{os_tpl.term.inspect} in size #{resource_tpl.inspect}"
+          @logger.debug "[Backends] [Ec2] Deploying with template #{os_tpl.term.inspect} in size #{resource_tpl.inspect}"
           os_tpl = os_tpl_list_term_to_image_id(os_tpl.term)
           resource_tpl = resource_tpl_list_term_to_itype(resource_tpl ? resource_tpl.term : 't1_micro')
 
@@ -93,7 +93,7 @@ module Backends
 
           compute_create_wait4running(instance_id) if strglnks.any?
           strglnks.each do |storagelink|
-            @logger.debug "[Backends] [Ec2Backend] Attaching inline storage #{storagelink.target.inspect} to \"/compute/#{instance_id}\""
+            @logger.debug "[Backends] [Ec2] Attaching inline storage #{storagelink.target.inspect} to \"/compute/#{instance_id}\""
 
             storagelink.source = "/compute/#{instance_id}"
             compute_attach_storage(storagelink)
@@ -106,7 +106,7 @@ module Backends
           compute_create_wait4running(instance_id) if ntwrkintfs.any?
           ntwrkintfs.each do |networkinterface|
             next unless networkinterface.target.end_with?('/network/public')
-            @logger.debug "[Backends] [Ec2Backend] Attaching inline network #{networkinterface.target.inspect} to \"/compute/#{instance_id}\""
+            @logger.debug "[Backends] [Ec2] Attaching inline network #{networkinterface.target.inspect} to \"/compute/#{instance_id}\""
 
             networkinterface.source = "/compute/#{instance_id}"
             compute_attach_network(networkinterface)

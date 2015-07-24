@@ -32,7 +32,7 @@ module Backends
       fail Backends::Errors::ConfigurationError, "Image policies 'only_listed' and 'owned_and_listed' require a list of images!" \
         if (policy == 'only_listed' || policy == 'owned_and_listed') && image_list.blank?
 
-      @logger.info "[Backends] [Ec2Backend] EC2 image filtering policy #{policy.inspect} with image list #{image_list.inspect}"
+      @logger.info "[Backends] [Ec2] EC2 image filtering policy #{policy.inspect} with image list #{image_list.inspect}"
 
       @image_filtering_policy = policy
       @image_filtering_image_list = image_list.is_a?(Array) ? image_list : image_list.split(' ')

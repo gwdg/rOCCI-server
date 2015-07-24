@@ -25,7 +25,7 @@ module Backends
             begin
               @ec2_client.associate_address(addr_opts)
             rescue => e
-              @logger.warn "[Backends] [Ec2Backend] An attempt to associate #{addr_opts.inspect} failed!"
+              @logger.warn "[Backends] [Ec2] An attempt to associate #{addr_opts.inspect} failed!"
 
               if is_vpc
                 @ec2_client.release_address(allocation_id: addr_opts[:allocation_id])
@@ -74,7 +74,7 @@ module Backends
               @ec2_client.disassociate_address(addr_opts)
               @ec2_client.release_address(addr_opts_al)
             rescue ::Aws::EC2::Errors::AuthFailure => e
-              @logger.warn "[Backends] [Ec2Backend] An attempt to release #{ec2_allocation.inspect} failed!"
+              @logger.warn "[Backends] [Ec2] An attempt to release #{ec2_allocation.inspect} failed!"
               fail Backends::Errors::UserNotAuthorizedError, e.message
             end
           end

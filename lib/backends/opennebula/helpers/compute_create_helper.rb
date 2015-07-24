@@ -8,7 +8,7 @@ module Backends
         COMPUTE_DN_BASED_AUTHS = %w(x509 voms).freeze
 
         def compute_create_with_os_tpl(compute)
-          @logger.debug "[Backends] [OpennebulaBackend] Deploying #{compute.inspect}"
+          @logger.debug "[Backends] [Opennebula] Deploying #{compute.inspect}"
 
           # include some basic mixins
           # WARNING: adding mix-ins will re-set their attributes
@@ -19,7 +19,7 @@ module Backends
           os_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::OsTpl.mixin.type_identifier)
           os_tpl = os_tpl_mixins.first
 
-          @logger.debug "[Backends] [OpennebulaBackend] Deploying with OS template: #{os_tpl.term}"
+          @logger.debug "[Backends] [Opennebula] Deploying with OS template: #{os_tpl.term}"
           os_tpl = os_tpl_list_term_to_id(os_tpl.term)
 
           # get template
@@ -51,7 +51,7 @@ module Backends
           # add inline links
           template = compute_create_add_inline_links(compute, template)
 
-          @logger.debug "[Backends] [OpennebulaBackend] Template #{template.inspect}"
+          @logger.debug "[Backends] [Opennebula] Template #{template.inspect}"
           vm_alloc = ::OpenNebula::VirtualMachine.build_xml
           backend_object = ::OpenNebula::VirtualMachine.new(vm_alloc, @client)
 
@@ -167,7 +167,7 @@ module Backends
 
           compute.links.to_a.each do |link|
             next unless link.kind_of? Occi::Core::Link
-            @logger.debug "[Backends] [OpennebulaBackend] Handling inline link #{link.to_s.inspect}"
+            @logger.debug "[Backends] [Opennebula] Handling inline link #{link.to_s.inspect}"
 
             case link.kind.type_identifier
             when 'http://schemas.ogf.org/occi/infrastructure#storagelink'
@@ -184,7 +184,7 @@ module Backends
 
         def compute_create_add_inline_storagelink(template, storagelink)
           storage = @other_backends['storage'].storage_get(storagelink.target.split('/').last)
-          @logger.debug "[Backends] [OpennebulaBackend] Linking storage #{storage.id.inspect} - #{storage.title.inspect}"
+          @logger.debug "[Backends] [Opennebula] Linking storage #{storage.id.inspect} - #{storage.title.inspect}"
 
           disktemplate_location = File.join(@options.templates_dir, 'compute_disk.erb')
           disktemplate = Erubis::Eruby.new(File.read(disktemplate_location)).evaluate(storagelink: storagelink)
@@ -194,7 +194,7 @@ module Backends
 
         def compute_create_add_inline_networkinterface(template, networkinterface)
           network = @other_backends['network'].network_get(networkinterface.target.split('/').last)
-          @logger.debug "[Backends] [OpennebulaBackend] Linking network #{network.id.inspect} - #{network.title.inspect}"
+          @logger.debug "[Backends] [Opennebula] Linking network #{network.id.inspect} - #{network.title.inspect}"
 
           nictemplate_location = File.join(@options.templates_dir, 'compute_nic.erb')
           nictemplate = Erubis::Eruby.new(File.read(nictemplate_location)).evaluate(networkinterface: networkinterface)
