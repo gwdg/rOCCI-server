@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe Backends::DummyBackend do
+describe Backends::Dummy::Compute do
   let(:dalli) { Dalli::Client.new }
   let(:dummy_w_opts) do
     opts = Hashie::Mash.new
     opts.fixtures_dir = Rails.application.config.rocci_server_etc_dir.join('backends', 'dummy', 'fixtures')
-    Backends::DummyBackend.new nil, opts, nil, nil, dalli
+    Backends::Dummy::Compute.new nil, opts, nil, nil, dalli
   end
 
   before(:each) { dalli.flush }
@@ -13,7 +13,7 @@ describe Backends::DummyBackend do
 
   describe '#new' do
     it 'fails to instantiate without a fixtures_dir' do
-      expect { Backends::DummyBackend.new nil, nil, nil, nil, dalli }.to raise_error
+      expect { Backends::Dummy::Compute.new nil, nil, nil, nil, dalli }.to raise_error
     end
   end
 

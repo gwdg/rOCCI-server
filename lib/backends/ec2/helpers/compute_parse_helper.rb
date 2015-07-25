@@ -91,7 +91,7 @@ module Backends
             link.id = id
             link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
-            target = storage_get(blk[:ebs][:volume_id])
+            target = @other_backends['storage'].storage_get(blk[:ebs][:volume_id])
             next unless target # there is no way to render a link without a target
 
             link.target = target
@@ -143,7 +143,7 @@ module Backends
           link.id = id
           link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
-          target = intf[:vpc_id] ? network_get(intf[:vpc_id]) : Occi::Infrastructure::Network.new
+          target = intf[:vpc_id] ? @other_backends['network'].network_get(intf[:vpc_id]) : Occi::Infrastructure::Network.new
           return unless target # there is no way to render a link without a target
 
           if intf[:association] && intf[:association][:public_ip]

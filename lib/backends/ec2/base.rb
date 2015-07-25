@@ -19,7 +19,7 @@ module Backends
         # establish connection with AWS
         ::Aws.config[:region] = @options.aws_region || "eu-west-1"
         ::Aws.config[:endpoint] = @options.aws_endpoint unless @options.aws_endpoint.blank?
-        run_authn
+        run_authn unless Rails.env.test? # disable early auth for tests
 
         @options.backend_scheme ||= "http://occi.#{@server_properties.hostname || 'localhost'}"
 
