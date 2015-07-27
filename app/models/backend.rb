@@ -92,11 +92,7 @@ class Backend
   # @return [Occi::Collection] all registered extensions in a collection
   def get_extensions
     collection = Occi::Collection.new
-    BACKEND_TYPES.each do |backend_type|
-      collection.merge! backend_instances[backend_type].send(
-        "#{backend_type}_get_extensions"
-      )
-    end
+    BACKEND_TYPES.each { |backend_type| collection.merge! backend_instances[backend_type].get_extensions }
     collection
   end
 
