@@ -112,86 +112,86 @@ describe Backends::Ec2::Storage do
   let(:default_image_filtering_policy) { ec2_backend_instance.instance_variable_get(:@image_filtering_policy) }
 
   context 'storage' do
-    describe 'storage_list_ids' do
+    describe '.list_ids' do
       it 'gets a list of storage resources' do
         ec2_dummy_client.stub_responses(:describe_volume_status, volume_statuses_stub)
-        expect(ec2_backend_instance.storage_list_ids).to eq ["vol-b86c67bf", "vol-0d1b100a", "vol-0c1b100b"]
+        expect(ec2_backend_instance.list_ids).to eq ["vol-b86c67bf", "vol-0d1b100a", "vol-0c1b100b"]
       end
     end
 
-    describe 'storage_list' do
+    describe '.list' do
       it 'gets a list of storage resources' do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
-        expect(ec2_backend_instance.storage_list.as_json).to eq YAML.load_file("#{EC2_SAMPLES_DIR}/storage_list.yml")
+        expect(ec2_backend_instance.list.as_json).to eq YAML.load_file("#{EC2_SAMPLES_DIR}/storage_list.yml")
       end
     end
 
-    describe '.storage_get' do
+    describe '.get' do
       it 'gets storage object' do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
-        expect(ec2_backend_instance.storage_get("vol-b42b08b3").as_json).to eq YAML.load_file("#{EC2_SAMPLES_DIR}/storage_get.yml")
+        expect(ec2_backend_instance.get("vol-b42b08b3").as_json).to eq YAML.load_file("#{EC2_SAMPLES_DIR}/storage_get.yml")
       end
 
       it 'gets storage object with name specified' do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_w_name_tag_stub)
-        expect(ec2_backend_instance.storage_get("vol-b42b08b3").attributes.occi.core.title).to eq "Testname"
+        expect(ec2_backend_instance.get("vol-b42b08b3").attributes.occi.core.title).to eq "Testname"
       end
 
       it 'gets network detail while offline' do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_error_stub)
-        expect(ec2_backend_instance.storage_get("vol-b42b08b3").attributes.occi.storage.state).to eq "degraded"
+        expect(ec2_backend_instance.get("vol-b42b08b3").attributes.occi.storage.state).to eq "degraded"
       end
     end
 
-    describe '.storage_create' do
+    describe '.create' do
       it 'creates storage with default size (1 GB)' do
         ec2_dummy_client.stub_responses(:create_volume, volume_stub)
         ec2_dummy_client.stub_responses(:create_tags, empty_struct_stub)
         storage = Occi::Infrastructure::Storage.new
-        expect(ec2_backend_instance.storage_create(storage)).to eq "vol-b86c67bf"
+        expect(ec2_backend_instance.create(storage)).to eq "vol-b86c67bf"
       end
     end
 
-    describe '.storage_delete' do
+    describe '.delete' do
       it 'deletes the given storage resource' do
         ec2_dummy_client.stub_responses(:delete_volume, empty_struct_stub)
-        expect(ec2_backend_instance.storage_delete("vol-b86c67bf")).to be true
+        expect(ec2_backend_instance.delete("vol-b86c67bf")).to be true
       end
     end
 
-    describe '.storage_delete_all' do
+    describe '.delete_all' do
       it 'deletes storage resources' do
         ec2_dummy_client.stub_responses(:describe_volume_status, volume_statuses_stub)
         ec2_dummy_client.stub_responses(:delete_volume, empty_struct_stub)
-        expect(ec2_backend_instance.storage_delete_all).to be true
+        expect(ec2_backend_instance.delete_all).to be true
       end
     end
 
-    describe '.storage_trigger_action' do
+    describe '.trigger_action' do
       it 'triggers "snapshot" action correctly' do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
 
-        expect(ec2_backend_instance.storage_trigger_action("vol-b42b08b3",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))).to be true
+        expect(ec2_backend_instance.trigger_action("vol-b42b08b3",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))).to be true
       end
 
       it 'refuses to trigger action in incorrect state' do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_deleted_stub)
 
-        expect{ec2_backend_instance.storage_trigger_action("vol-22574725",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))}.to raise_error(Backends::Errors::ResourceStateError)
+        expect{ec2_backend_instance.trigger_action("vol-22574725",Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))}.to raise_error(Backends::Errors::ResourceStateError)
       end
 
       it 'returns correctly on unsupported action' do
         attrs = Occi::Core::Attributes.new
         attrs["occi.core.title"] = "test"
-        expect{ec2_backend_instance.storage_trigger_action("vol-b42b08b3",Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
+        expect{ec2_backend_instance.trigger_action("vol-b42b08b3",Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
       end
     end
 
-    describe '.storage_trigger_action_on_all' do
+    describe '.trigger_action_on_all' do
       it 'triggers "snapshot" action correctly' do
         ec2_dummy_client.stub_responses(:describe_volumes, volumes_stub)
 
-        expect(ec2_backend_instance.storage_trigger_action_on_all(Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))).to be true
+        expect(ec2_backend_instance.trigger_action_on_all(Occi::Core::ActionInstance.new(Occi::Core::Action.new("http://schemas.ogf.org/occi/infrastructure/storage/action#","snapshot")))).to be true
       end
     end
   end
@@ -202,15 +202,15 @@ describe Backends::Ec2::Storage do
     #   2)  Make sure developers are reminded of specs
     #       when the methods are finally implemented :)
     # On implementing, consider moving the spec among the implemented ones
-    describe '.storage_partial_update' do
+    describe '.partial_update' do
       it 'currently returns "Not Supported" message' do
-        expect{ec2_backend_instance.storage_partial_update(Occi::Infrastructure::Storage.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
+        expect{ec2_backend_instance.partial_update(Occi::Infrastructure::Storage.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
       end
     end
 
-    describe '.storage_update' do
+    describe '.update' do
       it 'currently returns "Not Supported" message' do
-        expect{ec2_backend_instance.storage_update(Occi::Infrastructure::Storage.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
+        expect{ec2_backend_instance.update(Occi::Infrastructure::Storage.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
       end
     end
   end

@@ -115,7 +115,7 @@ describe Backends::Ec2::Network do
     after(:each) { ec2_backend_instance.instance_variable_set(:@options, default_options) 
                    ec2_backend_instance.instance_variable_set(:@image_filtering_policy, default_image_filtering_policy) }
 
-    describe '.network_create' do
+    describe '.create' do
       it 'creates a network instance' do
         ec2_dummy_client.stub_responses(:create_vpc, vpc_stub)
         ec2_dummy_client.stub_responses(:create_subnet, subnet_stub)
@@ -124,113 +124,113 @@ describe Backends::Ec2::Network do
         ec2_dummy_client.stub_responses(:attach_internet_gateway, empty_struct_stub)
 
         network = Occi::Infrastructure::Network.new
-        network.address='10.0.0.0/24'
-        opts=ec2_backend_instance.instance_variable_get(:@options)
-        opts.network_create_allowed=true
+        network.address = '10.0.0.0/24'
+        opts = ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_create_allowed = true
         ec2_backend_instance.instance_variable_set(:@options, opts)
-        expect(ec2_backend_instance.network_create(network)).to eq "vpc-a08b44c5"
+        expect(ec2_backend_instance.create(network)).to eq "vpc-a08b44c5"
       end
 
       it 'refuses creation on missing permissions' do
-        expect{ec2_backend_instance.network_create(Occi::Infrastructure::Network.new)}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
+        expect{ec2_backend_instance.create(Occi::Infrastructure::Network.new)}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
       end
 
       it 'throws exception if address unspecified' do
-        opts=ec2_backend_instance.instance_variable_get(:@options)
-        opts.network_create_allowed=true
+        opts = ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_create_allowed = true
         ec2_backend_instance.instance_variable_set(:@options, opts)
-        expect{ec2_backend_instance.network_create(Occi::Infrastructure::Network.new)}.to raise_exception(Backends::Errors::ResourceNotValidError)
+        expect{ec2_backend_instance.create(Occi::Infrastructure::Network.new)}.to raise_exception(Backends::Errors::ResourceNotValidError)
       end
     end
 
-    describe '.network_get' do
+    describe '.get' do
       it 'gets network detail' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
-        expect(ec2_backend_instance.network_get("vpc-7d884a18").as_json).to eq expected=YAML.load_file("#{EC2_SAMPLES_DIR}/network_get.yml")
+        expect(ec2_backend_instance.get("vpc-7d884a18").as_json).to eq expected=YAML.load_file("#{EC2_SAMPLES_DIR}/network_get.yml")
       end
 
       it 'gets network detail with network name specified' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_w_name_tag_stub)
-        expect(ec2_backend_instance.network_get("vpc-7d884a18").attributes.occi.core.title).to eq "Testname"
+        expect(ec2_backend_instance.get("vpc-7d884a18").attributes.occi.core.title).to eq "Testname"
       end
 
       it 'gets network detail while offline' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_pending_stub)
-        expect(ec2_backend_instance.network_get("vpc-7d884a18").attributes.occi.network.state).to eq "offline"
+        expect(ec2_backend_instance.get("vpc-7d884a18").attributes.occi.network.state).to eq "offline"
       end
     end
 
-    describe '.network_list_ids' do
+    describe '.list_ids' do
       it 'lists network IDs' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
-        expect(ec2_backend_instance.network_list_ids).to eq ["vpc-7d884a18", "public", "private"]
+        expect(ec2_backend_instance.list_ids).to eq ["vpc-7d884a18", "public", "private"]
       end
     end
 
-    describe '.network_list' do
+    describe '.list' do
       it 'returns network instances' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         ids=[]
-        list=ec2_backend_instance.network_list.each { |network| ids << network.id }
+        list=ec2_backend_instance.list.each { |network| ids << network.id }
         expect(ids).to eq ["vpc-7d884a18", "public", "private"]
       end
     end
 
-    describe '.network_delete_all' do
+    describe '.delete_all' do
       it 'deletes networks' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         ec2_dummy_client.stub_responses(:delete_vpc, true)
 
-        opts=ec2_backend_instance.instance_variable_get(:@options)
-        opts.network_destroy_allowed=true
+        opts = ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed = true
         ec2_backend_instance.instance_variable_set(:@options, opts)
 
-        expect expect(ec2_backend_instance.network_delete_all).to be true
+        expect expect(ec2_backend_instance.delete_all).to be true
       end
     end
 
-    describe '.network_delete' do
+    describe '.delete' do
       it 'deletes a network instance' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         ec2_dummy_client.stub_responses(:delete_vpc, true)
 
-        opts=ec2_backend_instance.instance_variable_get(:@options)
-        opts.network_destroy_allowed=true
+        opts = ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed = true
         ec2_backend_instance.instance_variable_set(:@options, opts)
 
-        expect(ec2_backend_instance.network_delete("vpc-a08b44c5")).to be true
+        expect(ec2_backend_instance.delete("vpc-a08b44c5")).to be true
       end
 
       it 'copes with operation failing at AWS side' do
         ec2_dummy_client.stub_responses(:describe_vpcs, vpcs_stub)
         ec2_dummy_client.stub_responses(:delete_vpc, Aws::EC2::Errors::InvalidVpcIDNotFound.new(Seahorse::Client::RequestContext.new,"VPC does not exist"))
 
-        opts=ec2_backend_instance.instance_variable_get(:@options)
-        opts.network_destroy_allowed=true
+        opts = ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed = true
         ec2_backend_instance.instance_variable_set(:@options, opts)
 
-        expect{ec2_backend_instance.network_delete("vpc-a08b44c5")}.to raise_exception(Backends::Errors::ResourceNotFoundError)
+        expect{ec2_backend_instance.delete("vpc-a08b44c5")}.to raise_exception(Backends::Errors::ResourceNotFoundError)
       end
 
       it 'refuses deletion on missing permissions' do
-        expect{ec2_backend_instance.network_delete("vpc-a08b44c5")}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
+        expect{ec2_backend_instance.delete("vpc-a08b44c5")}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
       end
 
       it 'reports correctly on non-existent network' do
-        opts=ec2_backend_instance.instance_variable_get(:@options)
-        opts.network_destroy_allowed=true
+        opts = ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed = true
         ec2_backend_instance.instance_variable_set(:@options, opts)
 
-        expect{ec2_backend_instance.network_delete("nonexistent")}.to raise_exception(Backends::Errors::ResourceNotFoundError)
+        expect{ec2_backend_instance.delete("nonexistent")}.to raise_exception(Backends::Errors::ResourceNotFoundError)
       end
 
       it 'reports correctly on AWS standard networks' do
-        opts=ec2_backend_instance.instance_variable_get(:@options)
-        opts.network_destroy_allowed=true
+        opts = ec2_backend_instance.instance_variable_get(:@options)
+        opts.network_destroy_allowed = true
         ec2_backend_instance.instance_variable_set(:@options, opts)
 
-        expect{ec2_backend_instance.network_delete("public")}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
-        expect{ec2_backend_instance.network_delete("private")}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
+        expect{ec2_backend_instance.delete("public")}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
+        expect{ec2_backend_instance.delete("private")}.to raise_exception(Backends::Errors::UserNotAuthorizedError)
       end
     end
   end
@@ -241,31 +241,31 @@ describe Backends::Ec2::Network do
     #   2)  Make sure developers are reminded of specs
     #       when the methods are finally implemented :)
     # On implementing, consider moving the spec among the implemented ones
-    describe '.network_update' do
+    describe '.update' do
       it 'currently returns "Not Supported" message' do
-        expect{ec2_backend_instance.network_update(Occi::Infrastructure::Network.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
+        expect{ec2_backend_instance.update(Occi::Infrastructure::Network.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
       end
     end
 
-    describe '.network_partial_update' do
+    describe '.partial_update' do
       it 'currently returns "Not Supported" message' do
-        expect{ec2_backend_instance.network_partial_update(Occi::Infrastructure::Network.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
+        expect{ec2_backend_instance.partial_update(Occi::Infrastructure::Network.new.id)}.to raise_exception(Backends::Errors::MethodNotImplementedError)
       end
     end
 
-    describe '.network_trigger_action' do
+    describe '.trigger_action' do
       it 'currently returns "Not Supported" message' do
         attrs = Occi::Core::Attributes.new
         attrs["occi.core.title"] = "test"
-        expect{ec2_backend_instance.network_trigger_action(Occi::Infrastructure::Network.new.id,Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
+        expect{ec2_backend_instance.trigger_action(Occi::Infrastructure::Network.new.id,Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
       end
     end
 
-    describe '.network_trigger_action_on_all' do
+    describe '.trigger_action_on_all' do
       it 'currently returns "Not Supported" message' do
         attrs = Occi::Core::Attributes.new
         attrs["occi.core.title"] = "test"
-        expect{ec2_backend_instance.network_trigger_action_on_all(Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
+        expect{ec2_backend_instance.trigger_action_on_all(Occi::Core::ActionInstance.new(Occi::Core::Action.new, nil))}.to raise_exception(Backends::Errors::ActionNotImplementedError)
       end
     end
   end
