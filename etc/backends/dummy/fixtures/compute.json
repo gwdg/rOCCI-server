@@ -64,7 +64,33 @@
           }
         }
       },
-      "id": "509afbd3-abff-427c-9b25-7913d17e5102"
+      "id": "509afbd3-abff-427c-9b25-7913d17e5102",
+      "links": [
+        {
+          "kind": "http://schemas.ogf.org/occi/infrastructure#networkinterface",
+          "mixins": [
+            "http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface"
+          ],
+          "attributes": {
+            "occi": {
+              "networkinterface": {
+                "mac": "aa:0c:fa:2a:b2:15",
+                "allocation": "static",
+                "address": "10.0.0.1"
+              },
+              "core": {
+                "source": "/compute/509afbd3-abff-427c-9b25-7913d17e5102",
+                "target": "/network/23cd7d72-eb86-4036-8969-4c902014bbc6",
+                "id": "compute_509afbd3-abff-427c-9b25-7913d17e5102_nic_0"
+              }
+            }
+          },
+          "id": "compute_509afbd3-abff-427c-9b25-7913d17e5102_nic_0",
+          "rel": "http://schemas.ogf.org/occi/infrastructure#network",
+          "source": "/compute/509afbd3-abff-427c-9b25-7913d17e5102",
+          "target": "/network/23cd7d72-eb86-4036-8969-4c902014bbc6"
+        }
+      ]
     }
   ]
 }
