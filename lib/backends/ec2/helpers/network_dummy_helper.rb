@@ -2,19 +2,18 @@ module Backends
   module Ec2
     module Helpers
       module NetworkDummyHelper
-
-        def network_get_dummy_public
-          network_get_dummy :public
+        def get_dummy_public
+          get_dummy :public
         end
 
-        def network_get_dummy_private
-          network_get_dummy :private
+        def get_dummy_private
+          get_dummy :private
         end
 
         private
 
-        def network_get_dummy(type)
-          network = Occi::Infrastructure::Network.new
+        def get_dummy(type)
+          network = ::Occi::Infrastructure::Network.new
           network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
 
           network.id = type.to_s
@@ -24,7 +23,6 @@ module Backends
 
           network
         end
-
       end
     end
   end

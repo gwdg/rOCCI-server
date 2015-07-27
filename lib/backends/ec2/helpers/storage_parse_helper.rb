@@ -2,9 +2,8 @@ module Backends
   module Ec2
     module Helpers
       module StorageParseHelper
-
-        def storage_parse_backend_obj(backend_storage)
-          storage = Occi::Infrastructure::Storage.new
+        def parse_backend_obj(backend_storage)
+          storage = ::Occi::Infrastructure::Storage.new
 
           storage.mixins << 'http://schemas.ec2.aws.amazon.com/occi/infrastructure/storage#aws_ec2_ebs_volume'
 
@@ -23,7 +22,7 @@ module Backends
           storage.attributes['com.amazon.aws.ec2.encrypted'] = backend_storage[:encrypted] unless backend_storage[:encrypted].nil?
 
           # include state information and available actions
-          result = storage_parse_state(backend_storage)
+          result = parse_state(backend_storage)
           storage.state = result.state
           result.actions.each { |a| storage.actions << a }
 
@@ -32,7 +31,7 @@ module Backends
 
         private
 
-        def storage_parse_state(backend_storage)
+        def parse_state(backend_storage)
           result = Hashie::Mash.new
 
           # In EC2:
@@ -51,7 +50,6 @@ module Backends
 
           result
         end
-
       end
     end
   end
