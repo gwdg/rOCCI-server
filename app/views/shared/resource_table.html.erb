@@ -1,69 +1,67 @@
 <table width="100%" style="border: solid 1px; text-align: left">
-  <thead style="text-align: center">
-  <tr>
-    <th colspan="2"><h2>[ <%= @local_resource.kind.type_identifier %> ]</h2></th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr style="background: grey">
-    <td colspan="2" style="font-weight: bold">Mixins</td>
-  </tr>
-  <% @local_resource.mixins.each do |mxn| %>
-      <tr>
-        <td colspan="2">[ <%= mxn.type_identifier %> ]</td>
-      </tr>
-  <% end %>
-  <tr style="background: grey">
-    <td colspan="2" style="font-weight: bold">Attributes</td>
-  </tr>
-  <% @local_resource.attributes.names.each_pair do |attribute, value| %>
-      <tr>
-        <td style="font-weight: bold" width="20%"><%= attribute %></td>
-        <td><%= value %></td>
-      </tr>
-  <% end %>
-  <tr style="background: grey">
-    <td colspan="2" style="font-weight: bold">Links</td>
-  </tr>
-  <% @local_resource.links.each do |lnk| %>
-      <tr>
-        <td colspan="2" align="right">
-          <table width="95%" style="border: solid 1px; text-align: left">
-            <thead style="text-align: center">
-            <tr>
-              <td colspan="2"><h3>[ <%= lnk.kind.kind_of?(String) ? lnk.kind : lnk.kind.type_identifier %> ]</h3></td>
-            </tr>
-            </thead>
-            <tbody>
-            <tr style="background: grey">
-              <td colspan="2" style="font-weight: bold">Mixins</td>
-            </tr>
-            <% lnk.mixins.each do |mxn| %>
-                <tr>
-                  <td colspan="2">[ <%= mxn.kind_of?(String) ? mxn : mxn.type_identifier %> ]</td>
-                </tr>
-            <% end %>
-            <% if lnk.attributes && lnk.attributes.names %>
-                <tr style="background: grey">
-                  <td colspan="2" style="font-weight: bold">Attributes</td>
-                </tr>
-                <% lnk.attributes.names.each_pair do |attribute, value| %>
-                    <tr>
-                      <td style="font-weight: bold" width="20%"><%= attribute %></td>
-                      <td>
-                        <% if attribute == 'occi.core.target' || attribute == 'occi.core.source' %>
-                            <a href="<%= value %>"><%= value %></a>
-                        <% else %>
-                            <%= value %>
-                        <% end %>
-                      </td>
-                    </tr>
-                <% end %>
-            <% end %>
-            </tbody>
-          </table>
-        </td>
-      </tr>
-  <% end %>
-  </tbody>
+	<thead style="text-align: center">
+		<tr>
+			<th colspan="2"><h2>[ <%= @local_resource.kind.type_identifier %> ]</h2></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr style="background: grey">
+			<td colspan="2" style="font-weight: bold">Mixins</td>
+		</tr>
+		<% @local_resource.mixins.each do |mxn| %>
+		<tr>
+			<td colspan="2">[ <%= mxn.type_identifier %> ]</td>
+		</tr>
+		<% end %>
+		<tr style="background: grey">
+			<td colspan="2" style="font-weight: bold">Attributes</td>
+		</tr>
+		<% @local_resource.attributes.names.each_pair do |attribute, value| %>
+		<tr>
+			<td style="font-weight: bold" width="20%"><%= attribute %></td>
+			<td><%= value %></td>
+		</tr>
+		<% end %>
+		<tr style="background: grey">
+			<td colspan="2" style="font-weight: bold">Links</td>
+		</tr>
+		<% @local_resource.links.each do |lnk| %>
+		<tr>
+			<td colspan="2" align="right">
+				<table width="95%" style="border: solid 1px; text-align: left">
+					<thead style="text-align: center">
+						<tr>
+							<td colspan="2"><h3>[ <%= lnk.kind.type_identifier %> ]</h3></td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr style="background: grey">
+							<td colspan="2" style="font-weight: bold">Mixins</td>
+						</tr>
+						<% lnk.mixins.each do |mxn| %>
+						<tr>
+							<td colspan="2">[ <%= mxn.type_identifier %> ]</td>
+						</tr>
+						<% end %>
+						<tr style="background: grey">
+							<td colspan="2" style="font-weight: bold">Attributes</td>
+						</tr>
+						<% lnk.attributes.names.each_pair do |attribute, value| %>
+						<tr>
+							<td style="font-weight: bold" width="20%"><%= attribute %></td>
+							<td>
+								<% if attribute == 'occi.core.target' || attribute == 'occi.core.source' %>
+								<a href="<%= value %>"><%= value %></a>
+								<% else %>
+								<%= value %>
+								<% end %>
+							</td>
+						</tr>
+						<% end %>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		<% end %>
+	</tbody>
 </table>
