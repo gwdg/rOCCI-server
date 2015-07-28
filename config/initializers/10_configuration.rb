@@ -33,9 +33,12 @@ ROCCI_SERVER_CONFIG.common.hooks.each do |hook|
 end
 
 # Load backend configuration from 'etc/backends/**/*.yml'
-ROCCI_SERVER_CONFIG.backends![ROCCI_SERVER_CONFIG.common.backend] = get_yaml_config(Rails.application.config.rocci_server_etc_dir.join('backends', ROCCI_SERVER_CONFIG.common.backend))
+ROCCI_SERVER_CONFIG.common.backend.values.each do |enabled_backend|
+  next if ROCCI_SERVER_CONFIG.backends && ROCCI_SERVER_CONFIG.backends[enabled_backend]
+  ROCCI_SERVER_CONFIG.backends![enabled_backend] = get_yaml_config(Rails.application.config.rocci_server_etc_dir.join('backends', enabled_backend))
+end
 
-# Load backend configuration from 'etc/authn_strategies/**/*.yml'
+# Load auth configuration from 'etc/authn_strategies/**/*.yml'
 unless ROCCI_SERVER_CONFIG.common.authn_strategies.respond_to?(:each)
   if ROCCI_SERVER_CONFIG.common.authn_strategies
     ROCCI_SERVER_CONFIG.common.authn_strategies = ROCCI_SERVER_CONFIG.common.authn_strategies.split

@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"medium",
-      "scheme":"http://schema.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
       "title":"Medium Instance - 2 cores and 4 GB RAM",
       "location":"/mixin/resource_tpl/medium/",
       "depends":[

@@ -7,20 +7,20 @@ module Backends
         COMPUTE_USER_DATA_SIZE_LIMIT = 16384
         COMPUTE_DN_BASED_AUTHS = %w(x509 voms).freeze
 
-        def compute_create_with_os_tpl(compute)
-          @logger.debug "[Backends] [OpennebulaBackend] Deploying #{compute.inspect}"
+        def create_with_os_tpl(compute)
+          @logger.debug "[Backends] [Opennebula] Deploying #{compute.inspect}"
 
           # include some basic mixins
           # WARNING: adding mix-ins will re-set their attributes
-          attr_backup = Occi::Core::Attributes.new(compute.attributes)
-          compute.mixins << 'http://opennebula.org/occi/infrastructure#compute'
+          attr_backup = ::Occi::Core::Attributes.new(compute.attributes)
+          compute.mixins << 'http://schemas.opennebula.org/occi/infrastructure#compute'
           compute.attributes = attr_backup
 
-          os_tpl_mixins = compute.mixins.get_related_to(Occi::Infrastructure::OsTpl.mixin.type_identifier)
+          os_tpl_mixins = compute.mixins.get_related_to(::Occi::Infrastructure::OsTpl.mixin.type_identifier)
           os_tpl = os_tpl_mixins.first
 
-          @logger.debug "[Backends] [OpennebulaBackend] Deploying with OS template: #{os_tpl.term}"
-          os_tpl = os_tpl_list_term_to_id(os_tpl.term)
+          @logger.debug "[Backends] [Opennebula] Deploying with OS template: #{os_tpl.term}"
+          os_tpl = term_to_id(os_tpl.term)
 
           # get template
           template_alloc = ::OpenNebula::Template.build_xml(os_tpl)
@@ -29,11 +29,11 @@ module Backends
           check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
           # update template
-          compute_create_set_attrs(compute, template)
-          compute_create_check_context(compute)
-          compute_create_add_context(compute, template)
-          compute_create_add_description(compute, template)
-          compute_create_add_custom_template_vars(compute, template)
+          create_set_attrs(compute, template)
+          create_check_context(compute)
+          create_add_context(compute, template)
+          create_add_description(compute, template)
+          create_add_custom_template_vars(compute, template)
 
           # remove template-specific values
           template.delete_element('ID')
@@ -49,9 +49,9 @@ module Backends
           template = template.template_str
 
           # add inline links
-          template = compute_create_add_inline_links(compute, template)
+          template = create_add_inline_links(compute, template)
 
-          @logger.debug "[Backends] [OpennebulaBackend] Template #{template.inspect}"
+          @logger.debug "[Backends] [Opennebula] Template #{template.inspect}"
           vm_alloc = ::OpenNebula::VirtualMachine.build_xml
           backend_object = ::OpenNebula::VirtualMachine.new(vm_alloc, @client)
 
@@ -68,7 +68,7 @@ module Backends
           compute_id
         end
 
-        def compute_create_with_links(compute)
+        def create_with_links(compute)
           # TODO: drop this branch in the second stable release
           fail Backends::Errors::MethodNotImplementedError,
                "This functionality has been deprecated! Use os_tpl and resource_tpl mixins!"
@@ -76,7 +76,7 @@ module Backends
 
         private
 
-        def compute_create_set_attrs(compute, template)
+        def create_set_attrs(compute, template)
           template.delete_element('TEMPLATE/NAME')
           template.add_element('TEMPLATE',  'NAME' => compute.title)
 
@@ -107,7 +107,7 @@ module Backends
           # end
         end
 
-        def compute_create_add_context(compute, template)
+        def create_add_context(compute, template)
           return unless compute.attributes.org!.openstack
 
           template.add_element('TEMPLATE', 'CONTEXT' => '')
@@ -129,7 +129,7 @@ module Backends
           end
         end
 
-        def compute_create_check_context(compute)
+        def create_check_context(compute)
           if compute.attributes.org!.openstack!.credentials!.publickey!.data
             fail Backends::Errors::ResourceNotValidError, 'Public key is invalid!' unless \
               COMPUTE_SSH_REGEXP.match(compute.attributes['org.openstack.credentials.publickey.data'])
@@ -146,7 +146,7 @@ module Backends
           end
         end
 
-        def compute_create_add_description(compute, template)
+        def create_add_description(compute, template)
           return if compute.blank? || template.nil?
 
           new_desc = if !compute.summary.blank?
@@ -162,18 +162,18 @@ module Backends
           template.add_element('TEMPLATE', 'DESCRIPTION' => new_desc)
         end
 
-        def compute_create_add_inline_links(compute, template)
+        def create_add_inline_links(compute, template)
           return template if compute.blank? || compute.links.blank?
 
           compute.links.to_a.each do |link|
-            next unless link.kind_of? Occi::Core::Link
-            @logger.debug "[Backends] [OpennebulaBackend] Handling inline link #{link.to_s.inspect}"
+            next unless link.kind_of? ::Occi::Core::Link
+            @logger.debug "[Backends] [Opennebula] Handling inline link #{link.to_s.inspect}"
 
             case link.kind.type_identifier
             when 'http://schemas.ogf.org/occi/infrastructure#storagelink'
-              template = compute_create_add_inline_storagelink(template, link)
+              template = create_add_inline_storagelink(template, link)
             when 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
-              template = compute_create_add_inline_networkinterface(template, link)
+              template = create_add_inline_networkinterface(template, link)
             else
               fail Backends::Errors::ResourceNotValidError, "Link kind #{link.kind.type_identifier.inspect} is not supported!"
             end
@@ -182,9 +182,9 @@ module Backends
           template
         end
 
-        def compute_create_add_inline_storagelink(template, storagelink)
-          storage = storage_get(storagelink.target.split('/').last)
-          @logger.debug "[Backends] [OpennebulaBackend] Linking storage #{storage.id.inspect} - #{storage.title.inspect}"
+        def create_add_inline_storagelink(template, storagelink)
+          storage = @other_backends['storage'].get(storagelink.target.split('/').last)
+          @logger.debug "[Backends] [Opennebula] Linking storage #{storage.id.inspect} - #{storage.title.inspect}"
 
           disktemplate_location = File.join(@options.templates_dir, 'compute_disk.erb')
           disktemplate = Erubis::Eruby.new(File.read(disktemplate_location)).evaluate(storagelink: storagelink)
@@ -192,9 +192,9 @@ module Backends
           template << disktemplate
         end
 
-        def compute_create_add_inline_networkinterface(template, networkinterface)
-          network = network_get(networkinterface.target.split('/').last)
-          @logger.debug "[Backends] [OpennebulaBackend] Linking network #{network.id.inspect} - #{network.title.inspect}"
+        def create_add_inline_networkinterface(template, networkinterface)
+          network = @other_backends['network'].get(networkinterface.target.split('/').last)
+          @logger.debug "[Backends] [Opennebula] Linking network #{network.id.inspect} - #{network.title.inspect}"
 
           nictemplate_location = File.join(@options.templates_dir, 'compute_nic.erb')
           nictemplate = Erubis::Eruby.new(File.read(nictemplate_location)).evaluate(networkinterface: networkinterface)
@@ -202,7 +202,7 @@ module Backends
           template << nictemplate
         end
 
-        def compute_create_add_custom_template_vars(compute, template)
+        def create_add_custom_template_vars(compute, template)
           # add mixins
           mixins = compute.mixins.to_a.map { |m| m.type_identifier }
           template.add_element('TEMPLATE',  'OCCI_COMPUTE_MIXINS' => mixins.join(' '))

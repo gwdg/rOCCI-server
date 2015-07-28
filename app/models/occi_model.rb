@@ -66,28 +66,13 @@ class OcciModel
     # @example
     #    backend = Backend.new
     #    collection = get_extensions(backend) #=> #<Occi::Collection>
-    #    collection.kinds   #=> #<Occi::Core::Kinds>
     #    collection.mixins  #=> #<Occi::Core::Mixins>
     #    collection.actions #=> #<Occi::Core::Actions>
     #
     # @param backend [Backend] instance of the currently active backend
-    # @return [Occi::Collection] a collection of extensions containing kinds, mixins and actions
+    # @return [Occi::Collection] a collection of extensions containing mixins and/or actions
     def get_extensions(backend)
-      collection = Occi::Collection.new
-
-      # Load all JSON files in the given directory, these contain
-      # JSON rendering of OCCI kind/mixin/action definitions
-      path = File.join(Rails.application.config.rocci_server_etc_dir, 'backends', backend.backend_name, 'model')
-      Rails.logger.debug "[#{self}] Getting extensions from #{path}"
-      Dir.glob(File.join(path, '**', '*.json')) do |file|
-        Rails.logger.debug "[#{self}] Reading #{file}"
-        parsed = JSON.parse(File.read(file))
-        coll = Occi::Collection.new(parsed)
-
-        collection.merge! coll
-      end
-
-      collection
+      backend.get_extensions
     end
 
     # Wraps given collection of mixins in an Occi::Collection instance

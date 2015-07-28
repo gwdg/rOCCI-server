@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"small",
-      "scheme":"http://schema.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
       "title":"Small Instance - 1 core and 2 GB RAM",
       "location":"/mixin/resource_tpl/small/",
       "depends":[

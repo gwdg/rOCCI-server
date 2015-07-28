@@ -5,7 +5,7 @@
         "http://schemas.ogf.org/occi/infrastructure#compute"
       ],
       "term":"compute",
-      "scheme":"http://opennebula.org/occi/infrastructure#",
+      "scheme":"http://schemas.opennebula.org/occi/infrastructure#",
       "title":"OpenNebula specific Compute attributes",
       "location":"/mixin/compute/",
       "attributes":{

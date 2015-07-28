@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Backends::OpennebulaBackend do
+describe Backends::Opennebula::Compute do
 
   pending "add some examples to (or delete) #{__FILE__}"
 

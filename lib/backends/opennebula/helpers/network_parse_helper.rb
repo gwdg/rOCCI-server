@@ -2,12 +2,12 @@ module Backends
   module Opennebula
     module Helpers
       module NetworkParseHelper
-        def network_parse_backend_obj(backend_network)
-          network = Occi::Infrastructure::Network.new
+        def parse_backend_obj(backend_network)
+          network = ::Occi::Infrastructure::Network.new
 
           # include some basic mixins
           network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
-          network.mixins << 'http://opennebula.org/occi/infrastructure#network'
+          network.mixins << 'http://schemas.opennebula.org/occi/infrastructure#network'
 
           # include mixins stored in ON's VN template
           unless backend_network['TEMPLATE/OCCI_NETWORK_MIXINS'].blank?
@@ -18,23 +18,23 @@ module Backends
           end
 
           # include basic OCCI attributes
-          basic_attrs = network_parse_basic_attrs(backend_network)
+          basic_attrs = parse_basic_attrs(backend_network)
           network.attributes.merge! basic_attrs
 
           # include ONE-specific attributes
-          one_attrs = network_parse_one_attrs(backend_network)
+          one_attrs = parse_one_attrs(backend_network)
           network.attributes.merge! one_attrs
 
           # include state information and available actions
-          result = network_parse_state(backend_network)
+          result = parse_state(backend_network)
           network.state = result.state
           result.actions.each { |a| network.actions << a }
 
           network
         end
 
-        def network_parse_basic_attrs(backend_network)
-          basic_attrs = Occi::Core::Attributes.new
+        def parse_basic_attrs(backend_network)
+          basic_attrs = ::Occi::Core::Attributes.new
 
           basic_attrs['occi.core.id']    = backend_network['ID']
           basic_attrs['occi.core.title'] = backend_network['NAME'] if backend_network['NAME']
@@ -53,8 +53,8 @@ module Backends
           basic_attrs
         end
 
-        def network_parse_one_attrs(backend_network)
-          one_attrs = Occi::Core::Attributes.new
+        def parse_one_attrs(backend_network)
+          one_attrs = ::Occi::Core::Attributes.new
 
           one_attrs['org.opennebula.network.id'] = backend_network['ID']
 
@@ -75,7 +75,7 @@ module Backends
           one_attrs
         end
 
-        def network_parse_state(backend_network)
+        def parse_state(backend_network)
           result = Hashie::Mash.new
 
           # ON doesn't implement actions on networks
@@ -84,6 +84,8 @@ module Backends
 
           result
         end
+
+        private
 
         def calculate_cidr(backend_network)
           return nil unless backend_network && backend_network['TEMPLATE/NETWORK_ADDRESS']
@@ -103,7 +105,6 @@ module Backends
             nil
           end
         end
-        private :calculate_cidr
 
         def calculate_cidr_from_mask(backend_network)
           if backend_network['TEMPLATE/NETWORK_MASK'].include?('.')
@@ -113,7 +114,6 @@ module Backends
             "#{backend_network['TEMPLATE/NETWORK_ADDRESS']}/#{backend_network['TEMPLATE/NETWORK_MASK']}"
           end
         end
-        private :calculate_cidr_from_mask
 
         def calculate_cidr_from_size(backend_network)
           case backend_network['TEMPLATE/NETWORK_SIZE']
@@ -127,7 +127,6 @@ module Backends
             nil
           end
         end
-        private :calculate_cidr_from_size
       end
     end
   end

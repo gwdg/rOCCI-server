@@ -21,12 +21,12 @@ module Backends
           begin
             yield
           rescue ::Aws::EC2::Errors::DryRunOperation => e
-            logger.warn "[Backends] [Ec2Backend] DryRun: #{e.message}"
+            logger.warn "[Backends] [Ec2] DryRun: #{e.message}"
             fail Backends::Errors::MethodNotImplementedError, e.message
           rescue ::Aws::EC2::Errors::ServiceError => e
             handle_service_error(e, logger)
           rescue ::Seahorse::Client::NetworkingError => e
-            logger.error "[Backends] [Ec2Backend] HTTP Error: #{e.message}"
+            logger.error "[Backends] [Ec2] HTTP Error: #{e.message}"
             fail Backends::Errors::ServiceUnavailableError, e.message
           end
         end

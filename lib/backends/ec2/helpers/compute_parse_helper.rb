@@ -2,21 +2,20 @@ module Backends
   module Ec2
     module Helpers
       module ComputeParseHelper
-
         COMPUTE_FAKE_INTFS = ['eni-0', 'eni-1'].freeze
 
-        def compute_parse_backend_obj(backend_compute, reservation_id)
-          compute = Occi::Infrastructure::Compute.new
+        def parse_backend_obj(backend_compute, reservation_id)
+          compute = ::Occi::Infrastructure::Compute.new
 
-          if os_tpl_mixin = resource_tpl_get(resource_tpl_list_itype_to_term(backend_compute[:instance_type]))
+          if os_tpl_mixin = get_resource_tpl(itype_to_term(backend_compute[:instance_type]))
             compute.mixins << os_tpl_mixin
             compute.attributes['occi.compute.cores'] = os_tpl_mixin.attributes.occi_.compute_.cores.default
             compute.attributes['occi.compute.memory'] = os_tpl_mixin.attributes.occi_.compute_.memory.default
           else
-            compute.mixins << "http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl##{resource_tpl_list_itype_to_term(backend_compute[:instance_type])}"
+            compute.mixins << "http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl##{itype_to_term(backend_compute[:instance_type])}"
           end
 
-          compute.mixins << "#{@options.backend_scheme}/occi/infrastructure/os_tpl##{os_tpl_list_image_to_term(backend_compute)}"
+          compute.mixins << "#{@options.backend_scheme}/occi/infrastructure/os_tpl##{image_to_term(backend_compute)}"
           compute.mixins << 'http://schemas.ec2.aws.amazon.com/occi/infrastructure/compute#aws_ec2_instance'
 
           compute.attributes['occi.core.id'] = backend_compute[:instance_id]
@@ -29,12 +28,12 @@ module Backends
           compute.attributes['com.amazon.aws.ec2.virtualization_type'] = backend_compute[:virtualization_type] unless backend_compute[:virtualization_type].blank?
 
           # include state information and available actions
-          result = compute_parse_state(backend_compute)
+          result = parse_state(backend_compute)
           compute.state = result.state
           result.actions.each { |a| compute.actions << a }
 
           # include storage and network links
-          result = compute_parse_links(backend_compute, compute)
+          result = parse_links(backend_compute, compute)
           result.each { |link| compute.links << link }
 
           compute
@@ -42,7 +41,7 @@ module Backends
 
         private
 
-        def compute_parse_state(backend_compute)
+        def parse_state(backend_compute)
           result = Hashie::Mash.new
 
           # In EC2:
@@ -70,28 +69,28 @@ module Backends
           result
         end
 
-        def compute_parse_links(backend_compute, compute)
+        def parse_links(backend_compute, compute)
           result = []
 
-          result << compute_parse_links_storage(backend_compute, compute)
-          result << compute_parse_links_network(backend_compute, compute)
+          result << parse_links_storage(backend_compute, compute)
+          result << parse_links_network(backend_compute, compute)
           result.flatten!
 
           result.compact
         end
 
-        def compute_parse_links_storage(backend_compute, compute)
+        def parse_links_storage(backend_compute, compute)
           blks = backend_compute[:block_device_mappings] || []
           result_storage_links = []
 
           blks.each do |blk|
             id = "compute_#{backend_compute[:instance_id]}_disk_#{blk[:ebs][:volume_id]}"
 
-            link = Occi::Infrastructure::Storagelink.new
+            link = ::Occi::Infrastructure::Storagelink.new
             link.id = id
             link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
-            target = storage_get(blk[:ebs][:volume_id])
+            target = @other_backends['storage'].get(blk[:ebs][:volume_id])
             next unless target # there is no way to render a link without a target
 
             link.target = target
@@ -107,7 +106,7 @@ module Backends
           result_storage_links.compact
         end
 
-        def compute_parse_links_network(backend_compute, compute)
+        def parse_links_network(backend_compute, compute)
           intfs = backend_compute[:network_interfaces] || []
           result_network_links = []
 
@@ -117,7 +116,7 @@ module Backends
               intf = { network_interface_id: 'eni-0', association: {} }
               intf[:association][:public_ip] = backend_compute[:public_ip_address]
               intf[:private_ip_address] = nil
-              result_network_links << compute_parse_link_networkinterface(compute, intf)
+              result_network_links << parse_link_networkinterface(compute, intf)
             end
 
             # private
@@ -125,29 +124,29 @@ module Backends
               intf = { network_interface_id: 'eni-1', association: {} }
               intf[:association][:public_ip] = nil
               intf[:private_ip_address] = backend_compute[:private_ip_address]
-              result_network_links << compute_parse_link_networkinterface(compute, intf)
+              result_network_links << parse_link_networkinterface(compute, intf)
             end
           else
-            intfs.each { |intf| result_network_links << compute_parse_link_networkinterface(compute, intf) }
+            intfs.each { |intf| result_network_links << parse_link_networkinterface(compute, intf) }
           end
 
           result_network_links.compact
         end
 
-        def compute_parse_link_networkinterface(compute, intf)
+        def parse_link_networkinterface(compute, intf)
           id = "compute_#{compute.id}_nic_#{intf[:network_interface_id]}"
 
-          link = Occi::Infrastructure::Networkinterface.new
+          link = ::Occi::Infrastructure::Networkinterface.new
           link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
 
           link.id = id
           link.state = (compute.state == 'active') ? 'active' : 'inactive'
 
-          target = intf[:vpc_id] ? network_get(intf[:vpc_id]) : Occi::Infrastructure::Network.new
+          target = intf[:vpc_id] ? @other_backends['network'].get(intf[:vpc_id]) : ::Occi::Infrastructure::Network.new
           return unless target # there is no way to render a link without a target
 
           if intf[:association] && intf[:association][:public_ip]
-            is_in_vpc = compute_parse_link_networkinterface_is_vpc_pub?(intf[:association][:public_ip])
+            is_in_vpc = parse_link_networkinterface_is_vpc_pub?(intf[:association][:public_ip])
 
             if intf[:vpc_id].blank? || is_in_vpc
               target.id = "public"
@@ -175,7 +174,7 @@ module Backends
 
         private
 
-        def compute_parse_link_networkinterface_is_vpc_pub?(intf_address)
+        def parse_link_networkinterface_is_vpc_pub?(intf_address)
           return if intf_address.blank?
 
           filters = []
@@ -188,7 +187,6 @@ module Backends
 
           addresses.count > 0
         end
-
       end
     end
   end

@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"mammoth",
-      "scheme":"http://schema.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
       "title":"Mammoth Instance - 8 cores and 32 GB RAM",
       "location":"/mixin/resource_tpl/mammoth/",
       "depends":[

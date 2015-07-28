@@ -84,7 +84,7 @@ module Backends::Ec2::Authn
       fail Backends::Errors::AuthenticationError, 'Malformed VOMS credentials, ' \
            'required extension attributes are missing!' unless first_vo && !first_vo.vo.blank?
 
-      logger.debug "[Backends] [Ec2Backend] Searching for VO -> AWS " \
+      logger.debug "[Backends] [Ec2] Searching for VO -> AWS " \
                    "account mapping for #{first_vo.vo.inspect}"
       if !options.vo_aws_mapfile.blank?
         # we have a mapfile with VO -> AWS account entries
@@ -93,7 +93,7 @@ module Backends::Ec2::Authn
         # look-up the VO name
         if vo_aws_mapfile.include?(first_vo.vo)
           # mapping was provided, use it
-          logger.debug "[Backends] [Ec2Backend] Found mapping for " \
+          logger.debug "[Backends] [Ec2] Found mapping for " \
                        "#{first_vo.vo.inspect} in #{options.vo_aws_mapfile.inspect}"
           ::Aws::Credentials.new(
             vo_aws_mapfile[first_vo.vo].access_key_id,
@@ -101,13 +101,13 @@ module Backends::Ec2::Authn
           )
         else
           # no mapping was provided, use the global default
-          logger.debug "[Backends] [Ec2Backend] No mapping for " \
+          logger.debug "[Backends] [Ec2] No mapping for " \
                        "#{first_vo.vo.inspect} in #{options.vo_aws_mapfile.inspect}"
           handle_x509(options, delegated_user, logger)
         end
       else
         # no mapfile was provided
-        logger.debug "[Backends] [Ec2Backend] No VO -> AWS account mapfile was provided!"
+        logger.debug "[Backends] [Ec2] No VO -> AWS account mapfile was provided!"
         handle_x509(options, delegated_user, logger)
       end
     end

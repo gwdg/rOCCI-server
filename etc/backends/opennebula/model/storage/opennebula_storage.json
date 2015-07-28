@@ -5,7 +5,7 @@
         "http://schemas.ogf.org/occi/infrastructure#storage"
       ],
       "term":"storage",
-      "scheme":"http://opennebula.org/occi/infrastructure#",
+      "scheme":"http://schemas.opennebula.org/occi/infrastructure#",
       "title":"OpenNebula specific Storage attributes",
       "location":"/mixin/storage/",
       "attributes":{

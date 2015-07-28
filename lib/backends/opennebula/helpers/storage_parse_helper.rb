@@ -2,11 +2,11 @@ module Backends
   module Opennebula
     module Helpers
       module StorageParseHelper
-        def storage_parse_backend_obj(backend_storage)
-          storage = Occi::Infrastructure::Storage.new
+        def parse_backend_obj(backend_storage)
+          storage = ::Occi::Infrastructure::Storage.new
 
           # include some basic mixins
-          storage.mixins << 'http://opennebula.org/occi/infrastructure#storage'
+          storage.mixins << 'http://schemas.opennebula.org/occi/infrastructure#storage'
 
           # include mixins stored in ON's VN template
           unless backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'].blank?
@@ -17,23 +17,23 @@ module Backends
           end
 
           # include basic OCCI attributes
-          basic_attrs = storage_parse_basic_attrs(backend_storage)
+          basic_attrs = parse_basic_attrs(backend_storage)
           storage.attributes.merge! basic_attrs
 
           # include ONE-specific attributes
-          one_attrs = storage_parse_one_attrs(backend_storage)
+          one_attrs = parse_one_attrs(backend_storage)
           storage.attributes.merge! one_attrs
 
           # include state information and available actions
-          result = storage_parse_state(backend_storage)
+          result = parse_state(backend_storage)
           storage.state = result.state
           result.actions.each { |a| storage.actions << a }
 
           storage
         end
 
-        def storage_parse_basic_attrs(backend_storage)
-          basic_attrs = Occi::Core::Attributes.new
+        def parse_basic_attrs(backend_storage)
+          basic_attrs = ::Occi::Core::Attributes.new
 
           basic_attrs['occi.core.id']  = backend_storage['ID']
           basic_attrs['occi.core.title'] = backend_storage['NAME'] if backend_storage['NAME']
@@ -44,8 +44,8 @@ module Backends
           basic_attrs
         end
 
-        def storage_parse_one_attrs(backend_storage)
-          one_attrs = Occi::Core::Attributes.new
+        def parse_one_attrs(backend_storage)
+          one_attrs = ::Occi::Core::Attributes.new
 
           one_attrs['org.opennebula.storage.id'] = backend_storage['ID']
           one_attrs['org.opennebula.storage.type'] = backend_storage.type_str
@@ -63,7 +63,7 @@ module Backends
           one_attrs
         end
 
-        def storage_parse_state(backend_storage)
+        def parse_state(backend_storage)
           result = Hashie::Mash.new
 
           # In ON 4.4:

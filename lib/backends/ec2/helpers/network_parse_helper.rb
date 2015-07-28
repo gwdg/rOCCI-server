@@ -2,9 +2,8 @@ module Backends
   module Ec2
     module Helpers
       module NetworkParseHelper
-
-        def network_parse_backend_obj(backend_network)
-          network = Occi::Infrastructure::Network.new
+        def parse_backend_obj(backend_network)
+          network = ::Occi::Infrastructure::Network.new
 
           network.mixins << 'http://schemas.ec2.aws.amazon.com/occi/infrastructure/network#aws_ec2_vpc'
 
@@ -22,7 +21,7 @@ module Backends
           network.attributes['com.amazon.aws.ec2.is_default'] = backend_network[:is_default] unless backend_network[:is_default].nil?
 
           # include state information and available actions
-          result = network_parse_state(backend_network)
+          result = parse_state(backend_network)
           network.state = result.state
           result.actions.each { |a| network.actions << a }
 
@@ -31,7 +30,7 @@ module Backends
 
         private
 
-        def network_parse_state(backend_network)
+        def parse_state(backend_network)
           result = Hashie::Mash.new
 
           # In EC2:
@@ -48,7 +47,7 @@ module Backends
           result
         end
 
-        def network_get_raw(network_id)
+        def get_raw(network_id)
           filters = []
           filters << { name: 'vpc-id', values: [network_id] }
 
@@ -57,7 +56,6 @@ module Backends
             vpcs ? vpcs.first : nil
           end
         end
-
       end
     end
   end

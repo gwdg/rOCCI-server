@@ -2,13 +2,12 @@ module Backends
   module Ec2
     module Helpers
       module ComputeNetworkHelper
-
-        def compute_attach_network_public(networkinterface)
+        def attach_network_public(networkinterface)
           compute_id = networkinterface.source.split('/').last
 
-          compute_instance = compute_get(compute_id)
+          compute_instance = get(compute_id)
           fail Backends::Errors::ResourceCreationError, "Resource #{compute_id.inspect} already has a public network attached!" \
-            if compute_attach_network_public_has_elastic?(compute_id)
+            if attach_network_public_has_elastic?(compute_id)
 
           is_vpc = compute_instance.links.to_a.select { |l| l.target.split('/').last.include?('vpc-') }.any?
 
@@ -25,7 +24,7 @@ module Backends
             begin
               @ec2_client.associate_address(addr_opts)
             rescue => e
-              @logger.warn "[Backends] [Ec2Backend] An attempt to associate #{addr_opts.inspect} failed!"
+              @logger.warn "[Backends] [Ec2] An attempt to associate #{addr_opts.inspect} failed!"
 
               if is_vpc
                 @ec2_client.release_address(allocation_id: addr_opts[:allocation_id])
@@ -40,20 +39,20 @@ module Backends
           "compute_#{compute_id}_nic_eni-0"
         end
 
-        def compute_attach_network_private(networkinterface)
-          # TODO: explore possible solutions, do not forget to update the effects tag for compute_attach_network()
+        def attach_network_private(networkinterface)
+          # TODO: explore possible solutions, do not forget to update the effects tag for attach_network()
           fail Backends::Errors::ResourceCreationError, 'Network "private" cannot be attached manually!'
         end
 
-        def compute_attach_network_vpc(networkinterface)
-          # TODO: explore possible solutions, do not forget to update the effects tag for compute_attach_network()
+        def attach_network_vpc(networkinterface)
+          # TODO: explore possible solutions, do not forget to update the effects tag for attach_network()
           fail Backends::Errors::ResourceCreationError, "VPC networks cannot be attached to existing instances!"
         end
 
-        def compute_detach_network_public(networkinterface)
+        def detach_network_public(networkinterface)
           ec2_allocation = networkinterface.attributes.occi!.networkinterface!.address
           fail Backends::Errors::ResourceCreationError, 'Interfaces without an address cannot be detached!' if ec2_allocation.blank?
-          ec2_aux = compute_attach_network_public_get_as_al(ec2_allocation)
+          ec2_aux = attach_network_public_get_as_al(ec2_allocation)
 
           addr_opts = {}
           if ec2_aux && ec2_aux[:association_id]
@@ -74,24 +73,24 @@ module Backends
               @ec2_client.disassociate_address(addr_opts)
               @ec2_client.release_address(addr_opts_al)
             rescue ::Aws::EC2::Errors::AuthFailure => e
-              @logger.warn "[Backends] [Ec2Backend] An attempt to release #{ec2_allocation.inspect} failed!"
+              @logger.warn "[Backends] [Ec2] An attempt to release #{ec2_allocation.inspect} failed!"
               fail Backends::Errors::UserNotAuthorizedError, e.message
             end
           end
         end
 
-        def compute_detach_network_private(networkinterface)
+        def detach_network_private(networkinterface)
           fail Backends::Errors::ResourceCreationError, 'Network "private" cannot be detached manually!'
         end
 
-        def compute_detach_network_vpc(networkinterface)
+        def detach_network_vpc(networkinterface)
           # TODO: explore possible solutions
           fail Backends::Errors::ResourceCreationError, "VPC networks cannot be detached from existing instances!"
         end
 
         private
 
-        def compute_attach_network_public_has_elastic?(instance_id)
+        def attach_network_public_has_elastic?(instance_id)
           filters = []
           filters << { name: 'instance-id', values: [instance_id] }
 
@@ -103,7 +102,7 @@ module Backends
           addresses && (addresses.count > 0)
         end
 
-        def compute_attach_network_public_get_as_al(public_ip)
+        def attach_network_public_get_as_al(public_ip)
           filters = []
           filters << { name: 'public-ip', values: [public_ip] }
 
@@ -114,7 +113,6 @@ module Backends
 
           (addresses && addresses.first) ? addresses.first : nil
         end
-
       end
     end
   end
