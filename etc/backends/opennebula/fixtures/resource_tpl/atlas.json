@@ -1,10 +1,10 @@
 {
   "mixins":[
     {
-      "term":"small",
-      "scheme":"http://fedcloud.egi.eu/occi/compute/flavour/1.0#",
-      "title":"Small Instance - 1 core and 1 GB RAM",
-      "location":"/mixin/resource_tpl/small/",
+      "term":"atlas",
+      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "title":"Atlas Instance - 32 cores and 64 GB RAM",
+      "location":"/mixin/resource_tpl/atlas/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -22,7 +22,7 @@
             "cores":{
               "Mutable":false,
               "Type":"number",
-              "Default":1
+              "Default":32
             },
             "speed":{
               "Mutable":false,
@@ -32,7 +32,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":1
+              "Default":64
             }
           }
         }

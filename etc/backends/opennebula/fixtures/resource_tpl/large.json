@@ -2,8 +2,8 @@
   "mixins":[
     {
       "term":"large",
-      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
-      "title":"Large Instance - 4 cores and 8 GB RAM",
+      "scheme":"http://fedcloud.egi.eu/occi/compute/flavour/1.0#",
+      "title":"Large Instance - 4 cores and 4 GB RAM",
       "location":"/mixin/resource_tpl/large/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
@@ -32,7 +32,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":8
+              "Default":4
             }
           }
         }
