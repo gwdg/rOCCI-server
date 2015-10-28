@@ -1,10 +1,10 @@
 {
   "mixins":[
     {
-      "term":"small",
-      "scheme":"http://fedcloud.egi.eu/occi/compute/flavour/1.0#",
-      "title":"Small Instance - 1 core and 1 GB RAM",
-      "location":"/mixin/resource_tpl/small/",
+      "term":"mem_extra_large",
+      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "title":"Extra Large Instance - 8 cores and 32 GB RAM",
+      "location":"/mixin/resource_tpl/mem_extra_large/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -22,7 +22,7 @@
             "cores":{
               "Mutable":false,
               "Type":"number",
-              "Default":1
+              "Default":8
             },
             "speed":{
               "Mutable":false,
@@ -32,7 +32,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":1
+              "Default":32
             }
           }
         }

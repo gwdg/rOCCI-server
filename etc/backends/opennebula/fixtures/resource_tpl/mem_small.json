@@ -1,10 +1,10 @@
 {
   "mixins":[
     {
-      "term":"small",
+      "term":"mem_small",
       "scheme":"http://fedcloud.egi.eu/occi/compute/flavour/1.0#",
-      "title":"Small Instance - 1 core and 1 GB RAM",
-      "location":"/mixin/resource_tpl/small/",
+      "title":"Small Instance - 1 core and 4 GB RAM",
+      "location":"/mixin/resource_tpl/mem_small/",
       "depends":[
         "http://schemas.ogf.org/occi/infrastructure#resource_tpl"
       ],
@@ -32,7 +32,7 @@
             "memory":{
               "Mutable":false,
               "Type":"number",
-              "Default":1
+              "Default":4
             }
           }
         }
