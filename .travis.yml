@@ -1,7 +1,6 @@
 language: ruby
 
 rvm:
-  - 1.9.3
   - 2.0.0
   - 2.1
   - 2.2
@@ -27,3 +26,5 @@ install: 'gem install bundler -v ">= 1.7.12" && bundle install --retry=10 --with
 
 env:
   - ON_TRAVIS_CI=yes
+
+sudo: false
