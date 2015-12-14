@@ -79,7 +79,7 @@ gem 'dalli'
 gem 'kgio', :group => :stuff_breaking_travis_ci
 
 # AuthN middleware
-gem 'warden', '~> 1.2.3'
+gem 'warden', '~> 1.2.4'
 
 # Sensible logging with LogStash support
 gem 'logstasher', '~> 0.6.2'

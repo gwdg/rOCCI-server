@@ -294,7 +294,7 @@ DEPENDENCIES
   rvm-capistrano
   sdoc
   simplecov
-  warden (~> 1.2.3)
+  warden (~> 1.2.4)
   web-console (~> 2.0)
   whenever
   yard
