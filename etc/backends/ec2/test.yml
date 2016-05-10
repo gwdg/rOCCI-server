@@ -8,9 +8,9 @@ aws_availability_zone: eu-west-1a
 image_filtering:
   policy: only_listed  # 'only_listed' or 'only_owned' or 'owned_and_listed' or 'all'
   image_list:
-  - ami-896c96fe
-  - ami-f7f03d80
-  - ami-4a5fb53d
+  - ami-8b8c57f8
+  - ami-f4278487
+  - ami-f95ef58a
 network_create_allowed: false
 network_destroy_allowed: false
 network_destroy_vpn_gws: false

@@ -5,8 +5,8 @@ applies:
 - http://schemas.ogf.org/occi/infrastructure#compute
 related:
 - http://schemas.ogf.org/occi/infrastructure#os_tpl
-location: "/mixin/os_tpl/ami-4a5fb53d/"
+location: "/mixin/os_tpl/ami-8b8c57f8/"
 scheme: http://occi.localhost/occi/infrastructure/os_tpl#
-term: ami-4a5fb53d
-title: suse-sles-11-sp3-hvm-v1.00.x86_64
+term: ami-8b8c57f8
+title: RHEL-7.2_HVM_GA-20151112-x86_64-1-Hourly2-GP2
 attributes: !ruby/hash:Hashie::Mash {}
