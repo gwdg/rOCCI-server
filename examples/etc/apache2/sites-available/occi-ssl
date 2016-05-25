@@ -29,7 +29,7 @@
     SSLVerifyDepth 10
 
     # enable passing of SSL variables to passenger. For GridSite/VOMS, enable also exporting certificate data
-    SSLOptions +StdEnvVars +ExportCertData
+    SSLOptions +StdEnvVars +ExportCertData #+LegacyDNStringFormat
 
     # configure OpenSSL inside rOCCI-server to validate peer certificates (for CMFs)
     #SetEnv SSL_CERT_FILE /path/to/ca_bundle.crt
