@@ -32,7 +32,7 @@ module Backends
 
       def read_fixtures(base_path)
         @logger.debug "[Backends] [Dummy] Reading fixtures from #{base_path.to_s.inspect}"
-        (FIXTURES + FIXTURES_TPL).each { |name| send "read_#{name.to_s}_fixtures", base_path }
+        (FIXTURES + FIXTURES_TPL).each { |name| send "read_#{name}_fixtures", base_path }
       end
 
       FIXTURES.each do |fixture|
@@ -94,7 +94,7 @@ end
         fail Backends::Errors::ResourceRetrievalError, "Unable to read fixtures " \
              "for #{fixture_type.to_s.inspect}!" unless (FIXTURES + FIXTURES_TPL).include? fixture_type
 
-        File.join(path, "#{fixture_type.to_s}.json")
+        File.join(path, "#{fixture_type}.json")
       end
     end
   end

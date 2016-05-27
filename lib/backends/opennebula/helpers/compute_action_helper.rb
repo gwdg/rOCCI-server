@@ -25,7 +25,7 @@ module Backends
                  "Given action is not allowed in this state! [#{backend_object.lcm_state_str.inspect}]"
             end
           when 'FAILED'
-            rc = backend_object.delete(recreate = true)
+            rc = backend_object.delete(true) # recreate = true
           else
             fail ::Backends::Errors::ResourceActionError,
                  "Given action is not allowed in this state! [#{backend_object.state_str.inspect}]"

@@ -262,7 +262,6 @@ module Backends
       def trigger_action(network_id, action_instance)
         fail Backends::Errors::ActionNotImplementedError,
              "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
-        true
       end
 
       # Returns a collection of custom mixins introduced (and specific for)
@@ -272,8 +271,6 @@ module Backends
       def get_extensions
         read_extensions 'network', @options.model_extensions_dir
       end
-
-      private
 
       # Load methods called from list/get
       include Backends::Ec2::Helpers::NetworkParseHelper

@@ -151,7 +151,7 @@ module Backends
                 waiter.interval = 5      # number of seconds to sleep between attempts
                 waiter.max_attempts = nil # maximum number of polling attempts
 
-                waiter.before_attempt do |attempt|
+                waiter.before_attempt do
                   throw(:failure, 'waited too long') if Time.now > timeout_deadline
                 end
               end
