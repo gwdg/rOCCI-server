@@ -7,7 +7,8 @@ module Backends
         def parse_backend_obj(backend_compute, reservation_id)
           compute = ::Occi::Infrastructure::Compute.new
 
-          if os_tpl_mixin = get_resource_tpl(itype_to_term(backend_compute[:instance_type]))
+          os_tpl_mixin = get_resource_tpl(itype_to_term(backend_compute[:instance_type]))
+          if os_tpl_mixin
             compute.mixins << os_tpl_mixin
             compute.attributes['occi.compute.cores'] = os_tpl_mixin.attributes.occi_.compute_.cores.default
             compute.attributes['occi.compute.memory'] = os_tpl_mixin.attributes.occi_.compute_.memory.default
@@ -127,7 +128,7 @@ module Backends
               result_network_links << parse_link_networkinterface(compute, intf)
             end
           else
-            intfs.each { |intf| result_network_links << parse_link_networkinterface(compute, intf) }
+            intfs.each { |intfc| result_network_links << parse_link_networkinterface(compute, intfc) }
           end
 
           result_network_links.compact
@@ -171,8 +172,6 @@ module Backends
 
           link
         end
-
-        private
 
         def parse_link_networkinterface_is_vpc_pub?(intf_address)
           return if intf_address.blank?

@@ -249,8 +249,6 @@ module Backends
         read_extensions 'storage', @options.model_extensions_dir
       end
 
-      private
-
       # Load methods called from list/get
       include Backends::Ec2::Helpers::StorageParseHelper
 

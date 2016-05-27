@@ -447,8 +447,8 @@ module Backends
         filters << { name: 'image-id', values: @image_filtering_image_list } if IMAGE_FILTERING_POLICIES_LISTED.include?(@image_filtering_policy)
         owners = IMAGE_FILTERING_POLICIES_OWNED.include?(@image_filtering_policy) ? [ 'self' ] : nil
 
-        ec2_images_ary = nil
-        unless ec2_images_ary = Backends::Helpers::CachingHelper.load(@dalli_cache, DALLI_OS_TPL_KEY)
+        ec2_images_ary = Backends::Helpers::CachingHelper.load(@dalli_cache, DALLI_OS_TPL_KEY)
+        unless ec2_images_ary
           ec2_images_ary = []
 
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
