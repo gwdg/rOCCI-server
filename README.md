@@ -43,3 +43,5 @@ Development
 3. Commit your changes (git commit -am "My changes")
 4. Push to the branch (git push origin my_markup)
 5. [Use GitHubs Pull Requests](https://help.github.com/articles/using-pull-requests/) to submit the code for review
+
+__Coding style:__ As long as it works and the maintainer likes it, the code will be accepted. A more specific coding style will be developed later and enforced thenceforth.
