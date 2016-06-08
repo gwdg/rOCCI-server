@@ -94,8 +94,8 @@ module Backends::Ec2::Authn
           logger.debug "[Backends] [Ec2] Found mapping for " \
                        "#{first_vo.vo.inspect} in #{options.vo_aws_mapfile.inspect}"
           ::Aws::Credentials.new(
-            vo_aws_mapfile[first_vo.vo].access_key_id,
-            vo_aws_mapfile[first_vo.vo].secret_access_key
+            vo_aws_mapfile[first_vo.vo]['access_key_id'],
+            vo_aws_mapfile[first_vo.vo]['secret_access_key']
           )
         else
           # no mapping was provided, use the global default
