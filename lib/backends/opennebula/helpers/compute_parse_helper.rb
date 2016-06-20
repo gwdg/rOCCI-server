@@ -97,11 +97,12 @@ module Backends
             context_attrs[CONTEXTUALIZATION_ATTR_KEY] = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
 
             # re-encode cloud-init configuration files as Base64
-            context_attrs[CONTEXTUALIZATION_ATTR_UD] = if backend_compute['TEMPLATE/CONTEXT/USER_DATA'] && backend_compute['TEMPLATE/CONTEXT/USER_DATA'].match(/^\s*#cloud-config\s*$/)
-              Base64.strict_encode64(backend_compute['TEMPLATE/CONTEXT/USER_DATA'])
-            else
-              backend_compute['TEMPLATE/CONTEXT/USER_DATA']
-            end
+            context_attrs[CONTEXTUALIZATION_ATTR_UD] =
+              if backend_compute['TEMPLATE/CONTEXT/USER_DATA'] && backend_compute['TEMPLATE/CONTEXT/USER_DATA'].match(/^\s*#cloud-config\s*$/)
+                Base64.strict_encode64(backend_compute['TEMPLATE/CONTEXT/USER_DATA'])
+              else
+                backend_compute['TEMPLATE/CONTEXT/USER_DATA']
+              end
           end
 
           context_attrs

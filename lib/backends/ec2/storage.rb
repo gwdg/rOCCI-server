@@ -241,8 +241,6 @@ module Backends
         true
       end
 
-      private
-
       # Load methods called from storage_list/storage_get
       include Backends::Ec2::Helpers::StorageParseHelper
 

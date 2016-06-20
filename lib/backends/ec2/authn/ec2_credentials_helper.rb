@@ -28,7 +28,7 @@ module Backends::Ec2::Authn
       end
     end
 
-    private
+    private_class_method
 
     # Converts given basic credentials to credentials supported
     # by AWS. Username is used as access_key_id and password as

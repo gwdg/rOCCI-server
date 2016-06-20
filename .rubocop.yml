@@ -1,0 +1,49 @@
+# Turning off Style cops for the time being
+Style:
+  Enabled: false
+
+# Turning off Metrics cops for the time being
+Metrics:
+  Enabled: false
+
+# Turning off Performance cops for the time being
+Performance:
+  Enabled: false
+
+# Rubocop does not fully understand rspec syntax
+Lint/UselessAssignment:
+  Exclude:
+    - 'spec/**/*'
+
+# Unused arguments occur naturally in backends. Cannot be considered as bugs
+Lint/UnusedMethodArgument:
+  Exclude:
+    - 'lib/backends/**/*'
+
+# Only appli cops to backends
+AllCops:
+  Include:
+    - 'lib/backends/**/*'
+  Exclude:
+    - '*'
+    - 'etc/**/*'
+    - '.bundle/**/*'
+    - 'spec/**/*'
+    - 'examples/**/*'
+    - '.git/**/*'
+    - 'vendor/**/*'
+    - 'bin/**/*'
+    - 'log/**/*'
+    - 'config/**/*'
+    - 'public/**/*'
+    - 'test/**/*'
+    - 'app/**/*'
+    - 'coverage/**/*'
+    - 'db/**/*'
+    - 'lib/authentication_strategies/**/*'
+    - 'lib/errors/**/*'
+    - 'lib/tasks/**/*'
+    - 'lib/request_parsers/**/*'
+    - 'lib/assets/**/*'
+    - 'lib/hooks/**/*'
+

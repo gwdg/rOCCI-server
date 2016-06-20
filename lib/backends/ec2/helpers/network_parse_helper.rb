@@ -9,11 +9,12 @@ module Backends
           network.mixins << 'http://schemas.ec2.aws.amazon.com/occi/infrastructure/network#aws_ec2_vpc'
 
           network.attributes['occi.core.id'] = backend_network[:vpc_id]
-          network.attributes['occi.core.title'] = if backend_network[:tags].select { |tag| tag[:key] == 'Name' }.any?
-            backend_network[:tags].select { |tag| tag[:key] == 'Name' }.first[:value]
-          else
-            "rOCCI-server VPC #{backend_network[:cidr_block]}"
-          end
+          network.attributes['occi.core.title'] =
+            if backend_network[:tags].select { |tag| tag[:key] == 'Name' }.any?
+              backend_network[:tags].select { |tag| tag[:key] == 'Name' }.first[:value]
+            else
+              "rOCCI-server VPC #{backend_network[:cidr_block]}"
+            end
           network.address = backend_network[:cidr_block] unless backend_network[:cidr_block].blank?
           network.attributes['occi.network.label'] = "AWS VPC #{backend_network[:vpc_id]}"
 

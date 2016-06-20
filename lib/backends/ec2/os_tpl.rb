@@ -21,16 +21,17 @@ module Backends
         filters << { name: 'image-id', values: @image_filtering_image_list } if IMAGE_FILTERING_POLICIES_LISTED.include?(@image_filtering_policy)
         owners = IMAGE_FILTERING_POLICIES_OWNED.include?(@image_filtering_policy) ? [ 'self' ] : nil
 
-        ec2_images_ary = nil
-        unless ec2_images_ary = Backends::Helpers::CachingHelper.load(@dalli_cache, DALLI_OS_TPL_KEY)
+        ec2_images_ary = Backends::Helpers::CachingHelper.load(@dalli_cache, DALLI_OS_TPL_KEY)
+        unless ec2_images_ary
           ec2_images_ary = []
 
           Backends::Ec2::Helpers::AwsConnectHelper.rescue_aws_service(@logger) do
-            ec2_images = if owners
-              @ec2_client.describe_images(filters: filters, owners: owners).images
-            else
-              @ec2_client.describe_images(filters: filters).images
-            end
+            ec2_images =
+              if owners
+                @ec2_client.describe_images(filters: filters, owners: owners).images
+              else
+                @ec2_client.describe_images(filters: filters).images
+              end
 
             ec2_images.each { |ec2_image| ec2_images_ary << { image_id: ec2_image[:image_id], name: ec2_image[:name] } } if ec2_images
           end
