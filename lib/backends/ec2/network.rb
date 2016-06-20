@@ -263,10 +263,7 @@ module Backends
       def network_trigger_action(network_id, action_instance)
         fail Backends::Errors::ActionNotImplementedError,
              "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
-        true
       end
-
-      private
 
       # Load methods called from network_list/network_get
       include Backends::Ec2::Helpers::NetworkParseHelper

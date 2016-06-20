@@ -427,8 +427,6 @@ module Backends
         true
       end
 
-      private
-
       # Load methods called from compute_list/compute_get
       include Backends::Opennebula::Helpers::ComputeParseHelper
 

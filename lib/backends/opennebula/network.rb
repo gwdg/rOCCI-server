@@ -237,8 +237,6 @@ module Backends
              "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
       end
 
-      private
-
       # Load methods called from network_list/network_get
       include Backends::Opennebula::Helpers::NetworkParseHelper
     end

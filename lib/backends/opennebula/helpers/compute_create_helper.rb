@@ -149,14 +149,15 @@ module Backends
         def compute_create_add_description(compute, template)
           return if compute.blank? || template.nil?
 
-          new_desc = if !compute.summary.blank?
-            compute.summary
-          elsif !template['TEMPLATE/DESCRIPTION'].blank?
-            "#{template['TEMPLATE/DESCRIPTION']}#{template['TEMPLATE/DESCRIPTION'].end_with?('.') ? '' : '.' }" \
-            " Instantiated with rOCCI-server on #{::DateTime.now.readable_inspect}."
-          else
-            "Instantiated with rOCCI-server on #{::DateTime.now.readable_inspect}."
-          end
+          new_desc =
+            if !compute.summary.blank?
+              compute.summary
+            elsif !template['TEMPLATE/DESCRIPTION'].blank?
+              "#{template['TEMPLATE/DESCRIPTION']}#{template['TEMPLATE/DESCRIPTION'].end_with?('.') ? '' : '.' }" \
+              " Instantiated with rOCCI-server on #{::DateTime.now.readable_inspect}."
+            else
+              "Instantiated with rOCCI-server on #{::DateTime.now.readable_inspect}."
+            end
 
           template.delete_element('TEMPLATE/DESCRIPTION')
           template.add_element('TEMPLATE', 'DESCRIPTION' => new_desc)
