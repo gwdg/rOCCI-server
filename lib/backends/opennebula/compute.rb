@@ -128,7 +128,7 @@ module Backends
 
         backend_compute_pool.each do |backend_compute|
           if backend_compute.lcm_state_str == 'RUNNING'
-            rc = backend_compute.shutdown
+            rc = backend_compute.shutdown(true)
           else
             rc = backend_compute.delete
           end
@@ -156,7 +156,7 @@ module Backends
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         if virtual_machine.lcm_state_str == 'RUNNING'
-          rc = virtual_machine.shutdown
+          rc = virtual_machine.shutdown(true)
         else
           rc = virtual_machine.delete
         end

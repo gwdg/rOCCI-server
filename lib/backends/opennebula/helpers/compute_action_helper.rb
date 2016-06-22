@@ -19,7 +19,7 @@ module Backends
           case backend_object.state_str
           when 'ACTIVE'
             if backend_object.lcm_state_str == 'RUNNING'
-              rc = backend_object.reboot
+              rc = backend_object.reboot(true)
             else
               fail ::Backends::Errors::ResourceActionError,
                  "Given action is not allowed in this state! [#{backend_object.lcm_state_str.inspect}]"
@@ -39,7 +39,7 @@ module Backends
           backend_object = compute_trigger_action_prolog(compute_id)
           compute_trigger_action_state_check(backend_object, 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop')
 
-          rc = backend_object.poweroff
+          rc = backend_object.poweroff(true)
           check_retval(rc, Backends::Errors::ResourceActionError)
 
           true
