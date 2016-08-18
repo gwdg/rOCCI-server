@@ -55,6 +55,7 @@ gem 'guard-rails', :group => :development
 # Use notification libs to integrate guard with pop-ups
 gem 'rb-inotify', :require => false, :group => :development
 gem 'libnotify', :group => :development
+gem 'ruby_dep', '~> 1.3.1', :require => false, :group => :development
 
 # Use YARD for documentation
 gem 'yard', :group => :development
