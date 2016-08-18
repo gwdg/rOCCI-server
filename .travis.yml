@@ -4,11 +4,13 @@ rvm:
   - 2.0.0
   - 2.1
   - 2.2
+  - 2.3
   - ruby-head
 
 matrix:
   allow_failures:
     - rvm: ruby-head
+    - rvm: 2.3
   fast_finish: true
 
 branches:
