@@ -48,14 +48,14 @@ gem 'pry-rescue', :group => [:development, :test]
 gem 'pry-stack_explorer', :group => [:development, :test]
 
 # Use guard to speed-up devel process
-gem 'guard-bundler', :group => :development
-gem 'guard-test', :group => :development
-gem 'guard-rails', :group => :development
+#gem 'guard-bundler', :group => :development
+#gem 'guard-test', :group => :development
+#gem 'guard-rails', :group => :development
 
 # Use notification libs to integrate guard with pop-ups
-gem 'rb-inotify', :require => false, :group => :development
-gem 'libnotify', :group => :development
-gem 'ruby_dep', '~> 1.3.1', :require => false, :group => :development
+#gem 'rb-inotify', :require => false, :group => :development
+#gem 'libnotify', :group => :development
+#gem 'ruby_dep', '~> 1.3.1', :require => false, :group => :development
 
 # Use YARD for documentation
 gem 'yard', :group => :development
