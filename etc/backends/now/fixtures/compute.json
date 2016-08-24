@@ -1,0 +1,70 @@
+{
+  "resources": [
+    {
+      "kind": "http://schemas.ogf.org/occi/infrastructure#compute",
+      "mixins": [
+        "http://occi.example.org/occi/infrastructure/os_tpl#debian6"
+      ],
+      "attributes": {
+        "occi": {
+          "core": {
+            "id": "87f3bfc3-42d4-4474-b45c-757e55e093e9",
+            "title": "compute1"
+          },
+          "compute": {
+            "architecture": "x86",
+            "hostname": "compute1.example.org",
+            "memory": 1.7,
+            "speed": 1.0,
+            "state": "active"
+          }
+        }
+      },
+      "id": "87f3bfc3-42d4-4474-b45c-757e55e093e9"
+    },
+    {
+      "kind": "http://schemas.ogf.org/occi/infrastructure#compute",
+      "mixins": [
+        "http://occi.example.org/occi/infrastructure/os_tpl#debian6"
+      ],
+      "attributes": {
+        "occi": {
+          "core": {
+            "id": "17679ebd-975f-4ea0-b42b-47405178c360",
+            "title": "compute2"
+          },
+          "compute": {
+            "architecture": "x86",
+            "hostname": "compute2.example.org",
+            "memory": 1.7,
+            "speed": 1.0,
+            "state": "active"
+          }
+        }
+      },
+      "id": "17679ebd-975f-4ea0-b42b-47405178c360"
+    },
+    {
+      "kind": "http://schemas.ogf.org/occi/infrastructure#compute",
+      "mixins": [
+        "http://occi.example.org/occi/infrastructure/os_tpl#debian6"
+      ],
+      "attributes": {
+        "occi": {
+          "core": {
+            "id": "509afbd3-abff-427c-9b25-7913d17e5102",
+            "title": "compute3"
+          },
+          "compute": {
+            "architecture": "x86",
+            "hostname": "compute3.example.org",
+            "memory": 1.7,
+            "speed": 1.0,
+            "state": "inactive"
+          }
+        }
+      },
+      "id": "509afbd3-abff-427c-9b25-7913d17e5102"
+    }
+  ]
+}
