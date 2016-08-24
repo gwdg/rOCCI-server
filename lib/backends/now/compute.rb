@@ -1,6 +1,6 @@
 module Backends
   module Now
-    class Compute < Backends::>Now::Base
+    class Compute < Backends::Now::Base
       # Gets all compute instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
       # attribute of ::Occi::Infrastructure::Compute instances.
