@@ -55,10 +55,10 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [::Occi::Infrastructure::Network, nil] a network instance or `nil`
       def get(network_id)
-        found = read_network_fixtures.to_a.select { |n| n.id == network_id }.first
-        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{network_id} does not exist!" unless found
+        now_api = NowApi.new(user = @delegated_user['identity'], options = @options)
+        network = now_api.get(network_id)
 
-        found
+        occi_network = raw2occinetwork(network)
       end
 
       # Instantiates a new network instance from ::Occi::Infrastructure::Network.
@@ -246,7 +246,7 @@ module Backends
         network.mixins << 'http://schemas.opennebula.org/occi/infrastructure#network'
 
         attrs = ::Occi::Core::Attributes.new
-        attrs['occi.core.id']    = raw_network['id']
+        attrs['occi.core.id']    = raw_network['id'].to_s
         attrs['occi.core.title'] = raw_network['title'] if raw_network['title']
         attrs['occi.core.summary'] = raw_network['description'] if raw_network.key?('description')
 
