@@ -1,6 +1,8 @@
 module Backends
   module Now
-
+    #
+    # Network backend using NOW component
+    #
     class Network < Backends::Now::Base
       # Gets all network instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
@@ -32,11 +34,11 @@ module Backends
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [::Occi::Core::Resources] a collection of network instances
       def list(mixins = nil)
-        now_api = NowApi.new(user = @delegated_user['identity'], options = @options)
+        now_api = NowApi.new(@delegated_user['identity'], @options)
         networks = now_api.list
         occi_networks = networks.map { |network| raw2occinetwork(network) }
 
-        if not mixins.nil?
+        if !mixins.nil?
           occi_networks.select! { |n| (n.mixins & mixins).any? }
         end
 
@@ -55,7 +57,7 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [::Occi::Infrastructure::Network, nil] a network instance or `nil`
       def get(network_id)
-        now_api = NowApi.new(user = @delegated_user['identity'], options = @options)
+        now_api = NowApi.new(@delegated_user['identity'], @options)
         network = now_api.get(network_id)
 
         occi_network = raw2occinetwork(network)
@@ -254,7 +256,6 @@ module Backends
 
         network
       end
-
     end
   end
 end
