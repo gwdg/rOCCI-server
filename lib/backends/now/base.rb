@@ -8,6 +8,8 @@ module Backends
       # load helpers for JSON -> Collection conversion
       include Backends::Helpers::JsonCollectionHelper
 
+      attr_reader :options
+
       def initialize(delegated_user, options, server_properties, logger, dalli_cache)
         @delegated_user = Hashie::Mash.new(delegated_user)
         @options = Hashie::Mash.new(options)

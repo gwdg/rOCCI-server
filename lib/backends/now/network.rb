@@ -1,5 +1,6 @@
 module Backends
   module Now
+
     class Network < Backends::Now::Base
       # Gets all network instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
@@ -31,12 +32,15 @@ module Backends
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [::Occi::Core::Resources] a collection of network instances
       def list(mixins = nil)
-        if mixins.blank?
-          read_network_fixtures
-        else
-          filtered_networks = read_network_fixtures.to_a.select { |n| (n.mixins & mixins).any? }
-          ::Occi::Core::Resources.new filtered_networks
+        now_api = NowApi.new(user = @delegated_user['identity'], options = @options)
+        networks = now_api.list
+        occi_networks = networks.map { |network| raw2occinetwork(network) }
+
+        if not mixins.nil?
+          occi_networks.select! { |n| (n.mixins & mixins).any? }
         end
+
+        occi_networks
       end
 
       # Gets a specific network instance as ::Occi::Infrastructure::Network.
@@ -234,6 +238,23 @@ module Backends
         # no extensions to include
         ::Occi::Collection.new
       end
+
+      def raw2occinetwork(raw_network)
+        network = ::Occi::Infrastructure::Network.new
+
+        network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
+        network.mixins << 'http://schemas.opennebula.org/occi/infrastructure#network'
+
+        attrs = ::Occi::Core::Attributes.new
+        attrs['occi.core.id']    = raw_network['id']
+        attrs['occi.core.title'] = raw_network['title'] if raw_network['title']
+        attrs['occi.core.summary'] = raw_network['description'] if raw_network.key?('description')
+
+        network.attributes.merge! attrs
+
+        network
+      end
+
     end
   end
 end
