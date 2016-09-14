@@ -24,6 +24,11 @@ module Backends
 
         networks
       end
+
+      def create(network)
+        @http_options[:body] = network.to_json
+        self.class.post('/network', @http_options)
+      end
     end
   end
 end

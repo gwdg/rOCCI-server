@@ -16,7 +16,7 @@ module Backends
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available network instances
       def list_ids(mixins = nil)
-        list(mixins).to_a.map { |n| n.id }
+        list(mixins).to_a.map(&:id)
       end
 
       # Gets all network instances, instances must be filtered
@@ -38,7 +38,7 @@ module Backends
         networks = now_api.list
         occi_networks = networks.map { |network| raw2occinetwork(network) }
 
-        if !mixins.nil?
+        unless mixins.nil?
           occi_networks.select! { |n| (n.mixins & mixins).any? }
         end
 
@@ -60,7 +60,7 @@ module Backends
         now_api = NowApi.new(@delegated_user['identity'], @options)
         network = now_api.get(network_id)
 
-        occi_network = raw2occinetwork(network)
+        raw2occinetwork(network)
       end
 
       # Instantiates a new network instance from ::Occi::Infrastructure::Network.
@@ -77,12 +77,16 @@ module Backends
       # @param network [::Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
       def create(network)
-        fail Backends::Errors::IdentifierConflictError, "Instance with ID #{network.id} already exists!" if list_ids.include?(network.id)
+        # include some basic mixins
+        # WARNING: adding mix-ins will re-set their attributes
+        attr_backup = ::Occi::Core::Attributes.new(network.attributes)
+        network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
+        network.attributes = attr_backup
 
-        updated = read_network_fixtures << network
-        save_network_fixtures(updated)
+        now_api = NowApi.new(@delegated_user['identity'], @options)
 
-        network.id
+        raw_network = occi2rawnetwork(network)
+        now_api.create(raw_network)
       end
 
       # Deletes all network instances, instances to be deleted must be filtered
@@ -241,20 +245,46 @@ module Backends
         ::Occi::Collection.new
       end
 
+      private
+
       def raw2occinetwork(raw_network)
         network = ::Occi::Infrastructure::Network.new
 
         network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
-        network.mixins << 'http://schemas.opennebula.org/occi/infrastructure#network'
 
         attrs = ::Occi::Core::Attributes.new
         attrs['occi.core.id']    = raw_network['id'].to_s
-        attrs['occi.core.title'] = raw_network['title'] if raw_network['title']
-        attrs['occi.core.summary'] = raw_network['description'] if raw_network.key?('description')
+        attrs['occi.core.title'] = raw_network['title'] if raw_network.key? 'title'
+        attrs['occi.core.summary'] = raw_network['description'] if raw_network.key? 'description'
+        attrs['occi.network.vlan'] = raw_network['vlan'] if raw_network.key? 'vlan'
+        if raw_network.key? 'range'
+          range = raw_network['range']
+          attrs['occi.network.address'] = range['address'] if range.key? 'address'
+          attrs['occi.network.allocation'] = range['allocation'] if range.key? 'allocation'
+          attrs['occi.network.gateway'] = range['gateway'] if range.key? 'gateway'
+        end
 
         network.attributes.merge! attrs
 
         network
+      end
+
+      def occi2rawnetwork(occi)
+        attrs = occi.attributes
+
+        raw = {}
+        raw['id'] = attrs['occi.core.id']
+        raw['title'] = attrs['occi.core.title'] if attrs['occi.core.title']
+        raw['description'] = attrs['occi.core.summary'] if attrs['occi.core.summary']
+        raw['vlan'] = attrs['occi.network.vlan'] if attrs['occi.network.vlan']
+
+        range = {}
+        range['address'] = attrs['occi.network.address'] if attrs['occi.network.address']
+        range['allocation'] = attrs['occi.network.allocation'] if attrs['occi.network.allocation']
+        range['gateway'] = attrs['occi.network.gateway'] if attrs['occi.network.gateway']
+        raw['range'] = range unless range.empty?
+
+        raw
       end
     end
   end
