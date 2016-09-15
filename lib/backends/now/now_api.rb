@@ -36,6 +36,14 @@ module Backends
         result.to_s
       end
 
+      def delete(id)
+        result = check('200') do
+          result = self.class.delete("/network/#{id}", @http_options)
+        end
+
+        true
+      end
+
       private
 
       def check(code)

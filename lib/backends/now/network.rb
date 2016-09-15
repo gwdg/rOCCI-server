@@ -77,6 +77,8 @@ module Backends
       # @param network [::Occi::Infrastructure::Network] network instance containing necessary attributes
       # @return [String] final identifier of the new network instance
       def create(network)
+        @logger.info "[Backends] [NOW] Creating network #{network.inspect}"
+
         # include some basic mixins
         # WARNING: adding mix-ins will re-set their attributes
         attr_backup = ::Occi::Core::Attributes.new(network.attributes)
@@ -103,14 +105,19 @@ module Backends
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def delete_all(mixins = nil)
-        if mixins.blank?
-          drop_network_fixtures
-          read_network_fixtures.empty?
-        else
-          old_count = read_network_fixtures.count
-          updated = read_network_fixtures.delete_if { |n| (n.mixins & mixins).any? }
-          save_network_fixtures(updated)
-          old_count != read_network_fixtures.count
+        now_api = NowApi.new(@delegated_user['identity'], @options)
+
+        networks = now_api.list
+        occi_networks = networks.map(&:raw2occinetwork)
+
+        unless mixins.nil?
+          occi_networks.select! { |n| (n.mixins & mixins).any? }
+        end
+        @logger.info "[Backends] [NOW] Mass network delete of #{occi_networks.size} networks"
+
+        occi_networks.each do |n|
+          @logger.info "[Backends] [NOW] Deleting network #{n.inspect}"
+          now_api.delete(n.id)
         end
       end
 
@@ -126,17 +133,12 @@ module Backends
       # @param network_id [String] an identifier of a network instance to be deleted
       # @return [true, false] result of the operation
       def delete(network_id)
-        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{network_id} does not exist!" unless list_ids.include?(network_id)
+        @logger.info "[Backends] [NOW] Deleting network #{network_id}"
 
-        updated = read_network_fixtures.delete_if { |n| n.id == network_id }
-        save_network_fixtures(updated)
+        now_api = NowApi.new(@delegated_user['identity'], @options)
+        now_api.delete(network_id)
 
-        begin
-          get(network_id)
-          false
-        rescue Backends::Errors::ResourceNotFoundError
-          true
-        end
+        true
       end
 
       # Partially updates an existing network instance, instance to be updated
