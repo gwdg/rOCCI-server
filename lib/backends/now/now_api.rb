@@ -12,22 +12,44 @@ module Backends
       end
 
       def get(id)
-        s = self.class.get("/network/#{id}", @http_options)
-        network = JSON(s)
+        result = check('200') do
+          self.class.get("/network/#{id}", @http_options)
+        end
 
-        network
+        JSON(result)
       end
 
       def list
-        s = self.class.get('/network', @http_options)
-        networks = JSON(s)
+        result = check('200') do
+          result = self.class.get('/network', @http_options)
+        end
 
-        networks
+        JSON(result)
       end
 
       def create(network)
         @http_options[:body] = network.to_json
-        self.class.post('/network', @http_options)
+        result = check('201') do
+          result = self.class.post('/network', @http_options)
+        end
+
+        result.to_s
+      end
+
+      private
+
+      def check(code)
+        begin
+          result = yield
+        rescue Errno::ECONNREFUSED, Errno::ENETUNREACH, SocketError => e
+          raise ::Backends::Errors::ServiceUnavailableError, e.message
+        end
+
+        unless result.response.code == code
+          raise ::Backends::Errors::GenericRESTError.new(result.response.code), result.response.body.to_s
+        end
+
+        result
       end
     end
   end

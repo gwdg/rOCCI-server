@@ -85,5 +85,13 @@ module Mixins
       logger.warn "[Backend] Failed to authorize user: #{exception.message}"
       render text: exception.message, status: 403
     end
+
+    # Generic handler responding with HTTP code and message obtained from backend.
+    #
+    # @param exception [Exception] exception to convert into
+    def handle_generic_rest_err(exception)
+      logger.warn "[Backend] Error from the underlying CMF: #{exception.message}"
+      render text: exception.message, status: exception.code
+    end
   end
 end
