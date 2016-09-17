@@ -28,6 +28,7 @@ module Backends
       end
 
       def create(network)
+        network.delete 'id'
         @http_options[:body] = network.to_json
         result = check('201') do
           result = self.class.post('/network', @http_options)
@@ -42,6 +43,16 @@ module Backends
         end
 
         true
+      end
+
+      def update(id, network)
+        network.delete 'id'
+        @http_options[:body] = network.to_json
+        result = check('200') do
+          result = self.class.put("/network/#{id}", @http_options)
+        end
+
+        result.to_s
       end
 
       private

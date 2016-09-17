@@ -79,15 +79,9 @@ module Backends
       def create(network)
         @logger.info "[Backends] [NOW] Creating network #{network.inspect}"
 
-        # include some basic mixins
-        # WARNING: adding mix-ins will re-set their attributes
-        attr_backup = ::Occi::Core::Attributes.new(network.attributes)
-        network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
-        network.attributes = attr_backup
-
         now_api = NowApi.new(@delegated_user['identity'], @options)
 
-        raw_network = occi2rawnetwork(network)
+        raw_network = occi2raw_network(network.attributes)
         now_api.create(raw_network)
       end
 
@@ -158,8 +152,14 @@ module Backends
       # @param links [::Occi::Core::Links] a collection of links to be added
       # @return [true, false] result of the operation
       def partial_update(network_id, attributes = nil, mixins = nil, links = nil)
-        # TODO: impl
-        fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
+        @logger.info "[Backends] [NOW] Updating network #{network_id} to #{attributes.inspect}"
+
+        now_api = NowApi.new(@delegated_user['identity'], @options)
+
+        raw_network = occi2raw_network(attributes)
+        now_api.update(network_id, raw_network)
+
+        true
       end
 
       # Updates an existing network instance, instance to be updated is specified
@@ -174,12 +174,15 @@ module Backends
       # @param network [::Occi::Infrastructure::Network] instance containing updated information
       # @return [true, false] result of the operation
       def update(network)
-        fail Backends::Errors::ResourceNotFoundError, "Instance with ID #{network.id} does not exist!" unless list_ids.include?(network.id)
+        @logger.info "[Backends] [NOW] Updating network to #{network.inspect}"
 
-        delete(network.id)
-        updated = read_network_fixtures << network
-        save_network_fixtures(updated)
-        get(network.id) == network
+        now_api = NowApi.new(@delegated_user['identity'], @options)
+
+        raw_network = occi2raw_network(network.attributes)
+        id = raw_network['id']
+        now_api.update(id, raw_network)
+
+        true
       end
 
       # Triggers an action on all existing network instance, instances must be filtered
@@ -271,9 +274,7 @@ module Backends
         network
       end
 
-      def occi2rawnetwork(occi)
-        attrs = occi.attributes
-
+      def occi2raw_network(attrs)
         raw = {}
         raw['id'] = attrs['occi.core.id']
         raw['title'] = attrs['occi.core.title'] if attrs['occi.core.title']
