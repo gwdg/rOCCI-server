@@ -219,26 +219,8 @@ module Backends
       # @param action_instance [::Occi::Core::ActionInstance] action to be triggered
       # @return [true, false] result of the operation
       def trigger_action(network_id, action_instance)
-        case action_instance.action.type_identifier
-        when 'http://schemas.ogf.org/occi/infrastructure/network/action#down'
-          state = 'inactive'
-        when 'http://schemas.ogf.org/occi/infrastructure/network/action#up'
-          state = 'active'
-        else
-          fail Backends::Errors::ActionNotImplementedError,
-               "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
-        end
-
-        # get existing network instance and set a new state
-        network = get(network_id)
-        network.state = state
-
-        # clean-up and save the new collection
-        delete(network.id)
-        updated = read_network_fixtures << network
-        save_network_fixtures(updated)
-
-        true
+        raise Backends::Errors::ActionNotImplementedError,
+              'No actions implemented!'
       end
 
       # Returns a collection of custom mixins introduced (and specific for)
