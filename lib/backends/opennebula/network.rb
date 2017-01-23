@@ -96,7 +96,6 @@ module Backends
         # WARNING: adding mix-ins will re-set their attributes
         attr_backup = ::Occi::Core::Attributes.new(network.attributes)
         network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
-        network.mixins << 'http://schemas.opennebula.org/occi/infrastructure#network'
         network.attributes = attr_backup
 
         template_location = File.join(@options.templates_dir, 'network.erb')

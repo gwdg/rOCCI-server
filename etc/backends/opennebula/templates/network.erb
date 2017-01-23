@@ -4,42 +4,29 @@ NAME = "<%= @network.title %>"
 DESCRIPTION = "<%= @network.summary || "VNET created using rOCCI-server on #{::DateTime.now.readable_inspect}." %>"
 
 <% if @network.vlan %>
-VLAN = "YES"
+VN_MAD  = "vxlan"
+PHYDEV  = "eth0"
+VLAN    = "yes"
 VLAN_ID = "<%= @network.vlan.to_i %>"
 <% else %>
-VLAN = "NO"
+VN_MAD  = "fw"
+VLAN    = "no"
+BRIDGE  = "onebr0"
 <% end %>
 
-<% if @network.attributes.org_.opennebula_.network_.phydev %>
-PHYDEV = "<%= @network.attributes['org.opennebula.network.phydev'] %>"
-<% end %>
 
-<% if @network.attributes.org_.opennebula_.network_.bridge %>
-BRIDGE = "<%= @network.attributes['org.opennebula.network.bridge'] %>"
-<% end %>
 
-<% if @network.allocation == 'static' %>
-TYPE = "FIXED"
+<% if @network.address %>
+  <% network_range = IPAddr.new(@network.address).to_range %>
 
-  <% if @network.address %>
-    <% network_range = IPAddr.new(@network.address).to_range %>
-    <% network_range = network_range - IPAddr.new(@network.gateway) if @network.gateway %>
-  <% network_range.each do |lease| %>
-LEASES = [IP = "<%= lease.to_s %>"]
-  <% end %>
-  <% end %>
-<% else %>
-TYPE = "RANGED"
+AR=[
+    TYPE = "IP4",
+    IP   = "<%= network_range.to_a[1] %>",
+    SIZE = "<%= network_range.count - 2 %>"
+]
 
-  <% if @network.address && @network.address.include?('/') %>
 NETWORK_ADDRESS = "<%= IPAddr.new(@network.address).to_s %>"
 NETWORK_MASK    = "<%= IPAddr.new('255.255.255.255').mask(@network.address.split('/').last).to_s %>"
-  <% end %>
-
-  <% if @network.attributes.org_.opennebula_.network_.ip_start && @network.attributes.org_.opennebula_.network_.ip_end %>
-IP_START = "<%= @network.attributes['org.opennebula.network.ip_start'] %>"
-IP_END = "<%= @network.attributes['org.opennebula.network.ip_end'] %>"
-  <% end %>
 <% end %>
 
 <% if @network.gateway %>

@@ -93,12 +93,6 @@ module Backends
         @logger.debug "[Backends] [Opennebula] Creating storage #{storage.inspect} "\
                       "in DS[#{@options.storage_datastore_id}]"
 
-        # include some basic mixins
-        # WARNING: adding mix-ins will re-set their attributes
-        attr_backup = ::Occi::Core::Attributes.new(storage.attributes)
-        storage.mixins << 'http://schemas.opennebula.org/occi/infrastructure#storage'
-        storage.attributes = attr_backup
-
         template_location = File.join(@options.templates_dir, 'storage.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(storage: storage)
 
