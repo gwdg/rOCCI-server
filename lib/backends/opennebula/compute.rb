@@ -70,7 +70,10 @@ module Backends
       # @param compute_id [String] OCCI identifier of the requested compute instance
       # @return [::Occi::Infrastructure::Compute, nil] a compute instance or `nil`
       def get(compute_id)
-        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute_id), @client)
+        virtual_machine = ::OpenNebula::VirtualMachine.new(
+                            ::OpenNebula::VirtualMachine.build_xml(compute_id),
+                            @client
+                          )
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
@@ -95,17 +98,11 @@ module Backends
         compute_id = compute.id
 
         os_tpl_mixins = compute.mixins.get_related_to(::Occi::Infrastructure::OsTpl.mixin.type_identifier)
-        if !os_tpl_mixins.empty?
-          compute_id = create_with_os_tpl(compute)
-        elsif !compute.links.empty?
-          compute_id = create_with_links(compute)
-        else
-          fail Backends::Errors::ResourceNotValidError,
-               "Given instance contains neither an os_tpl " \
-               "mixin or links necessary to create a virtual machine!"
-        end
+        fail Backends::Errors::ResourceNotValidError,
+             'Given instance does not contain an os_tpl ' \
+             'necessary to create a virtual machine!' if os_tpl_mixins.empty?
 
-        compute_id
+        create_with_os_tpl(compute)
       end
 
       # Deletes all compute instances, instances to be deleted must be filtered
@@ -128,13 +125,10 @@ module Backends
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         backend_compute_pool.each do |backend_compute|
-          if backend_compute.lcm_state_str == 'RUNNING'
-            rc = backend_compute.shutdown(true)
-          else
-            rc = backend_compute.delete
-          end
-
-          check_retval(rc, Backends::Errors::ResourceActionError)
+          check_retval(
+            backend_compute.terminate(true),
+            Backends::Errors::ResourceActionError
+          )
         end
 
         true
@@ -152,17 +146,19 @@ module Backends
       # @param compute_id [String] an identifier of a compute instance to be deleted
       # @return [true, false] result of the operation
       def delete(compute_id)
-        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute_id), @client)
-        rc = virtual_machine.info
-        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+        virtual_machine = ::OpenNebula::VirtualMachine.new(
+                            ::OpenNebula::VirtualMachine.build_xml(compute_id),
+                            @client
+                          )
+        check_retval(
+          virtual_machine.info,
+          Backends::Errors::ResourceRetrievalError
+        )
 
-        if virtual_machine.lcm_state_str == 'RUNNING'
-          rc = virtual_machine.shutdown(true)
-        else
-          rc = virtual_machine.delete
-        end
-
-        check_retval(rc, Backends::Errors::ResourceActionError)
+        check_retval(
+          virtual_machine.terminate(true),
+          Backends::Errors::ResourceActionError
+        )
 
         true
       end

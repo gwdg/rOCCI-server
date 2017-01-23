@@ -66,7 +66,10 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [::Occi::Infrastructure::Network, nil] a network instance or `nil`
       def get(network_id)
-        virtual_network = ::OpenNebula::VirtualNetwork.new(::OpenNebula::VirtualNetwork.build_xml(network_id), @client)
+        virtual_network = ::OpenNebula::VirtualNetwork.new(
+                            ::OpenNebula::VirtualNetwork.build_xml(network_id),
+                            @client
+                          )
         rc = virtual_network.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 

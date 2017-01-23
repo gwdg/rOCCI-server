@@ -66,7 +66,10 @@ module Backends
       # @param storage_id [String] OCCI identifier of the requested storage instance
       # @return [::Occi::Infrastructure::Storage, nil] a storage instance or `nil`
       def get(storage_id)
-        image = ::OpenNebula::Image.new(::OpenNebula::Image.build_xml(storage_id), @client)
+        image = ::OpenNebula::Image.new(
+                  ::OpenNebula::Image.build_xml(storage_id),
+                  @client
+                )
         rc = image.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 

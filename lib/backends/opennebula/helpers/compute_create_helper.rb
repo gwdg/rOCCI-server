@@ -68,12 +68,6 @@ module Backends
           compute_id
         end
 
-        def create_with_links(compute)
-          # TODO: drop this branch in the second stable release
-          fail Backends::Errors::MethodNotImplementedError,
-               "This functionality has been deprecated! Use os_tpl and resource_tpl mixins!"
-        end
-
         private
 
         def create_set_attrs(compute, template)
