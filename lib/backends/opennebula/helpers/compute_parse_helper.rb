@@ -179,10 +179,10 @@ module Backends
                 target.id = "#{STORAGE_GENERATED_PREFIX}#{id}"
                 target.title = 'Generated target for a disk based on an outdated and unpublished image'
               rescue Backends::Errors::ResourceNotFoundError
-                # image doesn't exist anymore
+                # image doesn't exist anymore or it's a read-only appliance OS image
                 target = ::Occi::Infrastructure::Storage.new
                 target.id = "#{STORAGE_GENERATED_PREFIX}#{id}"
-                target.title = 'Generated target for a disk based on a removed image'
+                target.title = 'Generated target for an OS disk or a removed image'
               end
             else
               target = ::Occi::Infrastructure::Storage.new

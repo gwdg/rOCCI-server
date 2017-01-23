@@ -15,7 +15,7 @@ module Backends
       def list_ids(mixins = nil)
         # TODO: impl filtering with mixins
         backend_image_pool = ::OpenNebula::ImagePool.new(@client)
-        rc = backend_image_pool.info_all
+        rc = backend_image_pool.info_mine
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         storage = []
@@ -44,7 +44,7 @@ module Backends
         # TODO: impl filtering with mixins
         storage = ::Occi::Core::Resources.new
         backend_storage_pool = ::OpenNebula::ImagePool.new(@client)
-        rc = backend_storage_pool.info_all
+        rc = backend_storage_pool.info_mine
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         backend_storage_pool.each do |backend_storage|
@@ -135,12 +135,14 @@ module Backends
       def delete_all(mixins = nil)
         # TODO: impl filtering with mixins
         backend_storage_pool = ::OpenNebula::ImagePool.new(@client)
-        rc = backend_storage_pool.info_all
+        rc = backend_storage_pool.info_mine
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         backend_storage_pool.each do |backend_storage|
-          rc = backend_storage.delete
-          check_retval(rc, Backends::Errors::ResourceActionError)
+          check_retval(
+            backend_storage.delete,
+            Backends::Errors::ResourceActionError
+          )
         end
 
         true
@@ -158,12 +160,13 @@ module Backends
       # @param storage_id [String] an identifier of a storage instance to be deleted
       # @return [true, false] result of the operation
       def delete(storage_id)
-        storage = ::OpenNebula::Image.new(::OpenNebula::Image.build_xml(storage_id), @client)
-        rc = storage.info
-        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+        storage = ::OpenNebula::Image.new(
+                    ::OpenNebula::Image.build_xml(storage_id),
+                    @client
+                  )
 
-        rc = storage.delete
-        check_retval(rc, Backends::Errors::ResourceActionError)
+        check_retval(storage.info, Backends::Errors::ResourceRetrievalError)
+        check_retval(storage.delete, Backends::Errors::ResourceActionError)
 
         true
       end
