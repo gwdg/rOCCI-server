@@ -107,9 +107,10 @@ GEM
       json (~> 1.8, >= 1.8.1)
       settingslogic (~> 2.0, >= 2.0.9)
       uuidtools (~> 2.1, >= 2.1.3)
-    opennebula (4.4.0)
+    opennebula (5.2.1)
       json
       nokogiri
+      rbvmomi
     ox (2.4.8)
     passenger (5.0.30)
       rack
@@ -158,6 +159,11 @@ GEM
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
     rake (10.3.2)
+    rbvmomi (1.9.4)
+      builder (~> 3.2)
+      json (>= 1.8)
+      nokogiri (~> 1.5)
+      trollop (~> 2.1)
     rdoc (4.3.0)
     redcarpet (3.4.0)
     request_store (1.3.2)
@@ -206,6 +212,7 @@ GEM
       sprockets (>= 3.0.0)
     thor (0.19.4)
     thread_safe (0.3.5)
+    trollop (2.1.2)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
     uuidtools (2.1.5)
@@ -238,7 +245,7 @@ DEPENDENCIES
   logstasher (~> 0.6.2)
   nokogiri (~> 1.6.8)
   occi-core (~> 4.3.2)
-  opennebula (~> 4.4.0)
+  opennebula (~> 5.2)
   ox
   passenger (~> 5.0.22)
   pry-rails
