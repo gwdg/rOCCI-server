@@ -47,6 +47,46 @@
           }
         }
       }
+    },
+    {
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "term":"ssh_key",
+      "scheme":"http://schemas.ogf.org/occi/infrastructure/credentials#",
+      "title":"Contextualization extension - credentials",
+      "location":"/mixin/ssh_key/",
+      "attributes":{
+        "occi":{
+          "credentials":{
+            "ssh":{
+              "publickey":{
+                "Mutable":true,
+                "Description":"SSH public key formatted as it appears in authorized_keys."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute"
+      ],
+      "term":"user_data",
+      "scheme":"http://schemas.ogf.org/occi/infrastructure/compute#",
+      "title":"Contextualization extension - user_data",
+      "location":"/mixin/user_data/",
+      "attributes":{
+        "occi":{
+          "compute":{
+            "userdata":{
+              "Mutable":true,
+              "Description":"Base64 encoded content passed to the compute instance as USER_DATA."
+            }
+          }
+        }
+      }
     }
   ]
 }
