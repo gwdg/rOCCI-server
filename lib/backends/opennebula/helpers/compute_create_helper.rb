@@ -159,10 +159,10 @@ module Backends
             next unless link.kind_of? ::Occi::Core::Link
             @logger.debug "[Backends] [Opennebula] Handling inline link #{link.to_s.inspect}"
 
-            case link.kind.type_identifier
-            when 'http://schemas.ogf.org/occi/infrastructure#storagelink'
+            case link
+            when ::Occi::Infrastructure::Storagelink
               template = create_add_inline_storagelink(template, link)
-            when 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
+            when ::Occi::Infrastructure::Networkinterface
               template = create_add_inline_networkinterface(template, link)
             else
               fail Backends::Errors::ResourceNotValidError, "Link kind #{link.kind.type_identifier.inspect} is not supported!"
