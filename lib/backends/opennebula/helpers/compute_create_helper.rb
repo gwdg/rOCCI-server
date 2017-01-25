@@ -73,9 +73,15 @@ module Backends
             template.delete_element('TEMPLATE/VCPU')
             template.add_element('TEMPLATE',  'VCPU' => compute.cores.to_i)
 
-            # set reservation ratio
+            # set default reservation ratio
             template.delete_element('TEMPLATE/CPU')
             template.add_element('TEMPLATE',  'CPU' => compute.cores.to_i)
+          end
+
+          if compute.speed
+            # set reservation ratio
+            template.delete_element('TEMPLATE/CPU')
+            template.add_element('TEMPLATE',  'CPU' => compute.speed.to_f)
           end
 
           if compute.memory
@@ -88,11 +94,6 @@ module Backends
             template.delete_element('TEMPLATE/ARCHITECTURE')
             template.add_element('TEMPLATE',  'ARCHITECTURE' => compute.architecture)
           end
-
-          # TODO: speed should contain a CPU speed (i.e. frequency in GHz)
-          # if compute.speed
-          #   ###
-          # end
         end
 
         def create_add_context(compute, template)
