@@ -97,21 +97,23 @@ module Backends
         end
 
         def create_add_context(compute, template)
-          return unless compute.attributes.org!.openstack
+          pbk = compute.attributes.occi!.credentials!.ssh!.publickey || compute.attributes.org!.openstack!.credentials!.publickey!.data
+          ud  = compute.attributes.occi!.compute!.userdata || compute.attributes.org!.openstack!.compute!.user_data
+          return unless pbk || ud
 
           template.add_element('TEMPLATE', 'CONTEXT' => '')
 
-          if compute.attributes.org.openstack.credentials!.publickey!.data
+          if pbk
             template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
-            template.add_element('TEMPLATE/CONTEXT', 'SSH_KEY' => compute.attributes['org.openstack.credentials.publickey.data'])
+            template.add_element('TEMPLATE/CONTEXT', 'SSH_KEY' => pbk)
 
             template.delete_element('TEMPLATE/CONTEXT/SSH_PUBLIC_KEY')
-            template.add_element('TEMPLATE/CONTEXT', 'SSH_PUBLIC_KEY' => compute.attributes['org.openstack.credentials.publickey.data'])
+            template.add_element('TEMPLATE/CONTEXT', 'SSH_PUBLIC_KEY' => pbk)
           end
 
-          if compute.attributes.org.openstack.compute!.user_data
+          if ud
             template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
-            template.add_element('TEMPLATE/CONTEXT', 'USER_DATA' => compute.attributes['org.openstack.compute.user_data'])
+            template.add_element('TEMPLATE/CONTEXT', 'USER_DATA' => ud)
 
             template.delete_element('TEMPLATE/CONTEXT/USERDATA_ENCODING')
             template.add_element('TEMPLATE/CONTEXT', 'USERDATA_ENCODING' => 'base64')
@@ -119,20 +121,17 @@ module Backends
         end
 
         def create_check_context(compute)
-          if compute.attributes.org!.openstack!.credentials!.publickey!.data
-            fail Backends::Errors::ResourceNotValidError, 'Public key is invalid!' unless \
-              COMPUTE_SSH_REGEXP.match(compute.attributes['org.openstack.credentials.publickey.data'])
-          end
+          pbk = compute.attributes.occi!.credentials!.ssh!.publickey || compute.attributes.org!.openstack!.credentials!.publickey!.data
+          ud  = compute.attributes.occi!.compute!.userdata || compute.attributes.org!.openstack!.compute!.user_data
 
-          if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" unless \
-              compute.attributes['org.openstack.compute.user_data'].bytesize <= COMPUTE_USER_DATA_SIZE_LIMIT
-          end
+          fail Backends::Errors::ResourceNotValidError,
+               'Public key is invalid!' if pbk && !COMPUTE_SSH_REGEXP.match(pbk)
 
-          if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
-              COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
-          end
+          fail Backends::Errors::ResourceNotValidError,
+               "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" if ud && ud.bytesize > COMPUTE_USER_DATA_SIZE_LIMIT
+
+          fail Backends::Errors::ResourceNotValidError,
+               'User data contains invalid characters!' if ud && !COMPUTE_BASE64_REGEXP.match(ud.gsub("\n", ''))
         end
 
         def create_add_description(compute, template)
