@@ -43,7 +43,10 @@ module Backends
           template = template.template_str
 
           # add inline links
-          template = create_add_inline_links(compute, template)
+          create_add_inline_links(compute, template)
+
+          # add GPU devices
+          create_add_gpu_devs(compute, template)
 
           @logger.debug "[Backends] [Opennebula] Template #{template.inspect}"
           vm_alloc = ::OpenNebula::VirtualMachine.build_xml
@@ -127,11 +130,13 @@ module Backends
           fail Backends::Errors::ResourceNotValidError,
                'Public key is invalid!' if pbk && !COMPUTE_SSH_REGEXP.match(pbk)
 
-          fail Backends::Errors::ResourceNotValidError,
-               "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" if ud && ud.bytesize > COMPUTE_USER_DATA_SIZE_LIMIT
+          return if ud.blank?
 
           fail Backends::Errors::ResourceNotValidError,
-               'User data contains invalid characters!' if ud && !COMPUTE_BASE64_REGEXP.match(ud.gsub("\n", ''))
+               "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" if ud.bytesize > COMPUTE_USER_DATA_SIZE_LIMIT
+
+          fail Backends::Errors::ResourceNotValidError,
+               'User data contains invalid characters!' unless COMPUTE_BASE64_REGEXP.match ud.gsub("\n", '')
         end
 
         def create_add_description(compute, template)
@@ -152,7 +157,7 @@ module Backends
         end
 
         def create_add_inline_links(compute, template)
-          return template if compute.blank? || compute.links.blank?
+          return if compute.blank? || compute.links.blank?
 
           compute.links.to_a.each do |link|
             next unless link.kind_of? ::Occi::Core::Link
@@ -160,15 +165,13 @@ module Backends
 
             case link
             when ::Occi::Infrastructure::Storagelink
-              template = create_add_inline_storagelink(template, link)
+              create_add_inline_storagelink(template, link)
             when ::Occi::Infrastructure::Networkinterface
-              template = create_add_inline_networkinterface(template, link)
+              create_add_inline_networkinterface(template, link)
             else
               fail Backends::Errors::ResourceNotValidError, "Link kind #{link.kind.type_identifier.inspect} is not supported!"
             end
           end
-
-          template
         end
 
         def create_add_inline_storagelink(template, storagelink)
@@ -201,6 +204,28 @@ module Backends
           if COMPUTE_DN_BASED_AUTHS.include?(@delegated_user.auth_.type)
             template.add_element('TEMPLATE',  'USER_X509_DN' => @delegated_user.identity)
           end
+        end
+
+        def create_add_gpu_devs(compute, template)
+          # TODO: this needs to be improved in future versions
+          # Expected attributes:
+          #   - eu.egi.fedcloud.compute.gpu.count  (Integer)
+          #   - eu.egi.fedcloud.compute.gpu.vendor (String)
+          #   - eu.egi.fedcloud.compute.gpu.class  (String)
+          #   - eu.egi.fedcloud.compute.gpu.device (String)
+          return unless compute.attributes.eu!.egi!.fedcloud!.compute!.gpu
+
+          pci_tpl = []
+          pci_tpl << "VENDOR=\"#{compute.attributes['eu.egi.fedcloud.compute.gpu.vendor']}\"" \
+                       unless compute.attributes['eu.egi.fedcloud.compute.gpu.vendor'].blank?
+          pci_tpl << "CLASS=\"#{compute.attributes['eu.egi.fedcloud.compute.gpu.class']}\"" \
+                       unless compute.attributes['eu.egi.fedcloud.compute.gpu.class'].blank?
+          pci_tpl << "DEVICE=\"#{compute.attributes['eu.egi.fedcloud.compute.gpu.device']}\"" \
+                       unless compute.attributes['eu.egi.fedcloud.compute.gpu.device'].blank?
+          return if pci_tpl.empty?
+
+          @logger.debug "[Backends] [Opennebula] Adding GPU(s) #{pci_tpl.inspect}"
+          compute.attributes['eu.egi.fedcloud.compute.gpu.count'].times { template << "PCI = [ #{pci_tpl.join(',')} ]" }
         end
       end
     end
