@@ -36,17 +36,17 @@ module Backends
         private
 
         def create_user_data(compute)
-          if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" unless \
-              compute.attributes['org.openstack.compute.user_data'].bytesize <= COMPUTE_USER_DATA_SIZE_LIMIT
-          end
+          ud  = compute.attributes.occi!.compute!.userdata || compute.attributes.org!.openstack!.compute!.user_data
+          return '' if ud.blank?
 
-          if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
-              COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
-          end
+          fail Backends::Errors::ResourceNotValidError,
+               "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} " \
+               'bytes!' if ud.bytesize > COMPUTE_USER_DATA_SIZE_LIMIT
 
-          compute.attributes.org!.openstack!.compute!.user_data || ''
+          fail Backends::Errors::ResourceNotValidError,
+               'User data contains invalid characters!' if !COMPUTE_BASE64_REGEXP.match ud.gsub("\n", '')
+
+          ud
         end
 
         def create_instance_opts(compute)
