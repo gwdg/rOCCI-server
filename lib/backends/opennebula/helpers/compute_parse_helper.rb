@@ -4,10 +4,24 @@ module Backends
       module ComputeParseHelper
         STORAGE_GENERATED_PREFIX = 'generated_'
         NETWORK_GENERATED_PREFIX = 'generated_'
-        CONTEXTUALIZATION_MIXIN_KEY = 'http://schemas.openstack.org/instance/credentials#public_key'
-        CONTEXTUALIZATION_MIXIN_UD = 'http://schemas.openstack.org/compute/instance#user_data'
-        CONTEXTUALIZATION_ATTR_KEY = 'org.openstack.credentials.publickey.data'
-        CONTEXTUALIZATION_ATTR_UD = 'org.openstack.compute.user_data'
+
+        CONTEXTUALIZATION_MIXINS_KEY = %w(
+          http://schemas.openstack.org/instance/credentials#public_key
+          http://schemas.ogf.org/occi/infrastructure/credentials#ssh_key
+        )
+        CONTEXTUALIZATION_ATTRS_KEY  = %w(
+          org.openstack.credentials.publickey.data
+          occi.credentials.ssh.publickey
+        )
+
+        CONTEXTUALIZATION_MIXINS_UD  = %w(
+          http://schemas.openstack.org/compute/instance#user_data
+          http://schemas.ogf.org/occi/infrastructure/compute#user_data
+        )
+        CONTEXTUALIZATION_ATTRS_UD   = %w(
+          org.openstack.compute.user_data
+          occi.compute.userdata
+        )
 
         def parse_backend_obj(backend_compute)
           compute = ::Occi::Infrastructure::Compute.new
@@ -21,13 +35,10 @@ module Backends
           end
 
           if backend_compute['TEMPLATE/CONTEXT']
-            if backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
-              compute.mixins << CONTEXTUALIZATION_MIXIN_KEY
-            end
+            pubkey = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
+            CONTEXTUALIZATION_MIXINS_KEY.each { |mxn| compute.mixins << mxn } unless pubkey.blank?
 
-            if backend_compute['TEMPLATE/CONTEXT/USER_DATA']
-              compute.mixins << CONTEXTUALIZATION_MIXIN_UD
-            end
+            CONTEXTUALIZATION_MIXINS_UD.each { |mxn| compute.mixins << mxn } unless backend_compute['TEMPLATE/CONTEXT/USER_DATA'].blank?
           end
 
           # include basic OCCI attributes
@@ -59,8 +70,7 @@ module Backends
 
           compute_attrs['occi.compute.cores'] = (backend_compute['TEMPLATE/VCPU'] || 1).to_i
           compute_attrs['occi.compute.memory'] = (backend_compute['TEMPLATE/MEMORY'].to_f / 1024)
-          # TODO: speed should contain a CPU speed (i.e. frequency in GHz)
-          # compute_attrs['occi.compute.speed'] = ((backend_compute['TEMPLATE/CPU'] || 1).to_f / compute_attrs['occi.compute.cores'])
+          compute_attrs['occi.compute.speed'] = (backend_compute['TEMPLATE/CPU'] || 1).to_f
 
           compute_attrs['occi.compute.architecture'] = 'x64' if backend_compute['TEMPLATE/OS/ARCH'] == 'x86_64'
           compute_attrs['occi.compute.architecture'] = 'x86' if backend_compute['TEMPLATE/OS/ARCH'] == 'i686'
@@ -72,15 +82,18 @@ module Backends
           context_attrs = ::Occi::Core::Attributes.new
 
           if backend_compute['TEMPLATE/CONTEXT']
-            context_attrs[CONTEXTUALIZATION_ATTR_KEY] = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
+            pubkey = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
+            CONTEXTUALIZATION_ATTRS_KEY.each { |key| context_attrs[key] = pubkey } unless pubkey.blank?
 
-            # re-encode cloud-init configuration files as Base64
-            context_attrs[CONTEXTUALIZATION_ATTR_UD] =
-              if backend_compute['TEMPLATE/CONTEXT/USER_DATA'] && backend_compute['TEMPLATE/CONTEXT/USER_DATA'].match(/^\s*#cloud-config\s*$/)
-                Base64.strict_encode64(backend_compute['TEMPLATE/CONTEXT/USER_DATA'])
+            # re-encode cloud-init configuration files as Base64, if necessary
+            unless backend_compute['TEMPLATE/CONTEXT/USER_DATA'].blank?
+              if backend_compute['TEMPLATE/CONTEXT/USERDATA_ENCODING'] == 'base64'
+                CONTEXTUALIZATION_ATTRS_UD.each { |key| context_attrs[key] = backend_compute['TEMPLATE/CONTEXT/USER_DATA'] }
               else
-                backend_compute['TEMPLATE/CONTEXT/USER_DATA']
+                ud_base64 = Base64.strict_encode64(backend_compute['TEMPLATE/CONTEXT/USER_DATA'])
+                CONTEXTUALIZATION_ATTRS_UD.each { |key| context_attrs[key] = ud_base64 }
               end
+            end
           end
 
           context_attrs
