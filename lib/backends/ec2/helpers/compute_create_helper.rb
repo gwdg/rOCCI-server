@@ -76,7 +76,7 @@ module Backends
 
         def create_add_inline_ntwrkintfs_vpc(compute, instance_opts)
           instance_opts ||= {}
-          ntwrkintfs = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' }
+          ntwrkintfs = compute.links.to_a.select { |link| link.kind_of? ::Occi::Infrastructure::Networkinterface }
           ntwrkintfs.reject! { |intf| intf.target.end_with?('/network/public') || intf.target.end_with?('/network/private') }
 
           if ntwrkintfs.any?
@@ -88,7 +88,7 @@ module Backends
         end
 
         def create_add_inline_strglnks(compute, instance_id)
-          strglnks = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink' }
+          strglnks = compute.links.to_a.select { |link| link.kind_of? ::Occi::Infrastructure::Storagelink }
 
           create_wait4running(instance_id) if strglnks.any?
           strglnks.each do |storagelink|
@@ -100,7 +100,7 @@ module Backends
         end
 
         def create_add_inline_ntwrkintfs_elastic(compute, instance_id)
-          ntwrkintfs = compute.links.to_a.select { |link| link.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface' }
+          ntwrkintfs = compute.links.to_a.select { |link| link.kind_of? ::Occi::Infrastructure::Networkinterface }
 
           create_wait4running(instance_id) if ntwrkintfs.any?
           ntwrkintfs.each do |networkinterface|
