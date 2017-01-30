@@ -13,6 +13,12 @@ module Backends
             end
           end
 
+          # include availability zone mixins
+          zones = parse_avail_zones(backend_storage)
+          zones.each do |zone|
+            storage.mixins << "#{@options.backend_scheme}/occi/infrastructure/availability_zone##{zone}"
+          end
+
           # include basic OCCI attributes
           basic_attrs = parse_basic_attrs(backend_storage)
           storage.attributes.merge! basic_attrs
@@ -23,6 +29,21 @@ module Backends
           result.actions.each { |a| storage.actions << a }
 
           storage
+        end
+
+        def parse_avail_zones(backend_storage)
+          return [] unless backend_storage
+
+          datastore = ::OpenNebula::Datastore.new(
+                        ::OpenNebula::Datastore.build_xml(backend_storage['DATASTORE_ID'].to_i),
+                        @client
+                      )
+          rc = datastore.info
+          check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+          clusters = []
+          datastore.each_xpath('CLUSTERS/ID') { |cid| clusters << cid.to_i }
+          clusters.collect { |cluster| cid_to_avail_zone cluster }
         end
 
         def parse_basic_attrs(backend_storage)

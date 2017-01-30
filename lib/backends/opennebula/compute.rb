@@ -3,7 +3,6 @@ module Backends
     class Compute < Backends::Opennebula::Base
       COMPUTE_NINTF_REGEXP = /compute_(?<compute_id>\d+)_nic_(?<compute_nic_id>\d+)/
       COMPUTE_SLINK_REGEXP = /compute_(?<compute_id>\d+)_disk_(?<compute_disk_id>\d+)/
-      OS_TPL_TERM_PREFIX = 'uuid'
 
       # Gets all compute instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
@@ -429,7 +428,9 @@ module Backends
       #
       # @return [::Occi::Collection] collection of extensions (custom mixins and/or actions)
       def get_extensions
-        read_extensions 'compute', @options.model_extensions_dir
+        coll =read_extensions 'compute', @options.model_extensions_dir
+        coll.merge! availability_zones
+        coll
       end
 
       # Gets backend-specific `os_tpl` mixins which should be merged
@@ -503,19 +504,35 @@ module Backends
 
       private
 
-      def tpl_to_term(tpl)
-        fixed = tpl['NAME'].downcase.gsub(/[^0-9a-z]/i, '_')
-        fixed = fixed.gsub(/_+/, '_').chomp('_').reverse.chomp('_').reverse
-        "#{OS_TPL_TERM_PREFIX}_#{fixed}_#{tpl['ID']}"
-      end
+      # Gets all available zones, these represent clusters in ONe terminology.
+      #
+      # @example
+      #    zones = availability_zones #=> #<::Occi::Collection>
+      #
+      # @return [::Occi::Collection] a collection containing a collection of mixins
+      def availability_zones
+        zones = Occi::Collection.new
 
-      def term_to_id(term)
-        matched = term.match(/^.+_(?<id>\d+)$/)
+        cluster_pool = ::OpenNebula::ClusterPool.new(@client)
+        rc = cluster_pool.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-        fail Backends::Errors::IdentifierNotValidError,
-             "OsTpl term is invalid! #{term.inspect}" unless matched
+        cluster_pool.each do |cluster|
+          depends = %w|http://fedcloud.egi.eu/occi/infrastructure#availability_zone|
+          term = tpl_to_term(cluster)
+          scheme = "#{@options.backend_scheme}/occi/infrastructure/availability_zone#"
+          title = cluster['NAME']
+          location = "/mixin/availability_zone/#{term}/"
+          applies = %w(
+            http://schemas.ogf.org/occi/infrastructure#compute
+            http://schemas.ogf.org/occi/infrastructure#network
+            http://schemas.ogf.org/occi/infrastructure#storage
+          )
 
-        matched[:id].to_i
+          zones << ::Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
+        end
+
+        zones
       end
 
       # Load methods called from list/get

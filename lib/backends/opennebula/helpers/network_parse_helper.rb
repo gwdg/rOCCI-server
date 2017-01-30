@@ -16,6 +16,12 @@ module Backends
             end
           end
 
+          # include availability zone mixins
+          zones = parse_avail_zones(backend_network)
+          zones.each do |zone|
+            network.mixins << "#{@options.backend_scheme}/occi/infrastructure/availability_zone##{zone}"
+          end
+
           # include basic OCCI attributes
           basic_attrs = parse_basic_attrs(backend_network)
           network.attributes.merge! basic_attrs
@@ -26,6 +32,14 @@ module Backends
           result.actions.each { |a| network.actions << a }
 
           network
+        end
+
+        def parse_avail_zones(backend_network)
+          return [] unless backend_network
+
+          clusters = []
+          backend_network.each_xpath('CLUSTERS/ID') { |cid| clusters << cid.to_i }
+          clusters.collect { |cluster| cid_to_avail_zone cluster }
         end
 
         def parse_basic_attrs(backend_network)

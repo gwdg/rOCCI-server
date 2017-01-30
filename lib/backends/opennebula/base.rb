@@ -1,7 +1,8 @@
 module Backends
   module Opennebula
     class Base
-      API_VERSION = '1.0.0'
+      API_VERSION = '1.0.0'.freeze
+      TPL_TERM_PREFIX = 'uuid'.freeze
 
       # load helpers for JSON -> Collection conversion
       include Backends::Helpers::JsonCollectionHelper
@@ -28,6 +29,34 @@ module Backends
       def add_other_backend(backend_type, backend_instance)
         fail 'Type and instance must be provided!' unless backend_type && backend_instance
         @other_backends[backend_type] = backend_instance
+      end
+
+      protected
+
+      def tpl_to_term(tpl)
+        fixed = tpl['NAME'].downcase.gsub(/[^0-9a-z]/i, '_')
+        fixed = fixed.gsub(/_+/, '_').chomp('_').reverse.chomp('_').reverse
+        "#{TPL_TERM_PREFIX}_#{fixed}_#{tpl['ID']}"
+      end
+
+      def term_to_id(term)
+        matched = term.match(/^.+_(?<id>\d+)$/)
+
+        fail Backends::Errors::IdentifierNotValidError,
+             "Tpl term is invalid! #{term.inspect}" unless matched
+
+        matched[:id].to_i
+      end
+
+      def cid_to_avail_zone(cid)
+        cluster = ::OpenNebula::Cluster.new(
+                    ::OpenNebula::Cluster.build_xml(cid),
+                    @client
+                  )
+        rc = cluster.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        tpl_to_term(cluster)
       end
 
       private

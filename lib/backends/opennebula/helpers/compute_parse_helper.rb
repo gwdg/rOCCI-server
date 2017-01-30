@@ -41,6 +41,10 @@ module Backends
             CONTEXTUALIZATION_MIXINS_UD.each { |mxn| compute.mixins << mxn } unless backend_compute['TEMPLATE/CONTEXT/USER_DATA'].blank?
           end
 
+          # include availability zone mixin
+          zone = parse_avail_zone(backend_compute)
+          compute.mixins << "#{@options.backend_scheme}/occi/infrastructure/availability_zone##{zone}" unless zone.blank?
+
           # include basic OCCI attributes
           basic_attrs = parse_basic_attrs(backend_compute)
           compute.attributes.merge! basic_attrs
@@ -59,6 +63,16 @@ module Backends
           result.each { |link| compute.links << link }
 
           compute
+        end
+
+        def parse_avail_zone(backend_compute)
+          return unless backend_compute
+
+          clusters = []
+          backend_compute.each_xpath('HISTORY_RECORDS/HISTORY/CID') { |cid| clusters << cid.to_i }
+          return if clusters.empty?
+
+          cid_to_avail_zone clusters.last
         end
 
         def parse_basic_attrs(backend_compute)
