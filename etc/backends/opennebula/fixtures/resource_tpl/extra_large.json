@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"extra_large",
-      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
       "title":"Extra Large Instance - 8 cores and 8 GB RAM",
       "location":"/mixin/resource_tpl/extra_large/",
       "depends":[

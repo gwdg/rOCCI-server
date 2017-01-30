@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"atlas",
-      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
       "title":"Atlas Instance - 32 cores and 64 GB RAM",
       "location":"/mixin/resource_tpl/atlas/",
       "depends":[

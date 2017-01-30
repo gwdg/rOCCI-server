@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"goliath",
-      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
       "title":"Goliath Instance - 16 cores and 64 GB RAM",
       "location":"/mixin/resource_tpl/goliath/",
       "depends":[
