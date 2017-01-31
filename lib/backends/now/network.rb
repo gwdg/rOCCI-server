@@ -34,9 +34,9 @@ module Backends
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [::Occi::Core::Resources] a collection of network instances
       def list(mixins = nil)
-        now_api = NowApi.new(@delegated_user['identity'], @options)
+        now_api = Backends::Now::Helpers::NowApi.new(@delegated_user['identity'], @options)
         networks = now_api.list
-        occi_networks = networks.map { |network| raw2occinetwork(network) }
+        occi_networks = networks.map { |network| raw2occi_network(network) }
 
         unless mixins.nil?
           occi_networks.select! { |n| (n.mixins & mixins).any? }
@@ -57,10 +57,10 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [::Occi::Infrastructure::Network, nil] a network instance or `nil`
       def get(network_id)
-        now_api = NowApi.new(@delegated_user['identity'], @options)
+        now_api = Backends::Now::Helpers::NowApi.new(@delegated_user['identity'], @options)
         network = now_api.get(network_id)
 
-        raw2occinetwork(network)
+        raw2occi_network(network)
       end
 
       # Instantiates a new network instance from ::Occi::Infrastructure::Network.
@@ -79,7 +79,7 @@ module Backends
       def create(network)
         @logger.info "[Backends] [NOW] Creating network #{network.inspect}"
 
-        now_api = NowApi.new(@delegated_user['identity'], @options)
+        now_api = Backends::Now::Helpers::NowApi.new(@delegated_user['identity'], @options)
 
         raw_network = occi2raw_network(network.attributes)
         now_api.create(raw_network)
@@ -99,10 +99,10 @@ module Backends
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def delete_all(mixins = nil)
-        now_api = NowApi.new(@delegated_user['identity'], @options)
+        now_api = Backends::Now::Helpers::NowApi.new(@delegated_user['identity'], @options)
 
         networks = now_api.list
-        occi_networks = networks.map(&:raw2occinetwork)
+        occi_networks = networks.map(&:raw2occi_network)
 
         unless mixins.nil?
           occi_networks.select! { |n| (n.mixins & mixins).any? }
@@ -129,7 +129,7 @@ module Backends
       def delete(network_id)
         @logger.info "[Backends] [NOW] Deleting network #{network_id}"
 
-        now_api = NowApi.new(@delegated_user['identity'], @options)
+        now_api = Backends::Now::Helpers::NowApi.new(@delegated_user['identity'], @options)
         now_api.delete(network_id)
 
         true
@@ -154,7 +154,7 @@ module Backends
       def partial_update(network_id, attributes = nil, mixins = nil, links = nil)
         @logger.info "[Backends] [NOW] Updating network #{network_id} to #{attributes.inspect}"
 
-        now_api = NowApi.new(@delegated_user['identity'], @options)
+        now_api = Backends::Now::Helpers::NowApi.new(@delegated_user['identity'], @options)
 
         raw_network = occi2raw_network(attributes)
         now_api.update(network_id, raw_network)
@@ -176,7 +176,7 @@ module Backends
       def update(network)
         @logger.info "[Backends] [NOW] Updating network to #{network.inspect}"
 
-        now_api = NowApi.new(@delegated_user['identity'], @options)
+        now_api = Backends::Now::Helpers::NowApi.new(@delegated_user['identity'], @options)
 
         raw_network = occi2raw_network(network.attributes)
         id = raw_network['id']
@@ -234,7 +234,7 @@ module Backends
 
       private
 
-      def raw2occinetwork(raw_network)
+      def raw2occi_network(raw_network)
         network = ::Occi::Infrastructure::Network.new
 
         network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
