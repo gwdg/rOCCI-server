@@ -120,5 +120,5 @@
     SetEnv ROCCI_SERVER_EC2_VO_AWS_MAPFILE             ""
 
     ## NOW backend
-    SetEnv ROCCI_SERVER_NOW_ENDPOINT                   https://localhost:9292
+    SetEnv ROCCI_SERVER_NOW_ENDPOINT                   http://localhost:11080
 </VirtualHost>
