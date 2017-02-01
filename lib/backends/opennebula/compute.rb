@@ -428,7 +428,7 @@ module Backends
       #
       # @return [::Occi::Collection] collection of extensions (custom mixins and/or actions)
       def get_extensions
-        coll =read_extensions 'compute', @options.model_extensions_dir
+        coll = read_extensions 'compute', @options.model_extensions_dir
         coll.merge! availability_zones
         coll
       end
