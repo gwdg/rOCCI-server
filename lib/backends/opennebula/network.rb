@@ -106,7 +106,8 @@ module Backends
         vnet_alloc = ::OpenNebula::VirtualNetwork.build_xml
         backend_object = ::OpenNebula::VirtualNetwork.new(vnet_alloc, @client)
 
-        rc = backend_object.allocate(template)
+        cids = avail_zones_from_resource(network)
+        rc = backend_object.allocate(template, (cids.first || OpenNebula::ClusterPool::NONE_CLUSTER_ID))
         check_retval(rc, Backends::Errors::ResourceCreationError)
 
         rc = backend_object.info

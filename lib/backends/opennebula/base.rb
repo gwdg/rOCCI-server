@@ -3,6 +3,7 @@ module Backends
     class Base
       API_VERSION = '1.0.0'.freeze
       TPL_TERM_PREFIX = 'uuid'.freeze
+      AVAIL_ZONE_MIXIN = 'http://fedcloud.egi.eu/occi/infrastructure#availability_zone'.freeze
 
       # load helpers for JSON -> Collection conversion
       include Backends::Helpers::JsonCollectionHelper
@@ -57,6 +58,12 @@ module Backends
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         tpl_to_term(cluster)
+      end
+
+      def avail_zones_from_resource(resource)
+        return [] if resource.blank?
+        mxns = resource.mixins.to_a.select { |mxn| mxn.related_to? AVAIL_ZONE_MIXIN }
+        mxns.collect { |mxn| term_to_id mxn.term }
       end
 
       private

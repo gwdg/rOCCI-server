@@ -518,7 +518,7 @@ module Backends
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         cluster_pool.each do |cluster|
-          depends = %w|http://fedcloud.egi.eu/occi/infrastructure#availability_zone|
+          depends = [AVAIL_ZONE_MIXIN]
           term = tpl_to_term(cluster)
           scheme = "#{@options.backend_scheme}/occi/infrastructure/availability_zone#"
           title = cluster['NAME']

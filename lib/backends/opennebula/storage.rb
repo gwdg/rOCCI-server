@@ -101,7 +101,10 @@ module Backends
         image_alloc = ::OpenNebula::Image.build_xml
         backend_object = ::OpenNebula::Image.new(image_alloc, @client)
 
-        rc = backend_object.allocate(template, @options.storage_datastore_id.to_i)
+        ds_id = candidate_datastore(storage)
+        fail Backends::Errors::ResourceCreationError, 'No suitable datastore found!' unless ds_id
+
+        rc = backend_object.allocate(template, ds_id)
         check_retval(rc, Backends::Errors::ResourceCreationError)
 
         rc = backend_object.info
@@ -264,6 +267,31 @@ module Backends
 
       # Load methods called from trigger_action*
       include Backends::Opennebula::Helpers::StorageActionHelper
+
+      private
+
+      def candidate_datastore(storage)
+        return if storage.blank?
+
+        default_did = @options.storage_datastore_id.to_i
+        target_cids = avail_zones_from_resource(storage)
+        return default_did if target_cids.empty?
+
+        ds_pool = OpenNebula::DatastorePool.new(@client)
+        rc = ds_pool.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        dids = []
+        ds_pool.each do |ds|
+          next unless ds['TYPE'].to_i == 0 # IMAGE DS
+
+          clusters = []
+          ds.each_xpath('CLUSTERS/ID') { |cid| clusters << cid.to_i }
+          dids << ds['ID'].to_i if (target_cids & clusters).any?
+        end
+
+        dids.first
+      end
     end
   end
 end
