@@ -116,35 +116,19 @@ module Backends
         def parse_state(backend_compute)
           result = Hashie::Mash.new
 
-          # In ON 4.4:
-          #    VM_STATE=%w{INIT PENDING HOLD ACTIVE STOPPED SUSPENDED DONE FAILED
-          #       POWEROFF UNDEPLOYED}
-          #
-          #    LCM_STATE=%w{LCM_INIT PROLOG BOOT RUNNING MIGRATE SAVE_STOP SAVE_SUSPEND
-          #        SAVE_MIGRATE PROLOG_MIGRATE PROLOG_RESUME EPILOG_STOP EPILOG
-          #        SHUTDOWN CANCEL FAILURE CLEANUP_RESUBMIT UNKNOWN HOTPLUG SHUTDOWN_POWEROFF
-          #        BOOT_UNKNOWN BOOT_POWEROFF BOOT_SUSPENDED BOOT_STOPPED CLEANUP_DELETE
-          #        HOTPLUG_SNAPSHOT HOTPLUG_NIC HOTPLUG_SAVEAS HOTPLUG_SAVEAS_POWEROFF
-          #        HOTPLUG_SAVEAS_SUSPENDED SHUTDOWN_UNDEPLOY EPILOG_UNDEPLOY
-          #        PROLOG_UNDEPLOY BOOT_UNDEPLOY}
-          #
+          # See
+          # http://docs.opennebula.org/5.2/operation/references/vm_states.html
           case backend_compute.state_str
           when 'ACTIVE'
-            # ACTIVE is a very broad term, look at lcm_state_str too
-            if backend_compute.lcm_state_str == 'RUNNING'
-              result.state = 'active'
-              result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
-            else
-              result.state = 'inactive'
-              result.actions = []
-            end
+            # ACTIVE is a very broad term
+            parse_state_active(backend_compute, result)
           when 'FAILED'
             result.state = 'error'
-            result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
-          when 'STOPPED', 'SUSPENDED', 'POWEROFF'
+            result.actions = []
+          when 'STOPPED', 'SUSPENDED', 'POWEROFF', 'UNDEPLOYED'
             result.state = 'suspended'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
-          when 'PENDING'
+          when 'PENDING', 'HOLD', 'CLONING'
             result.state = 'waiting'
             result.actions = []
           else
@@ -153,6 +137,32 @@ module Backends
           end
 
           result
+        end
+
+        def parse_state_active(backend_compute, result)
+          case backend_compute.lcm_state_str
+          when 'RUNNING'
+            result.state = 'active'
+            result.actions = %w(
+              http://schemas.ogf.org/occi/infrastructure/compute/action#stop
+              http://schemas.ogf.org/occi/infrastructure/compute/action#restart
+              http://schemas.ogf.org/occi/infrastructure/compute/action#suspend
+            )
+          when 'PROLOG', 'BOOT', 'MIGRATE', 'EPILOG'
+            result.state = 'waiting'
+            result.actions = []
+          else
+            if backend_compute.lcm_state_str.include? 'FAILURE'
+              result.state = 'error'
+              result.actions = []
+            elsif backend_compute.lcm_state_str.include? 'HOTPLUG'
+              result.state = 'waiting'
+              result.actions = []
+            else
+              result.state = 'inactive'
+              result.actions = []
+            end
+          end
         end
 
         def parse_links(backend_compute, compute)
