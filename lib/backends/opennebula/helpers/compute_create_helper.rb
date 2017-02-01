@@ -225,7 +225,8 @@ module Backends
           return if pci_tpl.empty?
 
           @logger.debug "[Backends] [Opennebula] Adding GPU(s) #{pci_tpl.inspect}"
-          compute.attributes['eu.egi.fedcloud.compute.gpu.count'].times { template << "PCI = [ #{pci_tpl.join(',')} ]" }
+          template << "\n"
+          compute.attributes['eu.egi.fedcloud.compute.gpu.count'].times { template << "PCI = [ #{pci_tpl.join(',')} ]\n" }
         end
       end
     end
