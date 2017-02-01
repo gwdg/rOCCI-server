@@ -1,7 +1,7 @@
 module Backends
   module Opennebula
     class Base
-      API_VERSION = '1.0.0'.freeze
+      API_VERSION = '2.0.0'.freeze
       TPL_TERM_PREFIX = 'uuid'.freeze
       AVAIL_ZONE_MIXIN = 'http://fedcloud.egi.eu/occi/infrastructure#availability_zone'.freeze
 

@@ -1,0 +1,10 @@
+<%= render template: "shared/header" %>
+
+<h1>Networkinterface</h1>
+<% @local_resources = @nis.links %>
+<%= render template: "shared/resources_table" %>
+
+<br/>
+<a href="/">&laquo; Back</a>
+
+<%= render template: "shared/footer" %>
