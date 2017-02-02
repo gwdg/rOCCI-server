@@ -392,7 +392,11 @@ module Backends
       #
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [::Occi::Core::Links] a collection of networkinterface instances
-      def get_network_list(mixins = nil); end
+      def get_network_list(mixins = nil)
+        nics = Occi::Core::Links.new
+        get_network_list_ids.each { |nic_id| nics << get_network(nic_id) }
+        nics
+      end
 
       # Gets a storage from an existing compute instance, the compute instance in question
       # must be identifiable using the storagelink ID passed as an argument.
@@ -456,7 +460,11 @@ module Backends
       #
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [::Occi::Core::Links] a collection of storagelink instances
-      def get_storage_list(mixins = nil); end
+      def get_storage_list(mixins = nil)
+        disks = Occi::Core::Links.new
+        get_storage_list_ids.each { |disk_id| disks << get_storage(disk_id) }
+        disks
+      end
 
       # Triggers an action on all existing compute instance, instances must be filtered
       # by the specified filter, filter (if set) must contain an ::Occi::Core::Mixins instance,
