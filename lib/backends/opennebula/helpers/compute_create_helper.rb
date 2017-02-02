@@ -77,14 +77,9 @@ module Backends
             template.add_element('TEMPLATE',  'VCPU' => compute.cores.to_i)
 
             # set default reservation ratio
+            cpu_resrv = compute.speed ? (compute.speed.to_f * compute.cores.to_i) : compute.cores.to_i
             template.delete_element('TEMPLATE/CPU')
-            template.add_element('TEMPLATE',  'CPU' => compute.cores.to_i)
-          end
-
-          if compute.speed
-            # set reservation ratio
-            template.delete_element('TEMPLATE/CPU')
-            template.add_element('TEMPLATE',  'CPU' => compute.speed.to_f)
+            template.add_element('TEMPLATE',  'CPU' => cpu_resrv)
           end
 
           if compute.memory
@@ -96,6 +91,11 @@ module Backends
           if compute.architecture
             template.delete_element('TEMPLATE/ARCHITECTURE')
             template.add_element('TEMPLATE',  'ARCHITECTURE' => compute.architecture)
+          end
+
+          if compute.attributes.occi.compute.ephemeral_storage
+            resize_disk = compute.attributes['occi.compute.ephemeral_storage.size']
+            template.add_element('TEMPLATE/DISK[1]',  'SIZE' => (resize_disk.to_i * 1024)) if resize_disk
           end
         end
 
