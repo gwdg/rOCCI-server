@@ -94,8 +94,11 @@ module Backends
           end
 
           if compute.attributes.occi.compute.ephemeral_storage
-            resize_disk = compute.attributes['occi.compute.ephemeral_storage.size']
-            template.add_element('TEMPLATE/DISK[1]',  'SIZE' => (resize_disk.to_i * 1024)) if resize_disk
+            resize_disk = compute.attributes['occi.compute.ephemeral_storage.size'].to_i * 1024
+            if resize_disk > 0
+              template.delete_element('TEMPLATE/DISK[1]/SIZE')
+              template.add_element('TEMPLATE/DISK[1]',  'SIZE' => resize_disk)
+            end
           end
         end
 
