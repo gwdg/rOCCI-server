@@ -362,7 +362,21 @@ module Backends
       #
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available networkinterface instances
-      def get_network_list_ids(mixins = nil); end
+      def get_network_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
+        backend_compute_pool = ::OpenNebula::VirtualMachinePool.new(@client)
+        rc = backend_compute_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        compute_nics = []
+        backend_compute_pool.each do |backend_compute|
+          backend_compute.each('TEMPLATE/NIC/NIC_ID') do |nic_id|
+            compute_nics << "compute_#{backend_compute['ID']}_nic_#{nic_id.text}"
+          end
+        end
+
+        compute_nics
+      end
 
       # Gets all networkinterface instances, instances must be filtered
       # by the specified filter, filter (if set) must contain an ::Occi::Core::Mixins instance.
@@ -412,7 +426,21 @@ module Backends
       #
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available storagelink instances
-      def get_storage_list_ids(mixins = nil); end
+      def get_storage_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
+        backend_compute_pool = ::OpenNebula::VirtualMachinePool.new(@client)
+        rc = backend_compute_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        compute_disks = []
+        backend_compute_pool.each do |backend_compute|
+          backend_compute.each('TEMPLATE/DISK/DISK_ID') do |disk_id|
+            compute_disks << "compute_#{backend_compute['ID']}_disk_#{disk_id.text}"
+          end
+        end
+
+        compute_disks
+      end
 
       # Gets all storagelink instances, instances must be filtered
       # by the specified filter, filter (if set) must contain an ::Occi::Core::Mixins instance.
