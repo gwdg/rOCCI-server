@@ -476,6 +476,7 @@ module Backends
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available networkinterface instances
       def get_network_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
         nics = []
         list.to_a.each do |compute|
           next if compute.links.blank?
@@ -501,7 +502,7 @@ module Backends
       # @return [::Occi::Core::Links] a collection of networkinterface instances
       def get_network_list(mixins = nil)
         nics = Occi::Core::Links.new
-        get_network_list_ids.each { |nic_id| nics << get_network(nic_id) }
+        get_network_list_ids(mixins).each { |nic_id| nics << get_network(nic_id) }
         nics
       end
 
@@ -552,6 +553,7 @@ module Backends
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [Array<String>] IDs for all available storagelink instances
       def get_storage_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
         disks = []
         list.to_a.each do |compute|
           next if compute.links.blank?
@@ -577,7 +579,7 @@ module Backends
       # @return [::Occi::Core::Links] a collection of storagelink instances
       def get_storage_list(mixins = nil)
         disks = Occi::Core::Links.new
-        get_storage_list_ids.each { |disk_id| disks << get_storage(disk_id) }
+        get_storage_list_ids(mixins).each { |disk_id| disks << get_storage(disk_id) }
         disks
       end
 
