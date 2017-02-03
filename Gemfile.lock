@@ -101,12 +101,12 @@ GEM
       net-ssh (>= 2.6.5)
     nokogiri (1.6.8.1)
       mini_portile2 (~> 2.1.0)
-    occi-core (4.3.3)
-      activesupport (~> 4.0, >= 4.0.0)
-      hashie (~> 3.3, >= 3.3.1)
-      json (~> 1.8, >= 1.8.1)
-      settingslogic (~> 2.0, >= 2.0.9)
-      uuidtools (~> 2.1, >= 2.1.3)
+    occi-core (4.3.5)
+      activesupport (>= 4.0.0, < 6)
+      hashie (>= 3.3.1, < 3.5)
+      json (>= 1.8.1, < 3)
+      settingslogic (>= 2.0.9, < 3)
+      uuidtools (>= 2.1.3, < 3)
     opennebula (5.2.1)
       json
       nokogiri
@@ -244,7 +244,7 @@ DEPENDENCIES
   kgio
   logstasher (~> 0.6.2)
   nokogiri (~> 1.6.8)
-  occi-core (~> 4.3.2)
+  occi-core (~> 4.3.5)
   opennebula (~> 5.2)
   ox
   passenger (~> 5.0.22)
