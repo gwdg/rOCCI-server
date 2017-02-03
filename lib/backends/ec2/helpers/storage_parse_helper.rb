@@ -5,8 +5,6 @@ module Backends
         def parse_backend_obj(backend_storage)
           storage = ::Occi::Infrastructure::Storage.new
 
-          storage.mixins << 'http://schemas.ec2.aws.amazon.com/occi/infrastructure/storage#aws_ec2_ebs_volume'
-
           storage.attributes['occi.core.id'] = backend_storage[:volume_id]
           storage.attributes['occi.core.title'] =
             if backend_storage[:tags].select { |tag| tag[:key] == 'Name' }.any?
@@ -15,12 +13,6 @@ module Backends
               "rOCCI-server volume #{backend_storage[:size]}GB"
             end
           storage.attributes['occi.storage.size'] = backend_storage[:size]
-
-          storage.attributes['com.amazon.aws.ec2.availability_zone'] = backend_storage[:availability_zone] if backend_storage[:availability_zone]
-          storage.attributes['com.amazon.aws.ec2.state'] = backend_storage[:state] if backend_storage[:state]
-          storage.attributes['com.amazon.aws.ec2.volume_type'] = backend_storage[:volume_type] if backend_storage[:volume_type]
-          storage.attributes['com.amazon.aws.ec2.iops'] = backend_storage[:iops] if backend_storage[:iops]
-          storage.attributes['com.amazon.aws.ec2.encrypted'] = backend_storage[:encrypted] unless backend_storage[:encrypted].nil?
 
           # include state information and available actions
           result = parse_state(backend_storage)

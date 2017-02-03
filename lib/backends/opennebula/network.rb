@@ -66,7 +66,10 @@ module Backends
       # @param network_id [String] OCCI identifier of the requested network instance
       # @return [::Occi::Infrastructure::Network, nil] a network instance or `nil`
       def get(network_id)
-        virtual_network = ::OpenNebula::VirtualNetwork.new(::OpenNebula::VirtualNetwork.build_xml(network_id), @client)
+        virtual_network = ::OpenNebula::VirtualNetwork.new(
+                            ::OpenNebula::VirtualNetwork.build_xml(network_id),
+                            @client
+                          )
         rc = virtual_network.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
@@ -93,7 +96,6 @@ module Backends
         # WARNING: adding mix-ins will re-set their attributes
         attr_backup = ::Occi::Core::Attributes.new(network.attributes)
         network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
-        network.mixins << 'http://schemas.opennebula.org/occi/infrastructure#network'
         network.attributes = attr_backup
 
         template_location = File.join(@options.templates_dir, 'network.erb')
@@ -104,7 +106,8 @@ module Backends
         vnet_alloc = ::OpenNebula::VirtualNetwork.build_xml
         backend_object = ::OpenNebula::VirtualNetwork.new(vnet_alloc, @client)
 
-        rc = backend_object.allocate(template)
+        cids = avail_zones_from_resource(network)
+        rc = backend_object.allocate(template, (cids.first || OpenNebula::ClusterPool::NONE_CLUSTER_ID))
         check_retval(rc, Backends::Errors::ResourceCreationError)
 
         rc = backend_object.info

@@ -3,38 +3,9 @@ OCCI_STORAGE_MIXINS = "<%= @storage.mixins.to_a.collect { |m| m.type_identifier 
 NAME = "<%= @storage.title %>"
 DESCRIPTION = "<%= @storage.summary || "STORAGE created using rOCCI-server on #{::DateTime.now.readable_inspect}." %>"
 
-<% case @storage.attributes.org_.opennebula_.storage_.type %>
-<% when "OS" %>
-TYPE = "OS"
-DISK_TYPE = "BLOCK"
-PATH = "<%= @storage.attributes.org_.opennebula_.storage_.path %>"
-<% when "CDROM" %>
-TYPE = "CDROM"
-DISK_TYPE = "CDROM"
-PATH = "<%= @storage.attributes.org_.opennebula_.storage_.path %>"
-<% when "FILE" %>
-TYPE = "FILE"
-DISK_TYPE = "FILE"
-PATH = "<%= @storage.attributes.org_.opennebula_.storage_.path %>"
-<% else %>
 TYPE = "DATABLOCK"
-FSTYPE = "<%= @storage.attributes.org_.opennebula_.storage_.fstype || "ext3" %>"
 SIZE = "<%= @storage.size ? (@storage.size.to_f * 1024).to_i : 10240 %>"
-DISK_TYPE = "BLOCK"
-<% end %>
 
-<% if @storage.attributes.org_.opennebula_.storage_.persistent %>
-PERSISTENT = "<%= @storage.attributes['org.opennebula.storage.persistent'] %>"
-<% end %>
-
-<% if @storage.attributes.org_.opennebula_.storage_.dev_prefix %>
-DEV_PREFIX = "<%= @storage.attributes['org.opennebula.storage.dev_prefix'] %>"
-<% end %>
-
-<% if @storage.attributes.org_.opennebula_.storage_.bus %>
-BUS = "<%= @storage.attributes['org.opennebula.storage.bus'] %>"
-<% end %>
-
-<% if @storage.attributes.org_.opennebula_.storage_.driver %>
-DRIVER = "<%= @storage.attributes['org.opennebula.storage.driver'] %>"
-<% end %>
+PERSISTENT = "YES"
+DRIVER = "raw"
+FSTYPE = "raw"

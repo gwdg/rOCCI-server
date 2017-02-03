@@ -3,7 +3,6 @@ module Backends
     class Compute < Backends::Opennebula::Base
       COMPUTE_NINTF_REGEXP = /compute_(?<compute_id>\d+)_nic_(?<compute_nic_id>\d+)/
       COMPUTE_SLINK_REGEXP = /compute_(?<compute_id>\d+)_disk_(?<compute_disk_id>\d+)/
-      OS_TPL_TERM_PREFIX = 'uuid'
 
       # Gets all compute instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
@@ -70,7 +69,10 @@ module Backends
       # @param compute_id [String] OCCI identifier of the requested compute instance
       # @return [::Occi::Infrastructure::Compute, nil] a compute instance or `nil`
       def get(compute_id)
-        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute_id), @client)
+        virtual_machine = ::OpenNebula::VirtualMachine.new(
+                            ::OpenNebula::VirtualMachine.build_xml(compute_id),
+                            @client
+                          )
         rc = virtual_machine.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
@@ -95,17 +97,11 @@ module Backends
         compute_id = compute.id
 
         os_tpl_mixins = compute.mixins.get_related_to(::Occi::Infrastructure::OsTpl.mixin.type_identifier)
-        if !os_tpl_mixins.empty?
-          compute_id = create_with_os_tpl(compute)
-        elsif !compute.links.empty?
-          compute_id = create_with_links(compute)
-        else
-          fail Backends::Errors::ResourceNotValidError,
-               "Given instance contains neither an os_tpl " \
-               "mixin or links necessary to create a virtual machine!"
-        end
+        fail Backends::Errors::ResourceNotValidError,
+             'Given instance does not contain an os_tpl ' \
+             'necessary to create a virtual machine!' if os_tpl_mixins.empty?
 
-        compute_id
+        create_with_os_tpl(compute)
       end
 
       # Deletes all compute instances, instances to be deleted must be filtered
@@ -128,13 +124,10 @@ module Backends
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         backend_compute_pool.each do |backend_compute|
-          if backend_compute.lcm_state_str == 'RUNNING'
-            rc = backend_compute.shutdown(true)
-          else
-            rc = backend_compute.delete
-          end
-
-          check_retval(rc, Backends::Errors::ResourceActionError)
+          check_retval(
+            backend_compute.terminate(true),
+            Backends::Errors::ResourceActionError
+          )
         end
 
         true
@@ -152,17 +145,19 @@ module Backends
       # @param compute_id [String] an identifier of a compute instance to be deleted
       # @return [true, false] result of the operation
       def delete(compute_id)
-        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute_id), @client)
-        rc = virtual_machine.info
-        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+        virtual_machine = ::OpenNebula::VirtualMachine.new(
+                            ::OpenNebula::VirtualMachine.build_xml(compute_id),
+                            @client
+                          )
+        check_retval(
+          virtual_machine.info,
+          Backends::Errors::ResourceRetrievalError
+        )
 
-        if virtual_machine.lcm_state_str == 'RUNNING'
-          rc = virtual_machine.shutdown(true)
-        else
-          rc = virtual_machine.delete
-        end
-
-        check_retval(rc, Backends::Errors::ResourceActionError)
+        check_retval(
+          virtual_machine.terminate(true),
+          Backends::Errors::ResourceActionError
+        )
 
         true
       end
@@ -356,6 +351,53 @@ module Backends
         intf.first
       end
 
+      # Gets all networkinterface instance IDs, no details, no duplicates. Returned
+      # identifiers must correspond to those found in the occi.core.id
+      # attribute of ::Occi::Infrastructure::Networkinterface instances.
+      #
+      # @example
+      #    get_network_list_ids #=> []
+      #    get_network_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
+      #                              "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
+      #
+      # @param mixins [::Occi::Core::Mixins] a filter containing mixins
+      # @return [Array<String>] IDs for all available networkinterface instances
+      def get_network_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
+        backend_compute_pool = ::OpenNebula::VirtualMachinePool.new(@client)
+        rc = backend_compute_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        compute_nics = []
+        backend_compute_pool.each do |backend_compute|
+          backend_compute.each('TEMPLATE/NIC/NIC_ID') do |nic_id|
+            compute_nics << "compute_#{backend_compute['ID']}_nic_#{nic_id.text}"
+          end
+        end
+
+        compute_nics
+      end
+
+      # Gets all networkinterface instances, instances must be filtered
+      # by the specified filter, filter (if set) must contain an ::Occi::Core::Mixins instance.
+      # Returned collection must contain ::Occi::Infrastructure::Networkinterface instances
+      # wrapped in ::Occi::Core::Links.
+      #
+      # @example
+      #    nis = get_network_list #=> #<::Occi::Core::Links>
+      #    nis.first #=> #<::Occi::Infrastructure::Networkinterface>
+      #
+      #    mixins = ::Occi::Core::Mixins.new << ::Occi::Core::Mixin.new
+      #    nis = get_network_list(mixins) #=> #<::Occi::Core::Links>
+      #
+      # @param mixins [::Occi::Core::Mixins] a filter containing mixins
+      # @return [::Occi::Core::Links] a collection of networkinterface instances
+      def get_network_list(mixins = nil)
+        nics = Occi::Core::Links.new
+        get_network_list_ids(mixins).each { |nic_id| nics << get_network(nic_id) }
+        nics
+      end
+
       # Gets a storage from an existing compute instance, the compute instance in question
       # must be identifiable using the storagelink ID passed as an argument.
       # If the requested link instance cannot be detached, an error describing the
@@ -375,6 +417,53 @@ module Backends
         fail Backends::Errors::ResourceNotFoundError, 'Storagelink with the given ID does not exist!' if link.blank?
 
         link.first
+      end
+
+      # Gets all storagelink instance IDs, no details, no duplicates. Returned
+      # identifiers must correspond to those found in the occi.core.id
+      # attribute of ::Occi::Infrastructure::Storagelink instances.
+      #
+      # @example
+      #    get_storage_list_ids #=> []
+      #    get_storage_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
+      #                              "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
+      #
+      # @param mixins [::Occi::Core::Mixins] a filter containing mixins
+      # @return [Array<String>] IDs for all available storagelink instances
+      def get_storage_list_ids(mixins = nil)
+        # TODO: impl filtering with mixins
+        backend_compute_pool = ::OpenNebula::VirtualMachinePool.new(@client)
+        rc = backend_compute_pool.info_all
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        compute_disks = []
+        backend_compute_pool.each do |backend_compute|
+          backend_compute.each('TEMPLATE/DISK/DISK_ID') do |disk_id|
+            compute_disks << "compute_#{backend_compute['ID']}_disk_#{disk_id.text}"
+          end
+        end
+
+        compute_disks
+      end
+
+      # Gets all storagelink instances, instances must be filtered
+      # by the specified filter, filter (if set) must contain an ::Occi::Core::Mixins instance.
+      # Returned collection must contain ::Occi::Infrastructure::Storagelink instances
+      # wrapped in ::Occi::Core::Links.
+      #
+      # @example
+      #    nis = get_storage_list #=> #<::Occi::Core::Links>
+      #    nis.first #=> #<::Occi::Infrastructure::Storagelink>
+      #
+      #    mixins = ::Occi::Core::Mixins.new << ::Occi::Core::Mixin.new
+      #    nis = get_storage_list(mixins) #=> #<::Occi::Core::Links>
+      #
+      # @param mixins [::Occi::Core::Mixins] a filter containing mixins
+      # @return [::Occi::Core::Links] a collection of storagelink instances
+      def get_storage_list(mixins = nil)
+        disks = Occi::Core::Links.new
+        get_storage_list_ids(mixins).each { |disk_id| disks << get_storage(disk_id) }
+        disks
       end
 
       # Triggers an action on all existing compute instance, instances must be filtered
@@ -433,7 +522,9 @@ module Backends
       #
       # @return [::Occi::Collection] collection of extensions (custom mixins and/or actions)
       def get_extensions
-        read_extensions 'compute', @options.model_extensions_dir
+        coll = read_extensions 'compute', @options.model_extensions_dir
+        coll.merge! availability_zones
+        coll
       end
 
       # Gets backend-specific `os_tpl` mixins which should be merged
@@ -507,19 +598,35 @@ module Backends
 
       private
 
-      def tpl_to_term(tpl)
-        fixed = tpl['NAME'].downcase.gsub(/[^0-9a-z]/i, '_')
-        fixed = fixed.gsub(/_+/, '_').chomp('_').reverse.chomp('_').reverse
-        "#{OS_TPL_TERM_PREFIX}_#{fixed}_#{tpl['ID']}"
-      end
+      # Gets all available zones, these represent clusters in ONe terminology.
+      #
+      # @example
+      #    zones = availability_zones #=> #<::Occi::Collection>
+      #
+      # @return [::Occi::Collection] a collection containing a collection of mixins
+      def availability_zones
+        zones = Occi::Collection.new
 
-      def term_to_id(term)
-        matched = term.match(/^.+_(?<id>\d+)$/)
+        cluster_pool = ::OpenNebula::ClusterPool.new(@client)
+        rc = cluster_pool.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
-        fail Backends::Errors::IdentifierNotValidError,
-             "OsTpl term is invalid! #{term.inspect}" unless matched
+        cluster_pool.each do |cluster|
+          depends = [AVAIL_ZONE_MIXIN]
+          term = tpl_to_term(cluster)
+          scheme = "#{@options.backend_scheme}/occi/infrastructure/availability_zone#"
+          title = cluster['NAME']
+          location = "/mixin/availability_zone/#{term}/"
+          applies = %w(
+            http://schemas.ogf.org/occi/infrastructure#compute
+            http://schemas.ogf.org/occi/infrastructure#network
+            http://schemas.ogf.org/occi/infrastructure#storage
+          )
 
-        matched[:id].to_i
+          zones << ::Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
+        end
+
+        zones
       end
 
       # Load methods called from list/get

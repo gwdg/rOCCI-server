@@ -4,7 +4,6 @@
   mixins:
   - http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#t2_micro
   - http://occi.localhost/occi/infrastructure/os_tpl#ami-6e7bd919
-  - http://schemas.ec2.aws.amazon.com/occi/infrastructure/compute#aws_ec2_instance
   actions:
   - http://schemas.ogf.org/occi/infrastructure/compute/action#stop
   - http://schemas.ogf.org/occi/infrastructure/compute/action#restart
@@ -17,15 +16,6 @@
         cores: 1
         memory: 1.0
         state: active
-    com: !ruby/hash:Hashie::Mash
-      amazon: !ruby/hash:Hashie::Mash
-        aws: !ruby/hash:Hashie::Mash
-          ec2: !ruby/hash:Hashie::Mash
-            reservation_id: r-2e51d26e
-            availability_zone: eu-west-1a
-            state: running
-            hypervisor: xen
-            virtualization_type: hvm
   id: i-5a8cb7bf
   links:
   - !ruby/hash:Hashie::Mash
@@ -67,7 +57,6 @@
   mixins:
   - http://schemas.ec2.aws.amazon.com/occi/infrastructure/resource_tpl#t2_micro
   - http://occi.localhost/occi/infrastructure/os_tpl#ami-6e7bd919
-  - http://schemas.ec2.aws.amazon.com/occi/infrastructure/compute#aws_ec2_instance
   actions:
   - http://schemas.ogf.org/occi/infrastructure/compute/action#stop
   - http://schemas.ogf.org/occi/infrastructure/compute/action#restart
@@ -80,15 +69,6 @@
         cores: 1
         memory: 1.0
         state: active
-    com: !ruby/hash:Hashie::Mash
-      amazon: !ruby/hash:Hashie::Mash
-        aws: !ruby/hash:Hashie::Mash
-          ec2: !ruby/hash:Hashie::Mash
-            reservation_id: r-ebfc7dab
-            availability_zone: eu-west-1a
-            state: running
-            hypervisor: xen
-            virtualization_type: hvm
   id: i-22af91c7
   links:
   - !ruby/hash:Hashie::Mash

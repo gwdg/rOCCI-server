@@ -4,16 +4,27 @@ module Backends
       module ComputeParseHelper
         STORAGE_GENERATED_PREFIX = 'generated_'
         NETWORK_GENERATED_PREFIX = 'generated_'
-        CONTEXTUALIZATION_MIXIN_KEY = 'http://schemas.openstack.org/instance/credentials#public_key'
-        CONTEXTUALIZATION_MIXIN_UD = 'http://schemas.openstack.org/compute/instance#user_data'
-        CONTEXTUALIZATION_ATTR_KEY = 'org.openstack.credentials.publickey.data'
-        CONTEXTUALIZATION_ATTR_UD = 'org.openstack.compute.user_data'
+
+        CONTEXTUALIZATION_MIXINS_KEY = %w(
+          http://schemas.openstack.org/instance/credentials#public_key
+          http://schemas.ogf.org/occi/infrastructure/credentials#ssh_key
+        )
+        CONTEXTUALIZATION_ATTRS_KEY  = %w(
+          org.openstack.credentials.publickey.data
+          occi.credentials.ssh.publickey
+        )
+
+        CONTEXTUALIZATION_MIXINS_UD  = %w(
+          http://schemas.openstack.org/compute/instance#user_data
+          http://schemas.ogf.org/occi/infrastructure/compute#user_data
+        )
+        CONTEXTUALIZATION_ATTRS_UD   = %w(
+          org.openstack.compute.user_data
+          occi.compute.userdata
+        )
 
         def parse_backend_obj(backend_compute)
           compute = ::Occi::Infrastructure::Compute.new
-
-          # include some basic mixins
-          compute.mixins << 'http://schemas.opennebula.org/occi/infrastructure#compute'
 
           # include mixins stored in ON's VM template
           unless backend_compute['USER_TEMPLATE/OCCI_COMPUTE_MIXINS'].blank?
@@ -24,22 +35,19 @@ module Backends
           end
 
           if backend_compute['TEMPLATE/CONTEXT']
-            if backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
-              compute.mixins << CONTEXTUALIZATION_MIXIN_KEY
-            end
+            pubkey = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
+            CONTEXTUALIZATION_MIXINS_KEY.each { |mxn| compute.mixins << mxn } unless pubkey.blank?
 
-            if backend_compute['TEMPLATE/CONTEXT/USER_DATA']
-              compute.mixins << CONTEXTUALIZATION_MIXIN_UD
-            end
+            CONTEXTUALIZATION_MIXINS_UD.each { |mxn| compute.mixins << mxn } unless backend_compute['TEMPLATE/CONTEXT/USER_DATA'].blank?
           end
+
+          # include availability zone mixin
+          zone = parse_avail_zone(backend_compute)
+          compute.mixins << "#{@options.backend_scheme}/occi/infrastructure/availability_zone##{zone}" unless zone.blank?
 
           # include basic OCCI attributes
           basic_attrs = parse_basic_attrs(backend_compute)
           compute.attributes.merge! basic_attrs
-
-          # include ONE-specific attributes
-          one_attrs = parse_one_attrs(backend_compute)
-          compute.attributes.merge! one_attrs
 
           # include contextualization attributes
           context_attrs = parse_context_attrs(backend_compute)
@@ -57,6 +65,16 @@ module Backends
           compute
         end
 
+        def parse_avail_zone(backend_compute)
+          return unless backend_compute
+
+          clusters = []
+          backend_compute.each_xpath('HISTORY_RECORDS/HISTORY/CID') { |cid| clusters << cid.to_i }
+          return if clusters.empty?
+
+          cid_to_avail_zone clusters.last
+        end
+
         def parse_basic_attrs(backend_compute)
           compute_attrs = ::Occi::Core::Attributes.new
 
@@ -66,26 +84,10 @@ module Backends
 
           compute_attrs['occi.compute.cores'] = (backend_compute['TEMPLATE/VCPU'] || 1).to_i
           compute_attrs['occi.compute.memory'] = (backend_compute['TEMPLATE/MEMORY'].to_f / 1024)
-          # TODO: speed should contain a CPU speed (i.e. frequency in GHz)
-          # compute_attrs['occi.compute.speed'] = ((backend_compute['TEMPLATE/CPU'] || 1).to_f / compute_attrs['occi.compute.cores'])
+          compute_attrs['occi.compute.speed'] = (backend_compute['TEMPLATE/CPU'] || 1).to_f
 
           compute_attrs['occi.compute.architecture'] = 'x64' if backend_compute['TEMPLATE/OS/ARCH'] == 'x86_64'
           compute_attrs['occi.compute.architecture'] = 'x86' if backend_compute['TEMPLATE/OS/ARCH'] == 'i686'
-
-          compute_attrs
-        end
-
-        def parse_one_attrs(backend_compute)
-          compute_attrs = ::Occi::Core::Attributes.new
-
-          compute_attrs['org.opennebula.compute.id'] = backend_compute['ID']
-          compute_attrs['org.opennebula.compute.cpu'] = backend_compute['TEMPLATE/CPU'].to_f if backend_compute['TEMPLATE/CPU']
-          compute_attrs['org.opennebula.compute.kernel'] = backend_compute['TEMPLATE/OS/KERNEL'] if backend_compute['TEMPLATE/OS/KERNEL']
-          compute_attrs['org.opennebula.compute.initrd'] = backend_compute['TEMPLATE/OS/INITRD'] if backend_compute['TEMPLATE/OS/INITRD']
-          compute_attrs['org.opennebula.compute.root'] = backend_compute['TEMPLATE/OS/ROOT'] if backend_compute['TEMPLATE/OS/ROOT']
-          compute_attrs['org.opennebula.compute.kernel_cmd'] = backend_compute['TEMPLATE/OS/KERNEL_CMD'] if backend_compute['TEMPLATE/OS/KERNEL_CMD']
-          compute_attrs['org.opennebula.compute.bootloader'] = backend_compute['TEMPLATE/OS/BOOTLOADER'] if backend_compute['TEMPLATE/OS/BOOTLOADER']
-          compute_attrs['org.opennebula.compute.boot'] = backend_compute['TEMPLATE/OS/BOOT'] if backend_compute['TEMPLATE/OS/BOOT']
 
           compute_attrs
         end
@@ -94,15 +96,18 @@ module Backends
           context_attrs = ::Occi::Core::Attributes.new
 
           if backend_compute['TEMPLATE/CONTEXT']
-            context_attrs[CONTEXTUALIZATION_ATTR_KEY] = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
+            pubkey = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
+            CONTEXTUALIZATION_ATTRS_KEY.each { |key| context_attrs[key] = pubkey } unless pubkey.blank?
 
-            # re-encode cloud-init configuration files as Base64
-            context_attrs[CONTEXTUALIZATION_ATTR_UD] =
-              if backend_compute['TEMPLATE/CONTEXT/USER_DATA'] && backend_compute['TEMPLATE/CONTEXT/USER_DATA'].match(/^\s*#cloud-config\s*$/)
-                Base64.strict_encode64(backend_compute['TEMPLATE/CONTEXT/USER_DATA'])
+            # re-encode cloud-init configuration files as Base64, if necessary
+            unless backend_compute['TEMPLATE/CONTEXT/USER_DATA'].blank?
+              if backend_compute['TEMPLATE/CONTEXT/USERDATA_ENCODING'] == 'base64'
+                CONTEXTUALIZATION_ATTRS_UD.each { |key| context_attrs[key] = backend_compute['TEMPLATE/CONTEXT/USER_DATA'] }
               else
-                backend_compute['TEMPLATE/CONTEXT/USER_DATA']
+                ud_base64 = Base64.strict_encode64(backend_compute['TEMPLATE/CONTEXT/USER_DATA'])
+                CONTEXTUALIZATION_ATTRS_UD.each { |key| context_attrs[key] = ud_base64 }
               end
+            end
           end
 
           context_attrs
@@ -111,35 +116,19 @@ module Backends
         def parse_state(backend_compute)
           result = Hashie::Mash.new
 
-          # In ON 4.4:
-          #    VM_STATE=%w{INIT PENDING HOLD ACTIVE STOPPED SUSPENDED DONE FAILED
-          #       POWEROFF UNDEPLOYED}
-          #
-          #    LCM_STATE=%w{LCM_INIT PROLOG BOOT RUNNING MIGRATE SAVE_STOP SAVE_SUSPEND
-          #        SAVE_MIGRATE PROLOG_MIGRATE PROLOG_RESUME EPILOG_STOP EPILOG
-          #        SHUTDOWN CANCEL FAILURE CLEANUP_RESUBMIT UNKNOWN HOTPLUG SHUTDOWN_POWEROFF
-          #        BOOT_UNKNOWN BOOT_POWEROFF BOOT_SUSPENDED BOOT_STOPPED CLEANUP_DELETE
-          #        HOTPLUG_SNAPSHOT HOTPLUG_NIC HOTPLUG_SAVEAS HOTPLUG_SAVEAS_POWEROFF
-          #        HOTPLUG_SAVEAS_SUSPENDED SHUTDOWN_UNDEPLOY EPILOG_UNDEPLOY
-          #        PROLOG_UNDEPLOY BOOT_UNDEPLOY}
-          #
+          # See
+          # http://docs.opennebula.org/5.2/operation/references/vm_states.html
           case backend_compute.state_str
           when 'ACTIVE'
-            # ACTIVE is a very broad term, look at lcm_state_str too
-            if backend_compute.lcm_state_str == 'RUNNING'
-              result.state = 'active'
-              result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#stop http://schemas.ogf.org/occi/infrastructure/compute/action#restart http://schemas.ogf.org/occi/infrastructure/compute/action#suspend|
-            else
-              result.state = 'inactive'
-              result.actions = []
-            end
+            # ACTIVE is a very broad term
+            parse_state_active(backend_compute, result)
           when 'FAILED'
             result.state = 'error'
-            result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#restart|
-          when 'STOPPED', 'SUSPENDED', 'POWEROFF'
+            result.actions = []
+          when 'STOPPED', 'SUSPENDED', 'POWEROFF', 'UNDEPLOYED'
             result.state = 'suspended'
             result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
-          when 'PENDING'
+          when 'PENDING', 'HOLD', 'CLONING'
             result.state = 'waiting'
             result.actions = []
           else
@@ -148,6 +137,32 @@ module Backends
           end
 
           result
+        end
+
+        def parse_state_active(backend_compute, result)
+          case backend_compute.lcm_state_str
+          when 'RUNNING'
+            result.state = 'active'
+            result.actions = %w(
+              http://schemas.ogf.org/occi/infrastructure/compute/action#stop
+              http://schemas.ogf.org/occi/infrastructure/compute/action#restart
+              http://schemas.ogf.org/occi/infrastructure/compute/action#suspend
+            )
+          when 'PROLOG', 'BOOT', 'MIGRATE', 'EPILOG'
+            result.state = 'waiting'
+            result.actions = []
+          else
+            if backend_compute.lcm_state_str.include? 'FAILURE'
+              result.state = 'error'
+              result.actions = []
+            elsif backend_compute.lcm_state_str.include? 'HOTPLUG'
+              result.state = 'waiting'
+              result.actions = []
+            else
+              result.state = 'inactive'
+              result.actions = []
+            end
+          end
         end
 
         def parse_links(backend_compute, compute)
@@ -179,10 +194,10 @@ module Backends
                 target.id = "#{STORAGE_GENERATED_PREFIX}#{id}"
                 target.title = 'Generated target for a disk based on an outdated and unpublished image'
               rescue Backends::Errors::ResourceNotFoundError
-                # image doesn't exist anymore
+                # image doesn't exist anymore or it's a read-only appliance OS image
                 target = ::Occi::Infrastructure::Storage.new
                 target.id = "#{STORAGE_GENERATED_PREFIX}#{id}"
-                target.title = 'Generated target for a disk based on a removed image'
+                target.title = 'Generated target for an OS disk or a removed image'
               end
             else
               target = ::Occi::Infrastructure::Storage.new
@@ -195,8 +210,6 @@ module Backends
             link.title = target.title if target.title
             link.source = compute
 
-            link.mixins << 'http://schemas.opennebula.org/occi/infrastructure#storagelink'
-
             unless backend_compute["USER_TEMPLATE/OCCI_STORAGELINK_MIXINS/DISK_#{disk['DISK_ID']}"].blank?
               backend_mixins = backend_compute["USER_TEMPLATE/OCCI_STORAGELINK_MIXINS/DISK_#{disk['DISK_ID']}"].split(' ')
               backend_mixins.each do |mixin|
@@ -205,8 +218,6 @@ module Backends
             end
 
             link.deviceid = "/dev/#{disk['TARGET']}" if disk['TARGET']
-            link.attributes['org.opennebula.storagelink.bus'] = disk['BUS'] if disk['BUS']
-            link.attributes['org.opennebula.storagelink.driver'] = disk['DRIVER'] if disk['TARGET']
 
             result_storage_links << link
           end
@@ -250,7 +261,6 @@ module Backends
             link.source = compute
 
             link.mixins << 'http://schemas.ogf.org/occi/infrastructure/networkinterface#ipnetworkinterface'
-            link.mixins << 'http://schemas.opennebula.org/occi/infrastructure#networkinterface'
 
             unless backend_compute["USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS/NIC_#{nic['NIC_ID']}"].blank?
               backend_mixins = backend_compute["USER_TEMPLATE/OCCI_NETWORKINTERFACE_MIXINS/NIC_#{nic['NIC_ID']}"].split(' ')
@@ -262,14 +272,6 @@ module Backends
             link.address = nic['IP'] if nic['IP']
             link.mac = nic['MAC'] if nic['MAC']
             link.interface = "eth#{nic['NIC_ID']}"
-
-            link.attributes['org.opennebula.networkinterface.bridge'] = nic['BRIDGE'] if nic['BRIDGE']
-            link.attributes['org.opennebula.networkinterface.white_ports_tcp'] = nic['WHITE_PORTS_TCP'] if nic['WHITE_PORTS_TCP']
-            link.attributes['org.opennebula.networkinterface.black_ports_tcp'] = nic['BLACK_PORTS_TCP'] if nic['BLACK_PORTS_TCP']
-            link.attributes['org.opennebula.networkinterface.white_ports_udp'] = nic['WHITE_PORTS_UDP'] if nic['WHITE_PORTS_UDP']
-            link.attributes['org.opennebula.networkinterface.black_ports_udp'] = nic['BLACK_PORTS_UDP'] if nic['BLACK_PORTS_UDP']
-            link.attributes['org.opennebula.networkinterface.icmp'] = nic['ICMP'] if nic['ICMP']
-            link.attributes['org.opennebula.networkinterface.model'] = nic['MODEL'] if nic['MODEL']
 
             result_network_links << link
           end

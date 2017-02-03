@@ -5,9 +5,6 @@ module Backends
         def parse_backend_obj(backend_storage)
           storage = ::Occi::Infrastructure::Storage.new
 
-          # include some basic mixins
-          storage.mixins << 'http://schemas.opennebula.org/occi/infrastructure#storage'
-
           # include mixins stored in ON's VN template
           unless backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'].blank?
             backend_storage_mixins = backend_storage['TEMPLATE/OCCI_STORAGE_MIXINS'].split(' ')
@@ -16,13 +13,15 @@ module Backends
             end
           end
 
+          # include availability zone mixins
+          zones = parse_avail_zones(backend_storage)
+          zones.each do |zone|
+            storage.mixins << "#{@options.backend_scheme}/occi/infrastructure/availability_zone##{zone}"
+          end
+
           # include basic OCCI attributes
           basic_attrs = parse_basic_attrs(backend_storage)
           storage.attributes.merge! basic_attrs
-
-          # include ONE-specific attributes
-          one_attrs = parse_one_attrs(backend_storage)
-          storage.attributes.merge! one_attrs
 
           # include state information and available actions
           result = parse_state(backend_storage)
@@ -30,6 +29,21 @@ module Backends
           result.actions.each { |a| storage.actions << a }
 
           storage
+        end
+
+        def parse_avail_zones(backend_storage)
+          return [] unless backend_storage
+
+          datastore = ::OpenNebula::Datastore.new(
+                        ::OpenNebula::Datastore.build_xml(backend_storage['DATASTORE_ID'].to_i),
+                        @client
+                      )
+          rc = datastore.info
+          check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+          clusters = []
+          datastore.each_xpath('CLUSTERS/ID') { |cid| clusters << cid.to_i }
+          clusters.collect { |cluster| cid_to_avail_zone cluster }
         end
 
         def parse_basic_attrs(backend_storage)
@@ -42,25 +56,6 @@ module Backends
           basic_attrs['occi.storage.size'] = backend_storage['SIZE'].to_f / 1024 if backend_storage['SIZE']
 
           basic_attrs
-        end
-
-        def parse_one_attrs(backend_storage)
-          one_attrs = ::Occi::Core::Attributes.new
-
-          one_attrs['org.opennebula.storage.id'] = backend_storage['ID']
-          one_attrs['org.opennebula.storage.type'] = backend_storage.type_str
-
-          if backend_storage['PERSISTENT'].blank? || backend_storage['PERSISTENT'].to_i == 0
-            one_attrs['org.opennebula.storage.persistent'] = 'NO'
-          else
-            one_attrs['org.opennebula.storage.persistent'] = 'YES'
-          end
-
-          one_attrs['org.opennebula.storage.dev_prefix'] = backend_storage['TEMPLATE/DEV_PREFIX'] if backend_storage['TEMPLATE/DEV_PREFIX']
-          one_attrs['org.opennebula.storage.bus'] = backend_storage['TEMPLATE/BUS'] if backend_storage['TEMPLATE/BUS']
-          one_attrs['org.opennebula.storage.driver'] = backend_storage['TEMPLATE/DRIVER'] if backend_storage['TEMPLATE/DRIVER']
-
-          one_attrs
         end
 
         def parse_state(backend_storage)

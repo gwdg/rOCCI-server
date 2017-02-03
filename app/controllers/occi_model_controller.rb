@@ -5,22 +5,30 @@ class OcciModelController < ApplicationController
   # GET /
   def index
     if INDEX_LINK_FORMATS.include?(request.format)
-      @resources = []
+      @entities = []
 
-      @resources.concat(backend_instance.compute_list_ids.map { |c| "#{server_url}/compute/#{c}" })
-      @resources.concat(backend_instance.network_list_ids.map { |n| "#{server_url}/network/#{n}" })
-      @resources.concat(backend_instance.storage_list_ids.map { |s| "#{server_url}/storage/#{s}" })
+      @entities.concat(backend_instance.compute_list_ids.map { |c| "#{server_url}/compute/#{c}" })
+      @entities.concat(backend_instance.compute_get_network_list_ids.map { |c| "#{server_url}/link/networkinterface/#{c}" })
+      @entities.concat(backend_instance.compute_get_storage_list_ids.map { |c| "#{server_url}/link/storagelink/#{c}" })
+
+      @entities.concat(backend_instance.network_list_ids.map { |n| "#{server_url}/network/#{n}" })
+      @entities.concat(backend_instance.storage_list_ids.map { |s| "#{server_url}/storage/#{s}" })
+
       options = { flag: :links_only }
     else
-      @resources = Occi::Collection.new
+      @entities = Occi::Collection.new
 
-      @resources.resources.merge backend_instance.compute_list
-      @resources.resources.merge backend_instance.network_list
-      @resources.resources.merge backend_instance.storage_list
+      @entities.resources.merge backend_instance.compute_list
+      @entities.links.merge backend_instance.compute_get_network_list
+      @entities.links.merge backend_instance.compute_get_storage_list
+
+      @entities.resources.merge backend_instance.network_list
+      @entities.resources.merge backend_instance.storage_list
+
       options = {}
     end
 
-    respond_with(@resources, options)
+    respond_with(@entities, options)
   end
 
   # GET /-/

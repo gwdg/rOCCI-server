@@ -10,12 +10,6 @@ module Backends
         def create_with_os_tpl(compute)
           @logger.debug "[Backends] [Opennebula] Deploying #{compute.inspect}"
 
-          # include some basic mixins
-          # WARNING: adding mix-ins will re-set their attributes
-          attr_backup = ::Occi::Core::Attributes.new(compute.attributes)
-          compute.mixins << 'http://schemas.opennebula.org/occi/infrastructure#compute'
-          compute.attributes = attr_backup
-
           os_tpl_mixins = compute.mixins.get_related_to(::Occi::Infrastructure::OsTpl.mixin.type_identifier)
           os_tpl = os_tpl_mixins.first
 
@@ -49,7 +43,10 @@ module Backends
           template = template.template_str
 
           # add inline links
-          template = create_add_inline_links(compute, template)
+          create_add_inline_links(compute, template)
+
+          # add GPU devices
+          create_add_gpu_devs(compute, template)
 
           @logger.debug "[Backends] [Opennebula] Template #{template.inspect}"
           vm_alloc = ::OpenNebula::VirtualMachine.build_xml
@@ -68,12 +65,6 @@ module Backends
           compute_id
         end
 
-        def create_with_links(compute)
-          # TODO: drop this branch in the second stable release
-          fail Backends::Errors::MethodNotImplementedError,
-               "This functionality has been deprecated! Use os_tpl and resource_tpl mixins!"
-        end
-
         private
 
         def create_set_attrs(compute, template)
@@ -85,9 +76,10 @@ module Backends
             template.delete_element('TEMPLATE/VCPU')
             template.add_element('TEMPLATE',  'VCPU' => compute.cores.to_i)
 
-            # set reservation ratio
+            # set default reservation ratio
+            cpu_resrv = compute.speed ? (compute.speed.to_f * compute.cores.to_i) : compute.cores.to_i
             template.delete_element('TEMPLATE/CPU')
-            template.add_element('TEMPLATE',  'CPU' => compute.cores.to_i)
+            template.add_element('TEMPLATE',  'CPU' => cpu_resrv)
           end
 
           if compute.memory
@@ -101,28 +93,33 @@ module Backends
             template.add_element('TEMPLATE',  'ARCHITECTURE' => compute.architecture)
           end
 
-          # TODO: speed should contain a CPU speed (i.e. frequency in GHz)
-          # if compute.speed
-          #   ###
-          # end
+          if compute.attributes.occi.compute.ephemeral_storage
+            resize_disk = compute.attributes['occi.compute.ephemeral_storage.size'].to_i * 1024
+            if resize_disk > 0
+              template.delete_element('TEMPLATE/DISK[1]/SIZE')
+              template.add_element('TEMPLATE/DISK[1]',  'SIZE' => resize_disk)
+            end
+          end
         end
 
         def create_add_context(compute, template)
-          return unless compute.attributes.org!.openstack
+          pbk = compute.attributes.occi!.credentials!.ssh!.publickey || compute.attributes.org!.openstack!.credentials!.publickey!.data
+          ud  = compute.attributes.occi!.compute!.userdata || compute.attributes.org!.openstack!.compute!.user_data
+          return unless pbk || ud
 
           template.add_element('TEMPLATE', 'CONTEXT' => '')
 
-          if compute.attributes.org.openstack.credentials!.publickey!.data
+          if pbk
             template.delete_element('TEMPLATE/CONTEXT/SSH_KEY')
-            template.add_element('TEMPLATE/CONTEXT', 'SSH_KEY' => compute.attributes['org.openstack.credentials.publickey.data'])
+            template.add_element('TEMPLATE/CONTEXT', 'SSH_KEY' => pbk)
 
             template.delete_element('TEMPLATE/CONTEXT/SSH_PUBLIC_KEY')
-            template.add_element('TEMPLATE/CONTEXT', 'SSH_PUBLIC_KEY' => compute.attributes['org.openstack.credentials.publickey.data'])
+            template.add_element('TEMPLATE/CONTEXT', 'SSH_PUBLIC_KEY' => pbk)
           end
 
-          if compute.attributes.org.openstack.compute!.user_data
+          if ud
             template.delete_element('TEMPLATE/CONTEXT/USER_DATA')
-            template.add_element('TEMPLATE/CONTEXT', 'USER_DATA' => compute.attributes['org.openstack.compute.user_data'])
+            template.add_element('TEMPLATE/CONTEXT', 'USER_DATA' => ud)
 
             template.delete_element('TEMPLATE/CONTEXT/USERDATA_ENCODING')
             template.add_element('TEMPLATE/CONTEXT', 'USERDATA_ENCODING' => 'base64')
@@ -130,20 +127,19 @@ module Backends
         end
 
         def create_check_context(compute)
-          if compute.attributes.org!.openstack!.credentials!.publickey!.data
-            fail Backends::Errors::ResourceNotValidError, 'Public key is invalid!' unless \
-              COMPUTE_SSH_REGEXP.match(compute.attributes['org.openstack.credentials.publickey.data'])
-          end
+          pbk = compute.attributes.occi!.credentials!.ssh!.publickey || compute.attributes.org!.openstack!.credentials!.publickey!.data
+          ud  = compute.attributes.occi!.compute!.userdata || compute.attributes.org!.openstack!.compute!.user_data
 
-          if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" unless \
-              compute.attributes['org.openstack.compute.user_data'].bytesize <= COMPUTE_USER_DATA_SIZE_LIMIT
-          end
+          fail Backends::Errors::ResourceNotValidError,
+               'Public key is invalid!' if pbk && !COMPUTE_SSH_REGEXP.match(pbk)
 
-          if compute.attributes.org!.openstack!.compute!.user_data
-            fail Backends::Errors::ResourceNotValidError, 'User data contains invalid characters!' unless \
-              COMPUTE_BASE64_REGEXP.match(compute.attributes['org.openstack.compute.user_data'].gsub("\n", ''))
-          end
+          return if ud.blank?
+
+          fail Backends::Errors::ResourceNotValidError,
+               "User data exceeds the allowed size of #{COMPUTE_USER_DATA_SIZE_LIMIT} bytes!" if ud.bytesize > COMPUTE_USER_DATA_SIZE_LIMIT
+
+          fail Backends::Errors::ResourceNotValidError,
+               'User data contains invalid characters!' unless COMPUTE_BASE64_REGEXP.match ud.gsub("\n", '')
         end
 
         def create_add_description(compute, template)
@@ -164,23 +160,21 @@ module Backends
         end
 
         def create_add_inline_links(compute, template)
-          return template if compute.blank? || compute.links.blank?
+          return if compute.blank? || compute.links.blank?
 
           compute.links.to_a.each do |link|
             next unless link.kind_of? ::Occi::Core::Link
             @logger.debug "[Backends] [Opennebula] Handling inline link #{link.to_s.inspect}"
 
-            case link.kind.type_identifier
-            when 'http://schemas.ogf.org/occi/infrastructure#storagelink'
-              template = create_add_inline_storagelink(template, link)
-            when 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
-              template = create_add_inline_networkinterface(template, link)
+            case link
+            when ::Occi::Infrastructure::Storagelink
+              create_add_inline_storagelink(template, link)
+            when ::Occi::Infrastructure::Networkinterface
+              create_add_inline_networkinterface(template, link)
             else
               fail Backends::Errors::ResourceNotValidError, "Link kind #{link.kind.type_identifier.inspect} is not supported!"
             end
           end
-
-          template
         end
 
         def create_add_inline_storagelink(template, storagelink)
@@ -213,6 +207,29 @@ module Backends
           if COMPUTE_DN_BASED_AUTHS.include?(@delegated_user.auth_.type)
             template.add_element('TEMPLATE',  'USER_X509_DN' => @delegated_user.identity)
           end
+        end
+
+        def create_add_gpu_devs(compute, template)
+          # TODO: this needs to be improved in future versions
+          # Expected attributes:
+          #   - eu.egi.fedcloud.compute.gpu.count  (Integer)
+          #   - eu.egi.fedcloud.compute.gpu.vendor (String)
+          #   - eu.egi.fedcloud.compute.gpu.class  (String)
+          #   - eu.egi.fedcloud.compute.gpu.device (String)
+          return unless compute.attributes.eu!.egi!.fedcloud!.compute!.gpu
+
+          pci_tpl = []
+          pci_tpl << "VENDOR=\"#{compute.attributes['eu.egi.fedcloud.compute.gpu.vendor']}\"" \
+                       unless compute.attributes['eu.egi.fedcloud.compute.gpu.vendor'].blank?
+          pci_tpl << "CLASS=\"#{compute.attributes['eu.egi.fedcloud.compute.gpu.class']}\"" \
+                       unless compute.attributes['eu.egi.fedcloud.compute.gpu.class'].blank?
+          pci_tpl << "DEVICE=\"#{compute.attributes['eu.egi.fedcloud.compute.gpu.device']}\"" \
+                       unless compute.attributes['eu.egi.fedcloud.compute.gpu.device'].blank?
+          return if pci_tpl.empty?
+
+          @logger.debug "[Backends] [Opennebula] Adding GPU(s) #{pci_tpl.inspect}"
+          template << "\n"
+          compute.attributes['eu.egi.fedcloud.compute.gpu.count'].times { template << "PCI = [ #{pci_tpl.join(',')} ]\n" }
         end
       end
     end

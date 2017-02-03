@@ -19,9 +19,16 @@
 		<% @local_resource.attributes.names.each_pair do |attribute, value| %>
 		<tr>
 			<td style="font-weight: bold" width="20%"><%= attribute %></td>
-			<td><%= value %></td>
+			<td>
+				<% if attribute == 'occi.core.target' || attribute == 'occi.core.source' %>
+				<a href="<%= value %>"><%= value %></a>
+				<% else %>
+				<%= value %>
+				<% end %>
+			</td>
 		</tr>
 		<% end %>
+		<% if @local_resource.respond_to?(:links) && @local_resource.links %>
 		<tr style="background: grey">
 			<td colspan="2" style="font-weight: bold">Links</td>
 		</tr>
@@ -62,6 +69,7 @@
 				</table>
 			</td>
 		</tr>
+		<% end %>
 		<% end %>
 	</tbody>
 </table>

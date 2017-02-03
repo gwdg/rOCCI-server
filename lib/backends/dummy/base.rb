@@ -1,7 +1,7 @@
 module Backends
   module Dummy
     class Base
-      API_VERSION = '1.0.0'
+      API_VERSION = '2.0.0'.freeze
       FIXTURES = [:compute, :network, :storage].freeze
       FIXTURES_TPL = [:os_tpl, :resource_tpl].freeze
 

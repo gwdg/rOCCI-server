@@ -7,7 +7,6 @@ module Backends
 
           # include some basic mixins
           network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
-          network.mixins << 'http://schemas.opennebula.org/occi/infrastructure#network'
 
           # include mixins stored in ON's VN template
           unless backend_network['TEMPLATE/OCCI_NETWORK_MIXINS'].blank?
@@ -17,13 +16,15 @@ module Backends
             end
           end
 
+          # include availability zone mixins
+          zones = parse_avail_zones(backend_network)
+          zones.each do |zone|
+            network.mixins << "#{@options.backend_scheme}/occi/infrastructure/availability_zone##{zone}"
+          end
+
           # include basic OCCI attributes
           basic_attrs = parse_basic_attrs(backend_network)
           network.attributes.merge! basic_attrs
-
-          # include ONE-specific attributes
-          one_attrs = parse_one_attrs(backend_network)
-          network.attributes.merge! one_attrs
 
           # include state information and available actions
           result = parse_state(backend_network)
@@ -31,6 +32,14 @@ module Backends
           result.actions.each { |a| network.actions << a }
 
           network
+        end
+
+        def parse_avail_zones(backend_network)
+          return [] unless backend_network
+
+          clusters = []
+          backend_network.each_xpath('CLUSTERS/ID') { |cid| clusters << cid.to_i }
+          clusters.collect { |cluster| cid_to_avail_zone cluster }
         end
 
         def parse_basic_attrs(backend_network)
@@ -43,7 +52,7 @@ module Backends
           basic_attrs['occi.network.gateway'] = backend_network['TEMPLATE/GATEWAY'] if backend_network['TEMPLATE/GATEWAY']
           basic_attrs['occi.network.vlan'] = backend_network['VLAN_ID'].to_i unless backend_network['VLAN_ID'].blank?
 
-          if backend_network.type_str == 'RANGED'
+          if backend_network['TEMPLATE/NETWORK_ADDRESS']
             basic_attrs['occi.network.allocation'] = 'dynamic'
             basic_attrs['occi.network.address'] = calculate_cidr(backend_network)
           else
@@ -51,28 +60,6 @@ module Backends
           end
 
           basic_attrs
-        end
-
-        def parse_one_attrs(backend_network)
-          one_attrs = ::Occi::Core::Attributes.new
-
-          one_attrs['org.opennebula.network.id'] = backend_network['ID']
-
-          if backend_network['VLAN'].blank? || backend_network['VLAN'].to_i == 0
-            one_attrs['org.opennebula.network.vlan'] = 'NO'
-          else
-            one_attrs['org.opennebula.network.vlan'] = 'YES'
-          end
-
-          one_attrs['org.opennebula.network.phydev'] = backend_network['PHYDEV'] unless backend_network['PHYDEV'].blank?
-          one_attrs['org.opennebula.network.bridge'] = backend_network['BRIDGE'] unless backend_network['BRIDGE'].blank?
-
-          unless backend_network['RANGE'].blank?
-            one_attrs['org.opennebula.network.ip_start'] = backend_network['RANGE/IP_START'] if backend_network['RANGE/IP_START']
-            one_attrs['org.opennebula.network.ip_end'] = backend_network['RANGE/IP_END'] if backend_network['RANGE/IP_END']
-          end
-
-          one_attrs
         end
 
         def parse_state(backend_network)

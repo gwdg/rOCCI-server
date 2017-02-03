@@ -33,6 +33,13 @@
               "Mutable":false,
               "Type":"number",
               "Default":16
+            },
+            "ephemeral_storage":{
+              "size":{
+                "Mutable":false,
+                "Type":"number",
+                "Default": 40
+              }
             }
           }
         }

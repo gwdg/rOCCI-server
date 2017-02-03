@@ -75,6 +75,7 @@ ROCCIServer::Application.routes.draw do
   ## Occi::Infrastructure::NetworkInterface
   ####################################################
   get '/link/networkinterface/:id', to: 'networkinterface#show', as: 'networkinterface'
+  get '/link/networkinterface/', to: 'networkinterface#index', as: 'networkinterfaces'
 
   post '/link/networkinterface/', to: 'networkinterface#create', as: 'new_networkinterface'
 
@@ -84,6 +85,7 @@ ROCCIServer::Application.routes.draw do
   ## Occi::Infrastructure::StorageLink
   ####################################################
   get '/link/storagelink/:id', to: 'storagelink#show', as: 'storagelink'
+  get '/link/storagelink/', to: 'storagelink#index', as: 'storagelinks'
 
   post '/link/storagelink/', to: 'storagelink#create', as: 'new_storagelink'
 

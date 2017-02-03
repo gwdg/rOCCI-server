@@ -1,6 +1,22 @@
 # Controller class handling all networkinterface-related requests.
 # Implements retrieval, creation and deletion of networkinterface instances.
 class NetworkinterfaceController < ApplicationController
+  # GET /link/networkinterface/
+  def index
+    if INDEX_LINK_FORMATS.include?(request.format)
+      @nis = backend_instance.compute_get_network_list_ids
+      @nis.map! { |c| "#{server_url}/link/networkinterface/#{c}" }
+      options = { flag: :links_only }
+    else
+      @nis = Occi::Collection.new
+      @nis.links = backend_instance.compute_get_network_list
+      update_mixins_in_coll(@nis)
+      options = {}
+    end
+
+    respond_with(@nis, options)
+  end
+
   # GET /link/networkinterface/:id
   def show
     @networkinterface = Occi::Collection.new

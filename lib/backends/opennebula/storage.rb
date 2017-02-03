@@ -15,7 +15,7 @@ module Backends
       def list_ids(mixins = nil)
         # TODO: impl filtering with mixins
         backend_image_pool = ::OpenNebula::ImagePool.new(@client)
-        rc = backend_image_pool.info_all
+        rc = backend_image_pool.info_mine
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         storage = []
@@ -44,7 +44,7 @@ module Backends
         # TODO: impl filtering with mixins
         storage = ::Occi::Core::Resources.new
         backend_storage_pool = ::OpenNebula::ImagePool.new(@client)
-        rc = backend_storage_pool.info_all
+        rc = backend_storage_pool.info_mine
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         backend_storage_pool.each do |backend_storage|
@@ -66,7 +66,10 @@ module Backends
       # @param storage_id [String] OCCI identifier of the requested storage instance
       # @return [::Occi::Infrastructure::Storage, nil] a storage instance or `nil`
       def get(storage_id)
-        image = ::OpenNebula::Image.new(::OpenNebula::Image.build_xml(storage_id), @client)
+        image = ::OpenNebula::Image.new(
+                  ::OpenNebula::Image.build_xml(storage_id),
+                  @client
+                )
         rc = image.info
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
@@ -90,12 +93,6 @@ module Backends
         @logger.debug "[Backends] [Opennebula] Creating storage #{storage.inspect} "\
                       "in DS[#{@options.storage_datastore_id}]"
 
-        # include some basic mixins
-        # WARNING: adding mix-ins will re-set their attributes
-        attr_backup = ::Occi::Core::Attributes.new(storage.attributes)
-        storage.mixins << 'http://schemas.opennebula.org/occi/infrastructure#storage'
-        storage.attributes = attr_backup
-
         template_location = File.join(@options.templates_dir, 'storage.erb')
         template = Erubis::Eruby.new(File.read(template_location)).evaluate(storage: storage)
 
@@ -104,7 +101,10 @@ module Backends
         image_alloc = ::OpenNebula::Image.build_xml
         backend_object = ::OpenNebula::Image.new(image_alloc, @client)
 
-        rc = backend_object.allocate(template, @options.storage_datastore_id.to_i)
+        ds_id = candidate_datastore(storage)
+        fail Backends::Errors::ResourceCreationError, 'No suitable datastore found!' unless ds_id
+
+        rc = backend_object.allocate(template, ds_id)
         check_retval(rc, Backends::Errors::ResourceCreationError)
 
         rc = backend_object.info
@@ -132,12 +132,14 @@ module Backends
       def delete_all(mixins = nil)
         # TODO: impl filtering with mixins
         backend_storage_pool = ::OpenNebula::ImagePool.new(@client)
-        rc = backend_storage_pool.info_all
+        rc = backend_storage_pool.info_mine
         check_retval(rc, Backends::Errors::ResourceRetrievalError)
 
         backend_storage_pool.each do |backend_storage|
-          rc = backend_storage.delete
-          check_retval(rc, Backends::Errors::ResourceActionError)
+          check_retval(
+            backend_storage.delete,
+            Backends::Errors::ResourceActionError
+          )
         end
 
         true
@@ -155,12 +157,13 @@ module Backends
       # @param storage_id [String] an identifier of a storage instance to be deleted
       # @return [true, false] result of the operation
       def delete(storage_id)
-        storage = ::OpenNebula::Image.new(::OpenNebula::Image.build_xml(storage_id), @client)
-        rc = storage.info
-        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+        storage = ::OpenNebula::Image.new(
+                    ::OpenNebula::Image.build_xml(storage_id),
+                    @client
+                  )
 
-        rc = storage.delete
-        check_retval(rc, Backends::Errors::ResourceActionError)
+        check_retval(storage.info, Backends::Errors::ResourceRetrievalError)
+        check_retval(storage.delete, Backends::Errors::ResourceActionError)
 
         true
       end
@@ -264,6 +267,31 @@ module Backends
 
       # Load methods called from trigger_action*
       include Backends::Opennebula::Helpers::StorageActionHelper
+
+      private
+
+      def candidate_datastore(storage)
+        return if storage.blank?
+
+        default_did = @options.storage_datastore_id.to_i
+        target_cids = avail_zones_from_resource(storage)
+        return default_did if target_cids.empty?
+
+        ds_pool = OpenNebula::DatastorePool.new(@client)
+        rc = ds_pool.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        dids = []
+        ds_pool.each do |ds|
+          next unless ds['TYPE'].to_i == 0 # IMAGE DS
+
+          clusters = []
+          ds.each_xpath('CLUSTERS/ID') { |cid| clusters << cid.to_i }
+          dids << ds['ID'].to_i if (target_cids & clusters).any?
+        end
+
+        dids.first
+      end
     end
   end
 end

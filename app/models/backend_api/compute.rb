@@ -163,8 +163,7 @@ module BackendApi
     # @return [String] final identifier of the new network interface
     def compute_attach_network(networkinterface)
       fail Errors::ArgumentError, '\'networkinterface\' is a mandatory argument' if networkinterface.blank?
-      fail Errors::ArgumentTypeMismatchError, 'Action requires a link instance!' unless networkinterface.kind_of? ::Occi::Core::Link
-      fail Errors::ArgumentTypeMismatchError, 'Action requires a networkinterface instance!' unless networkinterface.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#networkinterface'
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a networkinterface instance!' unless networkinterface.kind_of? ::Occi::Infrastructure::Networkinterface
       backend_instances['compute'].attach_network(networkinterface)
     end
 
@@ -181,8 +180,7 @@ module BackendApi
     # @return [String] final identifier of the new storage link
     def compute_attach_storage(storagelink)
       fail Errors::ArgumentError, '\'storagelink\' is a mandatory argument' if storagelink.blank?
-      fail Errors::ArgumentTypeMismatchError, 'Action requires a link instance!' unless storagelink.kind_of? ::Occi::Core::Link
-      fail Errors::ArgumentTypeMismatchError, 'Action requires a storagelink instance!' unless storagelink.kind.type_identifier == 'http://schemas.ogf.org/occi/infrastructure#storagelink'
+      fail Errors::ArgumentTypeMismatchError, 'Action requires a storagelink instance!' unless storagelink.kind_of? ::Occi::Infrastructure::Storagelink
       backend_instances['compute'].attach_storage(storagelink)
     end
 
@@ -232,6 +230,39 @@ module BackendApi
       backend_instances['compute'].get_network(networkinterface_id)
     end
 
+    # Gets all networkinterface instance IDs, no details, no duplicates. Returned
+    # identifiers must correspond to those found in the occi.core.id
+    # attribute of ::Occi::Infrastructure::Networkinterface instances.
+    #
+    # @example
+    #    compute_get_network_list_ids #=> []
+    #    compute_get_network_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
+    #                                      "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
+    #
+    # @param mixins [::Occi::Core::Mixins] a filter containing mixins
+    # @return [Array<String>] IDs for all available networkinterface instances
+    def compute_get_network_list_ids(mixins = nil)
+      backend_instances['compute'].get_network_list_ids(mixins) || []
+    end
+
+    # Gets all networkinterface instances, instances must be filtered
+    # by the specified filter, filter (if set) must contain an ::Occi::Core::Mixins instance.
+    # Returned collection must contain ::Occi::Infrastructure::Networkinterface instances
+    # wrapped in ::Occi::Core::Links.
+    #
+    # @example
+    #    nis = compute_get_network_list #=> #<::Occi::Core::Links>
+    #    nis.first #=> #<::Occi::Infrastructure::Networkinterface>
+    #
+    #    mixins = ::Occi::Core::Mixins.new << ::Occi::Core::Mixin.new
+    #    nis = compute_get_network_list(mixins) #=> #<::Occi::Core::Links>
+    #
+    # @param mixins [::Occi::Core::Mixins] a filter containing mixins
+    # @return [::Occi::Core::Links] a collection of networkinterface instances
+    def compute_get_network_list(mixins = nil)
+      backend_instances['compute'].get_network_list(mixins) || ::Occi::Core::Links.new
+    end
+
     # Gets a storage from an existing compute instance, the compute instance in question
     # must be identifiable using the storagelink ID passed as an argument.
     # If the requested link instance cannot be detached, an error describing the
@@ -246,6 +277,39 @@ module BackendApi
     def compute_get_storage(storagelink_id)
       fail Errors::ArgumentError, '\'storagelink_id\' is a mandatory argument' if storagelink_id.blank?
       backend_instances['compute'].get_storage(storagelink_id)
+    end
+
+    # Gets all storagelink instance IDs, no details, no duplicates. Returned
+    # identifiers must correspond to those found in the occi.core.id
+    # attribute of ::Occi::Infrastructure::Storagelink instances.
+    #
+    # @example
+    #    compute_get_storage_list_ids #=> []
+    #    compute_get_storage_list_ids #=> ["65d4f65adfadf-ad2f4ad-daf5ad-f5ad4fad4ffdf",
+    #                                      "ggf4f65adfadf-adgg4ad-daggad-fydd4fadyfdfd"]
+    #
+    # @param mixins [::Occi::Core::Mixins] a filter containing mixins
+    # @return [Array<String>] IDs for all available storagelink instances
+    def compute_get_storage_list_ids(mixins = nil)
+      backend_instances['compute'].get_storage_list_ids(mixins) || []
+    end
+
+    # Gets all storagelink instances, instances must be filtered
+    # by the specified filter, filter (if set) must contain an ::Occi::Core::Mixins instance.
+    # Returned collection must contain ::Occi::Infrastructure::Storagelink instances
+    # wrapped in ::Occi::Core::Links.
+    #
+    # @example
+    #    nis = compute_get_storage_list #=> #<::Occi::Core::Links>
+    #    nis.first #=> #<::Occi::Infrastructure::Storagelink>
+    #
+    #    mixins = ::Occi::Core::Mixins.new << ::Occi::Core::Mixin.new
+    #    nis = compute_get_storage_list(mixins) #=> #<::Occi::Core::Links>
+    #
+    # @param mixins [::Occi::Core::Mixins] a filter containing mixins
+    # @return [::Occi::Core::Links] a collection of storagelink instances
+    def compute_get_storage_list(mixins = nil)
+      backend_instances['compute'].get_storage_list(mixins) || ::Occi::Core::Links.new
     end
 
     # Triggers an action on all existing compute instance, instances must be filtered

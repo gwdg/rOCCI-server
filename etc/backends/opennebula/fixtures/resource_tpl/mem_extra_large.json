@@ -2,7 +2,7 @@
   "mixins":[
     {
       "term":"mem_extra_large",
-      "scheme":"http://schemas.fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
+      "scheme":"http://fedcloud.egi.eu/occi/infrastructure/resource_tpl#",
       "title":"Extra Large Instance - 8 cores and 32 GB RAM",
       "location":"/mixin/resource_tpl/mem_extra_large/",
       "depends":[
@@ -33,6 +33,13 @@
               "Mutable":false,
               "Type":"number",
               "Default":32
+            },
+            "ephemeral_storage":{
+              "size":{
+                "Mutable":false,
+                "Type":"number",
+                "Default": 40
+              }
             }
           }
         }
