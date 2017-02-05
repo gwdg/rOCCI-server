@@ -23,11 +23,11 @@ class ComputeController < ApplicationController
     @compute = Occi::Collection.new
     @compute << backend_instance.compute_get(params[:id])
 
-    unless @compute.empty?
+    if @compute.empty?
+      respond_with(Occi::Collection.new, status: 404)
+    else
       update_mixins_in_coll(@compute)
       respond_with(@compute)
-    else
-      respond_with(Occi::Collection.new, status: 404)
     end
   end
 
@@ -45,23 +45,34 @@ class ComputeController < ApplicationController
     ai = request_occi_collection(Occi::Core::ActionInstance).action
     check_ai!(ai, request.query_string)
 
-    if params[:id]
-      result = backend_instance.compute_trigger_action(params[:id], ai)
-    else
-      result = backend_instance.compute_trigger_action_on_all(ai)
-    end
+    result = if params[:id]
+               backend_instance.compute_trigger_action(params[:id], ai)
+             else
+               backend_instance.compute_trigger_action_on_all(ai)
+             end
 
-    if result
-      respond_with(Occi::Collection.new)
-    else
-      respond_with(Occi::Collection.new, status: 304)
-    end
+    result ? respond_with(Occi::Collection.new) : respond_with(Occi::Collection.new, status: 304)
   end
 
   # POST /compute/:id
   def partial_update
-    # TODO: impl
-    respond_with(Occi::Collection.new, status: 501)
+    mixins = request_occi_collection(nil, true).mixins
+    result = backend_instance.compute_partial_update(params[:id], nil, mixins)
+
+    unless result
+      respond_with(Occi::Collection.new, status: 304)
+      return
+    end
+
+    compute = Occi::Collection.new
+    compute << backend_instance.compute_get(params[:id])
+
+    if compute.empty?
+      respond_with(Occi::Collection.new, status: 404)
+    else
+      update_mixins_in_coll(compute)
+      respond_with(compute)
+    end
   end
 
   # PUT /compute/:id
@@ -70,34 +81,31 @@ class ComputeController < ApplicationController
     compute.id = params[:id] if compute
     result = backend_instance.compute_update(compute)
 
-    if result
-      compute = Occi::Collection.new
-      compute << backend_instance.compute_get(params[:id])
-
-      unless compute.empty?
-        update_mixins_in_coll(compute)
-        respond_with(compute)
-      else
-        respond_with(Occi::Collection.new, status: 404)
-      end
-    else
+    unless result
       respond_with(Occi::Collection.new, status: 304)
+      return
+    end
+
+    compute = Occi::Collection.new
+    compute << backend_instance.compute_get(params[:id])
+
+    if compute.empty?
+      respond_with(Occi::Collection.new, status: 404)
+    else
+      update_mixins_in_coll(compute)
+      respond_with(compute)
     end
   end
 
   # DELETE /compute/
   # DELETE /compute/:id
   def delete
-    if params[:id]
-      result = backend_instance.compute_delete(params[:id])
-    else
-      result = backend_instance.compute_delete_all
-    end
+    result = if params[:id]
+               backend_instance.compute_delete(params[:id])
+             else
+               backend_instance.compute_delete_all
+             end
 
-    if result
-      respond_with(Occi::Collection.new)
-    else
-      respond_with(Occi::Collection.new, status: 304)
-    end
+    result ? respond_with(Occi::Collection.new) : respond_with(Occi::Collection.new, status: 304)
   end
 end

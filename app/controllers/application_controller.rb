@@ -89,13 +89,14 @@ class ApplicationController < ActionController::Base
   # by the RequestParser.
   #
   # @param expected_entity_type [Object] parameter passed as 'entity_type' to Occi::Parser.parse
+  # @param expect_categories [Boolean] parameter passed as 'categories' to Occi::Parser.parse
   # @return [Occi::Collection] collection containig parsed OCCI request
-  def request_occi_collection(expected_entity_type = nil)
+  def request_occi_collection(expected_entity_type = nil, expect_categories = false)
     if Rails.env.test?
       # turn off caching for tests
-      @request_collection = parse_request(expected_entity_type)
+      @request_collection = parse_request(expected_entity_type, expect_categories)
     else
-      @request_collection ||= parse_request(expected_entity_type)
+      @request_collection ||= parse_request(expected_entity_type, expect_categories)
     end
   end
 
@@ -116,9 +117,10 @@ class ApplicationController < ActionController::Base
   # Provides access to a lazy parser object
   #
   # @param expected_entity_type [Object] parameter passed as 'entity_type' to Occi::Parser.parse
+  # @param expect_categories [Boolean] parameter passed as 'categories' to Occi::Parser.parse
   # @return [Occi::Collection] collection of parsed OCCI objects
-  def parse_request(expected_entity_type = nil)
-    request_collection = request.env['rocci_server.request.parser'].parse_occi_messages(expected_entity_type)
+  def parse_request(expected_entity_type = nil, expect_categories = false)
+    request_collection = request.env['rocci_server.request.parser'].parse_occi_messages(expected_entity_type, expect_categories)
     request_collection ||= Occi::Collection.new
 
     request_collection.model = OcciModel.get(backend_instance)
