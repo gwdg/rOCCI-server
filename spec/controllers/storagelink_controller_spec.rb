@@ -13,4 +13,38 @@ describe StoragelinkController do
 
   end
 
+  describe "GET 'index'" do
+
+    it 'returns list' do
+      get 'index', format: :uri_list
+      expect(response).to be_success
+    end
+
+    it 'returns an array by default' do
+      get 'index', format: '*/*'
+      expect(assigns(:sls)).to be_kind_of(Array)
+    end
+
+    it 'returns a collection for text/html' do
+      get 'index', format: :html
+      expect(assigns(:sls)).to be_kind_of(Occi::Collection)
+    end
+
+    it 'returns an array for text/uri-list' do
+      get 'index', format: :uri_list
+      expect(assigns(:sls)).to be_kind_of(Array)
+    end
+
+    it 'returns an array for text/plain' do
+      get 'index', format: :text
+      expect(assigns(:sls)).to be_kind_of(Array)
+    end
+
+    it 'returns an array for text/occi' do
+      get 'index', format: :occi_header
+      expect(assigns(:sls)).to be_kind_of(Array)
+    end
+
+  end
+
 end

@@ -215,8 +215,16 @@ module Backends
       # @param links [::Occi::Core::Links] a collection of links to be added
       # @return [true, false] result of the operation
       def partial_update(compute_id, attributes = nil, mixins = nil, links = nil)
-        # TODO: impl
-        fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
+        if attributes.blank? && mixins.blank? && links.blank?
+          fail ::Errors::ArgumentTypeMismatchError, 'Nothing to update!'
+        end
+
+        compute = get(compute_id)
+        compute.attributes = attributes unless attributes.blank?
+        compute.mixins = mixins unless mixins.blank?
+        compute.links = links unless links.blank?
+
+        update(compute)
       end
 
       # Updates an existing compute instance, instance to be updated is specified
