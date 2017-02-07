@@ -36,9 +36,25 @@ module Backends
           resize_template << "CPU = #{speed}\n"
           resize_template << "MEMORY = #{memory}"
 
-          # TODO: resize disk
-          # TODO: update USER_TEMPLATE/MIXINS
+          # TODO: resize disk, if possible
           rc = virtual_machine.resize(resize_template, true)
+          check_retval(rc, Backends::Errors::ResourceActionError)
+
+          update_instance_size_mixins(virtual_machine, resource_tpl)
+        end
+
+        def update_instance_size_mixins(virtual_machine, resource_tpl)
+          old_mixins = virtual_machine['USER_TEMPLATE/OCCI_COMPUTE_MIXINS']
+          return if old_mixins.blank?
+
+          old_mixins = old_mixins.split(' ').reject do |mxn|
+            mxn = resource_tpl.model.get_by_id(mxn)
+            mxn.blank? || mxn.related_to?(Occi::Infrastructure::ResourceTpl.mixin.type_identifier)
+          end
+          old_mixins << resource_tpl.type_identifier
+
+          user_template = "OCCI_COMPUTE_MIXINS=\"#{old_mixins.join(' ')}\""
+          rc = virtual_machine.update(user_template, true)
           check_retval(rc, Backends::Errors::ResourceActionError)
         end
 
