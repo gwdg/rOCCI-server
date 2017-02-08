@@ -179,8 +179,9 @@ module Backends
       # @param links [::Occi::Core::Links] a collection of links to be added
       # @return [true, false] result of the operation
       def partial_update(compute_id, attributes = nil, mixins = nil, links = nil)
-        # TODO: impl
-        fail Backends::Errors::MethodNotImplementedError, 'Partial updates are currently not supported!'
+        resource_tpl = update_instance_resize_tpl(mixins)
+        update_instance_size(compute_id, resource_tpl)
+        true
       end
 
       # Updates an existing compute instance, instance to be updated is specified
@@ -195,22 +196,8 @@ module Backends
       # @param compute [::Occi::Infrastructure::Compute] instance containing updated information
       # @return [true, false] result of the operation
       def update(compute)
-        virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute.id), @client)
-        rc = virtual_machine.info
-        check_retval(rc, Backends::Errors::ResourceRetrievalError)
-
-        fail Backends::Errors::ResourceStateError, 'Given compute instance is not powered off!' unless virtual_machine.state_str == 'POWEROFF'
-
-        resize_template = ''
-        resize_template << "VCPU = #{compute.cores.to_i}" if compute.cores
-        resize_template << "CPU = #{compute.speed.to_f * (compute.cores || virtual_machine['TEMPLATE/VCPU']).to_i}" if compute.speed
-        resize_template << "MEMORY = #{(compute.memory.to_f * 1024).to_i}" if compute.memory
-
-        return false if resize_template.blank?
-
-        rc = virtual_machine.resize(resize_template, true)
-        check_retval(rc, Backends::Errors::ResourceActionError)
-
+        resource_tpl = update_instance_resize_tpl(compute.mixins)
+        update_instance_size(compute.id, resource_tpl)
         true
       end
 
@@ -637,6 +624,9 @@ module Backends
 
       # Load methods called from trigger_action*
       include Backends::Opennebula::Helpers::ComputeActionHelper
+
+      # Load methods called from update*
+      include Backends::Opennebula::Helpers::ComputeUpdateHelper
     end
   end
 end

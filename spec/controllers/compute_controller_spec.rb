@@ -160,9 +160,63 @@ X-OCCI-Attribute: occi.compute.hostname="compute1.example.org"|
 
   describe "POST 'partial_update'" do
 
-    it 'return http 501 not implemented' do
+    let(:fake_app) { Proc.new {} }
+    let(:body) {
+      %Q|Category: large;scheme="http://occi.example.org/occi/infrastructure/resource_tpl#";class="mixin"|
+    }
+    let(:body_invalid) { 'not OCCI' }
+
+    let(:setup_success) do
+      env = @request.env
+      env['rack.input'] = StringIO.new(body)
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    let(:setup_empty_fail) do
+      env = @request.env
+      env['rack.input'] = StringIO.new('')
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    let(:setup_invl_fail) do
+      env = @request.env
+      env['rack.input'] = StringIO.new(body_invalid)
+      env['CONTENT_TYPE'] = 'text/plain'
+      @request.env['rocci_server.request.parser'].call(env)
+    end
+
+    before(:each){
+      @request.env['rocci_server.request.parser'] ||= ::RequestParsers::OcciParser.new(fake_app)
+    }
+
+    it 'returns http bad request without body' do
+      setup_empty_fail
+
       post 'partial_update', format: :text, id: '87f3bfc3-42d4-4474-b45c-757e55e093e9'
-      expect(response.status).to eq 501
+      expect(response).to be_bad_request
+    end
+
+    it 'returns http bad request with invalid body' do
+      setup_invl_fail
+
+      post 'partial_update', format: :text, id: '87f3bfc3-42d4-4474-b45c-757e55e093e9'
+      expect(response).to be_bad_request
+    end
+
+    it 'returns http created on success' do
+      setup_success
+
+      post 'partial_update', format: :text, id: '87f3bfc3-42d4-4474-b45c-757e55e093e9'
+      expect(response).to be_success
+    end
+
+    it 'returns http not found on non-existing resource' do
+      setup_success
+
+      post 'partial_update', format: :text, id: 'not_there'
+      expect(response).to be_not_found
     end
 
   end
@@ -172,10 +226,10 @@ X-OCCI-Attribute: occi.compute.hostname="compute1.example.org"|
     let(:fake_app) { Proc.new {} }
     let(:body) {
       %Q|Category: compute;scheme="http://schemas.ogf.org/occi/infrastructure#";class="kind"
-X-OCCI-Attribute: occi.core.id="87f3bfc3-42d4-4474-b45c-757e55e093e9"
-X-OCCI-Attribute: occi.core.title="Compute1"
-X-OCCI-Attribute: occi.core.summary="Scientific Linux 6.2 Boron"
-X-OCCI-Attribute: occi.compute.hostname="compute1.example.org"|
+  X-OCCI-Attribute: occi.core.id="87f3bfc3-42d4-4474-b45c-757e55e093e9"
+  X-OCCI-Attribute: occi.core.title="Compute1"
+  X-OCCI-Attribute: occi.core.summary="Scientific Linux 6.2 Boron"
+  X-OCCI-Attribute: occi.compute.hostname="compute1.example.org"|
     }
     let(:body_invalid) { 'not OCCI' }
 
