@@ -42,6 +42,25 @@ module Backends
           true
         end
 
+        def trigger_action_save(compute_id, attributes = ::Occi::Core::Attributes.new)
+          backend_object = trigger_action_prolog(compute_id)
+
+          trigger_action_stop(compute_id, nil) unless backend_object.state_str == 'POWEROFF'
+          compute_wait_for(backend_object, 'POWEROFF')
+
+          rc = backend_object.save_as_template(
+            attributes['name'].blank? ? "saved-compute-#{compute_id}-#{Time.now.utc.to_i}" : attributes['name'],
+            true
+          )
+          check_retval(rc, Backends::Errors::ResourceActionError)
+
+          # TODO: should we start the instance again? this is too slow for synchronous communication
+          #backend_object = trigger_action_prolog(compute_id)
+          #compute_wait_for(backend_object, 'POWEROFF')
+          #trigger_action_start(compute_id, nil)
+          trigger_action_save_mixins(rc)
+        end
+
         def trigger_action_prolog(compute_id)
           virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(compute_id), @client)
           rc = virtual_machine.info
@@ -59,6 +78,13 @@ module Backends
           end
 
           true
+        end
+
+        def trigger_action_save_mixins(template_id)
+          cand = list_os_tpl.to_a.select { |mxn| mxn.term.end_with? "_#{template_id}" }
+          fail Backends::Errors::ResourceRetrievalError,
+               'Could not locate the newly created template!' if cand.count != 1
+          Occi::Core::Mixins.new << cand.first
         end
       end
     end

@@ -1,8 +1,12 @@
+require 'timeout'
+
 module Backends
   module Opennebula
     class Compute < Backends::Opennebula::Base
       COMPUTE_NINTF_REGEXP = /compute_(?<compute_id>\d+)_nic_(?<compute_nic_id>\d+)/
       COMPUTE_SLINK_REGEXP = /compute_(?<compute_id>\d+)_disk_(?<compute_disk_id>\d+)/
+      COMPUTE_UPDATE_SLEEP = 5
+      COMPUTE_UPDATE_WAIT = 120
 
       # Gets all compute instance IDs, no details, no duplicates. Returned
       # identifiers must correspond to those found in the occi.core.id
@@ -468,8 +472,15 @@ module Backends
       # @param mixins [::Occi::Core::Mixins] a filter containing mixins
       # @return [true, false] result of the operation
       def trigger_action_on_all(action_instance, mixins = nil)
-        list_ids(mixins).each { |cmpt| trigger_action(cmpt, action_instance) }
-        true
+        rvals = list_ids(mixins).collect do |cmpt|
+                  trigger_action(cmpt, action_instance)
+                end
+
+        mxns = Occi::Core::Mixins.new
+        rvals.keep_if { |rval| rval.kind_of? Occi::Core::Mixins }
+        rvals.each { |rval| mxns.merge! rval }
+
+        mxns.empty? ? true : mxns
       end
 
       # Triggers an action on an existing compute instance, the compute instance in question
@@ -490,18 +501,22 @@ module Backends
         case action_instance.action.type_identifier
         when 'http://schemas.ogf.org/occi/infrastructure/compute/action#stop'
           trigger_action_stop(compute_id, action_instance.attributes)
+          true
         when 'http://schemas.ogf.org/occi/infrastructure/compute/action#start'
           trigger_action_start(compute_id, action_instance.attributes)
+          true
         when 'http://schemas.ogf.org/occi/infrastructure/compute/action#restart'
           trigger_action_restart(compute_id, action_instance.attributes)
+          true
         when 'http://schemas.ogf.org/occi/infrastructure/compute/action#suspend'
           trigger_action_suspend(compute_id, action_instance.attributes)
+          true
+        when 'http://schemas.ogf.org/occi/infrastructure/compute/action#save'
+          trigger_action_save(compute_id, action_instance.attributes)
         else
           fail Backends::Errors::ActionNotImplementedError,
                "Action #{action_instance.action.type_identifier.inspect} is not implemented!"
         end
-
-        true
       end
 
       # Returns a collection of custom mixins introduced (and specific for)
@@ -511,6 +526,7 @@ module Backends
       def get_extensions
         coll = read_extensions 'compute', @options.model_extensions_dir
         coll.merge! availability_zones
+        coll.merge! custom_actions
         coll
       end
 
@@ -614,6 +630,41 @@ module Backends
         end
 
         zones
+      end
+
+      # Gets all custom actions defined by this backend.
+      #
+      # @example
+      #    actions = custom_actions #=> #<::Occi::Collection>
+      #
+      # @return [::Occi::Collection] a collection containing a collection of actions
+      def custom_actions
+        actions = Occi::Collection.new
+
+        save = Occi::Core::Action.new(
+          'http://schemas.ogf.org/occi/infrastructure/compute/action#',
+          'save', 'save compute instance'
+        )
+        save.attributes['method'] = {
+          mutable: true, pattern: 'hot|deffered', default: 'deffered'
+        }
+        save.attributes['name'] = {
+          mutable: true, pattern: '^[[:alnum:]]+$', default: ''
+        }
+
+        actions << save
+      end
+
+      def compute_wait_for(virtual_machine, state)
+        Timeout::timeout(COMPUTE_UPDATE_WAIT) {
+          while virtual_machine.state_str != state
+            rc = virtual_machine.info
+            check_retval(rc, Backends::Errors::ResourceRetrievalError)
+            sleep COMPUTE_UPDATE_SLEEP
+          end
+        }
+      rescue Timeout::Error => _ex
+        fail Backends::Errors::ResourceActionError, 'Timed out while waiting for state change!'
       end
 
       # Load methods called from list/get
