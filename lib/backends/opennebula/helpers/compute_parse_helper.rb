@@ -127,7 +127,10 @@ module Backends
             result.actions = []
           when 'STOPPED', 'SUSPENDED', 'POWEROFF', 'UNDEPLOYED'
             result.state = 'suspended'
-            result.actions = %w|http://schemas.ogf.org/occi/infrastructure/compute/action#start|
+            result.actions = %w(
+              http://schemas.ogf.org/occi/infrastructure/compute/action#start
+              http://schemas.ogf.org/occi/infrastructure/compute/action#save
+            )
           when 'PENDING', 'HOLD', 'CLONING'
             result.state = 'waiting'
             result.actions = []
@@ -147,6 +150,7 @@ module Backends
               http://schemas.ogf.org/occi/infrastructure/compute/action#stop
               http://schemas.ogf.org/occi/infrastructure/compute/action#restart
               http://schemas.ogf.org/occi/infrastructure/compute/action#suspend
+              http://schemas.ogf.org/occi/infrastructure/compute/action#save
             )
           when 'PROLOG', 'BOOT', 'MIGRATE', 'EPILOG'
             result.state = 'waiting'

@@ -1,12 +1,8 @@
-require 'timeout'
-
 module Backends
   module Opennebula
     module Helpers
       module ComputeUpdateHelper
         COMPUTE_UPDATE_STATES = %w(POWEROFF UNDEPLOYED PENDING STOPPED).freeze
-        COMPUTE_UPDATE_SLEEP = 5
-        COMPUTE_UPDATE_WAIT = 120
 
         def update_instance_size(instance_id, resource_tpl)
           virtual_machine = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml(instance_id), @client)
@@ -23,7 +19,7 @@ module Backends
 
           rc = virtual_machine.poweroff(true)
           check_retval(rc, Backends::Errors::ResourceActionError)
-          update_instance_wait_for(virtual_machine, 'POWEROFF')
+          compute_wait_for(virtual_machine, 'POWEROFF')
         end
 
         def update_instance_size_apply(virtual_machine, resource_tpl)
@@ -77,18 +73,6 @@ module Backends
                'Cannot find the specified resource tpl in the model!' unless orig_tpl
 
           orig_tpl
-        end
-
-        def update_instance_wait_for(virtual_machine, state)
-          Timeout::timeout(COMPUTE_UPDATE_WAIT) {
-            while virtual_machine.state_str != state
-              rc = virtual_machine.info
-              check_retval(rc, Backends::Errors::ResourceRetrievalError)
-              sleep 5
-            end
-          }
-        rescue Timeout::Error => ex
-          fail Backends::Errors::ResourceActionError, 'Timed out while waiting for state change!'
         end
       end
     end

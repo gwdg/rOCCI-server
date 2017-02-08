@@ -50,8 +50,9 @@ class ComputeController < ApplicationController
              else
                backend_instance.compute_trigger_action_on_all(ai)
              end
-
-    result ? respond_with(Occi::Collection.new) : respond_with(Occi::Collection.new, status: 304)
+    coll = Occi::Collection.new
+    coll.mixins = result if result.kind_of? Occi::Core::Mixins
+    result ? respond_with(coll) : respond_with(coll, status: 304)
   end
 
   # POST /compute/:id
