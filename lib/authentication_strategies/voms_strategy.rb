@@ -32,6 +32,9 @@ module AuthenticationStrategies
       # Get user's DN
       proxy_cert_subject = (GRST_CRED_REGEXP.match(auth_request.env['GRST_CRED_0']) || [])[5]
       if proxy_cert_subject.blank?
+        Rails.logger.warn "[AuthN] [#{self.class}] No GRST_CRED match for " \
+                          "#{auth_request.env['SSL_CLIENT_S_DN'].inspect} in " \
+                          "#{auth_request.env['GRST_CRED_0'].inspect}"
         fail! 'Could not extract user\'s DN from credentials!'
         return
       end
@@ -39,6 +42,8 @@ module AuthenticationStrategies
       # Get VOMS extension attributes
       voms_cert_attrs = self.class.voms_extension_attrs(auth_request)
       if voms_cert_attrs.empty?
+        Rails.logger.warn "[AuthN] [#{self.class}] No VOMS attributes for " \
+                          "#{auth_request.env['SSL_CLIENT_S_DN'].inspect}"
         fail! 'Could not extract VOMS attributes from user\'s credentials!'
         return
       end
@@ -55,6 +60,8 @@ module AuthenticationStrategies
       user.identity = if self.class.handle_robots? && (matched_robot = auth_request.env['SSL_CLIENT_S_DN'].match(ROBOT_SUBPROXY_REGEXP))
                         etoken = self.class.extract_robot_etoken(matched_robot, auth_request)
                         if etoken.blank?
+                          Rails.logger.warn "[AuthN] [#{self.class}] No PUSP token extracted from " \
+                                            "#{auth_request.env['SSL_CLIENT_S_DN'].inspect}"
                           fail! 'Couldn\'t extract the first proxy DN of a robot certificate!'
                           return
                         end
@@ -94,6 +101,8 @@ module AuthenticationStrategies
             break
           end
         end
+        Rails.logger.warn "[AuthN] [#{self}] No VOMS attributes in GRST_CRED_* for " \
+                          "#{auth_request.env['SSL_CLIENT_S_DN'].inspect}" unless voms_ext
 
         voms_ext
       end

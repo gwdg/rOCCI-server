@@ -96,10 +96,12 @@ module Backends
         return if @client
 
         username = @cloud_auth_client.auth(@delegated_user.auth_.credentials)
-        fail Backends::Errors::AuthenticationError, 'User could not be authenticated!' if username.blank?
+        fail Backends::Errors::AuthenticationError,
+             "User #{@delegated_user.identity.inspect} could not be authenticated!" if username.blank?
 
         @client = @cloud_auth_client.client(username)
-        fail Backends::Errors::AuthenticationError, 'Could not get a client for the current user!' unless @client
+        fail Backends::Errors::AuthenticationError,
+             "Could not get a client for user #{@delegated_user.identity.inspect}!" unless @client
       end
 
       def check_retval(rc, e_klass)
