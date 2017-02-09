@@ -1,3 +1,6 @@
+require 'timeout'
+require 'securerandom'
+
 module Backends
   module Opennebula
     class Base

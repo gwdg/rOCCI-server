@@ -32,8 +32,8 @@ gem 'web-console', '~> 2.0', :group => :development
 gem 'whenever', :require => false
 
 # Use passenger for deployment (standalone or in Apache2)
-gem 'passenger', '~> 5.0.22'
-gem 'rake', '~> 10.3.2'
+gem 'passenger', '>= 5.0.22'
+gem 'rake', '>= 10.3.2'
 
 # Use simplecov for coverage reports
 gem 'simplecov', :group => [:development, :test]
@@ -83,7 +83,7 @@ gem 'kgio', :group => :stuff_breaking_travis_ci
 gem 'warden', '~> 1.2.4'
 
 # Sensible logging with LogStash support
-gem 'logstasher', '~> 0.6.2'
+gem 'logstasher', '>= 0.6.2', '< 0.7'
 
 # Use Hashie::Mash to simplify hash-related stuff
 gem 'hashie'

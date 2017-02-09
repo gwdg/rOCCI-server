@@ -1,6 +1,6 @@
 OCCI_STORAGE_MIXINS = "<%= @storage.mixins.to_a.collect { |m| m.type_identifier }.join(' ') %>"
 
-NAME = "<%= @storage.title %>"
+NAME = "<%= @storage.title.blank? ? SecureRandom.uuid : @storage.title %>"
 DESCRIPTION = "<%= @storage.summary || "STORAGE created using rOCCI-server on #{::DateTime.now.readable_inspect}." %>"
 
 TYPE = "DATABLOCK"
