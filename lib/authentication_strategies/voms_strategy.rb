@@ -3,7 +3,7 @@ module AuthenticationStrategies
     VOMS_RANGE = (0..100)
     GRST_CRED_REGEXP = /^(.+)\s(\d+)\s(\d+)\s(\d)\s(.+)$/
     GRST_VOMS_REGEXP = /^\/(.+)\/Role=(.+)\/Capability=(.+)$/
-    ROBOT_SUBPROXY_REGEXP = /^(?<issuer_base>\/.+)\/CN=Robot(:|\/|\s\-\s)(?<robot_name>[^\/]+)\/CN=eToken:(?<subuser_name>[^\/]+)(\/CN=\d+)+$/
+    ROBOT_SUBPROXY_REGEXP = /^(?<issuer_base>\/.+)\/CN=Robot(:|\/|\s\-\s)(?<robot_name>[^\/]+)\/CN=user:(?<subuser_name>[^\/]+)(\/CN=\d+)+$/
 
     def auth_request
       @auth_request ||= ::ActionDispatch::Request.new(env)
@@ -58,6 +58,8 @@ module AuthenticationStrategies
       # Use sub-proxy DN as user identity if we are handling robots
       # and the DN in question matches our restrictions
       user.identity = if self.class.handle_robots? && (matched_robot = auth_request.env['SSL_CLIENT_S_DN'].match(ROBOT_SUBPROXY_REGEXP))
+                        Rails.logger.warn "[AuthN] [#{self.class}] Found a matching robot certificate without valid GRST_ROBOT_DN for " \
+                                          "#{auth_request.env['SSL_CLIENT_S_DN'].inspect}" if auth_request.env['GRST_ROBOT_DN'].blank?
                         etoken = self.class.extract_robot_etoken(matched_robot, auth_request)
                         if etoken.blank?
                           Rails.logger.warn "[AuthN] [#{self.class}] No PUSP token extracted from " \
