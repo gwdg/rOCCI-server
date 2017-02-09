@@ -1,5 +1,3 @@
-require 'timeout'
-
 module Backends
   module Opennebula
     class Compute < Backends::Opennebula::Base
@@ -98,8 +96,6 @@ module Backends
       # @param compute [::Occi::Infrastructure::Compute] compute instance containing necessary attributes
       # @return [String] final identifier of the new compute instance
       def create(compute)
-        compute_id = compute.id
-
         os_tpl_mixins = compute.mixins.get_related_to(::Occi::Infrastructure::OsTpl.mixin.type_identifier)
         fail Backends::Errors::ResourceNotValidError,
              'Given instance does not contain an os_tpl ' \

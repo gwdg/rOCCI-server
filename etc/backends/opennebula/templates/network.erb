@@ -1,6 +1,6 @@
 OCCI_NETWORK_MIXINS = "<%= @network.mixins.to_a.collect { |m| m.type_identifier }.join(' ') %>"
 
-NAME = "<%= @network.title %>"
+NAME = "<%= @network.title.blank? ? SecureRandom.uuid : @network.title %>"
 DESCRIPTION = "<%= @network.summary || "VNET created using rOCCI-server on #{::DateTime.now.readable_inspect}." %>"
 
 <% if @network.vlan %>

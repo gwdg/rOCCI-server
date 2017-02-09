@@ -68,7 +68,8 @@ module Backends
 
         def create_set_attrs(compute, template)
           template.delete_element('TEMPLATE/NAME')
-          template.add_element('TEMPLATE',  'NAME' => compute.title)
+          cmpt_title = compute.title.blank? ? SecureRandom.uuid : compute.title
+          template.add_element('TEMPLATE',  'NAME' => cmpt_title)
 
           if compute.cores
             # set number of cores
@@ -203,7 +204,7 @@ module Backends
 
           # add user identity info
           template.add_element('TEMPLATE',  'USER_IDENTITY' => @delegated_user.identity)
-          if DN_BASED_AUTHS.include?(@delegated_user.auth_.type)
+          if Backends::Opennebula::Compute::DN_BASED_AUTHS.include?(@delegated_user.auth_.type)
             template.add_element('TEMPLATE',  'USER_X509_DN' => @delegated_user.identity)
           end
         end
