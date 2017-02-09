@@ -4,8 +4,13 @@ NAME = "<%= @storage.title %>"
 DESCRIPTION = "<%= @storage.summary || "STORAGE created using rOCCI-server on #{::DateTime.now.readable_inspect}." %>"
 
 TYPE = "DATABLOCK"
-SIZE = "<%= @storage.size ? (@storage.size.to_f * 1024).to_i : 10240 %>"
+SIZE = "<%= @storage.size ? (@storage.size.to_f * 1024).to_i : 1024 %>"
 
 PERSISTENT = "YES"
 DRIVER = "raw"
 FSTYPE = "raw"
+
+USER_IDENTITY = "<%= @identity[:delegated_user].identity %>"
+<% if @identity[:dn_auth] %>
+USER_X509_DN  = "<%= @identity[:delegated_user].identity %>"
+<% end %>

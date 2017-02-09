@@ -98,8 +98,12 @@ module Backends
         network.mixins << 'http://schemas.ogf.org/occi/infrastructure/network#ipnetwork'
         network.attributes = attr_backup
 
+        identity = {}
+        identity[:delegated_user] = @delegated_user
+        identity[:dn_auth] = DN_BASED_AUTHS.include?(@delegated_user.auth_.type)
+
         template_location = File.join(@options.templates_dir, 'network.erb')
-        template = Erubis::Eruby.new(File.read(template_location)).evaluate(network: network)
+        template = Erubis::Eruby.new(File.read(template_location)).evaluate(network: network, identity: identity)
 
         @logger.debug "[Backends] [Opennebula] Template #{template.inspect}"
 

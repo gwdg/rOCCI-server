@@ -4,6 +4,7 @@ module Backends
       API_VERSION = '2.0.0'.freeze
       TPL_TERM_PREFIX = 'uuid'.freeze
       AVAIL_ZONE_MIXIN = 'http://fedcloud.egi.eu/occi/infrastructure#availability_zone'.freeze
+      DN_BASED_AUTHS = %w(x509 voms).freeze
 
       # load helpers for JSON -> Collection conversion
       include Backends::Helpers::JsonCollectionHelper
