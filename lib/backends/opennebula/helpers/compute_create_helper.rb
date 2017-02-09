@@ -5,7 +5,6 @@ module Backends
         COMPUTE_SSH_REGEXP = /^(command=.+\s)?((?:ssh\-|ecds)[\w-]+\s.+)$/
         COMPUTE_BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
         COMPUTE_USER_DATA_SIZE_LIMIT = 16384
-        COMPUTE_DN_BASED_AUTHS = %w(x509 voms).freeze
 
         def create_with_os_tpl(compute)
           @logger.debug "[Backends] [Opennebula] Deploying #{compute.inspect}"
@@ -204,7 +203,7 @@ module Backends
 
           # add user identity info
           template.add_element('TEMPLATE',  'USER_IDENTITY' => @delegated_user.identity)
-          if COMPUTE_DN_BASED_AUTHS.include?(@delegated_user.auth_.type)
+          if DN_BASED_AUTHS.include?(@delegated_user.auth_.type)
             template.add_element('TEMPLATE',  'USER_X509_DN' => @delegated_user.identity)
           end
         end

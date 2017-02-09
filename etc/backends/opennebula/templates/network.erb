@@ -14,7 +14,10 @@ VLAN    = "no"
 BRIDGE  = "onebr0"
 <% end %>
 
-
+USER_IDENTITY = "<%= @identity[:delegated_user].identity %>"
+<% if @identity[:dn_auth] %>
+USER_X509_DN  = "<%= @identity[:delegated_user].identity %>"
+<% end %>
 
 <% if @network.address %>
   <% network_range = IPAddr.new(@network.address).to_range %>
