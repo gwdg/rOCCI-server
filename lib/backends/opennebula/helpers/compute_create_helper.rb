@@ -5,6 +5,7 @@ module Backends
         COMPUTE_SSH_REGEXP = /^(command=.+\s)?((?:ssh\-|ecds)[\w-]+\s.+)$/
         COMPUTE_BASE64_REGEXP = /^[A-Za-z0-9+\/]+={0,2}$/
         COMPUTE_USER_DATA_SIZE_LIMIT = 16384
+        COMPUTE_DEFAULT_RES_TPL = 'http://fedcloud.egi.eu/occi/compute/flavour/1.0#small'.freeze
 
         def create_with_os_tpl(compute)
           @logger.debug "[Backends] [Opennebula] Deploying #{compute.inspect}"
@@ -29,14 +30,8 @@ module Backends
           create_add_custom_template_vars(compute, template)
 
           # remove template-specific values
-          template.delete_element('ID')
-          template.delete_element('UID')
-          template.delete_element('GID')
-          template.delete_element('UNAME')
-          template.delete_element('GNAME')
-          template.delete_element('REGTIME')
-          template.delete_element('PERMISSIONS')
-          template.delete_element('TEMPLATE/TEMPLATE_ID')
+          elms = %w(ID UID GID UNAME GNAME REGTIME PERMISSIONS TEMPLATE/TEMPLATE_ID)
+          create_clean_tpl(template, elms)
 
           # convert template structure to a pure String
           template = template.template_str
@@ -45,7 +40,7 @@ module Backends
           create_add_inline_links(compute, template)
 
           # add GPU devices
-          create_add_gpu_devs(compute, template)
+          create_add_gpu_devs(create_get_size(compute), template)
 
           @logger.debug "[Backends] [Opennebula] Template #{template.inspect}"
           vm_alloc = ::OpenNebula::VirtualMachine.build_xml
@@ -66,39 +61,46 @@ module Backends
 
         private
 
+        def create_clean_tpl(template, elms)
+          elms.each { |elm| template.delete_element(elm) }
+        end
+
+        def create_get_size(compute)
+          resource_tpl = compute.mixins.get_related_to(::Occi::Infrastructure::ResourceTpl.mixin.type_identifier).first
+          resource_tpl ? resource_tpl : compute.model.get_by_id(COMPUTE_DEFAULT_RES_TPL)
+        end
+
         def create_set_attrs(compute, template)
           template.delete_element('TEMPLATE/NAME')
           cmpt_title = compute.title.blank? ? SecureRandom.uuid : compute.title
           template.add_element('TEMPLATE',  'NAME' => cmpt_title)
 
-          if compute.cores
-            # set number of cores
-            template.delete_element('TEMPLATE/VCPU')
-            template.add_element('TEMPLATE',  'VCPU' => compute.cores.to_i)
+          create_set_size(create_get_size(compute), template)
+        end
 
-            # set default reservation ratio
-            cpu_resrv = compute.speed ? (compute.speed.to_f * compute.cores.to_i) : compute.cores.to_i
-            template.delete_element('TEMPLATE/CPU')
-            template.add_element('TEMPLATE',  'CPU' => cpu_resrv)
-          end
+        def create_set_size(resource_tpl, template)
+          cores = resource_tpl.attributes['occi.compute.cores'].default.to_i
+          speed = resource_tpl.attributes['occi.compute.speed'].default.to_f
+          memory = resource_tpl.attributes['occi.compute.memory'].default.to_f
+          eph_storage = resource_tpl.attributes['occi.compute.ephemeral_storage.size'].default.to_i
 
-          if compute.memory
-            memory = compute.memory.to_f * 1024
-            template.delete_element('TEMPLATE/MEMORY')
-            template.add_element('TEMPLATE',  'MEMORY' => memory.to_i)
-          end
+          # set number of cores
+          template.delete_element('TEMPLATE/VCPU')
+          template.add_element('TEMPLATE',  'VCPU' => cores)
 
-          if compute.architecture
-            template.delete_element('TEMPLATE/ARCHITECTURE')
-            template.add_element('TEMPLATE',  'ARCHITECTURE' => compute.architecture)
-          end
+          # set default reservation ratio
+          template.delete_element('TEMPLATE/CPU')
+          cpu_resrv = speed ? (speed * cores) : cores
+          template.add_element('TEMPLATE',  'CPU' => cpu_resrv)
 
-          if compute.attributes.occi.compute.ephemeral_storage
-            resize_disk = compute.attributes['occi.compute.ephemeral_storage.size'].to_i * 1024
-            if resize_disk > 0
-              template.delete_element('TEMPLATE/DISK[1]/SIZE')
-              template.add_element('TEMPLATE/DISK[1]',  'SIZE' => resize_disk)
-            end
+          # set memory in MB (conversion from GB)
+          template.delete_element('TEMPLATE/MEMORY')
+          template.add_element('TEMPLATE',  'MEMORY' => (memory * 1024).to_i)
+
+          # resize OS disk in MB (conversion from GB)
+          if eph_storage > 0
+            template.delete_element('TEMPLATE/DISK[1]/SIZE')
+            template.add_element('TEMPLATE/DISK[1]',  'SIZE' => (eph_storage * 1024))
           end
         end
 
@@ -200,6 +202,8 @@ module Backends
         def create_add_custom_template_vars(compute, template)
           # add mixins
           mixins = compute.mixins.to_a.map { |m| m.type_identifier }
+          mixins << create_get_size(compute).type_identifier
+          mixins.uniq!
           template.add_element('TEMPLATE',  'OCCI_COMPUTE_MIXINS' => mixins.join(' '))
 
           # add user identity info
@@ -209,27 +213,29 @@ module Backends
           end
         end
 
-        def create_add_gpu_devs(compute, template)
+        def create_add_gpu_devs(resource_tpl, template)
           # TODO: this needs to be improved in future versions
           # Expected attributes:
           #   - eu.egi.fedcloud.compute.gpu.count  (Integer)
           #   - eu.egi.fedcloud.compute.gpu.vendor (String)
           #   - eu.egi.fedcloud.compute.gpu.class  (String)
           #   - eu.egi.fedcloud.compute.gpu.device (String)
-          return unless compute.attributes.eu!.egi!.fedcloud!.compute!.gpu
+          return unless resource_tpl.attributes.eu!.egi!.fedcloud!.compute!.gpu
+
+          vendor = resource_tpl.attributes['eu.egi.fedcloud.compute.gpu.vendor'].default
+          klass = resource_tpl.attributes['eu.egi.fedcloud.compute.gpu.class'].default
+          device = resource_tpl.attributes['eu.egi.fedcloud.compute.gpu.device'].default
+          count = resource_tpl.attributes['eu.egi.fedcloud.compute.gpu.count'].default.to_i
 
           pci_tpl = []
-          pci_tpl << "VENDOR=\"#{compute.attributes['eu.egi.fedcloud.compute.gpu.vendor']}\"" \
-                       unless compute.attributes['eu.egi.fedcloud.compute.gpu.vendor'].blank?
-          pci_tpl << "CLASS=\"#{compute.attributes['eu.egi.fedcloud.compute.gpu.class']}\"" \
-                       unless compute.attributes['eu.egi.fedcloud.compute.gpu.class'].blank?
-          pci_tpl << "DEVICE=\"#{compute.attributes['eu.egi.fedcloud.compute.gpu.device']}\"" \
-                       unless compute.attributes['eu.egi.fedcloud.compute.gpu.device'].blank?
+          pci_tpl << "VENDOR=\"#{vendor}\"" unless vendor.blank?
+          pci_tpl << "CLASS=\"#{klass}\"" unless klass.blank?
+          pci_tpl << "DEVICE=\"#{device}\"" unless device.blank?
           return if pci_tpl.empty?
 
           @logger.debug "[Backends] [Opennebula] Adding GPU(s) #{pci_tpl.inspect}"
           template << "\n"
-          compute.attributes['eu.egi.fedcloud.compute.gpu.count'].times { template << "PCI = [ #{pci_tpl.join(',')} ]\n" }
+          count.times { template << "PCI = [ #{pci_tpl.join(',')} ]\n" }
         end
       end
     end
