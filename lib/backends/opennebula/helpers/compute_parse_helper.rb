@@ -53,6 +53,10 @@ module Backends
           context_attrs = parse_context_attrs(backend_compute)
           compute.attributes.merge! context_attrs
 
+          # include GPU attributes
+          gpu_attrs = parse_gpu_dev_attrs(backend_compute)
+          compute.attributes.merge! gpu_attrs
+
           # include state information and available actions
           result = parse_state(backend_compute)
           compute.state = result.state
@@ -89,6 +93,24 @@ module Backends
           compute_attrs['occi.compute.architecture'] = (backend_compute['TEMPLATE/OS/ARCH'] == 'i686') ? 'x86' : 'x64'
 
           compute_attrs
+        end
+
+        def parse_gpu_dev_attrs(backend_compute)
+          gpu_attrs = ::Occi::Core::Attributes.new
+
+          count = 0
+          backend_compute.each('TEMPLATE/PCI') do |pci_dev|
+            next if pci_dev['CLASS'] != '0302' # not GPU
+            count += 1
+            next if count > 1 # set details based on the first device only
+
+            gpu_attrs['eu.egi.fedcloud.compute.gpu.class'] = pci_dev['CLASS']
+            gpu_attrs['eu.egi.fedcloud.compute.gpu.vendor'] = pci_dev['VENDOR']
+            gpu_attrs['eu.egi.fedcloud.compute.gpu.device'] = pci_dev['DEVICE']
+          end
+          gpu_attrs['eu.egi.fedcloud.compute.gpu.count'] = count if count > 0
+
+          gpu_attrs
         end
 
         def parse_context_attrs(backend_compute)
