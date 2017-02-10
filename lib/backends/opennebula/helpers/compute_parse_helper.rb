@@ -37,13 +37,13 @@ module Backends
           if backend_compute['TEMPLATE/CONTEXT']
             pubkey = backend_compute['TEMPLATE/CONTEXT/SSH_PUBLIC_KEY'] || backend_compute['TEMPLATE/CONTEXT/SSH_KEY']
             CONTEXTUALIZATION_MIXINS_KEY.each { |mxn| compute.mixins << mxn } unless pubkey.blank?
-
             CONTEXTUALIZATION_MIXINS_UD.each { |mxn| compute.mixins << mxn } unless backend_compute['TEMPLATE/CONTEXT/USER_DATA'].blank?
           end
 
-          # include availability zone mixin
+          # include availability zone mixin and region
           zone = parse_avail_zone(backend_compute)
-          compute.mixins << "#{@options.backend_scheme}/occi/infrastructure/availability_zone##{zone}" unless zone.blank?
+          compute.mixins << availability_zones.mixins.select { |zn| zn.term == zone }.first unless zone.blank?
+          compute.mixins << regions.mixins.first
 
           # include basic OCCI attributes
           basic_attrs = parse_basic_attrs(backend_compute)

@@ -13,11 +13,12 @@ module Backends
             end
           end
 
-          # include availability zone mixins
+          # include availability zone mixins and region
           zones = parse_avail_zones(backend_storage)
           zones.each do |zone|
-            storage.mixins << "#{@options.backend_scheme}/occi/infrastructure/availability_zone##{zone}"
+            storage.mixins << availability_zones.mixins.select { |zn| zn.term == zone }.first
           end
+          storage.mixins << regions.mixins.first
 
           # include basic OCCI attributes
           basic_attrs = parse_basic_attrs(backend_storage)

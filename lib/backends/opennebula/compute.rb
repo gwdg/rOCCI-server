@@ -521,7 +521,8 @@ module Backends
       # @return [::Occi::Collection] collection of extensions (custom mixins and/or actions)
       def get_extensions
         coll = read_extensions 'compute', @options.model_extensions_dir
-        coll.merge! availability_zones
+        coll.merge! availability_zones # adding only for compute
+        coll.merge! regions            # adding only for compute
         coll.merge! custom_actions
         coll
       end
@@ -596,37 +597,6 @@ module Backends
       end
 
       private
-
-      # Gets all available zones, these represent clusters in ONe terminology.
-      #
-      # @example
-      #    zones = availability_zones #=> #<::Occi::Collection>
-      #
-      # @return [::Occi::Collection] a collection containing a collection of mixins
-      def availability_zones
-        zones = Occi::Collection.new
-
-        cluster_pool = ::OpenNebula::ClusterPool.new(@client)
-        rc = cluster_pool.info
-        check_retval(rc, Backends::Errors::ResourceRetrievalError)
-
-        cluster_pool.each do |cluster|
-          depends = [AVAIL_ZONE_MIXIN]
-          term = tpl_to_term(cluster)
-          scheme = "#{@options.backend_scheme}/occi/infrastructure/availability_zone#"
-          title = cluster['NAME']
-          location = "/mixin/availability_zone/#{term}/"
-          applies = %w(
-            http://schemas.ogf.org/occi/infrastructure#compute
-            http://schemas.ogf.org/occi/infrastructure#network
-            http://schemas.ogf.org/occi/infrastructure#storage
-          )
-
-          zones << ::Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
-        end
-
-        zones
-      end
 
       # Gets all custom actions defined by this backend.
       #
