@@ -1,0 +1,16 @@
+{
+  "mixins":[
+    {
+      "applies":[
+        "http://schemas.ogf.org/occi/infrastructure#compute",
+        "http://schemas.ogf.org/occi/infrastructure#storage",
+        "http://schemas.ogf.org/occi/infrastructure#network"
+      ],
+      "term":"region",
+      "scheme":"http://fedcloud.egi.eu/occi/infrastructure#",
+      "title":"Region within the target infrastructure",
+      "location":"/mixin/region/",
+      "attributes":{}
+    }
+  ]
+}

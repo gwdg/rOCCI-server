@@ -7,6 +7,7 @@ module Backends
       API_VERSION = '2.0.0'.freeze
       TPL_TERM_PREFIX = 'uuid'.freeze
       AVAIL_ZONE_MIXIN = 'http://fedcloud.egi.eu/occi/infrastructure#availability_zone'.freeze
+      REGION_MIXIN = 'http://fedcloud.egi.eu/occi/infrastructure#region'.freeze
       DN_BASED_AUTHS = %w(x509 voms).freeze
 
       # load helpers for JSON -> Collection conversion
@@ -68,6 +69,70 @@ module Backends
         return [] if resource.blank?
         mxns = resource.mixins.to_a.select { |mxn| mxn.related_to? AVAIL_ZONE_MIXIN }
         mxns.collect { |mxn| term_to_id mxn.term }
+      end
+
+      # Gets all available zones, these represent clusters in ONe terminology.
+      #
+      # @example
+      #    zones = availability_zones #=> #<::Occi::Collection>
+      #
+      # @return [::Occi::Collection] a collection containing a collection of mixins
+      def availability_zones
+        return @_zones if defined?(@_zones) && @_zones
+        @_zones = Occi::Collection.new
+
+        cluster_pool = ::OpenNebula::ClusterPool.new(@client)
+        rc = cluster_pool.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        cluster_pool.each do |cluster|
+          depends = [AVAIL_ZONE_MIXIN]
+          term = tpl_to_term(cluster)
+          scheme = "#{@options.backend_scheme}/occi/infrastructure/availability_zone#"
+          title = cluster['NAME']
+          location = "/mixin/availability_zone/#{term}/"
+          applies = %w(
+            http://schemas.ogf.org/occi/infrastructure#compute
+            http://schemas.ogf.org/occi/infrastructure#network
+            http://schemas.ogf.org/occi/infrastructure#storage
+          )
+
+          @_zones << ::Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
+        end
+
+        @_zones
+      end
+
+      # Gets all regions, these represent zones in ONe terminology.
+      #
+      # @example
+      #    regions = regions #=> #<::Occi::Collection>
+      #
+      # @return [::Occi::Collection] a collection containing a collection of mixins
+      def regions
+        return @_regions if defined?(@_regions) && @_regions
+        @_regions = Occi::Collection.new
+
+        zone_pool = ::OpenNebula::ZonePool.new(@client)
+        rc = zone_pool.info
+        check_retval(rc, Backends::Errors::ResourceRetrievalError)
+
+        zone_pool.each do |zone|
+          depends = [REGION_MIXIN]
+          term = tpl_to_term(zone)
+          scheme = "#{@options.backend_scheme}/occi/infrastructure/region#"
+          title = zone['NAME']
+          location = "/mixin/region/#{term}/"
+          applies = %w(
+            http://schemas.ogf.org/occi/infrastructure#compute
+            http://schemas.ogf.org/occi/infrastructure#network
+            http://schemas.ogf.org/occi/infrastructure#storage
+          )
+
+          @_regions << ::Occi::Core::Mixin.new(scheme, term, title, nil, depends, nil, location, applies)
+        end
+
+        @_regions
       end
 
       private
