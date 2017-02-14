@@ -8,23 +8,17 @@
 # @param hook_config [Hashie::Mash] configuration of the hook specified in `hook_class`
 def check_hook_deps(hook_class, hook_config = Hashie::Mash.new)
   Rails.logger.info "[Hooks] Checking deps for #{hook_class.to_s}"
-  loaded_backend = ROCCI_SERVER_CONFIG.common.backend
+  loaded_backends = ROCCI_SERVER_CONFIG.common.backend.values.uniq
   required_backend = hook_config.required_backend
+  return if required_backend.blank?
 
-  if required_backend
-    Rails.logger.debug "[Hooks] Validating deps=#{required_backend.inspect} for #{hook_class.to_s}"
+  Rails.logger.debug "[Hooks] Validating deps=#{required_backend.inspect} for #{hook_class.to_s}"
+  required_backend = required_backend.kind_of?(Array) ? required_backend : [required_backend]
 
-    if required_backend.kind_of?(Array)
-      found = required_backend.include?(loaded_backend)
-    else
-      found = (required_backend == loaded_backend)
-    end
-
-    unless found
-      message = "#{hook_class.to_s} requires #{required_backend.inspect} as a backend but #{loaded_backend.inspect} is loaded!"
-      Rails.logger.error "[Hooks] #{message}"
-      fail Errors::HookDepsError, message
-    end
+  if (required_backend & loaded_backends).empty?
+    message = "#{hook_class.to_s} requires one of #{required_backend.inspect} as a backend but #{loaded_backends.inspect} are loaded!"
+    Rails.logger.error "[Hooks] #{message}"
+    fail Errors::HookDepsError, message
   end
 end
 private :check_hook_deps
