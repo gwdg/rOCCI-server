@@ -120,4 +120,7 @@
     SetEnv ROCCI_SERVER_EC2_NETWORK_DESTROY_ALLOWED    no
     SetEnv ROCCI_SERVER_EC2_NETWORK_DESTROY_VPN_GWS    no
     SetEnv ROCCI_SERVER_EC2_VO_AWS_MAPFILE             ""
+
+    ## NOW backend
+    SetEnv ROCCI_SERVER_NOW_ENDPOINT                   http://localhost:11080
 </VirtualHost>

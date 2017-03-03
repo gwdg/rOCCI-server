@@ -34,6 +34,7 @@ class ApplicationController < ActionController::Base
   rescue_from ::Backends::Errors::AuthenticationError, with: :handle_auth_err
   rescue_from ::Backends::Errors::UserNotAuthorizedError, with: :handle_authz_err
   rescue_from ::Backends::Errors::ActionNotImplementedError, with: :handle_not_impl_err
+  rescue_from ::Backends::Errors::GenericRESTError, with: :handle_generic_rest_err
 
   include Mixins::ErrorHandling
 
