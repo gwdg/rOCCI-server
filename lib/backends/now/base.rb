@@ -2,7 +2,7 @@ module Backends
   module Now
     # Base class for all backends
     class Base
-      API_VERSION = '1.0.0'.freeze
+      API_VERSION = '2.0.0'.freeze
 
       # load helpers for JSON -> Collection conversion
       include Backends::Helpers::JsonCollectionHelper
