@@ -1,7 +1,0 @@
-ServerTokens Full
-ServerSignature Off
-TraceEnable Off
-
-<IfModule security2_module>
-  SecServerSignature " Apache rOCCI-server OCCI/1.1"
-</IfModule>

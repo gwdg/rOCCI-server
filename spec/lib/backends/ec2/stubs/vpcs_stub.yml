@@ -1,8 +1,0 @@
----
-:vpcs:
-- :vpc_id: vpc-7d884a18
-  :state: available
-  :cidr_block: 172.30.0.0/16
-  :dhcp_options_id: dopt-2ca6bb4e
-  :instance_tenancy: default
-  :is_default: false

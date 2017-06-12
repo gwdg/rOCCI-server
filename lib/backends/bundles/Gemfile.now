@@ -1,3 +1,0 @@
-# Deps for the Now backend
-gem 'httparty'
-gem 'json'
