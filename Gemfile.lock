@@ -41,7 +41,6 @@ GEM
     addressable (2.5.1)
       public_suffix (~> 2.0, >= 2.0.2)
     arel (8.0.0)
-    bson (4.2.1)
     builder (3.2.3)
     byebug (9.0.6)
     concurrent-ruby (1.0.5)
@@ -72,12 +71,10 @@ GEM
     mime-types-data (3.2016.0521)
     mini_portile2 (2.2.0)
     minitest (5.10.2)
-    mongo (2.4.2)
-      bson (>= 4.2.1, < 5.0.0)
     nio4r (2.1.0)
     nokogiri (1.8.0)
       mini_portile2 (~> 2.2.0)
-    occi-core (5.0.0.beta.1)
+    occi-core (5.0.0.beta.2)
       activesupport (>= 4.0, < 6)
       json (>= 1.8, < 3)
       json-schema (>= 2.5, < 3)
@@ -133,8 +130,6 @@ GEM
     thread_safe (0.3.6)
     tzinfo (1.2.3)
       thread_safe (~> 0.1)
-    warden (1.2.7)
-      rack (>= 1.0)
     websocket-driver (0.6.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.2)
@@ -144,18 +139,15 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bson
   byebug
   listen (>= 3.0.5, < 3.2)
-  logstasher
-  mongo
-  occi-core (= 5.0.0.beta.1)
+  logstasher (~> 1.2)
+  occi-core (= 5.0.0.beta.2)
   puma (~> 3.7)
-  rack-cors
+  rack-cors (~> 0.4)
   rails (~> 5.1.1)
   spring
   spring-watcher-listen (~> 2.0.0)
-  warden (~> 1.2.7)
 
 BUNDLED WITH
    1.15.1
