@@ -6,8 +6,10 @@ git_source(:github) do |repo_name|
 end
 
 gem 'rails', '~> 5.1.1'
+gem 'responders', '~> 2.4.0'
 gem 'puma', '~> 3.7'
 gem 'rack-cors', '~> 0.4'
+gem 'rack-attack', '~> 5.0.1'
 gem 'logstasher', '~> 1.2'
 
 gem 'occi-core', '= 5.0.0.beta.2', require: 'occi/infrastructure-ext' # '~> 5.0.0'
