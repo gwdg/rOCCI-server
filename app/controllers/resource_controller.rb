@@ -27,4 +27,14 @@ class ResourceController < ApplicationController
 
   # DELETE /:resource/
   def delete_all; end
+
+  protected
+
+  def acceptable_url_params
+    %w[compute network storage]
+  end
+
+  def url_param_key
+    :resource
+  end
 end

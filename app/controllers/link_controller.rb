@@ -27,4 +27,14 @@ class LinkController < ApplicationController
 
   # DELETE /link/:link/
   def delete_all; end
+
+  protected
+
+  def acceptable_url_params
+    %w[networkinterface storagelink]
+  end
+
+  def url_param_key
+    :link
+  end
 end

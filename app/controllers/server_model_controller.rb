@@ -1,4 +1,6 @@
 class ServerModelController < ApplicationController
+  skip_before_action :validate_url_param
+
   # GET /
   # (for legacy renderings and uri-list)
   def locations; end

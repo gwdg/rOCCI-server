@@ -65,15 +65,15 @@ Rails.application.routes.draw do
   ## Occi::Core::Mixin
   ##  - Occi::Infrastructure::OsTpl
   ##  - Occi::Infrastructure::ResourceTpl
-  ##  - (user-defined mixins)
+  ##  - Occi::InfrastructureExt::AvailabilityZone
   ####################################################
-  get '/mixin/*mxn_path/', to: 'mixin#scoped_locations', constraints: lambda { |req| LEGACY_FORMATS.include? req.format }
-  get '/mixin/*mxn_path/', to: 'mixin#scoped_list'
+  get '/mixin/:parent/:term/', to: 'mixin#scoped_locations', constraints: lambda { |req| LEGACY_FORMATS.include? req.format }
+  get '/mixin/:parent/:term/', to: 'mixin#scoped_list'
 
-  post '/mixin/*mxn_path/', to: 'mixin#scoped_execute', constraints: { query_string: /^action=[[:lower:]]+$/ }
-  post '/mixin/*mxn_path/', to: 'mixin#assign'
+  post '/mixin/:parent/:term/', to: 'mixin#scoped_execute', constraints: { query_string: /^action=[[:lower:]]+$/ }
+  post '/mixin/:parent/:term/', to: 'mixin#assign'
 
-  put '/mixin/*mxn_path/', to: 'mixin#update'
+  put '/mixin/:parent/:term/', to: 'mixin#update'
 
-  delete '/mixin/*mxn_path/', to: 'mixin#scoped_delete_all'
+  delete '/mixin/:parent/:term/', to: 'mixin#scoped_delete_all'
 end

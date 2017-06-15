@@ -12,8 +12,24 @@ class ApplicationController < ActionController::API
   respond_to :uri_list, only: [:locations]
   respond_to :json, :text, :headers
 
-  # Set default media type/format if necessary
+  # Run pre-action checks
   before_action :set_default_format
+  before_action :validate_url_param
+
+  protected
+
+  def validate_url_param
+    return if url_param_key && acceptable_url_params.include?(params[url_param_key])
+    render text: 'Requested entity sub-type is not available', status: 400
+  end
+
+  def url_param_key
+    nil # implement this in Resource/Link/Mixin controllers
+  end
+
+  def acceptable_url_params
+    [] # implement this in Resource/Link/Mixin controllers
+  end
 
   private
 
