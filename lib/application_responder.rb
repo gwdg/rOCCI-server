@@ -2,7 +2,6 @@ class ApplicationResponder < ActionController::Responder
   def to_headers
     custom_merge_and_render :headers
   end
-  alias_method :to_text_occi, :to_headers
 
   def to_text
     custom_merge_and_render :text
@@ -11,8 +10,6 @@ class ApplicationResponder < ActionController::Responder
   def to_json
     custom_merge_and_render :json
   end
-  alias_method :to_occi_json, :to_json
-  alias_method :to_json_occi, :to_json
 
   def to_uri_list
     custom_merge_and_render :uri_list

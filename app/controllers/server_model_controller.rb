@@ -9,7 +9,14 @@ class ServerModelController < ApplicationController
 
   # GET /-/
   # GET /.well-known/org/ogf/occi/-/
-  def show; end
+  def show
+    model = ::Occi::InfrastructureExt::Model.new
+    model.load_core!
+    model.load_infrastructure!
+    model.load_infrastructure_ext!
+
+    respond_with model
+  end
 
   # POST /-/
   # POST /.well-known/org/ogf/occi/-/
