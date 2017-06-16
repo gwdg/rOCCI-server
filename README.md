@@ -1,24 +1,29 @@
-# README
+# rOCCI-server - A Ruby-based OCCI server
+[![Travis](https://img.shields.io/travis/EGI-FCTF/rOCCI-server.svg?style=flat-square)](http://travis-ci.org/EGI-FCTF/rOCCI-server)
+[![Gemnasium](https://img.shields.io/gemnasium/EGI-FCTF/rOCCI-server.svg?style=flat-square)](https://gemnasium.com/EGI-FCTF/rOCCI-server)
+[![Code Climate](https://img.shields.io/codeclimate/github/EGI-FCTF/rOCCI-server.svg?style=flat-square)](https://codeclimate.com/github/EGI-FCTF/rOCCI-server)
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Requirements
+### Ruby
+* Ruby 2.2.6+ is required
+* Rubygems
 
-Things you may want to cover:
+## Installation
+See [Installation manual](https://wiki.egi.eu/wiki/rOCCI:ROCCI-server_Admin_Guide).
 
-* Ruby version
+## Usage
+Detailed documentation is available in our [wiki](https://wiki.egi.eu/wiki/ROCCI).
 
-* System dependencies
+## Changelog
+See `CHANGELOG.md`.
 
-* Configuration
+## Code Documentation
+[Code Documentation for rOCCI-server](http://rubydoc.info/github/EGI-FCTF/rOCCI-server/)
 
-* Database creation
+### Contribute
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+1. Fork it.
+2. Create a branch (git checkout -b my_markup)
+3. Commit your changes (git commit -am "My changes")
+4. Push to the branch (git push origin my_markup)
+5. Create an Issue with a link to your branch
