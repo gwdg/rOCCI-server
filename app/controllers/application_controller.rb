@@ -7,6 +7,9 @@ class ApplicationController < ActionController::API
   WRONG_FORMATS = [ANY_FORMAT, NO_FORMAT].freeze
   DEFAULT_FORMAT_SYM = :text
 
+  # Force SSL, we live in the 21st century after all
+  force_ssl
+
   # Register supported MIME formats
   # @see 'config/initializers/mime_types.rb' for details
   self.responder = ApplicationResponder
