@@ -1,0 +1,29 @@
+language: ruby
+
+rvm:
+  - 2.2.6
+  - 2.3.3
+  - 2.4.0
+  - ruby-head
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+  fast_finish: true
+
+branches:
+  only:
+    - master
+    - next
+
+services:
+  - memcached
+
+script: bundle exec rake acceptance
+
+install: 'gem install bundler -v ">= 1.15" && bundle install --retry=10 --without stuff_breaking_travis_ci'
+
+env:
+  - ON_TRAVIS_CI=yes
+
+sudo: false

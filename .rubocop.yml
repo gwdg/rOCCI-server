@@ -1,0 +1,14 @@
+Metrics/LineLength:
+  Max: 120
+
+Security/Eval:
+  Exclude:
+    - 'Gemfile'
+
+Style/Documentation:
+  Exclude:
+    - '**/*'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'config/routes.rb'

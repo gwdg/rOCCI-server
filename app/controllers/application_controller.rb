@@ -1,4 +1,4 @@
-require "application_responder"
+require 'application_responder'
 
 class ApplicationController < ActionController::API
   ANY_FORMAT = '*/*'.freeze

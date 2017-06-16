@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   ####################################################
   ## Default Route
   ####################################################
-  get '/', to: 'server_model#list', constraints: lambda { |req| !LEGACY_FORMATS.include?(req.format) }
+  get '/', to: 'server_model#list', constraints: ->(req) { !LEGACY_FORMATS.include?(req.format) }
   root 'server_model#locations'
 
   ####################################################
@@ -27,7 +27,7 @@ Rails.application.routes.draw do
   ##  - Occi::Infrastructure::Storage
   ####################################################
   get '/:resource/:id', to: 'resource#show'
-  get '/:resource/', to: 'resource#locations', constraints: lambda { |req| LEGACY_FORMATS.include? req.format }
+  get '/:resource/', to: 'resource#locations', constraints: ->(req) { LEGACY_FORMATS.include? req.format }
   get '/:resource/', to: 'resource#list'
 
   post '/:resource/:id', to: 'resource#execute', constraints: { query_string: /^action=[[:lower:]]+$/ }
@@ -47,7 +47,7 @@ Rails.application.routes.draw do
   ##  - Occi::Infrastructure::StorageLink
   ####################################################
   get '/link/:link/:id', to: 'link#show'
-  get '/link/:link/', to: 'link#locations', constraints: lambda { |req| LEGACY_FORMATS.include? req.format }
+  get '/link/:link/', to: 'link#locations', constraints: ->(req) { LEGACY_FORMATS.include? req.format }
   get '/link/:link/', to: 'link#list'
 
   post '/link/:link/:id', to: 'link#execute', constraints: { query_string: /^action=[[:lower:]]+$/ }
@@ -67,7 +67,7 @@ Rails.application.routes.draw do
   ##  - Occi::Infrastructure::ResourceTpl
   ##  - Occi::InfrastructureExt::AvailabilityZone
   ####################################################
-  get '/mixin/:parent/:term/', to: 'mixin#scoped_locations', constraints: lambda { |req| LEGACY_FORMATS.include? req.format }
+  get '/mixin/:parent/:term/', to: 'mixin#scoped_locations', constraints: ->(req) { LEGACY_FORMATS.include? req.format }
   get '/mixin/:parent/:term/', to: 'mixin#scoped_list'
 
   post '/mixin/:parent/:term/', to: 'mixin#scoped_execute', constraints: { query_string: /^action=[[:lower:]]+$/ }
