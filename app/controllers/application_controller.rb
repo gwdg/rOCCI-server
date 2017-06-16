@@ -6,6 +6,7 @@ class ApplicationController < ActionController::API
   NO_FORMAT = ''.freeze
   WRONG_FORMATS = [ANY_FORMAT, NO_FORMAT].freeze
   DEFAULT_FORMAT_SYM = :text
+  REDIRECT_HEADER_KEY = 'WWW-Authenticate'.freeze
 
   # Force SSL, we live in the 21st century after all
   force_ssl
@@ -17,7 +18,8 @@ class ApplicationController < ActionController::API
   respond_to :json, :text, :headers
 
   # Run pre-action checks
-  before_action :set_default_format
+  before_action :default_format!
+  before_action :authorize_user!
   before_action :validate_url_param
 
   protected
@@ -39,12 +41,36 @@ class ApplicationController < ActionController::API
     respond_with RenderableError.new(code, message), status: code
   end
 
+  def current_user
+    @current_user || 'unauthorized'
+  end
+
   private
 
   # Checks request format and sets the default 'text/plain' if necessary.
-  def set_default_format
+  def default_format!
     return unless WRONG_FORMATS.include?(request.format.to_s)
     logger.debug "Request format in #{WRONG_FORMATS.inspect}, forcing #{DEFAULT_FORMAT_SYM} for compatibility"
     request.format = DEFAULT_FORMAT_SYM
+  end
+
+  def authorize_user!
+    if request.env['HTTP_X_Auth_Token'].blank?
+      auth_redirect_header!
+      render_error 401, 'Not Authorized'
+    else
+      decrypt_user_token!
+    end
+  end
+
+  def decrypt_user_token!
+    # TODO: decrypt token and store username
+    # TODO: read secret from configuration
+    @current_user = nil
+    @decrypted_token = nil
+  end
+
+  def auth_redirect_header!
+    response.headers[REDIRECT_HEADER_KEY] = "Keystone uri='#{Rails.configuration.rocci_server['keystone_uri']}'"
   end
 end
