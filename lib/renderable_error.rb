@@ -19,5 +19,5 @@ class RenderableError
   def to_s
     "#{code} #{message}"
   end
-  alias_method :to_text, :to_s
+  alias to_text to_s
 end
