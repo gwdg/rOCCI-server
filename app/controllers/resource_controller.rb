@@ -17,7 +17,9 @@ class ResourceController < ApplicationController
   def execute; end
 
   # PUT /:resource/:id
-  def update; end
+  def update
+    render_error 501, 'Requested functionality is not implemented'
+  end
 
   # POST /:resource/:id
   def partial_update; end
