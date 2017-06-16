@@ -36,11 +36,15 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ 'http://example.com', /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  config.force_ssl = true
 
   # Use the lowest log level to ensure availability of diagnostic information
   # when problems arise.
-  config.log_level = :debug
+  config.log_level = config.rocci_server['log_level'].to_sym
+
+  config.logstasher.enabled = true
+  config.logstasher.suppress_app_log = false
+  config.logstasher.source = "#{config.rocci_server['hostname']}_#{config.rocci_server['port']}"
 
   # Prepend all log lines with the following tags.
   config.log_tags = [:request_id]

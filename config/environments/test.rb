@@ -34,6 +34,14 @@ Rails.application.configure do
   # ActionMailer::Base.deliveries array.
   # config.action_mailer.delivery_method = :test
 
+  # Use the lowest log level to ensure availability of diagnostic information
+  # when problems arise.
+  config.log_level = config.rocci_server['log_level'].to_sym
+
+  config.logstasher.enabled = true
+  config.logstasher.suppress_app_log = false
+  config.logstasher.source = "#{config.rocci_server['hostname']}_#{config.rocci_server['port']}"
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
