@@ -11,20 +11,17 @@ class ServerModelController < ApplicationController
 
   # GET /-/
   # GET /.well-known/org/ogf/occi/-/
-  def show
-    model = ::Occi::InfrastructureExt::Model.new
-    model.load_core!
-    model.load_infrastructure!
-    model.load_infrastructure_ext!
-
-    respond_with model
-  end
+  def show; end
 
   # POST /-/
   # POST /.well-known/org/ogf/occi/-/
-  def mixin_create; end
+  def mixin_create
+    render_error 501, 'Requested functionality is not implemented'
+  end
 
   # DELETE /-/
   # DELETE /.well-known/org/ogf/occi/-/
-  def mixin_delete; end
+  def mixin_delete
+    render_error 501, 'Requested functionality is not implemented'
+  end
 end

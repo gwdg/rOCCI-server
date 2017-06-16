@@ -14,13 +14,19 @@ class LinkController < ApplicationController
   def create; end
 
   # POST /link/:link/:id?action=ACTION
-  def execute; end
+  def execute
+    render_error 501, 'Requested functionality is not implemented'
+  end
 
   # PUT /link/:link/:id
-  def update; end
+  def update
+    render_error 501, 'Requested functionality is not implemented'
+  end
 
   # POST /link/:link/:id
-  def partial_update; end
+  def partial_update
+    render_error 501, 'Requested functionality is not implemented'
+  end
 
   # DELETE /link/:link/:id
   def delete; end

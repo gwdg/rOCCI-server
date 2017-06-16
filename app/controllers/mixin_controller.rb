@@ -9,7 +9,7 @@ class MixinController < ApplicationController
 
   # POST /mixin/:parent/:term/
   def assign
-    render text: 'Requested functionality is not implemented', status: 501
+    render_error 501, 'Requested functionality is not implemented'
   end
 
   # POST /mixin/:parent/:term/?action=ACTION
@@ -17,7 +17,7 @@ class MixinController < ApplicationController
 
   # PUT /mixin/:parent/:term/
   def update
-    render text: 'Requested functionality is not implemented', status: 501
+    render_error 501, 'Requested functionality is not implemented'
   end
 
   # DELETE /mixin/:parent/:term/

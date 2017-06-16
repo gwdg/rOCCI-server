@@ -1,4 +1,5 @@
 require 'application_responder'
+require 'renderable_error'
 
 class ApplicationController < ActionController::API
   ANY_FORMAT = '*/*'.freeze
@@ -20,7 +21,7 @@ class ApplicationController < ActionController::API
 
   def validate_url_param
     return if url_param_key && acceptable_url_params.include?(params[url_param_key])
-    render text: 'Requested entity sub-type is not available', status: 400
+    render_error 400, 'Requested entity sub-type is not available'
   end
 
   def url_param_key
@@ -29,6 +30,10 @@ class ApplicationController < ActionController::API
 
   def acceptable_url_params
     [] # implement this in Resource/Link/Mixin controllers
+  end
+
+  def render_error(code, message)
+    respond_with RenderableError.new(code, message), status: code
   end
 
   private
