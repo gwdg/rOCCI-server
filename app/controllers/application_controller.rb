@@ -2,8 +2,8 @@ require 'application_responder'
 require 'renderable_error'
 
 class ApplicationController < ActionController::API
-  URI_FORMATS = %i[uri_list]
-  FULL_FORMATS = %i[json text headers]
+  URI_FORMATS = %i[uri_list].freeze
+  FULL_FORMATS = %i[json text headers].freeze
   ALL_FORMATS = [URI_FORMATS, FULL_FORMATS].flatten.freeze
   UBIQUITOUS_FORMATS = %w[*/*].freeze
   DEFAULT_FORMAT_SYM = FULL_FORMATS.first
@@ -65,7 +65,7 @@ class ApplicationController < ActionController::API
 
   def validate_format!
     if UBIQUITOUS_FORMATS.include?(request.format.to_s)
-      logger.debug "Changing ubiquitous format #{request.format.to_s.inspect} to #{DEFAULT_FORMAT_SYM.inspect}"
+      logger.debug "Changing ubiquitous format #{request.format} to #{DEFAULT_FORMAT_SYM}"
       request.format = DEFAULT_FORMAT_SYM
     end
 
