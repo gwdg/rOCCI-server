@@ -2,6 +2,12 @@ require 'application_responder'
 require 'renderable_error'
 
 class ApplicationController < ActionController::API
+  class << self
+    def app_config
+      Rails.configuration.rocci_server
+    end
+  end
+
   URI_FORMATS = %i[uri_list].freeze
   FULL_FORMATS = %i[json text headers].freeze
   ALL_FORMATS = [URI_FORMATS, FULL_FORMATS].flatten.freeze
@@ -10,6 +16,8 @@ class ApplicationController < ActionController::API
 
   TOKEN_HEADER_KEY = 'HTTP_X_AUTH_TOKEN'.freeze
   REDIRECT_HEADER_KEY = 'WWW-Authenticate'.freeze
+  REDIRECT_HEADER_URI = "Keystone uri='#{app_config['keystone_uri']}'".freeze
+
   MODEL_FLAVORS = %w[core infrastructure infrastructure_ext].freeze
 
   # Force SSL, we live in the 21st century after all
@@ -27,6 +35,10 @@ class ApplicationController < ActionController::API
   before_action :validate_url_param
 
   protected
+
+  def app_config
+    self.class.app_config
+  end
 
   def validate_url_param
     return if url_param_key && acceptable_url_params.include?(params[url_param_key])
@@ -46,19 +58,31 @@ class ApplicationController < ActionController::API
   end
 
   def current_user
-    @current_user || 'unauthorized'
+    authorize_user! # attempt authorization on every access
+    @_current_user || 'unauthorized'
+  end
+
+  def current_token
+    authorize_user! # attempt authorization on every access
+    @_current_token
   end
 
   def server_model
-    @model || bootstrap_server_model!
+    return @_server_model if @_server_model
+
+    bootstrap_server_model!
+    extend_server_model!
+    @_server_model
   end
 
   def bootstrap_server_model!
-    @model = Occi::InfrastructureExt::Model.new
-    MODEL_FLAVORS.each { |flv| @model.send "load_#{flv}!" }
-    @model.valid!
+    @_server_model = Occi::InfrastructureExt::Model.new
+    MODEL_FLAVORS.each { |flv| @_server_model.send "load_#{flv}!" }
+    @_server_model
+  end
 
-    @model
+  def extend_server_model!
+    @_server_model # TODO: pass this to the active backend and let it add new mixins
   end
 
   private
@@ -74,22 +98,34 @@ class ApplicationController < ActionController::API
   end
 
   def authorize_user!
-    if request.env[TOKEN_HEADER_KEY].blank?
-      auth_redirect_header!
-      render_error 401, 'Not Authorized'
+    return @_current_user if @_user_authorized
+
+    token = request.env[TOKEN_HEADER_KEY]
+    if token.blank?
+      no_or_invalid_token!
     else
-      decrypt_user_token!
+      process_user_token! token
     end
   end
 
-  def decrypt_user_token!
-    # TODO: decrypt token and store username
-    # TODO: read secret from configuration
-    @current_user = nil
-    @decrypted_token = nil
+  def process_user_token!(token)
+    tokenator = Tokenator.new(token: token, options: app_config['encryption'])
+
+    if tokenator.process!
+      @_user_authorized = true
+      @_current_token = tokenator.token
+      @_current_user = tokenator.user
+    else
+      no_or_invalid_token!
+    end
+  end
+
+  def no_or_invalid_token!
+    auth_redirect_header!
+    render_error 401, 'Not Authorized'
   end
 
   def auth_redirect_header!
-    response.headers[REDIRECT_HEADER_KEY] = "Keystone uri='#{Rails.configuration.rocci_server['keystone_uri']}'"
+    response.headers[REDIRECT_HEADER_KEY] = REDIRECT_HEADER_URI
   end
 end
