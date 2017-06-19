@@ -24,9 +24,7 @@ group :development, :test do
 end
 
 # Include external bundles
-path = File.join(File.dirname(__FILE__), 'lib', 'backends', 'bundles')
-if File.directory?(path)
-  Dir.glob(File.join(path, 'Gemfile.*')) do |gemfile|
-    eval(IO.read(gemfile), binding)
-  end
+Dir.glob(File.join(File.dirname(__FILE__), 'Gemfile.*')) do |gemfile|
+  next if gemfile.end_with?('.lock')
+  eval(IO.read(gemfile), binding)
 end
