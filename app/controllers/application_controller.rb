@@ -1,6 +1,3 @@
-require 'application_responder'
-require 'renderable_error'
-
 class ApplicationController < ActionController::API
   class << self
     def app_config
