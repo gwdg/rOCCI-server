@@ -30,11 +30,13 @@ class ApplicationController < ActionController::API
   before_action :authorize_user!
   before_action :validate_url_param
 
-  protected
+  # More convenient access to configuration
+  delegate :app_config, to: :class
 
-  def app_config
-    self.class.app_config
-  end
+  # Error handling
+  rescue_from Errors::BackendAuthorizationError, with: :handle_authorization_error
+
+  protected
 
   def validate_url_param
     return if url_param_key && acceptable_url_params.include?(params[url_param_key])
@@ -105,7 +107,8 @@ class ApplicationController < ActionController::API
     end
   end
 
-  def auth_redirect_header!
+  def handle_authorization_error
     response.headers[REDIRECT_HEADER_KEY] = REDIRECT_HEADER_URI
+    render_error 401, 'Not Authorized'
   end
 end
