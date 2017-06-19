@@ -1,3 +1,3 @@
 module Errors
-  class BackendVersionMismatchError < StandardError; end
+  class BackendVersionMismatchError < BackendError; end
 end
