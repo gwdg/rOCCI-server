@@ -14,7 +14,6 @@ class ApplicationController < ActionController::API
   UBIQUITOUS_FORMATS = %w[*/*].freeze
   DEFAULT_FORMAT_SYM = FULL_FORMATS.first
 
-  TOKEN_HEADER_KEY = 'HTTP_X_AUTH_TOKEN'.freeze
   REDIRECT_HEADER_KEY = 'WWW-Authenticate'.freeze
   REDIRECT_HEADER_URI = "Keystone uri='#{app_config['keystone_uri']}'".freeze
 
@@ -58,12 +57,12 @@ class ApplicationController < ActionController::API
   end
 
   def current_user
-    authorize_user! # attempt authorization on every access
-    @_current_user || 'unauthorized'
+    authorize_user! if @_user_authorized.nil?
+    @_current_user
   end
 
   def current_token
-    authorize_user! # attempt authorization on every access
+    authorize_user! if @_user_authorized.nil?
     @_current_token
   end
 
@@ -98,31 +97,15 @@ class ApplicationController < ActionController::API
   end
 
   def authorize_user!
-    return @_current_user if @_user_authorized
-
-    token = request.env[TOKEN_HEADER_KEY]
-    if token.blank?
-      no_or_invalid_token!
-    else
-      process_user_token! token
-    end
-  end
-
-  def process_user_token!(token)
-    tokenator = Tokenator.new(token: token, options: app_config['encryption'])
-
-    if tokenator.process!
+    if request.env['rocci_server.request.tokenator.authorized']
       @_user_authorized = true
-      @_current_token = tokenator.token
-      @_current_user = tokenator.user
+      @_current_user = request.env['rocci_server.request.tokenator.user']
+      @_current_token = request.env['rocci_server.request.tokenator.token']
     else
-      no_or_invalid_token!
+      @_user_authorized = false
+      @_current_user = 'unauthorized'
+      @_current_token = nil
     end
-  end
-
-  def no_or_invalid_token!
-    auth_redirect_header!
-    render_error 401, 'Not Authorized'
   end
 
   def auth_redirect_header!
