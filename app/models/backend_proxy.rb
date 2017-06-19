@@ -1,62 +1,79 @@
+module Backends; end
 Dir.glob(File.join(File.dirname(__FILE__), 'backends', '*.rb')) { |mod| require mod.chomp('.rb') }
 
 class BackendProxy
-  KNOWN_BACKEND_TYPES = {
+  BACKEND_TYPES = {
     dummy: Backends::Dummy,
     opennebula: Backends::OpenNebula,
     aws_ec2: Backends::AwsEc2
   }.freeze
-  KNOWN_BACKEND_SUBTYPES = %i[compute network storage storagelink networkinterface].freeze
+  BACKEND_SUBTYPES = %i[compute network storage storagelink networkinterface model_extension].freeze
   API_VERSION = '3.0.0'.freeze
 
-  attr_reader :type, :subtype, :options
+  attr_accessor :type, :options, :logger
 
   def initialize(args = {})
     @type = args.fetch(:type)
-    @subtype = args.fetch(:subtype)
     @options = args.fetch(:options)
+    @logger = args.fetch(:logger, Rails.logger)
 
-    initialize_backend!
+    flush!
+  end
+
+  def flush!
+    @_cache = {}
   end
 
   def known_backend_types
-    self.class.known_backend_types
+    BACKEND_TYPES
   end
 
   def known_backend_subtypes
-    self.class.known_backend_subtypes
-  end
-
-  class << self
-    def known_backend_types
-      KNOWN_BACKEND_TYPES
-    end
-
-    def known_backend_subtypes
-      KNOWN_BACKEND_SUBTYPES
-    end
+    BACKEND_SUBTYPES
   end
 
   private
 
-  def initialize_backend!
-    bklass = backend_subtype(backend_type)
+  def method_missing(m, *args, &block)
+    m = m.to_sym
+    if known_backend_subtypes.include?(m)
+      logger.debug "Creating a proxy for #{m} (#{type} backend)"
+      @_cache[m] ||= initialize_proxy(m)
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(method_name, include_private = false)
+    known_backend_subtypes.include?(method_name.to_sym) || super
+  end
+
+  def initialize_proxy(subtype)
+    bklass = klass_in_namespace(backend_namespace, subtype)
     check_version! API_VERSION, bklass::API_VERSION
-    @backend = bklass.new(options)
+    bklass.new default_backend_options.merge(options)
   end
 
-  def backend_type
-    known_backend_types[type] || raise("Backend type #{type} is not supported")
+  def default_backend_options
+    { logger: logger }
   end
 
-  def backend_subtype(backend_module)
+  def backend_namespace
+    unless known_backend_types.key?(type)
+      raise Errors::BackendLoadError, "Backend type #{type} is not supported"
+    end
+
+    known_backend_types[type]
+  end
+
+  def klass_in_namespace(backend_module, subtype)
     unless known_backend_subtypes.include?(subtype)
-      raise "Backend subtype #{subtype} is not supported"
+      raise Errors::BackendLoadError, "Backend subtype #{subtype} is not supported"
     end
 
     bsklass = subtype.to_s.capitalize.to_sym
     unless backend_module.constants.include?(bsklass)
-      raise "Backend subtype #{subtype} is not implemented in #{backend_module}"
+      raise Errors::BackendLoadError, "Backend subtype #{subtype} is not implemented in #{backend_module}"
     end
 
     backend_module.const_get(bsklass)
@@ -73,7 +90,7 @@ class BackendProxy
     end
 
     return if s_minor == b_minor
-    Rails.logger.warn "Backend reports API_VERSION=#{backend_version} " \
-                      "and SERVER_API_VERSION=#{api_version}"
+    logger.warn "Backend reports API_VERSION=#{backend_version} " \
+                "and SERVER_API_VERSION=#{api_version}"
   end
 end
