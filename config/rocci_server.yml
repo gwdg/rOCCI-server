@@ -3,10 +3,21 @@ defaults: &defaults
   hostname: localhost
   port: 3000
   keystone_uri: https://localhost:5000/
+  backend: dummy
+  dummy:
+    no_options: true
+  opennebula:
+    endpoint: http://localhost:2633/RPC2
+    default_datastore: default
+  aws_ec2:
+    access_key_id: <%= ENV['ROCCI_SERVER_AWS_EC2_ACCESS_KEY_ID'] %>
+    secret_access_key: <%= ENV['ROCCI_SERVER_AWS_EC2_SECRET_ACCESS_KEY'] %>
+    default_region: eu-west-1
+    default_availability_zone: eu-west-1a
   encryption:
-    token_cipher: ~
-    token_key: ~
-    token_iv: ~
+    token_cipher: <%= ENV['ROCCI_SERVER_ENCRYPTION_TOKEN_CIPHER'] %>
+    token_key: <%= ENV['ROCCI_SERVER_ENCRYPTION_TOKEN_KEY'] %>
+    token_iv: <%= ENV['ROCCI_SERVER_ENCRYPTION_TOKEN_IV'] %>
 
 production:
   <<: *defaults

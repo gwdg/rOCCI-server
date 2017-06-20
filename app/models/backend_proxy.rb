@@ -15,7 +15,7 @@ class BackendProxy
   def initialize(args = {})
     @type = args.fetch(:type)
     @options = args.fetch(:options)
-    @logger = args.fetch(:logger, Rails.logger)
+    @logger = args.fetch(:logger)
 
     flush!
   end
@@ -71,7 +71,7 @@ class BackendProxy
       raise Errors::BackendLoadError, "Backend subtype #{subtype} is not supported"
     end
 
-    bsklass = subtype.to_s.capitalize.to_sym
+    bsklass = subtype.to_s.classify.to_sym
     unless backend_module.constants.include?(bsklass)
       raise Errors::BackendLoadError, "Backend subtype #{subtype} is not implemented in #{backend_module}"
     end

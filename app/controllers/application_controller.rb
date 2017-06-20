@@ -30,8 +30,9 @@ class ApplicationController < ActionController::API
   before_action :authorize_user!
   before_action :validate_url_param
 
-  # More convenient access to configuration
+  # More convenient access to configuration and logging
   delegate :app_config, to: :class
+  delegate :debug?, prefix: true, to: :logger
 
   # Error handling
   rescue_from Errors::BackendAuthorizationError, with: :handle_authorization_error
@@ -56,13 +57,17 @@ class ApplicationController < ActionController::API
   end
 
   def current_user
-    authorize_user! if @_user_authorized.nil?
+    authorize_user! if authorization_pending?
     @_current_user
   end
 
   def current_token
-    authorize_user! if @_user_authorized.nil?
+    authorize_user! if authorization_pending?
     @_current_token
+  end
+
+  def authorization_pending?
+    @_user_authorized.nil?
   end
 
   def server_model
@@ -74,13 +79,31 @@ class ApplicationController < ActionController::API
   end
 
   def bootstrap_server_model!
+    logger.debug "Bootstrapping server model with #{MODEL_FLAVORS}"
     @_server_model = Occi::InfrastructureExt::Model.new
     MODEL_FLAVORS.each { |flv| @_server_model.send "load_#{flv}!" }
     @_server_model
   end
 
   def extend_server_model!
-    @_server_model # TODO: pass this to the active backend and let it add new mixins
+    logger.debug 'Extending server model with backend mixins'
+    default_backend_proxy.populate! @_server_model
+  end
+
+  def backend_proxy
+    return @_backend_proxy if @_backend_proxy
+
+    backend_type = app_config.fetch('backend')
+    logger.debug "Starting backend proxy for #{backend_type}"
+    @_backend_proxy = BackendProxy.new(
+      type: backend_type.to_sym,
+      options: app_config.fetch(backend_type, {}),
+      logger: logger
+    )
+  end
+
+  def default_backend_proxy
+    backend_proxy.model_extension
   end
 
   private
@@ -96,15 +119,29 @@ class ApplicationController < ActionController::API
   end
 
   def authorize_user!
-    if request.env['rocci_server.request.tokenator.authorized']
+    logger.debug "User authorization data #{request_user.inspect}:#{request_token.inspect}" if logger_debug?
+
+    if request_authorized?
       @_user_authorized = true
-      @_current_user = request.env['rocci_server.request.tokenator.user']
-      @_current_token = request.env['rocci_server.request.tokenator.token']
+      @_current_token = request_token
+      @_current_user = request_user
     else
       @_user_authorized = false
-      @_current_user = 'unauthorized'
       @_current_token = nil
+      @_current_user = 'unauthorized'
     end
+  end
+
+  def request_token
+    request.env['rocci_server.request.tokenator.token']
+  end
+
+  def request_user
+    request.env['rocci_server.request.tokenator.user']
+  end
+
+  def request_authorized?
+    request.env['rocci_server.request.tokenator.authorized']
   end
 
   def handle_authorization_error
