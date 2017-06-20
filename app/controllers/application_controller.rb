@@ -28,7 +28,6 @@ class ApplicationController < ActionController::API
   # Run pre-action checks
   before_action :validate_format!
   before_action :authorize_user!
-  before_action :validate_url_param
 
   # More convenient access to configuration and logging
   delegate :app_config, to: :class
@@ -38,19 +37,6 @@ class ApplicationController < ActionController::API
   rescue_from Errors::BackendAuthorizationError, with: :handle_authorization_error
 
   protected
-
-  def validate_url_param
-    return if url_param_key && acceptable_url_params.include?(params[url_param_key])
-    render_error 400, 'Requested entity sub-type is not available'
-  end
-
-  def url_param_key
-    nil # implement this in Resource/Link/Mixin controllers
-  end
-
-  def acceptable_url_params
-    [] # implement this in Resource/Link/Mixin controllers
-  end
 
   def render_error(code, message)
     respond_with RenderableError.new(code, message), status: code

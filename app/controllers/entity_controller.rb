@@ -1,6 +1,4 @@
 class EntityController < ApplicationController
-  skip_before_action :validate_url_param, only: %i[locations list delete_all]
-
   # GET /
   # (for legacy renderings and uri-list)
   def locations; end
@@ -22,8 +20,13 @@ class EntityController < ApplicationController
     render_error 501, 'Requested functionality is not implemented'
   end
 
+  # POST /?action=ACTION
+  def execute_all
+    render_error 501, 'Requested functionality is not implemented'
+  end
+
   # POST /mixin/:parent/:term/?action=ACTION
-  def scoped_execute
+  def scoped_execute_all
     render_error 501, 'Requested functionality is not implemented'
   end
 
@@ -40,15 +43,5 @@ class EntityController < ApplicationController
   # DELETE /mixin/:parent/:term/
   def scoped_delete_all
     render_error 501, 'Requested functionality is not implemented'
-  end
-
-  protected
-
-  def acceptable_url_params
-    %w[os_tpl resource_tpl availability_zone]
-  end
-
-  def url_param_key
-    :parent
   end
 end

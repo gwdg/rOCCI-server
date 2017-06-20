@@ -16,6 +16,9 @@ class ResourceController < ApplicationController
   # POST /:resource/:id?action=ACTION
   def execute; end
 
+  # POST /:resource/?action=ACTION
+  def execute_all; end
+
   # PUT /:resource/:id
   def update
     render_error 501, 'Requested functionality is not implemented'
@@ -29,14 +32,4 @@ class ResourceController < ApplicationController
 
   # DELETE /:resource/
   def delete_all; end
-
-  protected
-
-  def acceptable_url_params
-    %w[compute network storage]
-  end
-
-  def url_param_key
-    :resource
-  end
 end

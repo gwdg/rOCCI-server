@@ -18,6 +18,11 @@ class LinkController < ApplicationController
     render_error 501, 'Requested functionality is not implemented'
   end
 
+  # POST /link/:link/?action=ACTION
+  def execute_all
+    render_error 501, 'Requested functionality is not implemented'
+  end
+
   # PUT /link/:link/:id
   def update
     render_error 501, 'Requested functionality is not implemented'
@@ -33,14 +38,4 @@ class LinkController < ApplicationController
 
   # DELETE /link/:link/
   def delete_all; end
-
-  protected
-
-  def acceptable_url_params
-    %w[networkinterface storagelink]
-  end
-
-  def url_param_key
-    :link
-  end
 end
