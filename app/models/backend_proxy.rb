@@ -7,7 +7,11 @@ class BackendProxy
     opennebula: Backends::OpenNebula,
     aws_ec2: Backends::AwsEc2
   }.freeze
-  BACKEND_SUBTYPES = %i[compute network storage storagelink networkinterface model_extension].freeze
+  BACKEND_SUBTYPES = %i[
+    compute network storage securitygroup
+    storagelink networkinterface securitygrouplink
+    model_extension
+  ].freeze
   API_VERSION = '3.0.0'.freeze
 
   attr_accessor :type, :options, :logger
