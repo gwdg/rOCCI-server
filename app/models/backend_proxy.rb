@@ -8,7 +8,7 @@ class BackendProxy
     aws_ec2: Backends::AwsEc2
   }.freeze
   BACKEND_SUBTYPES = %i[
-    compute network storage securitygroup
+    compute network storage securitygroup ipreservation
     storagelink networkinterface securitygrouplink
     model_extender
   ].freeze
