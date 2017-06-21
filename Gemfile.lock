@@ -186,6 +186,7 @@ GEM
     websocket-driver (0.6.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.2)
+    yard (0.9.9)
     yell (2.0.7)
 
 PLATFORMS
@@ -207,6 +208,7 @@ DEPENDENCIES
   rubocop
   spring
   spring-watcher-listen (~> 2.0.0)
+  yard
 
 BUNDLED WITH
    1.15.1

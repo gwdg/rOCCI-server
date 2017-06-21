@@ -1,0 +1,1 @@
+YARD::Rake::YardocTask.new

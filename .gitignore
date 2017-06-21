@@ -18,3 +18,7 @@
 !/tmp/.keep
 
 .byebug_history
+
+# Ignore YARD
+/.yardoc
+/doc
