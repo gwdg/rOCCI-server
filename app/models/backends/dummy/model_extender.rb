@@ -2,8 +2,8 @@ require 'backends/dummy/base'
 
 module Backends
   module Dummy
-    class Securitygroup < Base
-      include Entitylike
+    class ModelExtender < Base
+      include Extenderlike
     end
   end
 end

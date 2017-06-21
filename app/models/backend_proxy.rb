@@ -10,11 +10,12 @@ class BackendProxy
   BACKEND_SUBTYPES = %i[
     compute network storage securitygroup
     storagelink networkinterface securitygrouplink
-    model_extension
+    model_extender
   ].freeze
   API_VERSION = '3.0.0'.freeze
 
   attr_accessor :type, :options, :logger
+  delegate :api_version, to: :class
 
   def initialize(args = {})
     @type = args.fetch(:type)
@@ -36,6 +37,12 @@ class BackendProxy
     BACKEND_SUBTYPES
   end
 
+  class << self
+    def api_version
+      API_VERSION
+    end
+  end
+
   private
 
   def method_missing(m, *args, &block)
@@ -54,7 +61,7 @@ class BackendProxy
 
   def initialize_proxy(subtype)
     bklass = klass_in_namespace(backend_namespace, subtype)
-    check_version! API_VERSION, bklass::API_VERSION
+    check_version! api_version, bklass.api_version
     bklass.new default_backend_options.merge(options)
   end
 
@@ -83,18 +90,18 @@ class BackendProxy
     backend_module.const_get(bsklass)
   end
 
-  def check_version!(api_version, backend_version)
-    s_major, s_minor = api_version.split('.')
+  def check_version!(server_version, backend_version)
+    s_major, s_minor = server_version.split('.')
     b_major, b_minor = backend_version.split('.')
 
     unless s_major == b_major
       raise Errors::BackendVersionMismatchError,
             "Backend reports API_VERSION=#{backend_version} and cannot be " \
-            "loaded because SERVER_API_VERSION=#{api_version}"
+            "loaded because server's API_VERSION=#{server_version}"
     end
 
     return if s_minor == b_minor
     logger.warn "Backend reports API_VERSION=#{backend_version} " \
-                "and SERVER_API_VERSION=#{api_version}"
+                "and server's API_VERSION=#{server_version}"
   end
 end

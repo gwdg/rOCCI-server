@@ -34,7 +34,7 @@ class ApplicationController < ActionController::API
   delegate :debug?, prefix: true, to: :logger
 
   # Error handling
-  rescue_from Errors::BackendAuthorizationError, with: :handle_authorization_error
+  rescue_from Errors::Backend::AuthorizationError, with: :handle_authorization_error
 
   protected
 
@@ -89,7 +89,7 @@ class ApplicationController < ActionController::API
   end
 
   def default_backend_proxy
-    backend_proxy.model_extension
+    backend_proxy.model_extender
   end
 
   private

@@ -2,6 +2,8 @@ require 'backends/dummy/base'
 
 module Backends
   module Dummy
-    class Securitygrouplink < Base; end
+    class Securitygrouplink < Base
+      include Entitylike
+    end
   end
 end

@@ -2,6 +2,8 @@ require 'backends/dummy/base'
 
 module Backends
   module Dummy
-    class Storagelink < Base; end
+    class Storagelink < Base
+      include Entitylike
+    end
   end
 end
