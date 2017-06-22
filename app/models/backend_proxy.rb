@@ -66,7 +66,7 @@ class BackendProxy
   end
 
   def default_backend_options
-    { logger: logger }
+    { logger: logger, backend_proxy: self }
   end
 
   def backend_namespace
