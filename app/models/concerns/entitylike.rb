@@ -14,7 +14,7 @@ module Entitylike
   #
   # @param filter [Set] collection of filtering rules
   # @return [Set] collection of entity identifiers matching the filter or all if filter is empty
-  def identifiers(filter = Set.new)
+  def identifiers(_filter = Set.new)
     Set.new
   end
 
@@ -22,7 +22,7 @@ module Entitylike
   #
   # @param filter [Set] collection of filtering rules
   # @return [Set] collection of entities matching the filter or all if filter is empty
-  def list(filter = Set.new)
+  def list(_filter = Set.new)
     Set.new
   end
 
@@ -49,7 +49,7 @@ module Entitylike
   # @option fragments [Set] :mixins collection of mixins to update
   # @option fragments [Hash] :attributes collection of attributes to update
   # @return [Occi::Core::Entity] updated entity
-  def partial_update(identifier, fragments)
+  def partial_update(identifier, _fragments)
     instance identifier
   end
 
@@ -58,7 +58,7 @@ module Entitylike
   # @param identifier [String] UUID of the requested entity
   # @param new_instance [Occi::Core::Entity] full entity to replace the old one
   # @return [Occi::Core::Entity] updated entity
-  def update(identifier, new_instance)
+  def update(identifier, _new_instance)
     instance identifier
   end
 
@@ -67,7 +67,7 @@ module Entitylike
   # @param identifier [String] UUID of the requested entity
   # @param action_instance [Occi::Core::ActionInstance] action to be triggered
   # @return [String] identifier of the affected entity
-  def trigger(identifier, action_instance)
+  def trigger(identifier, _action_instance)
     raise Errors::Backend::EntityNotFoundError, "Entity #{identifier} was not found"
   end
 
@@ -76,7 +76,7 @@ module Entitylike
   # @param action_instance [Occi::Core::ActionInstance] action to be triggered
   # @param filter [Set] collection of filtering rules
   # @return [Set] collection of identifiers of affected entities
-  def trigger_all(action_instance, filter = Set.new)
+  def trigger_all(_action_instance, _filter = Set.new)
     Set.new
   end
 
@@ -92,7 +92,7 @@ module Entitylike
   #
   # @param filter [Set] collection of filtering rules
   # @return [Set] collection of identifiers of affected entities
-  def delete_all(filter = Set.new)
+  def delete_all(_filter = Set.new)
     Set.new
   end
 end

@@ -15,13 +15,13 @@ gem 'responders', '~> 2.4.0'
 gem 'occi-core', '= 5.0.0.beta.3', require: 'occi/infrastructure-ext' # '~> 5.0.0'
 
 group :development, :test do
-  gem 'yard'
   gem 'byebug'
   gem 'listen', '>= 3.0.5', '< 3.2'
   gem 'rails_best_practices'
   gem 'rubocop', require: false
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
+  gem 'yard'
 end
 
 # Include external bundles
