@@ -1,13 +1,11 @@
 # Rack attack protection
-require 'rack_tokenator'
-
 module Rack
   class Attack
     throttle('req/ip', limit: 300, period: 1.minute, &:ip)
 
     blocklist('auth-less annoyances') do |req|
       Allow2Ban.filter(req.ip, maxretry: 10, findtime: 1.minute, bantime: 1.hour) do
-        req.env[::Rack::Tokenator::TOKEN_HEADER_KEY].blank?
+        req.env[Tokenator::TOKEN_HEADER_KEY].blank?
       end
     end
   end

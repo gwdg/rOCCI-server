@@ -9,4 +9,4 @@
 # Offense count: 2
 Metrics/AbcSize:
   Exclude:
-    - 'lib/rack_tokenator.rb'
+    - 'lib/rack/tokenator.rb'
