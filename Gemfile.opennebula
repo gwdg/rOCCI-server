@@ -1,0 +1,2 @@
+gem "opennebula", '~> 5.2'
+gem 'xmlrpc', '~> 0.3' if RUBY_VERSION >= '2.4'

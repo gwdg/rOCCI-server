@@ -78,7 +78,6 @@ module Rack
       return token if app_config['token_cipher'].blank?
 
       logger.debug "Decrypting token as #{app_config['token_cipher'].inspect}"
-      # TODO: is this raising errors?
       decipher = decrypt_cipher(app_config['token_cipher'], app_config['token_key'], app_config['token_iv'])
       decipher.update(token) + decipher.final
     rescue => ex

@@ -1,6 +1,4 @@
 class MixinController < ApplicationController
-  skip_before_action :validate_url_param
-
   # POST /-/
   # POST /.well-known/org/ogf/occi/-/
   def create

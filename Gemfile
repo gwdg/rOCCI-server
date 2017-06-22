@@ -12,7 +12,7 @@ gem 'rack-cors', '~> 0.4'
 gem 'rails', '~> 5.1.1'
 gem 'responders', '~> 2.4.0'
 
-gem 'occi-core', '= 5.0.0.beta.2', require: 'occi/infrastructure-ext' # '~> 5.0.0'
+gem 'occi-core', '= 5.0.0.beta.3', require: 'occi/infrastructure-ext' # '~> 5.0.0'
 
 group :development, :test do
   gem 'byebug'
@@ -21,12 +21,11 @@ group :development, :test do
   gem 'rubocop', require: false
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
+  gem 'yard'
 end
 
 # Include external bundles
-path = File.join(File.dirname(__FILE__), 'lib', 'backends', 'bundles')
-if File.directory?(path)
-  Dir.glob(File.join(path, 'Gemfile.*')) do |gemfile|
-    eval(IO.read(gemfile), binding)
-  end
+Dir.glob(File.join(File.dirname(__FILE__), 'Gemfile.*')) do |gemfile|
+  next if gemfile.end_with?('.lock')
+  eval(IO.read(gemfile), binding)
 end

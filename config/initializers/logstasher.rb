@@ -7,5 +7,6 @@ if LogStasher.enabled
     fields[:authn_strategy] = 'token'
     fields[:uuid] = request.uuid
     fields[:ip] = request.remote_ip
+    fields[:env] = Rails.env
   end
 end
