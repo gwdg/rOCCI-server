@@ -1,1 +1,1 @@
-YARD::Rake::YardocTask.new
+YARD::Rake::YardocTask.new unless Rails.env.production?
