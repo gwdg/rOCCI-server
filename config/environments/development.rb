@@ -33,6 +33,14 @@ Rails.application.configure do
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
+  # Use the lowest log level to ensure availability of diagnostic information
+  # when problems arise.
+  config.log_level = config.rocci_server['log_level'].to_sym
+
+  config.logstasher.enabled = true
+  config.logstasher.suppress_app_log = false
+  config.logstasher.source = "#{config.rocci_server['hostname']}_#{config.rocci_server['port']}"
+
   # Raise an error on page load if there are pending migrations.
   # config.active_record.migration_error = :page_load
 

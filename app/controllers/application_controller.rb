@@ -2,22 +2,42 @@ require 'application_responder'
 require 'renderable_error'
 
 class ApplicationController < ActionController::API
-  ANY_FORMAT = '*/*'.freeze
-  NO_FORMAT = ''.freeze
-  WRONG_FORMATS = [ANY_FORMAT, NO_FORMAT].freeze
-  DEFAULT_FORMAT_SYM = :text
+  class << self
+    def app_config
+      Rails.configuration.rocci_server
+    end
+  end
+
+  URI_FORMATS = %i[uri_list].freeze
+  FULL_FORMATS = %i[json text headers].freeze
+  ALL_FORMATS = [URI_FORMATS, FULL_FORMATS].flatten.freeze
+  UBIQUITOUS_FORMATS = %w[*/*].freeze
+  DEFAULT_FORMAT_SYM = FULL_FORMATS.first
+
+  REDIRECT_HEADER_KEY = 'WWW-Authenticate'.freeze
+  REDIRECT_HEADER_URI = "Keystone uri='#{app_config['keystone_uri']}'".freeze
+
+  MODEL_FLAVORS = %w[core infrastructure infrastructure_ext].freeze
+
+  # Force SSL, we live in the 21st century after all
+  force_ssl
 
   # Register supported MIME formats
   # @see 'config/initializers/mime_types.rb' for details
   self.responder = ApplicationResponder
-  respond_to :uri_list, only: [:locations]
-  respond_to :json, :text, :headers
+  respond_to(*URI_FORMATS, only: %i[locations])
+  respond_to(*FULL_FORMATS)
 
   # Run pre-action checks
-  before_action :set_default_format
+  before_action :validate_format!
+  before_action :authorize_user!
   before_action :validate_url_param
 
   protected
+
+  def app_config
+    self.class.app_config
+  end
 
   def validate_url_param
     return if url_param_key && acceptable_url_params.include?(params[url_param_key])
@@ -36,12 +56,59 @@ class ApplicationController < ActionController::API
     respond_with RenderableError.new(code, message), status: code
   end
 
+  def current_user
+    authorize_user! if @_user_authorized.nil?
+    @_current_user
+  end
+
+  def current_token
+    authorize_user! if @_user_authorized.nil?
+    @_current_token
+  end
+
+  def server_model
+    return @_server_model if @_server_model
+
+    bootstrap_server_model!
+    extend_server_model!
+    @_server_model
+  end
+
+  def bootstrap_server_model!
+    @_server_model = Occi::InfrastructureExt::Model.new
+    MODEL_FLAVORS.each { |flv| @_server_model.send "load_#{flv}!" }
+    @_server_model
+  end
+
+  def extend_server_model!
+    @_server_model # TODO: pass this to the active backend and let it add new mixins
+  end
+
   private
 
-  # Checks request format and sets the default 'text/plain' if necessary.
-  def set_default_format
-    return unless WRONG_FORMATS.include?(request.format.to_s)
-    logger.debug "Request format in #{WRONG_FORMATS.inspect}, forcing #{DEFAULT_FORMAT_SYM} for compatibility"
-    request.format = DEFAULT_FORMAT_SYM
+  def validate_format!
+    if UBIQUITOUS_FORMATS.include?(request.format.to_s)
+      logger.debug "Changing ubiquitous format #{request.format} to #{DEFAULT_FORMAT_SYM}"
+      request.format = DEFAULT_FORMAT_SYM
+    end
+
+    return if ALL_FORMATS.include?(request.format.symbol)
+    render_error 406, 'Requested media format is not acceptable'
+  end
+
+  def authorize_user!
+    if request.env['rocci_server.request.tokenator.authorized']
+      @_user_authorized = true
+      @_current_user = request.env['rocci_server.request.tokenator.user']
+      @_current_token = request.env['rocci_server.request.tokenator.token']
+    else
+      @_user_authorized = false
+      @_current_user = 'unauthorized'
+      @_current_token = nil
+    end
+  end
+
+  def auth_redirect_header!
+    response.headers[REDIRECT_HEADER_KEY] = REDIRECT_HEADER_URI
   end
 end

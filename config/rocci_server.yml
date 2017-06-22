@@ -1,0 +1,19 @@
+defaults: &defaults
+  log_level: debug
+  hostname: localhost
+  port: 3000
+  keystone_uri: https://localhost:5000/
+  encryption:
+    token_cipher: ~
+    token_key: ~
+    token_iv: ~
+
+production:
+  <<: *defaults
+  log_level: warn
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults

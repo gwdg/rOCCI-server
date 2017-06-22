@@ -7,9 +7,13 @@
 threads_count = ENV.fetch('RAILS_MAX_THREADS') { 1 }
 threads threads_count, threads_count
 
-# Specifies the `port` that Puma will listen on to receive requests; default is 3000.
+# Specifies the `ssl_bind` that Puma will listen on to receive requests; default is localhost:3000.
 #
-port ENV.fetch('PORT') { 3000 }
+defaults_dir = File.dirname(__FILE__)
+ssl_bind ENV.fetch('HOST') { '127.0.0.1' },
+         ENV.fetch('PORT') { 3000 },
+         key: ENV.fetch('HOST_KEY') { File.join(defaults_dir, 'snakeoil.key') },
+         cert: ENV.fetch('HOST_CERT') { File.join(defaults_dir, 'snakeoil.cert') }
 
 # Specifies the `environment` that Puma will run in.
 #

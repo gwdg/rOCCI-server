@@ -5,7 +5,7 @@ module Rack
 
     blocklist('auth-less annoyances') do |req|
       Allow2Ban.filter(req.ip, maxretry: 10, findtime: 1.minute, bantime: 1.hour) do
-        req.env['HTTP_X_Auth_Token'].blank?
+        req.env['HTTP_X_AUTH_TOKEN'].blank?
       end
     end
   end

@@ -1,35 +1,15 @@
 class MixinController < ApplicationController
-  # GET /mixin/:parent/:term/
-  # (for legacy renderings and uri-list)
-  def scoped_locations; end
+  skip_before_action :validate_url_param
 
-  # GET /mixin/:parent/:term/
-  # (for new renderings)
-  def scoped_list; end
-
-  # POST /mixin/:parent/:term/
-  def assign
+  # POST /-/
+  # POST /.well-known/org/ogf/occi/-/
+  def create
     render_error 501, 'Requested functionality is not implemented'
   end
 
-  # POST /mixin/:parent/:term/?action=ACTION
-  def scoped_execute; end
-
-  # PUT /mixin/:parent/:term/
-  def update
+  # DELETE /-/
+  # DELETE /.well-known/org/ogf/occi/-/
+  def delete
     render_error 501, 'Requested functionality is not implemented'
-  end
-
-  # DELETE /mixin/:parent/:term/
-  def scoped_delete_all; end
-
-  protected
-
-  def acceptable_url_params
-    %w[os_tpl resource_tpl availability_zone]
-  end
-
-  def url_param_key
-    :parent
   end
 end
