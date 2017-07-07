@@ -43,12 +43,12 @@ class ApplicationController < ActionController::API
   end
 
   def current_user
-    authorize_user! if authorization_pending?
+    authorize_user!
     @_current_user
   end
 
   def current_token
-    authorize_user! if authorization_pending?
+    authorize_user!
     @_current_token
   end
 
@@ -105,6 +105,7 @@ class ApplicationController < ActionController::API
   end
 
   def authorize_user!
+    return unless authorization_pending?
     logger.debug "User authorization data #{request_user.inspect}:#{request_token.inspect}" if logger_debug?
 
     if request_authorized?
