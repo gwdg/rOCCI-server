@@ -1,19 +1,27 @@
 class EntityController < ApplicationController
   # GET /
   # (for legacy renderings and uri-list)
-  def locations; end
+  def locations
+    render_error 501, 'Requested functionality is not implemented'
+  end
 
   # GET /mixin/:parent/:term/
   # (for legacy renderings and uri-list)
-  def scoped_locations; end
+  def scoped_locations
+    render_error 501, 'Requested functionality is not implemented'
+  end
 
   # GET /
   # (for new renderings)
-  def list; end
+  def list
+    render_error 501, 'Requested functionality is not implemented'
+  end
 
   # GET /mixin/:parent/:term/
   # (for new renderings)
-  def scoped_list; end
+  def scoped_list
+    render_error 501, 'Requested functionality is not implemented'
+  end
 
   # POST /mixin/:parent/:term/
   def assign_mixin
