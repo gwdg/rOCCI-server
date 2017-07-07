@@ -21,9 +21,9 @@ module Entitylike
   #
   #
   # @param filter [Set] collection of filtering rules
-  # @return [Set] collection of entities matching the filter or all if filter is empty
+  # @return [Occi::Core::Collection] collection of entities matching the filter or all if filter is empty
   def list(_filter = Set.new)
-    Set.new
+    Occi::Core::Collection.new
   end
 
   #
