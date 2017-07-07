@@ -38,4 +38,10 @@ class LinkController < ApplicationController
 
   # DELETE /link/:link/
   def delete_all; end
+
+  protected
+
+  def default_backend_proxy
+    backend_proxy_for params[:link]
+  end
 end
