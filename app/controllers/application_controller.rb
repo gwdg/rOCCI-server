@@ -12,7 +12,7 @@ class ApplicationController < ActionController::API
   DEFAULT_FORMAT_SYM = FULL_FORMATS.first
 
   REDIRECT_HEADER_KEY = 'WWW-Authenticate'.freeze
-  REDIRECT_HEADER_URI = "Keystone uri='#{app_config['keystone_uri']}'".freeze
+  REDIRECT_HEADER_URI = "Keystone uri='#{app_config.fetch('keystone_uri')}'".freeze
 
   MODEL_FLAVORS = %w[core infrastructure infrastructure_ext].freeze
 
@@ -88,8 +88,28 @@ class ApplicationController < ActionController::API
     )
   end
 
+  def backend_proxy_for(subtype)
+    raise "#{subtype.inspect} is not a supported backend subtype" unless backend_proxy.has?(subtype.to_sym)
+    backend_proxy.send subtype
+  end
+
   def default_backend_proxy
-    backend_proxy.model_extender
+    backend_proxy_for 'model_extender'
+  end
+
+  #
+  #
+  # @return [String] public FQDN of the server, including the port number, no trailing slash
+  def server_url
+    "https://#{app_config.fetch('hostname')}:#{app_config.fetch('port')}"
+  end
+
+  #
+  #
+  # @param relative [String] relative URL, incl. the leading slash
+  # @return [String] absolute URL
+  def absolute_url(relative)
+    "#{server_url}#{relative}"
   end
 
   private
@@ -108,15 +128,19 @@ class ApplicationController < ActionController::API
     return unless authorization_pending?
     logger.debug "User authorization data #{request_user.inspect}:#{request_token.inspect}" if logger_debug?
 
-    if request_authorized?
-      @_user_authorized = true
-      @_current_token = request_token
-      @_current_user = request_user
-    else
-      @_user_authorized = false
-      @_current_token = nil
-      @_current_user = 'unauthorized'
-    end
+    request_authorized? ? authorize_set! : authorize_unset!
+  end
+
+  def authorize_set!
+    @_user_authorized = true
+    @_current_token = request_token
+    @_current_user = request_user
+  end
+
+  def authorize_unset!
+    @_user_authorized = false
+    @_current_token = nil
+    @_current_user = 'unauthorized'
   end
 
   def request_token
