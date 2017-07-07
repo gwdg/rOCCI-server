@@ -29,15 +29,45 @@ class BackendProxy
     @_cache = {}
   end
 
+  #
+  # @param btype [Symbol] backend type
+  # @return [TrueClass] if such backend type is available
+  # @return [FalseClass] if such backend type is NOT available
+  def can_be?(btype)
+    known_backend_types.keys.include?(btype)
+  end
+
+  #
+  # @param btype [Symbol] backend type
+  # @return [TrueClass] if backend type matches loaded type
+  # @return [FalseClass] if backend type does NOT match loaded type
+  def is?(btype)
+    type == btype
+  end
+
+  #
+  # @param bsubtype [Symbol] backend subtype
+  # @return [TrueClass] if backend subtype is available
+  # @return [FalseClass] if backend subtype is NOT available
+  def has?(bsubtype)
+    known_backend_subtypes.include?(bsubtype)
+  end
+
+  #
+  # @return [Hash] map of available backend types, `type` => `namespace`
   def known_backend_types
     BACKEND_TYPES
   end
 
+  #
+  # @return [Array] list of available backend subtypes
   def known_backend_subtypes
     BACKEND_SUBTYPES
   end
 
   class << self
+    #
+    # @return [String] version of the backend API, semantic
     def api_version
       API_VERSION
     end
@@ -56,7 +86,7 @@ class BackendProxy
   end
 
   def respond_to_missing?(method_name, include_private = false)
-    known_backend_subtypes.include?(method_name.to_sym) || super
+    has?(method_name.to_sym) || super
   end
 
   def initialize_proxy(subtype)
