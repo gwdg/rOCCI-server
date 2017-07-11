@@ -11,7 +11,7 @@ module Errorable
   # @param code [Numeric] reponse code (HTTP code)
   # @param message [String] response message
   def render_error(code, message)
-    respond_with RenderableError.new(code, message), status: code
+    respond_with Ext::RenderableError.new(code, message), status: code
   end
 
   # Handles authorization errors and responds with appropriate HTTP code and headers.

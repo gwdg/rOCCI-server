@@ -11,7 +11,7 @@ module Renderable
   included do
     # Register supported MIME formats
     # @see 'config/initializers/mime_types.rb' for details
-    self.responder = ApplicationResponder
+    self.responder = Ext::ApplicationResponder
     respond_to(*URI_FORMATS, only: %i[locations])
     respond_to(*FULL_FORMATS)
 
