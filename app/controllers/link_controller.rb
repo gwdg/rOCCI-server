@@ -37,7 +37,7 @@ class LinkController < ApplicationController
   def delete; end
 
   # DELETE /link/:link/
-  def delete_all; end
+  delegate :delete_all, to: :default_backend_proxy
 
   protected
 

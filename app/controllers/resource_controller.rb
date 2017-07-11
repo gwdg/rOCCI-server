@@ -55,9 +55,7 @@ class ResourceController < ApplicationController
   end
 
   # DELETE /:resource/
-  def delete_all
-    default_backend_proxy.delete_all
-  end
+  delegate :delete_all, to: :default_backend_proxy
 
   protected
 
