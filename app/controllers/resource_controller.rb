@@ -1,4 +1,6 @@
 class ResourceController < ApplicationController
+  include ParserAccessible
+
   before_action :resource_exists!, only: %i[show execute update partial_update delete]
 
   # GET /:resource/

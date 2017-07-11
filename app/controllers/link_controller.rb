@@ -1,4 +1,8 @@
 class LinkController < ApplicationController
+  include ParserAccessible
+
+  before_action :link_exists!, only: %i[show execute update partial_update delete]
+
   # GET /link/:link/
   # (for legacy renderings and uri-list)
   def locations; end
@@ -43,5 +47,10 @@ class LinkController < ApplicationController
 
   def default_backend_proxy
     backend_proxy_for params[:link]
+  end
+
+  def link_exists!
+    return if default_backend_proxy.exists?(params[:id])
+    render_error 404, 'Requested link could not be found'
   end
 end
