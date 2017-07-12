@@ -28,7 +28,10 @@ class ResourceController < ApplicationController
 
   # POST /:resource/
   def create
-    # TODO: parse R and `create` and the backend
+    ids = parsed_resources.map { |r| default_backend_proxy.create(r) }
+    return if ids.blank?
+
+    respond_with locations_from(ids)
   end
 
   # POST /:resource/:id?action=ACTION
@@ -70,6 +73,9 @@ class ResourceController < ApplicationController
     locations
   end
 
+  # Returns default backend instance for the given controller.
+  #
+  # @return [Entitylike, Extenderlike] subtype instance
   def default_backend_proxy
     backend_proxy_for params[:resource]
   end
@@ -77,5 +83,10 @@ class ResourceController < ApplicationController
   def resource_exists!
     return if default_backend_proxy.exists?(params[:id])
     render_error 404, 'Requested resource could not be found'
+  end
+
+  def parsed_resources
+    resources = parser_wrapper { request_parser.resources(request.raw_post, request.headers) }
+    validate_entities! resources
   end
 end

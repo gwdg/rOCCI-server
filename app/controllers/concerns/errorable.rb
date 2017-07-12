@@ -15,7 +15,9 @@ module Errorable
   end
 
   # Handles authorization errors and responds with appropriate HTTP code and headers.
-  def handle_authorization_error
+  #
+  # @param exception [Exception] exception to convert into a response
+  def handle_authorization_error(exception)
     response.headers[self.class.redirect_header_key] = self.class.redirect_header_uri
     render_error 401, 'Not Authorized'
   end

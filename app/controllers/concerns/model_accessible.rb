@@ -30,6 +30,6 @@ module ModelAccessible
   # @return [Occi::Core::Model] fully initialized server model
   def extend_server_model!
     logger.debug 'Extending server model with backend mixins'
-    default_backend_proxy.populate! @_server_model
+    backend_proxy_for('model_extender').populate! @_server_model
   end
 end

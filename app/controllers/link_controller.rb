@@ -45,6 +45,9 @@ class LinkController < ApplicationController
 
   protected
 
+  # Returns default backend instance for the given controller.
+  #
+  # @return [Entitylike, Extenderlike] subtype instance
   def default_backend_proxy
     backend_proxy_for params[:link]
   end
@@ -52,5 +55,10 @@ class LinkController < ApplicationController
   def link_exists!
     return if default_backend_proxy.exists?(params[:id])
     render_error 404, 'Requested link could not be found'
+  end
+
+  def parsed_links
+    links = parser_wrapper { request_parser.links(request.raw_post, request.headers) }
+    validate_entities! links
   end
 end

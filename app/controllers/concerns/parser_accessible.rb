@@ -1,3 +1,85 @@
 module ParserAccessible
   extend ActiveSupport::Concern
+
+  # Statically defined supported parsers
+  SUPPORTED_PARSERS = [Occi::Core::Parsers::JsonParser, Occi::Core::Parsers::TextParser].freeze
+
+  included do
+    delegate :supported_parsers, to: :class
+
+    rescue_from Errors::ParsingError, with: :handle_parsing_error
+    rescue_from Errors::ValidationError, with: :handle_validation_error
+  end
+
+  class_methods do
+    # Returns list of supported parser classes.
+    #
+    # @return [Array] supported parser classes
+    def supported_parsers
+      SUPPORTED_PARSERS
+    end
+  end
+
+  # Validates given `Enumerable` or `Occi::Core::Entity`-like objects.
+  #
+  # @param enum [Enumerable] list of objects
+  # @return [Enumerable] given list
+  def validate_entities!(enum)
+    enum.each(&:valid!)
+    enum
+  rescue ::Occi::Core::Errors::ValidationError => ex
+    logger.error "Validation failed: #{ex.class} #{ex.message}"
+    raise Errors::ValidationError, ex.message
+  end
+
+  # Wraps given block in simple error handling. Intended for use with `request_parser`.
+  def parser_wrapper
+    yield
+  rescue ::Occi::Core::Errors::ParsingError => ex
+    logger.error "Request parsing failed: #{ex.class} #{ex.message}"
+    raise Errors::ParsingError, ex.message
+  end
+
+  # Instantiates parser for the current request. Parser selection is done automatically based on
+  # `request.format`.
+  #
+  # @return [Occi::Core::Parsers::BaseParser] parser instance
+  def request_parser
+    return @_request_parser if @_request_parser
+
+    klass = parser_class(stringy_media_type)
+    raise "Parser for #{request.format} is not available" unless klass
+
+    @_request_parser = klass.new(model: server_model, media_type: stringy_media_type)
+  end
+
+  # Returns parser class for the given format.
+  #
+  # @param format [String] HTTP-compliant format name
+  # @return [NillClass] if no parser found
+  # @return [Class] parser class
+  def parser_class(format)
+    supported_parsers.detect { |p| p.parses? format }
+  end
+
+  # Returns `String`-like media type specification.
+  #
+  # @return [String] media type
+  def stringy_media_type
+    request.format.to_s
+  end
+
+  # Handles parsing errors and responds with appropriate HTTP code and headers.
+  #
+  # @param exception [Exception] exception to convert into a response
+  def handle_parsing_error(exception)
+    render_error 400, "Unparsable content: #{exception}"
+  end
+
+  # Handles validation errors and responds with appropriate HTTP code and headers.
+  #
+  # @param exception [Exception] exception to convert into a response
+  def handle_parsing_error(exception)
+    render_error 400, "Invalid content: #{exception}"
+  end
 end
