@@ -31,7 +31,7 @@ class ResourceController < ApplicationController
     ids = parsed_resources.map { |r| default_backend_proxy.create(r) }
     return if ids.blank?
 
-    respond_with locations_from(ids)
+    respond_with locations_from(ids), status: :created
   end
 
   # POST /:resource/:id?action=ACTION
@@ -46,7 +46,7 @@ class ResourceController < ApplicationController
 
   # PUT /:resource/:id
   def update
-    render_error 501, 'Requested functionality is not implemented'
+    render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
   # POST /:resource/:id
@@ -82,7 +82,7 @@ class ResourceController < ApplicationController
 
   def resource_exists!
     return if default_backend_proxy.exists?(params[:id])
-    render_error 404, 'Requested resource could not be found'
+    render_error :not_found, 'Requested resource could not be found'
   end
 
   def parsed_resources

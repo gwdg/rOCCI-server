@@ -20,12 +20,12 @@ module Renderable
   # Checks request format and defaults or returns HTTP[406].
   def validate_requested_format!
     return if ALL_FORMATS.include?(request.format.symbol)
-    render_error 406, 'Requested media format is not acceptable'
+    render_error :not_acceptable, 'Requested media format is not acceptable'
   end
 
   # Checks request format and defaults or returns HTTP[406].
   def validate_provided_format!
     return if FULL_FORMATS.include?(request.content_mime_type.symbol)
-    render_error 406, 'Provided media format is not acceptable'
+    render_error :not_acceptable, 'Provided media format is not acceptable'
   end
 end

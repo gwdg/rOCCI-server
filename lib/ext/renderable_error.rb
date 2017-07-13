@@ -18,7 +18,7 @@ module Ext
     end
 
     def to_s
-      "Status[#{code}]: #{message}"
+      message
     end
     alias to_text to_s
   end

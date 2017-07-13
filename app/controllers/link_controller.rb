@@ -19,22 +19,22 @@ class LinkController < ApplicationController
 
   # POST /link/:link/:id?action=ACTION
   def execute
-    render_error 501, 'Requested functionality is not implemented'
+    render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
   # POST /link/:link/?action=ACTION
   def execute_all
-    render_error 501, 'Requested functionality is not implemented'
+    render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
   # PUT /link/:link/:id
   def update
-    render_error 501, 'Requested functionality is not implemented'
+    render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
   # POST /link/:link/:id
   def partial_update
-    render_error 501, 'Requested functionality is not implemented'
+    render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
   # DELETE /link/:link/:id
@@ -54,7 +54,7 @@ class LinkController < ApplicationController
 
   def link_exists!
     return if default_backend_proxy.exists?(params[:id])
-    render_error 404, 'Requested link could not be found'
+    render_error :not_found, 'Requested link could not be found'
   end
 
   def parsed_links

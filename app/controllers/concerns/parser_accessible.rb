@@ -73,13 +73,13 @@ module ParserAccessible
   #
   # @param exception [Exception] exception to convert into a response
   def handle_parsing_error(exception)
-    render_error 400, "Unparsable content: #{exception}"
+    render_error :bad_request, "Unparsable content: #{exception}"
   end
 
   # Handles validation errors and responds with appropriate HTTP code and headers.
   #
   # @param exception [Exception] exception to convert into a response
   def handle_validation_error(exception)
-    render_error 400, "Invalid content: #{exception}"
+    render_error :bad_request, "Invalid content: #{exception}"
   end
 end
