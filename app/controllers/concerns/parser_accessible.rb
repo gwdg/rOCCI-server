@@ -41,14 +41,14 @@ module ParserAccessible
   end
 
   # Instantiates parser for the current request. Parser selection is done automatically based on
-  # `request.format`.
+  # `request.content_mime_type`.
   #
   # @return [Occi::Core::Parsers::BaseParser] parser instance
   def request_parser
     return @_request_parser if @_request_parser
 
     klass = parser_class(stringy_media_type)
-    raise "Parser for #{request.format} is not available" unless klass
+    raise "Parser for #{stringy_media_type} is not available" unless klass
 
     @_request_parser = klass.new(model: server_model, media_type: stringy_media_type)
   end
@@ -66,7 +66,7 @@ module ParserAccessible
   #
   # @return [String] media type
   def stringy_media_type
-    request.format.to_s
+    request.content_mime_type.to_s
   end
 
   # Handles parsing errors and responds with appropriate HTTP code and headers.

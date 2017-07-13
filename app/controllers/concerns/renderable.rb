@@ -5,8 +5,6 @@ module Renderable
   URI_FORMATS = %i[uri_list].freeze
   FULL_FORMATS = %i[json text headers].freeze
   ALL_FORMATS = [URI_FORMATS, FULL_FORMATS].flatten.freeze
-  UBIQUITOUS_FORMATS = %w[*/*].freeze
-  DEFAULT_FORMAT_SYM = FULL_FORMATS.first
 
   included do
     # Register supported MIME formats
@@ -15,17 +13,19 @@ module Renderable
     respond_to(*URI_FORMATS, only: %i[locations])
     respond_to(*FULL_FORMATS)
 
-    before_action :validate_format!
+    before_action :validate_requested_format!
+    before_action :validate_provided_format!
   end
 
   # Checks request format and defaults or returns HTTP[406].
-  def validate_format!
-    if UBIQUITOUS_FORMATS.include?(request.format.to_s)
-      logger.debug "Changing ubiquitous format #{request.format} to #{DEFAULT_FORMAT_SYM}"
-      request.format = DEFAULT_FORMAT_SYM
-    end
-
+  def validate_requested_format!
     return if ALL_FORMATS.include?(request.format.symbol)
     render_error 406, 'Requested media format is not acceptable'
+  end
+
+  # Checks request format and defaults or returns HTTP[406].
+  def validate_provided_format!
+    return if FULL_FORMATS.include?(request.content_mime_type.symbol)
+    render_error 406, 'Provided media format is not acceptable'
   end
 end
