@@ -10,7 +10,7 @@ module Ext
     end
 
     def to_json
-      { code: code, message: message }.to_json
+      { status: code, error: message }.to_json
     end
 
     def to_headers
@@ -18,7 +18,7 @@ module Ext
     end
 
     def to_s
-      "#{code} #{message}"
+      "Status[#{code}]: #{message}"
     end
     alias to_text to_s
   end
