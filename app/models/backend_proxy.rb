@@ -2,16 +2,25 @@ module Backends; end
 Dir.glob(File.join(File.dirname(__FILE__), 'backends', '*.rb')) { |mod| require mod.chomp('.rb') }
 
 class BackendProxy
+  #
   BACKEND_TYPES = {
     dummy: Backends::Dummy,
     opennebula: Backends::OpenNebula,
     aws_ec2: Backends::AwsEc2
   }.freeze
-  BACKEND_SUBTYPES = %i[
+
+  #
+  BACKEND_ENTITY_SUBTYPES = %i[
     compute network storage securitygroup ipreservation
     storagelink networkinterface securitygrouplink
-    model_extender
   ].freeze
+  BACKEND_NON_ENTITY_SUBTYPES = %i[model_extender].freeze
+  BACKEND_SUBTYPES = [
+    BACKEND_ENTITY_SUBTYPES,
+    BACKEND_NON_ENTITY_SUBTYPES
+  ].flatten.freeze
+
+  #
   API_VERSION = '3.0.0'.freeze
 
   attr_accessor :type, :options, :logger
@@ -54,6 +63,14 @@ class BackendProxy
   end
 
   #
+  # @param bsubtype [Symbol] backend subtype
+  # @return [TrueClass] if backend subtype is serving something Entity-like
+  # @return [FalseClass] if backend subtype is NOT serving anything Entity-like
+  def entitylike?(bsubtype)
+    known_backend_entity_subtypes.include?(bsubtype)
+  end
+
+  #
   # @return [Hash] map of available backend types, `type` => `namespace`
   def known_backend_types
     BACKEND_TYPES
@@ -63,6 +80,18 @@ class BackendProxy
   # @return [Array] list of available backend subtypes
   def known_backend_subtypes
     BACKEND_SUBTYPES
+  end
+
+  #
+  # @return [Array] list of available backend subtypes serving something Entity-like
+  def known_backend_entity_subtypes
+    BACKEND_ENTITY_SUBTYPES
+  end
+
+  #
+  # @return [Array] list of available backend subtypes serving nothing Entity-like
+  def known_backend_non_entity_subtypes
+    BACKEND_NON_ENTITY_SUBTYPES
   end
 
   class << self
