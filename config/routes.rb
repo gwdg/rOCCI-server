@@ -72,33 +72,37 @@ Rails.application.routes.draw do
   ##  - Occi::InfrastructureExt::SecurityGroupLink
   ####################################################
   get '(/link)/:entity/:id',
-      to: 'resource#show'
+      to: 'entity#show',
+      constraints: Ext::RoutingConstraints.build(%i[entity_ne_link])
   get '(/link)/:entity/',
-      to: 'resource#list',
-      constraints: Ext::RoutingConstraints.build(%i[non_legacy])
+      to: 'entity#list',
+      constraints: Ext::RoutingConstraints.build(%i[entity_ne_link non_legacy])
   get '(/link)/:entity/',
-      to: 'resource#locations',
-      constraints: Ext::RoutingConstraints.build(%i[legacy])
+      to: 'entity#locations',
+      constraints: Ext::RoutingConstraints.build(%i[entity_ne_link legacy])
 
   post '(/link)/:entity/:id',
-       to: 'resource#execute',
-       constraints: Ext::RoutingConstraints.build(%i[action])
+       to: 'entity#execute',
+       constraints: Ext::RoutingConstraints.build(%i[entity_ne_link action])
   post '(/link)/:entity/:id',
-       to: 'resource#partial_update',
-       constraints: Ext::RoutingConstraints.build(%i[non_action])
+       to: 'entity#partial_update',
+       constraints: Ext::RoutingConstraints.build(%i[entity_ne_link non_action])
   post '(/link)/:entity/',
-       to: 'resource#execute_all',
-       constraints: Ext::RoutingConstraints.build(%i[action])
+       to: 'entity#execute_all',
+       constraints: Ext::RoutingConstraints.build(%i[entity_ne_link action])
   post '(/link)/:entity/',
-       to: 'resource#create',
-       constraints: Ext::RoutingConstraints.build(%i[non_action])
+       to: 'entity#create',
+       constraints: Ext::RoutingConstraints.build(%i[entity_ne_link non_action])
 
   put '(/link)/:entity/:id',
-      to: 'resource#update'
+      to: 'entity#update',
+      constraints: Ext::RoutingConstraints.build(%i[entity_ne_link])
   # put '(/link)/:entity/' is undefined in GFD-P-R.185
 
   delete '(/link)/:entity/:id',
-         to: 'resource#delete'
+         to: 'entity#delete',
+         constraints: Ext::RoutingConstraints.build(%i[entity_ne_link])
   delete '(/link)/:entity/',
-         to: 'resource#delete_all'
+         to: 'entity#delete_all',
+         constraints: Ext::RoutingConstraints.build(%i[entity_ne_link])
 end

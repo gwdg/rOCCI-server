@@ -6,7 +6,8 @@ module Ext
       legacy: %i[legacy_format?],
       non_legacy: %i[non_legacy_format?],
       action: %i[valid_action_term?],
-      non_action: %i[non_action?]
+      non_action: %i[non_action?],
+      entity_ne_link: %i[entity_ne_link?]
     }.freeze
 
     attr_accessor :logger, :ruleset
@@ -47,6 +48,10 @@ module Ext
 
     def non_action?(request)
       !request.query_parameters.key?(:action)
+    end
+
+    def entity_ne_link?(request)
+      request.parameters[:entity] != 'link'
     end
   end
 end
