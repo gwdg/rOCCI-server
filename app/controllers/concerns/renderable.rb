@@ -14,7 +14,6 @@ module Renderable
     respond_to(*FULL_FORMATS)
 
     before_action :validate_requested_format!
-    before_action :validate_provided_format!
   end
 
   # Checks request format and defaults or returns HTTP[406].
@@ -25,7 +24,7 @@ module Renderable
 
   # Checks request format and defaults or returns HTTP[406].
   def validate_provided_format!
-    return if FULL_FORMATS.include?(request.content_mime_type.symbol)
+    return if request.content_mime_type && FULL_FORMATS.include?(request.content_mime_type.symbol)
     render_error :not_acceptable, 'Provided media format is not acceptable'
   end
 end

@@ -2,6 +2,7 @@ class MultiEntityController < ApplicationController
   # Known mixin parents (being depended on)
   MIXIN_PARENTS = %w[os_tpl resource_tpl availability_zone region].freeze
 
+  before_action :validate_provided_format!, only: %i[assign_mixin execute_all scoped_execute_all update_mixin]
   before_action :parent_exists!, except: %i[locations list execute_all delete_all]
 
   # GET /

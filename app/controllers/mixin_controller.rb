@@ -1,4 +1,6 @@
 class MixinController < ApplicationController
+  before_action :validate_provided_format!, only: %i[create]
+
   # POST /-/
   # POST /.well-known/org/ogf/occi/-/
   def create

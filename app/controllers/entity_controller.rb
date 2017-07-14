@@ -5,6 +5,7 @@ class EntityController < ApplicationController
   LINK_PATH_PREFIX = '/link/'.freeze
 
   before_action :entitylike!
+  before_action :validate_provided_format!, only: %i[create execute execute_all update partial_update]
   before_action :instance_exists!, only: %i[show execute update partial_update delete]
 
   # GET (/link)/:entity/
@@ -72,7 +73,7 @@ class EntityController < ApplicationController
   # a valid Entity-like term. If not, this will render and return
   # HTTP[404].
   def entitylike!
-    return if backend_proxy.entitylike?(params[:entity])
+    return if backend_proxy.entitylike?(params[:entity].to_sym)
     render_error :not_found, 'Requested entity type could not be found'
   end
 
