@@ -8,8 +8,8 @@ module Rack
     TOKEN_HEADER_KEY = 'HTTP_X_AUTH_TOKEN'.freeze
     TOKENATOR_ENV_NAMESPACE = 'rocci_server.request.tokenator'.freeze
 
-    REDIRECT_HEADER_KEY = ApplicationController::REDIRECT_HEADER_KEY
-    REDIRECT_HEADER_URI = ApplicationController::REDIRECT_HEADER_URI
+    REDIRECT_HEADER_KEY = ApplicationController.redirect_header_key.freeze
+    REDIRECT_HEADER_URI = ApplicationController.redirect_header_uri.freeze
 
     def initialize(app)
       @app = app

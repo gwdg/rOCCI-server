@@ -2,16 +2,25 @@ module Backends; end
 Dir.glob(File.join(File.dirname(__FILE__), 'backends', '*.rb')) { |mod| require mod.chomp('.rb') }
 
 class BackendProxy
+  #
   BACKEND_TYPES = {
     dummy: Backends::Dummy,
     opennebula: Backends::OpenNebula,
     aws_ec2: Backends::AwsEc2
   }.freeze
-  BACKEND_SUBTYPES = %i[
+
+  #
+  BACKEND_ENTITY_SUBTYPES = %i[
     compute network storage securitygroup ipreservation
     storagelink networkinterface securitygrouplink
-    model_extender
   ].freeze
+  BACKEND_NON_ENTITY_SUBTYPES = %i[model_extender].freeze
+  BACKEND_SUBTYPES = [
+    BACKEND_ENTITY_SUBTYPES,
+    BACKEND_NON_ENTITY_SUBTYPES
+  ].flatten.freeze
+
+  #
   API_VERSION = '3.0.0'.freeze
 
   attr_accessor :type, :options, :logger
@@ -29,15 +38,65 @@ class BackendProxy
     @_cache = {}
   end
 
+  #
+  # @param btype [Symbol] backend type
+  # @return [TrueClass] if such backend type is available
+  # @return [FalseClass] if such backend type is NOT available
+  def can_be?(btype)
+    known_backend_types.keys.include?(btype)
+  end
+
+  #
+  # @param btype [Symbol] backend type
+  # @return [TrueClass] if backend type matches loaded type
+  # @return [FalseClass] if backend type does NOT match loaded type
+  def is?(btype)
+    type == btype
+  end
+
+  #
+  # @param bsubtype [Symbol] backend subtype
+  # @return [TrueClass] if backend subtype is available
+  # @return [FalseClass] if backend subtype is NOT available
+  def has?(bsubtype)
+    known_backend_subtypes.include?(bsubtype)
+  end
+
+  #
+  # @param bsubtype [Symbol] backend subtype
+  # @return [TrueClass] if backend subtype is serving something Entity-like
+  # @return [FalseClass] if backend subtype is NOT serving anything Entity-like
+  def entitylike?(bsubtype)
+    known_backend_entity_subtypes.include?(bsubtype)
+  end
+
+  #
+  # @return [Hash] map of available backend types, `type` => `namespace`
   def known_backend_types
     BACKEND_TYPES
   end
 
+  #
+  # @return [Array] list of available backend subtypes
   def known_backend_subtypes
     BACKEND_SUBTYPES
   end
 
+  #
+  # @return [Array] list of available backend subtypes serving something Entity-like
+  def known_backend_entity_subtypes
+    BACKEND_ENTITY_SUBTYPES
+  end
+
+  #
+  # @return [Array] list of available backend subtypes serving nothing Entity-like
+  def known_backend_non_entity_subtypes
+    BACKEND_NON_ENTITY_SUBTYPES
+  end
+
   class << self
+    #
+    # @return [String] version of the backend API, semantic
     def api_version
       API_VERSION
     end
@@ -56,7 +115,7 @@ class BackendProxy
   end
 
   def respond_to_missing?(method_name, include_private = false)
-    known_backend_subtypes.include?(method_name.to_sym) || super
+    has?(method_name.to_sym) || super
   end
 
   def initialize_proxy(subtype)

@@ -1,47 +1,148 @@
 class EntityController < ApplicationController
-  # GET /
+  include ParserAccessible
+
+  # A way to separate Resources from Links
+  LINK_PATH_PREFIX = '/link/'.freeze
+
+  before_action :entitylike!
+  before_action :validate_provided_format!, only: %i[create execute execute_all update partial_update]
+  before_action :instance_exists!, only: %i[show execute update partial_update delete]
+
+  # GET (/link)/:entity/
   # (for legacy renderings and uri-list)
-  def locations; end
+  def locations
+    ids = default_backend_proxy.identifiers
+    return if ids.blank?
 
-  # GET /mixin/:parent/:term/
-  # (for legacy renderings and uri-list)
-  def scoped_locations; end
-
-  # GET /
-  # (for new renderings)
-  def list; end
-
-  # GET /mixin/:parent/:term/
-  # (for new renderings)
-  def scoped_list; end
-
-  # POST /mixin/:parent/:term/
-  def assign_mixin
-    render_error 501, 'Requested functionality is not implemented'
+    respond_with locations_from(ids)
   end
 
-  # POST /?action=ACTION
+  # GET (/link)/:entity/
+  # (for new renderings)
+  def list
+    entities = default_backend_proxy.list
+    return if entities.blank? || entities.only_categories?
+
+    respond_with entities
+  end
+
+  # GET (/link)/:entity/:id
+  def show
+    respond_with default_backend_proxy.instance(params[:id])
+  end
+
+  # POST (/link)/:entity/
+  def create
+    coll = resources_or_links.select { |rol| default_backend_proxy.serves?(rol.class) }
+    if coll.empty?
+      render_error :bad_request, 'Given instance(s) not supported in this collection'
+      return
+    end
+
+    ids = coll.map { |r| default_backend_proxy.create(r) }
+    respond_with locations_from(ids), status: :created
+  end
+
+  # POST (/link)/:entity/:id?action=ACTION
+  def execute
+    coll = request_action_instances
+    if coll.count != 1
+      render_error :bad_request, 'Single action instance must be given'
+      return
+    end
+
+    default_backend_proxy.trigger params[:id], coll.first
+  end
+
+  # POST (/link)/:entity/?action=ACTION
   def execute_all
-    render_error 501, 'Requested functionality is not implemented'
+    coll = request_action_instances
+    if coll.count != 1
+      render_error :bad_request, 'Single action instance must be given'
+      return
+    end
+
+    default_backend_proxy.trigger_all coll.first
   end
 
-  # POST /mixin/:parent/:term/?action=ACTION
-  def scoped_execute_all
-    render_error 501, 'Requested functionality is not implemented'
+  # PUT (/link)/:entity/:id
+  def update
+    render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
-  # PUT /mixin/:parent/:term/
-  def update_mixin
-    render_error 501, 'Requested functionality is not implemented'
+  # POST (/link)/:entity/:id
+  def partial_update
+    coll = request_mixins
+    if coll.empty?
+      render_error :bad_request, 'No mixins given for updating the instance'
+      return
+    end
+
+    respond_with default_backend_proxy.partial_update(params[:id], mixins: coll)
   end
 
-  # DELETE /
-  def delete_all
-    render_error 501, 'Requested functionality is not implemented'
+  # DELETE (/link)/:entity/:id
+  def delete
+    default_backend_proxy.delete params[:id]
   end
 
-  # DELETE /mixin/:parent/:term/
-  def scoped_delete_all
-    render_error 501, 'Requested functionality is not implemented'
+  # DELETE (/link)/:entity/
+  delegate :delete_all, to: :default_backend_proxy
+
+  protected
+
+  # Checks whether `:entity` specified in `params` is actually
+  # a valid Entity-like term. If not, this will render and return
+  # HTTP[404].
+  def entitylike!
+    return if backend_proxy.entitylike?(params[:entity].to_sym)
+    render_error :not_found, 'Requested entity type could not be found'
+  end
+
+  # Checks whether `:id` specified in `params` is actually an
+  # existing instance. If not, this will render and return
+  # HTTP[404].
+  def instance_exists!
+    return if default_backend_proxy.exists?(params[:id])
+    render_error :not_found, 'Requested instance could not be found'
+  end
+
+  # Converts given enumerable structure to an instance of `Occi::Core::Locations`
+  # for later rendering or further processing.
+  #
+  # @param identifiers [Enumerable] list of identifiers
+  # @return [Occi::Core::Locations] converted structure
+  def locations_from(identifiers)
+    locations = Occi::Core::Locations.new
+
+    identifiers.each do |id|
+      relative_url = "#{linkish? ? LINK_PATH_PREFIX : '/'}#{params[:entity]}/#{id}"
+      locations << absolute_url(relative_url)
+    end
+    locations.valid!
+
+    locations
+  end
+
+  # Checks whether the current request should assume Link-like entity subtypes.
+  #
+  # @return [TrueClass] if request path suggests certain linkiness
+  # @return [FalseClass] if NOT
+  def linkish?
+    request.original_fullpath.start_with?(LINK_PATH_PREFIX)
+  end
+
+  # Attempts to parse and return the correct instance collection for this request type.
+  #
+  # @return [Set] collection of instances
+  def resources_or_links
+    linkish? ? request_links : request_resources
+  end
+
+  # Returns default backend instance for the given controller.
+  #
+  # @return [Entitylike, Extenderlike] subtype instance
+  def default_backend_proxy
+    backend_proxy_for params[:entity]
   end
 end

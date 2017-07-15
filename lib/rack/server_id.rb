@@ -10,6 +10,11 @@ module Rack
       'X-Clacks-Overhead' => 'GNU Terry Pratchett',
       'X-Powered-By' => 'A Sense of Purpose ... and Goblins'
     }.freeze
+    SECURITY_HEADERS = {
+      'X-Content-Type-Options' => 'nosniff',
+      'X-Frame-Options' => 'deny',
+      'Content-Security-Policy' => 'default-src \'none\''
+    }.freeze
 
     def initialize(app)
       @app = app
@@ -21,6 +26,7 @@ module Rack
 
       response_headers[HEADER_KEY] = server_header
       response_headers.merge! CHEEKY_HEADERS
+      response_headers.merge! SECURITY_HEADERS
 
       response
     end
