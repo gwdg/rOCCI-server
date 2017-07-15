@@ -1,6 +1,34 @@
 module Entitylike
   extend ActiveSupport::Concern
 
+  included do
+    delegate :serves?, to: :class
+  end
+
+  class_methods do
+    # Checks whether the given class is served by this particular
+    # backend part.
+    #
+    # @example
+    #    compute.serves?(Occi::Infrastructure::Compute) # => true
+    #    compute.serves?(Occi::Infrastructure::Network) # => false
+    #
+    # @param klass [Class] class to check
+    # @return [TrueClass] if serves
+    # @return [FalseClass] if does not serve
+    def serves?(klass)
+      klass.ancestors.include?(served_class)
+    end
+
+    # Returns class served by this backend part. This method should be overriden
+    # by each implementing part.
+    #
+    # @return [Class] served class
+    def served_class
+      Occi::Core::Entity
+    end
+  end
+
   #
   #
   # @param identifier [String] UUID of the requested entity

@@ -53,7 +53,7 @@ module ParserAccessible
     parser_wrapper { request_parser.mixins(request.raw_post, request.headers) }
   end
 
-  # Validates given `Enumerable` or `Occi::Core::Entity`-like objects.
+  # Validates given `Enumerable` with `Occi::Core::Entity`-like objects.
   #
   # @param enum [Enumerable] list of objects
   # @return [Enumerable] given list

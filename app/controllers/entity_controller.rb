@@ -33,9 +33,13 @@ class EntityController < ApplicationController
 
   # POST (/link)/:entity/
   def create
-    ids = resources_or_links.map { |r| default_backend_proxy.create(r) }
-    return if ids.blank?
+    coll = resources_or_links.select { |rol| default_backend_proxy.serves?(rol.class) }
+    if coll.empty?
+      render_error :bad_request, 'Given instance(s) not supported in this collection'
+      return
+    end
 
+    ids = coll.map { |r| default_backend_proxy.create(r) }
     respond_with locations_from(ids), status: :created
   end
 
