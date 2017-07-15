@@ -45,12 +45,24 @@ class EntityController < ApplicationController
 
   # POST (/link)/:entity/:id?action=ACTION
   def execute
-    # TODO: parse AI and `trigger` on the backend
+    coll = request_action_instances
+    if coll.count != 1
+      render_error :bad_request, 'Single action instance must be given'
+      return
+    end
+
+    default_backend_proxy.trigger params[:id], coll.first
   end
 
   # POST (/link)/:entity/?action=ACTION
   def execute_all
-    # TODO: parse AI and `trigger_all` on the backend
+    coll = request_action_instances
+    if coll.count != 1
+      render_error :bad_request, 'Single action instance must be given'
+      return
+    end
+
+    default_backend_proxy.trigger_all coll.first
   end
 
   # PUT (/link)/:entity/:id
@@ -60,7 +72,13 @@ class EntityController < ApplicationController
 
   # POST (/link)/:entity/:id
   def partial_update
-    # TODO: parse M and `partial_update` on the backend
+    coll = request_mixins
+    if coll.empty?
+      render_error :bad_request, 'No mixins given for updating the instance'
+      return
+    end
+
+    respond_with default_backend_proxy.partial_update(params[:id], mixins: coll)
   end
 
   # DELETE (/link)/:entity/:id
