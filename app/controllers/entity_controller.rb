@@ -1,10 +1,9 @@
 class EntityController < ApplicationController
   include ParserAccessible
-
-  # A way to separate Resources from Links
-  LINK_PATH_PREFIX = '/link/'.freeze
+  include LocationsTransformable
 
   before_action :entitylike!
+  before_action :matching_path!
   before_action :validate_provided_format!, only: %i[create execute execute_all update partial_update]
   before_action :instance_exists!, only: %i[show execute update partial_update delete]
 
@@ -95,8 +94,14 @@ class EntityController < ApplicationController
   # a valid Entity-like term. If not, this will render and return
   # HTTP[404].
   def entitylike!
-    return if backend_proxy.entitylike?(params[:entity].to_sym)
+    return if BackendProxy.entitylike?(params[:entity].to_sym)
     render_error :not_found, 'Requested entity type could not be found'
+  end
+
+  # Checks whether Entity-like instance is accessed via the corresponding
+  # path (relative URL). If not, this will render and return HTTP[404].
+  def matching_path!
+    link_path? || resource_path? || render_error(:not_found, 'Mismatched entity type and collection path')
   end
 
   # Checks whether `:id` specified in `params` is actually an
@@ -107,36 +112,11 @@ class EntityController < ApplicationController
     render_error :not_found, 'Requested instance could not be found'
   end
 
-  # Converts given enumerable structure to an instance of `Occi::Core::Locations`
-  # for later rendering or further processing.
-  #
-  # @param identifiers [Enumerable] list of identifiers
-  # @return [Occi::Core::Locations] converted structure
-  def locations_from(identifiers)
-    locations = Occi::Core::Locations.new
-
-    identifiers.each do |id|
-      relative_url = "#{linkish? ? LINK_PATH_PREFIX : '/'}#{params[:entity]}/#{id}"
-      locations << absolute_url(relative_url)
-    end
-    locations.valid!
-
-    locations
-  end
-
-  # Checks whether the current request should assume Link-like entity subtypes.
-  #
-  # @return [TrueClass] if request path suggests certain linkiness
-  # @return [FalseClass] if NOT
-  def linkish?
-    request.original_fullpath.start_with?(LINK_PATH_PREFIX)
-  end
-
   # Attempts to parse and return the correct instance collection for this request type.
   #
   # @return [Set] collection of instances
   def resources_or_links
-    linkish? ? request_links : request_resources
+    linkish?(params[:entity]) ? request_links : request_resources
   end
 
   # Returns default backend instance for the given controller.
@@ -144,5 +124,15 @@ class EntityController < ApplicationController
   # @return [Entitylike, Extenderlike] subtype instance
   def default_backend_proxy
     backend_proxy_for params[:entity]
+  end
+
+  # :nodoc:
+  def resource_path?
+    resourceish?(params[:entity]) && !request.original_fullpath.start_with?(link_path_prefix)
+  end
+
+  # :nodoc:
+  def link_path?
+    linkish?(params[:entity]) && request.original_fullpath.start_with?(link_path_prefix)
   end
 end
