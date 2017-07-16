@@ -1,4 +1,6 @@
 class MultiEntityController < ApplicationController
+  include LocationsTransformable
+
   # Known mixin parents (being depended on)
   MIXIN_PARENTS = %w[os_tpl resource_tpl availability_zone region].freeze
 
@@ -8,7 +10,15 @@ class MultiEntityController < ApplicationController
   # GET /
   # (for legacy renderings and uri-list)
   def locations
-    render_error :not_implemented, 'Requested functionality is not implemented'
+    locations = Occi::Core::Locations.new
+
+    all_entitylikes.each do |bt|
+      bt_ids = backend_proxy_for(bt).identifiers
+      locations_from(bt_ids, bt, locations)
+    end
+    return if locations.empty?
+
+    respond_with locations
   end
 
   # GET /mixin/:parent/:term/
@@ -51,7 +61,7 @@ class MultiEntityController < ApplicationController
 
   # DELETE /
   def delete_all
-    render_error :not_implemented, 'Requested functionality is not implemented'
+    all_entitylikes.each { |bt| backend_proxy_for(bt).delete_all }
   end
 
   # DELETE /mixin/:parent/:term/
@@ -61,11 +71,25 @@ class MultiEntityController < ApplicationController
 
   protected
 
+  # Returns a list of known Entity-like backend subtypes.
+  #
+  # @return [Enumerable] list of available Entity-like backend fragments/subtypes
+  def all_entitylikes
+    BackendProxy.backend_entity_subtypes
+  end
+
+  # Validates URL fragment (Rails parameter `:parent`) against a list of known
+  # parent mixins. This PARTIALLY implementes work with mixin-defined collections.
   def parent_exists!
     return if valid_mixin_parent?(params[:parent])
     render_error :not_found, 'Requested collection could not be found'
   end
 
+  # Checks for known mixin parent.
+  #
+  # @param term [String] mixin parent to check
+  # @return [TrueClass] if parent is known
+  # @return [FalseClass] if parent is NOT known
   def valid_mixin_parent?(term)
     MIXIN_PARENTS.include? term
   end
