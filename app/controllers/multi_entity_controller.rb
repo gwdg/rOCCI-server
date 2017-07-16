@@ -30,7 +30,16 @@ class MultiEntityController < ApplicationController
   # GET /
   # (for new renderings)
   def list
-    render_error :not_implemented, 'Requested functionality is not implemented'
+    collection = Occi::Core::Collection.new
+    collection.categories = server_model.categories
+
+    all_entitylikes.each do |bt|
+      bt_coll = backend_proxy_for(bt).list
+      collection.entities.merge bt_coll.entities
+    end
+    return if collection.only_categories?
+
+    respond_with collection
   end
 
   # GET /mixin/:parent/:term/
