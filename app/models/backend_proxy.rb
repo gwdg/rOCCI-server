@@ -37,7 +37,7 @@ class BackendProxy
   # Required version of the backend API
   API_VERSION = '3.0.0'.freeze
 
-  attr_accessor :type, :options, :logger
+  attr_accessor :type, :options, :logger, :server_model
 
   # Make various static methods available on instances
   DELEG_METHODS = %i[
@@ -60,10 +60,12 @@ class BackendProxy
   # @option args [Symbol] :type type of the backend, see `backend_types`
   # @option args [Hash] :options backend-specific options
   # @option args [Logger] :logger logger instance
+  # @option args [Occi::Core::Model] :server_model instance of the server model (OCCI)
   def initialize(args = {})
     @type = args.fetch(:type)
     @options = args.fetch(:options)
     @logger = args.fetch(:logger)
+    @server_model = args.fetch(:server_model, nil)
 
     flush!
   end

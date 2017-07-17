@@ -3,6 +3,8 @@ module Entitylike
 
   included do
     delegate :serves?, to: :class
+    delegate :server_model, to: :backend_proxy
+    delegate :instance_builder, to: :server_model
   end
 
   class_methods do

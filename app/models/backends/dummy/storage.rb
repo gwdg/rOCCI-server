@@ -1,14 +1,17 @@
-require 'backends/dummy/base'
+require 'backends/dummy/entity_base'
 
 module Backends
   module Dummy
-    class Storage < Base
-      include Entitylike
-
+    class Storage < EntityBase
       class << self
         # @see `served_class` on `Entitylike`
         def served_class
           Occi::Infrastructure::Storage
+        end
+
+        # :nodoc:
+        def entity_identifier
+          Occi::Infrastructure::Constants::STORAGE_KIND
         end
       end
     end
