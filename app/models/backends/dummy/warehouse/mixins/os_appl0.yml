@@ -1,6 +1,6 @@
 ---
 term: appl0
-schema: http://schemas.ogf.org/occi/infrastructure/os_tpl#
+schema: http://schemas.localhost/occi/infrastructure/os_tpl#
 title: Appliance Template - Appliance 0
 attributes:
   - eu.egi.fedcloud.appliance.appdb.id

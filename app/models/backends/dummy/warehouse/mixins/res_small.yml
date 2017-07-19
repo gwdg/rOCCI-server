@@ -1,6 +1,6 @@
 ---
 term: small
-schema: http://schemas.ogf.org/occi/infrastructure/resource_tpl#
+schema: http://schemas.localhost/occi/infrastructure/resource_tpl#
 title: Resource Template - Small
 attributes:
   - occi.compute.architecture

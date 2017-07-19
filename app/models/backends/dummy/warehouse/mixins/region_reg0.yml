@@ -1,6 +1,6 @@
 ---
 term: reg0
-schema: http://schemas.ogf.org/occi/infrastructure/region#
+schema: http://schemas.localhost/occi/infrastructure/region#
 title: Region - REG 0
 location: /mixin/region/zone0
 applies:
