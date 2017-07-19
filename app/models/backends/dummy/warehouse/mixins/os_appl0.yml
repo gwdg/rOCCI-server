@@ -1,0 +1,12 @@
+---
+term: appl0
+schema: http://schemas.ogf.org/occi/infrastructure/os_tpl#
+title: Appliance Template - Appliance 0
+attributes:
+  - eu.egi.fedcloud.appliance.appdb.mpuri
+  - eu.egi.fedcloud.appliance.appdb.parent_mpuri
+location: /mixin/resource_tpl/appl0
+applies:
+  - http://schemas.ogf.org/occi/infrastructure#compute
+depends:
+  - http://schemas.ogf.org/occi/infrastructure#os_tpl

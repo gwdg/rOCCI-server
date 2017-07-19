@@ -1,0 +1,15 @@
+---
+term: small
+schema: http://schemas.ogf.org/occi/infrastructure/resource_tpl#
+title: Resource Template - Small
+attributes:
+  - occi.compute.architecture
+  - occi.compute.cores
+  - occi.compute.memory
+  - occi.compute.speed
+  - occi.compute.ephemeral_storage.size
+location: /mixin/resource_tpl/small
+applies:
+  - http://schemas.ogf.org/occi/infrastructure#compute
+depends:
+  - http://schemas.ogf.org/occi/infrastructure#resource_tpl
