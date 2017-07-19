@@ -1,0 +1,7 @@
+---
+type: !ruby/class String
+required: true
+mutable: false
+default: 'x64'
+description: Compute platform architecture.
+pattern: !ruby/regexp '/^(x86|x64)$/'
