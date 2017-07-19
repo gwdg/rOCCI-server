@@ -3,9 +3,14 @@ term: appl0
 schema: http://schemas.ogf.org/occi/infrastructure/os_tpl#
 title: Appliance Template - Appliance 0
 attributes:
+  - eu.egi.fedcloud.appliance.appdb.id
+  - eu.egi.fedcloud.appliance.appdb.description
+  - eu.egi.fedcloud.appliance.appdb.operating_system
+  - eu.egi.fedcloud.appliance.appdb.version
   - eu.egi.fedcloud.appliance.appdb.mpuri
   - eu.egi.fedcloud.appliance.appdb.parent_mpuri
-location: /mixin/resource_tpl/appl0
+  - eu.egi.fedcloud.appliance.appdb.image_list.id
+location: /mixin/os_tpl/appl0
 applies:
   - http://schemas.ogf.org/occi/infrastructure#compute
 depends:

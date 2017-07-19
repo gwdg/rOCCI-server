@@ -1,0 +1,7 @@
+---
+type: !ruby/class String
+required: true
+mutable: false
+default: '2f55ff2a-abe3-52b3-ad56-aded22a63fae'
+description: Unique identifier of the source image list provided by AppDB.
+pattern: ~

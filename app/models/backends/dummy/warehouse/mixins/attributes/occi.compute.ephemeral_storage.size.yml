@@ -2,6 +2,6 @@
 type: !ruby/class Float
 required: true
 mutable: false
-default: 10
+default: 10.0
 description: Amount of ephemeral storage for the instance in GBs.
 pattern: ~
