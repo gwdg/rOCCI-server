@@ -2,6 +2,6 @@
 type: !ruby/class Integer
 required: true
 mutable: false
-default: 1
+default: ~
 description: Number of compute processor cores.
 pattern: ~

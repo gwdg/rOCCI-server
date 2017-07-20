@@ -1,6 +1,6 @@
 ---
 term: zone0
-schema: http://schemas.ogf.org/occi/infrastructure/availability_zone#
+schema: http://schemas.localhost/occi/infrastructure/availability_zone#
 title: Availability zone - ZONE 0
 location: /mixin/availability_zone/zone0
 applies:

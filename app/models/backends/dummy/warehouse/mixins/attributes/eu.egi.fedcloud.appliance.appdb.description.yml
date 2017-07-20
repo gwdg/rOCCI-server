@@ -3,5 +3,5 @@ type: !ruby/class String
 required: true
 mutable: false
 default: ~
-description: EGI AppDB Parent MPURI
+description: Human-readable description of the appliance provided by AppDB.
 pattern: ~
