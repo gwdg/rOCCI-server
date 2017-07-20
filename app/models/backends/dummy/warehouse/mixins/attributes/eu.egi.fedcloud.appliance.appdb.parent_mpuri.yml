@@ -2,6 +2,6 @@
 type: !ruby/class String
 required: true
 mutable: false
-default: 'https://appdb.egi.eu/store/vo/image/2f55ff2a-abe3-52b3-ad56-aded22a63fae/'
+default: ~
 description: EGI AppDB Parent MPURI
 pattern: ~

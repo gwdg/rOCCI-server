@@ -1,7 +1,7 @@
 ---
-term: small
+term: large
 schema: http://schemas.localhost/occi/infrastructure/resource_tpl#
-title: Resource Template - Small
+title: Resource Template - Large
 attributes:
   - occi.compute.architecture
   - occi.compute.cores
@@ -9,10 +9,10 @@ attributes:
   - occi.compute.speed
   - occi.compute.ephemeral_storage.size
 attribute_defaults:
-  occi.compute.cores: 1
-  occi.compute.memory: 1.7
-  occi.compute.ephemeral_storage.size: 10.0
-location: /mixin/resource_tpl/small
+  occi.compute.cores: 4
+  occi.compute.memory: 16.0
+  occi.compute.ephemeral_storage.size: 80.0
+location: /mixin/resource_tpl/large
 applies:
   - http://schemas.ogf.org/occi/infrastructure#compute
 depends:

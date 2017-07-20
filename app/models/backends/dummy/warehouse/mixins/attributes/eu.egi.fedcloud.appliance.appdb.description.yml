@@ -2,6 +2,6 @@
 type: !ruby/class String
 required: true
 mutable: false
-default: 'This is an appliance'
+default: ~
 description: Human-readable description of the appliance provided by AppDB.
 pattern: ~

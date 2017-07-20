@@ -2,6 +2,6 @@
 type: !ruby/class String
 required: true
 mutable: false
-default: 'Ubuntu 16.04 LTS'
+default: ~
 description: Operating system inside the appliance provided by AppDB.
 pattern: ~

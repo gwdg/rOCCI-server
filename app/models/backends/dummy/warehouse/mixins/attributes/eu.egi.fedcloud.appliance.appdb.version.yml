@@ -2,6 +2,6 @@
 type: !ruby/class String
 required: true
 mutable: false
-default: '2017.06.17'
+default: ~
 description: Appliance version provided by AppDB.
 pattern: ~
