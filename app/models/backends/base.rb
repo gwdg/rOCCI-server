@@ -1,6 +1,6 @@
 module Backends
   class Base
-    attr_reader :options, :logger, :backend_proxy
+    attr_reader :options, :logger, :backend_proxy, :credentials
     delegate :api_version, to: :class
 
     def initialize(args = {})
@@ -9,6 +9,7 @@ module Backends
       @options = args
       @logger = args.fetch(:logger)
       @backend_proxy = args.fetch(:backend_proxy)
+      @credentials = args.fetch(:credentials)
 
       post_initialize(args)
     end

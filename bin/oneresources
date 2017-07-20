@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+require 'pathname'
+require 'json'
+require 'digest/sha1'
+require 'opennebula'
+
+########################################################################################################################
+########################################################################################################################
+
+ENDPOINT = ARGV[0] || 'http://localhost:2633/RPC2'.freeze
+USERNAME = ARGV[1] || 'oneadmin'.freeze
+PASSWORD = ARGV[2] || 'opennebula'.freeze
+
+########################################################################################################################
+########################################################################################################################
+
+# Set path(s) to your application
+APP_ROOT = Pathname.new(File.expand_path(File.join('..', '..'), __FILE__)).freeze
+RES_DIR = Pathname.new(File.join(APP_ROOT, 'lib', 'resources')).freeze
+
+# Load OpenNebula monkey-patches from `lib/open_nebula`
+Dir[APP_ROOT.join('lib', 'open_nebula', '*.rb')].each { |file| require file.gsub('.rb', '') }
+
+########################################################################################################################
+########################################################################################################################
+
+# :nodoc:
+def one_wrapper
+  raise 'Block is a required argument' unless block_given?
+  retval = yield
+  raise "Error: #{retval.message}" if OpenNebula.is_error?(retval)
+  retval
+end
+
+########################################################################################################################
+########################################################################################################################
+
+client = OpenNebula::Client.new("#{USERNAME}:#{PASSWORD}", ENDPOINT)
+
+# Clean old resource documents
+rdp = OpenNebula::ResourceDocumentPool.new(client)
+one_wrapper { rdp.info_all }
+rdp.each { |rd| one_wrapper { rd.delete } }
+
+# Get groups
+gp = OpenNebula::GroupPool.new(client)
+one_wrapper { gp.info }
+
+# Insert new resource documents for all groups
+gp.each do |group|
+  Dir[RES_DIR.join('*.json')].each do |json_file|
+    resources = JSON.parse(File.read(json_file))
+
+    resources.each do |res|
+      rd = OpenNebula::ResourceDocument.new(OpenNebula::ResourceDocument.build_xml, client)
+      one_wrapper { rd.allocate(res.to_json, "#{group['ID']}_#{Digest::SHA1.hexdigest res['identifier']}") }
+      one_wrapper { rd.chown(0, group['ID'].to_i) }
+      one_wrapper { rd.chmod_octet('640') }
+    end
+  end
+end

@@ -1,0 +1,7 @@
+---
+type: !ruby/class Float
+required: true
+mutable: false
+default: 1.0
+description: Relative speed of the compute instance.
+pattern: ~

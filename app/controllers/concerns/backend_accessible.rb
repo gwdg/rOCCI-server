@@ -13,7 +13,8 @@ module BackendAccessible
     @_backend_proxy = BackendProxy.new(
       type: backend_type.to_sym,
       options: app_config.fetch(backend_type, {}),
-      logger: logger
+      logger: logger,
+      credentials: backend_credentials
     )
     @_backend_proxy.server_model = server_model if with_model
 
@@ -31,5 +32,12 @@ module BackendAccessible
     raise "#{subtype.inspect} is not a supported backend subtype" unless backend_proxy.has?(subtype.to_sym)
     with_model = (subtype != 'model_extender')
     backend_proxy(with_model).send subtype
+  end
+
+  # Returns backend credentials for the current context/request.
+  #
+  # @return [Hash] credentials in a Hash
+  def backend_credentials
+    { user_id: current_user, secret_key: current_token }
   end
 end
