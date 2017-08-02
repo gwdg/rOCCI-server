@@ -82,12 +82,7 @@ module Backends
         pool(:template, :info_group).each do |template|
           os = skeleton.clone
           os.attributes = deep_copy(os.attributes)
-
-          os.term = template['ID']
-          os.title = template['TEMPLATE/CLOUDKEEPER_APPLIANCE_TITLE'] || template['NAME']
-          os.schema = change_namespace(os.schema)
-          os.location = URI.parse("/mixin/os_tpl/#{template['ID']}")
-          OS_TPL_ATTRS.each_pair { |k, v| os[k] = template[v] }
+          change_os_tpl! os, template
           clean_unused! os.attributes
 
           model << os
@@ -95,16 +90,22 @@ module Backends
       end
 
       # :nodoc:
+      def change_os_tpl!(os, template)
+        os.term = template['ID']
+        os.title = template['TEMPLATE/CLOUDKEEPER_APPLIANCE_TITLE'] || template['NAME']
+        os.schema = change_namespace(os.schema)
+        os.location = URI.parse("/mixin/os_tpl/#{template['ID']}")
+        OS_TPL_ATTRS.each_pair { |k, v| os[k] = template[v] }
+      end
+
+      # :nodoc:
       def add_resource_tpls!(model, skeleton)
         pool(:resource_document, :info_group).each do |doc|
           next unless ALLOWED_UNAMES.include?(doc['UNAME'])
+
           res = skeleton.clone
           res.attributes = deep_copy(res.attributes)
-
-          res.schema = change_namespace(res.schema)
-          res.location = URI.parse("/mixin/resource_tpl/#{doc.term}")
-          RES_TPL_CONTENT.each { |k| res.send("#{k}=", doc.send(k)) }
-          RES_TPL_ATTRS.each { |a| res[a].default = doc.body[a] }
+          change_resource_tpl! res, doc
           clean_unused! res.attributes
 
           model << res
@@ -112,21 +113,35 @@ module Backends
       end
 
       # :nodoc:
+      def change_resource_tpl!(res, doc)
+        res.schema = change_namespace(res.schema)
+        res.location = URI.parse("/mixin/resource_tpl/#{doc.term}")
+        RES_TPL_CONTENT.each { |k| res.send("#{k}=", doc.send(k)) }
+        RES_TPL_ATTRS.each { |a| res[a].default = doc.body[a] }
+      end
+
+      # :nodoc:
       def add_floatingippools!(model, skeleton)
         pool(:virtual_network, :info_all).each do |vnet|
-          next if vnet['PARENT_NETWORK_ID'].present?
-          next unless vnet['TEMPLATE/FLOATING_IP_POOL'] && vnet['TEMPLATE/FLOATING_IP_POOL'].casecmp('yes')
-          flt = skeleton.clone
+          next if vnet['PARENT_NETWORK_ID'].present? || vnet['TEMPLATE/FLOATING_IP_POOL'].blank?
+          next unless vnet['TEMPLATE/FLOATING_IP_POOL'].casecmp('yes')
 
-          flt.term = vnet['ID']
-          flt.title = "Floating IP Pool - #{vnet['NAME']}"
-          flt.schema = change_namespace(flt.schema)
-          flt.location = URI.parse("/mixin/floatingippool/#{vnet['ID']}")
+          flt = skeleton.clone
+          change_floatingippool! flt, vnet
 
           model << flt
         end
       end
 
+      # :nodoc:
+      def change_floatingippool!(flt, vnet)
+        flt.term = vnet['ID']
+        flt.title = "Floating IP Pool - #{vnet['NAME']}"
+        flt.schema = change_namespace(flt.schema)
+        flt.location = URI.parse("/mixin/floatingippool/#{vnet['ID']}")
+      end
+
+      # :nodoc:
       def change_default_connectivity!(model)
         dcm = model.find_by_identifier!(Occi::InfrastructureExt::Constants::DEFAULT_CONNECT_MIXIN)
         dcm['eu.egi.fedcloud.compute.default_connectivity'].default = options.fetch(:default_connectivity)

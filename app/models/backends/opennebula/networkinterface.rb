@@ -81,7 +81,7 @@ module Backends
       # :nodoc:
       def attach_mixins!(nic, virtual_machine, networkinterface)
         if nic['IP']
-          networkinterface << server_model.find_by_identifier!(
+          networkinterface << category_by_identifier!(
             Occi::Infrastructure::Constants::IPNETWORKINTERFACE_MIXIN
           )
         end
@@ -101,7 +101,7 @@ module Backends
              else
                Occi::Infrastructure::Constants::NETWORK_KIND
              end
-        networkinterface.target_kind = server_model.find_by_identifier!(tk)
+        networkinterface.target_kind = category_by_identifier!(tk)
       end
 
       # :nodoc:

@@ -66,7 +66,7 @@ module Backends
           [sg, virtual_machine], sg_link,
           Constants::Securitygrouplink::TRANSFERABLE_ATTRIBUTES
         )
-        sg_link.target_kind = server_model.find_by_identifier!(
+        sg_link.target_kind = category_by_identifier!(
           Occi::InfrastructureExt::Constants::SECURITY_GROUP_KIND
         )
 

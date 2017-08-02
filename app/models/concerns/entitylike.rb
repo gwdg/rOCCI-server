@@ -125,4 +125,15 @@ module Entitylike
   def delete_all(filter = Set.new)
     Set.new(identifiers(filter).map { |id| delete(id) })
   end
+
+  # Looks up given category (by identifier) in the current server model. This
+  # method will raise an error if no such category is present. In case of multiple
+  # categories (which should NOT happen), only the first one will be returned.
+  #
+  # @param identifier [String] category identifier in the form of `schema#term`
+  # @return [Occi::Core::Category] located category
+  def category_by_identifier!(identifier)
+    server_model.find_by_identifier! identifier
+  end
+  private :category_by_identifier!
 end

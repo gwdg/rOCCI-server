@@ -71,7 +71,7 @@ module Backends
       # :nodoc:
       def attach_mixins!(virtual_network, network)
         if virtual_network['AR_POOL/AR/IP']
-          network << server_model.find_by_identifier!(Occi::Infrastructure::Constants::IPNETWORK_MIXIN)
+          network << category_by_identifier!(Occi::Infrastructure::Constants::IPNETWORK_MIXIN)
         end
         network << server_model.find_regions.first
 
@@ -91,7 +91,7 @@ module Backends
                 Occi::InfrastructureExt::Constants::NAT_NET_MIXIN
               end
 
-        network << server_model.find_by_identifier!(mxn) if mxn
+        network << category_by_identifier!(mxn) if mxn
       end
     end
   end

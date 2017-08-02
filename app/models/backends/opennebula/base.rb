@@ -61,19 +61,25 @@ module Backends
       # @return [Object] requested content, in case of success
       def client(e_klass)
         raise 'Block is a mandatory argument for client calls' unless block_given?
+        raise "Error #{e_klass} cannot be used with this wrapper" if ERROR_CONNECT.include?(e_klass)
 
         retval = yield
-        return retval unless ::OpenNebula.is_error?(retval)
+        client_error!(retval, e_klass) if ::OpenNebula.is_error?(retval)
 
+        retval
+      rescue *ERROR_CONNECT => ex
+        logger.fatal "Could not establish connection to OpenNebula: #{ex.message}"
+        raise Errors::Backend::ConnectionError, 'Cloud platform is currently unavailable, connection failed'
+      end
+
+      # :nodoc:
+      def client_error!(retval, e_klass)
         case retval.errno
         when *ERROR_MAP.keys
           raise ERROR_MAP[retval.errno], retval.message
         else
           raise e_klass, retval.message
         end
-      rescue *ERROR_CONNECT => ex
-        logger.fatal "Could not establish connection to OpenNebula: #{ex.message}"
-        raise Errors::Backend::ConnectionError, 'Cloud platform is currently unavailable, connection failed'
       end
 
       # :nodoc:
