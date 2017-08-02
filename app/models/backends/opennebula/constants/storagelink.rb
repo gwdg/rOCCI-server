@@ -3,7 +3,7 @@ module Backends
     module Constants
       module Storagelink
         # Pattern for matching IDs
-        ID_PATTERN = %r{^compute_(?<compute>\d+)_disk_(?<disk>\d+)$}
+        ID_PATTERN = /^compute_(?<compute>\d+)_disk_(?<disk>\d+)$/
 
         # Attribute mapping hash for Core
         ATTRIBUTES_CORE = {

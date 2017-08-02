@@ -74,7 +74,7 @@ module Backends
       end
 
       # :nodoc:
-      def attach_mixins!(sg, virtual_machine, sg_link)
+      def attach_mixins!(_sg, virtual_machine, sg_link)
         sg_link << server_model.find_regions.first
 
         attach_optional_mixin!(

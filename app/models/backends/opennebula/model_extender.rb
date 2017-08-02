@@ -36,7 +36,7 @@ module Backends
       def populate!(model)
         load_from_warehouse! model
         EXTENSIONS.each { |ext| send(:replace!, model, ext) }
-        set_default_connectivity! model
+        change_default_connectivity! model
         model
       end
 
@@ -114,7 +114,7 @@ module Backends
       # :nodoc:
       def add_floatingippools!(model, skeleton)
         pool(:virtual_network, :info_all).each do |vnet|
-          next unless vnet['PARENT_NETWORK_ID'].blank?
+          next if vnet['PARENT_NETWORK_ID'].present?
           next unless vnet['TEMPLATE/FLOATING_IP_POOL'] && vnet['TEMPLATE/FLOATING_IP_POOL'].casecmp('yes')
           flt = skeleton.clone
 
@@ -127,7 +127,7 @@ module Backends
         end
       end
 
-      def set_default_connectivity!(model)
+      def change_default_connectivity!(model)
         dcm = model.find_by_identifier!(Occi::InfrastructureExt::Constants::DEFAULT_CONNECT_MIXIN)
         dcm['eu.egi.fedcloud.compute.default_connectivity'].default = options.fetch(:default_connectivity)
       end

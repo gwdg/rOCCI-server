@@ -10,11 +10,11 @@ module Backends
         }.freeze
 
         # Commonly used lambdas
-        VLAN_LAMBDA = ->(vnet) { vnet['VLAN_ID'].blank? ? nil : vnet['VLAN_ID'].to_i }
+        VLAN_LAMBDA = ->(vnet) { vnet['VLAN_ID'].present? ? vnet['VLAN_ID'].to_i : nil }
 
         # Attribute mapping hash for Infra
         ATTRIBUTES_INFRA = {
-          'occi.network.state' => ->(vnet) { 'active' },
+          'occi.network.state' => ->(_vnet) { 'active' },
           'occi.network.vlan' => VLAN_LAMBDA,
           'occi.network.label' => VLAN_LAMBDA,
           'occi.network.address' => lambda do |vnet|

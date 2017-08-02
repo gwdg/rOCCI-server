@@ -80,7 +80,7 @@ module Backends
       end
 
       # :nodoc:
-      def attach_mixins!(disk, virtual_machine, storagelink)
+      def attach_mixins!(_disk, virtual_machine, storagelink)
         storagelink << server_model.find_regions.first
 
         attach_optional_mixin!(

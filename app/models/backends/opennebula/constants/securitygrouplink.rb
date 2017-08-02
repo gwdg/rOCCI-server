@@ -3,7 +3,7 @@ module Backends
     module Constants
       module Securitygrouplink
         # Pattern for matching IDs
-        ID_PATTERN = %r{^compute_(?<compute>\d+)_sg_(?<sg>\d+)$}
+        ID_PATTERN = /^compute_(?<compute>\d+)_sg_(?<sg>\d+)$/
 
         # Attribute mapping hash for Core
         ATTRIBUTES_CORE = {

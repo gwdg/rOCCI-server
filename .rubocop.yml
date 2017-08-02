@@ -24,4 +24,4 @@ Lint/Void:
 
 Rails/DynamicFindBy:
   Exclude:
-    - 'app/models/backends/opennebula/compute.rb'
+    - '**/*'

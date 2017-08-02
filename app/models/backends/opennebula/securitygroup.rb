@@ -58,7 +58,7 @@ module Backends
       end
 
       # :nodoc:
-      def attach_mixins!(security_group, sg)
+      def attach_mixins!(_security_group, sg)
         sg << server_model.find_regions.first
         server_model.find_availability_zones.each { |az| sg << az }
       end

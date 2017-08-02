@@ -30,7 +30,7 @@ module Backends
 
         # Attribute mapping hash for Infra
         ATTRIBUTES_INFRA = {
-          'occi.securitygroup.state' => ->(sg) { 'active' },
+          'occi.securitygroup.state' => ->(_sg) { 'active' },
           'occi.securitygroup.rules' => lambda do |sg|
             rules = []
             sg.each('TEMPLATE/RULE') do |rule|

@@ -11,10 +11,10 @@ module Backends
 
         # Attribute mapping hash for Infra
         ATTRIBUTES_INFRA = {
-          'occi.ipreservation.state' => ->(vnet) { 'active' },
-          'occi.network.state' => ->(vnet) { 'active' },
+          'occi.ipreservation.state' => ->(_vnet) { 'active' },
+          'occi.network.state' => ->(_vnet) { 'active' },
           'occi.ipreservation.address' => ->(vnet) { vnet['AR_POOL/AR/IP'] },
-          'occi.ipreservation.used' => ->(vnet) { !vnet['AR_POOL/AR/ALLOCATED'].blank? }
+          'occi.ipreservation.used' => ->(vnet) { vnet['AR_POOL/AR/ALLOCATED'].present? }
         }.freeze
 
         # All transferable attributes

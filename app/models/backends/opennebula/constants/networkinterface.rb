@@ -5,7 +5,7 @@ module Backends
     module Constants
       module Networkinterface
         # Pattern for matching IDs
-        ID_PATTERN = %r{^compute_(?<compute>\d+)_nic_(?<nic>\d+)$}
+        ID_PATTERN = /^compute_(?<compute>\d+)_nic_(?<nic>\d+)$/
 
         # Attribute mapping hash for Core
         ATTRIBUTES_CORE = {
@@ -21,7 +21,7 @@ module Backends
           'occi.networkinterface.mac' => ->(ary) { ary.first['MAC'] },
           'occi.networkinterface.state' => ->(ary) { ary.last.lcm_state_str == 'RUNNING' ? 'active' : 'inactive' },
           'occi.networkinterface.address' => ->(ary) { ary.first['IP'] },
-          'occi.networkinterface.allocation' => ->(ary) { 'dynamic' },
+          'occi.networkinterface.allocation' => ->(_ary) { 'dynamic' },
           # 'occi.networkinterface.gateway' => ->(ary) { HOW? }
         }.freeze
 
