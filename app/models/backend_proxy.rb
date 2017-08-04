@@ -5,7 +5,7 @@ class BackendProxy
   # Available backends (supported platforms)
   BACKEND_TYPES = {
     dummy: Backends::Dummy,
-    opennebula: Backends::OpenNebula,
+    opennebula: Backends::Opennebula,
     aws_ec2: Backends::AwsEc2
   }.freeze
 
@@ -37,7 +37,7 @@ class BackendProxy
   # Required version of the backend API
   API_VERSION = '3.0.0'.freeze
 
-  attr_accessor :type, :options, :logger, :server_model
+  attr_accessor :type, :options, :logger, :server_model, :credentials
 
   # Make various static methods available on instances
   DELEG_METHODS = %i[
@@ -61,11 +61,13 @@ class BackendProxy
   # @option args [Hash] :options backend-specific options
   # @option args [Logger] :logger logger instance
   # @option args [Occi::Core::Model] :server_model instance of the server model (OCCI)
+  # @option args [Hash] :credentials user credentials for the underlying CMF
   def initialize(args = {})
     @type = args.fetch(:type)
-    @options = args.fetch(:options)
+    @options = args.fetch(:options).symbolize_keys
     @logger = args.fetch(:logger)
     @server_model = args.fetch(:server_model, nil)
+    @credentials = args.fetch(:credentials)
 
     flush!
   end
@@ -205,7 +207,7 @@ class BackendProxy
 
   # :nodoc:
   def default_backend_options
-    { logger: logger, backend_proxy: self }
+    { logger: logger, backend_proxy: self, credentials: credentials }
   end
 
   # :nodoc:

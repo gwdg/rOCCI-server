@@ -8,12 +8,17 @@ defaults: &defaults
     no_options: true
   opennebula:
     endpoint: http://localhost:2633/RPC2
+    timeout: 30
     default_datastore: default
+    schema_namespace: http://schemas.localhost/
+    default_connectivity: public
   aws_ec2:
     access_key_id: <%= ENV['ROCCI_SERVER_AWS_EC2_ACCESS_KEY_ID'] %>
     secret_access_key: <%= ENV['ROCCI_SERVER_AWS_EC2_SECRET_ACCESS_KEY'] %>
     default_region: eu-west-1
     default_availability_zone: eu-west-1a
+    schema_namespace: http://schemas.localhost/
+    default_connectivity: nat
   encryption:
     token_cipher: <%= ENV['ROCCI_SERVER_ENCRYPTION_TOKEN_CIPHER'] %>
     token_key: <%= ENV['ROCCI_SERVER_ENCRYPTION_TOKEN_KEY'] %>

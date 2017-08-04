@@ -2,7 +2,7 @@
 term: reg0
 schema: http://schemas.localhost/occi/infrastructure/region#
 title: Region - REG 0
-location: /mixin/region/zone0
+location: /mixin/region/reg0
 applies:
   - http://schemas.ogf.org/occi/infrastructure#compute
   - http://schemas.ogf.org/occi/infrastructure#storage

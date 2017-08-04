@@ -21,3 +21,7 @@ Metrics/BlockLength:
 Lint/Void:
   Exclude:
     - 'config/initializers/zz_occi_preload.rb'
+
+Rails/DynamicFindBy:
+  Exclude:
+    - '**/*'

@@ -1,0 +1,19 @@
+---
+term: default_template
+schema: http://schemas.localhost/occi/infrastructure/resource_tpl#
+title: Resource Template - DEFAULT
+attributes:
+  - occi.compute.architecture
+  - occi.compute.cores
+  - occi.compute.memory
+  - occi.compute.speed
+  - occi.compute.ephemeral_storage.size
+  - eu.egi.fedcloud.compute.gpu.count
+  - eu.egi.fedcloud.compute.gpu.vendor
+  - eu.egi.fedcloud.compute.gpu.class
+  - eu.egi.fedcloud.compute.gpu.device
+location: /mixin/resource_tpl/default_template
+applies:
+  - http://schemas.ogf.org/occi/infrastructure#compute
+depends:
+  - http://schemas.ogf.org/occi/infrastructure#resource_tpl

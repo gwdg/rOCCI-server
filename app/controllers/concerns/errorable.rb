@@ -19,6 +19,6 @@ module Errorable
   # @param exception [Exception] exception to convert into a response
   def handle_authorization_error(_exception)
     response.headers[self.class.redirect_header_key] = self.class.redirect_header_uri
-    render_error :not_authorized, 'Not Authorized'
+    render_error :unauthorized, 'Not Authorized'
   end
 end

@@ -31,7 +31,7 @@ module Entitylike
     end
   end
 
-  #
+  # Checks whether there is an instance with the given identifier.
   #
   # @param identifier [String] UUID of the requested entity
   # @return [TrueClass] if entity exists
@@ -40,89 +40,109 @@ module Entitylike
     identifiers.include?(identifier)
   end
 
-  #
+  # Provides a set of instance identifiers. In most cases, this is a collection
+  # of `occi.core.id`s from all instances.
   #
   # @param filter [Set] collection of filtering rules
   # @return [Set] collection of entity identifiers matching the filter or all if filter is empty
-  def identifiers(_filter = Set.new)
-    Set.new
+  def identifiers(filter = Set.new)
+    list(filter).entities.map { |ent| ent['occi.core.id'] }
   end
 
-  #
+  # Provides a collection of complete entity instances.
   #
   # @param filter [Set] collection of filtering rules
   # @return [Occi::Core::Collection] collection of entities matching the filter or all if filter is empty
   def list(_filter = Set.new)
-    Occi::Core::Collection.new
+    raise Errors::Backend::NotImplementedError, 'Requested functionality is not implemented'
   end
 
-  #
+  # Retrieves a specific entity instance. An `Errors::Backend::EntityNotFoundError` error will be raised
+  # if no such instance is available.
   #
   # @param identifier [String] UUID of the requested entity
+  # @raise [Errors::Backend::EntityNotFoundError] if instance does not exist
   # @return [Occi::Core::Entity] requested entity
-  def instance(identifier)
-    raise Errors::Backend::EntityNotFoundError, "Entity #{identifier} was not found"
+  def instance(_identifier)
+    raise Errors::Backend::NotImplementedError, 'Requested functionality is not implemented'
   end
 
-  #
+  # Creates a backend-specific instance from the provided entity instance. On success, identifier
+  # of the new instance is returned. An appropriate error should be raised in case of failure.
   #
   # @param instance [Occi::Core::Entity] entity to be created
   # @return [String] identifier of the created entity
-  def create(instance)
-    instance['occi.core.id'] || instance.identify!
+  def create(_instance)
+    raise Errors::Backend::NotImplementedError, 'Requested functionality is not implemented'
   end
 
-  #
+  # Performs partial update on instance specified by `identifier`. Instance is updated selectively
+  # from the content of `fragments`. This usually includes updating mixins or attributes.
+  # An appropriate error should be raised in case of failure.
   #
   # @param identifier [String] UUID of the requested entity
   # @param fragments [Hash] stuff to update
   # @option fragments [Set] :mixins collection of mixins to update
   # @option fragments [Hash] :attributes collection of attributes to update
   # @return [Occi::Core::Entity] updated entity
-  def partial_update(identifier, _fragments)
-    instance identifier
+  def partial_update(_identifier, _fragments)
+    raise Errors::Backend::NotImplementedError, 'Requested functionality is not implemented'
   end
 
-  #
+  # Performs a full update on the instance specified by `identifier`. Instance is replaced
+  # by a new instance specified in `new_instance`. An appropriate error should be raised in case of failure.
   #
   # @param identifier [String] UUID of the requested entity
   # @param new_instance [Occi::Core::Entity] full entity to replace the old one
   # @return [Occi::Core::Entity] updated entity
-  def update(identifier, _new_instance)
-    instance identifier
+  def update(_identifier, _new_instance)
+    raise Errors::Backend::NotImplementedError, 'Requested functionality is not implemented'
   end
 
-  #
+  # Executes an action specified by `action_instance` on entity specified by `identifier`.
+  # An appropriate error should be raised in case of failure.
   #
   # @param identifier [String] UUID of the requested entity
   # @param action_instance [Occi::Core::ActionInstance] action to be triggered
   # @return [String] identifier of the affected entity
-  def trigger(identifier, _action_instance)
-    raise Errors::Backend::EntityNotFoundError, "Entity #{identifier} was not found"
+  def trigger(_identifier, _action_instance)
+    raise Errors::Backend::NotImplementedError, 'Requested functionality is not implemented'
   end
 
-  #
+  # Bulk-executes an action specified by `action_instance` on all instances.
+  # An appropriate error should be raised in case of failure.
   #
   # @param action_instance [Occi::Core::ActionInstance] action to be triggered
   # @param filter [Set] collection of filtering rules
   # @return [Set] collection of identifiers of affected entities
   def trigger_all(_action_instance, _filter = Set.new)
-    Set.new
+    Set.new(identifiers(filter).map { |id| trigger(id, action_instance) })
   end
 
-  #
+  # Destroys an instance specified by `identifier`. An appropriate error should be raised in case of failure.
   #
   # @param identifier [String] UUID of the requested entity
   # @return [String] identifier of the affected entity
-  def delete(identifier)
-    instance identifier
+  def delete(_identifier)
+    raise Errors::Backend::NotImplementedError, 'Requested functionality is not implemented'
   end
 
-  #
+  # Bulk-destroys all instances. An appropriate error should be raised in case of failure.
   #
   # @param filter [Set] collection of filtering rules
   # @return [Set] collection of identifiers of affected entities
-  def delete_all(_filter = Set.new)
-    Set.new
+  def delete_all(filter = Set.new)
+    Set.new(identifiers(filter).map { |id| delete(id) })
   end
+
+  # Looks up given category (by identifier) in the current server model. This
+  # method will raise an error if no such category is present. In case of multiple
+  # categories (which should NOT happen), only the first one will be returned.
+  #
+  # @param identifier [String] category identifier in the form of `schema#term`
+  # @return [Occi::Core::Category] located category
+  def category_by_identifier!(identifier)
+    server_model.find_by_identifier! identifier
+  end
+  private :category_by_identifier!
 end

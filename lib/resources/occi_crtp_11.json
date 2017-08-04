@@ -1,0 +1,56 @@
+[
+  {
+    "identifier": "http://schemas.ogf.org/occi/infrastructure/compute/template/1.1#small",
+    "title": "CRTP/1.1 Resource Template - Small",
+    "occi.compute.cores": 1,
+    "occi.compute.speed": 1.0,
+    "occi.compute.memory": 1.0,
+    "occi.compute.ephemeral_storage.size": 10.0,
+    "occi.compute.architecture": "x64"
+  },
+  {
+    "identifier": "http://schemas.ogf.org/occi/infrastructure/compute/template/1.1#medium",
+    "title": "CRTP/1.1 Resource Template - Medium",
+    "occi.compute.cores": 2,
+    "occi.compute.speed": 1.0,
+    "occi.compute.memory": 2.0,
+    "occi.compute.ephemeral_storage.size": 20.0,
+    "occi.compute.architecture": "x64"
+  },
+  {
+    "identifier": "http://schemas.ogf.org/occi/infrastructure/compute/template/1.1#large",
+    "title": "CRTP/1.1 Resource Template - Large",
+    "occi.compute.cores": 4,
+    "occi.compute.speed": 1.0,
+    "occi.compute.memory": 4.0,
+    "occi.compute.ephemeral_storage.size": 40.0,
+    "occi.compute.architecture": "x64"
+  },
+  {
+    "identifier": "http://schemas.ogf.org/occi/infrastructure/compute/template/1.1#mem_small",
+    "title": "CRTP/1.1 Resource Template - Small w/ 4x mem",
+    "occi.compute.cores": 1,
+    "occi.compute.speed": 1.0,
+    "occi.compute.memory": 4.0,
+    "occi.compute.ephemeral_storage.size": 10.0,
+    "occi.compute.architecture": "x64"
+  },
+  {
+    "identifier": "http://schemas.ogf.org/occi/infrastructure/compute/template/1.1#mem_medium",
+    "title": "CRTP/1.1 Resource Template - Medium w/ 4x mem",
+    "occi.compute.cores": 2,
+    "occi.compute.speed": 1.0,
+    "occi.compute.memory": 8.0,
+    "occi.compute.ephemeral_storage.size": 20.0,
+    "occi.compute.architecture": "x64"
+  },
+  {
+    "identifier": "http://schemas.ogf.org/occi/infrastructure/compute/template/1.1#mem_large",
+    "title": "CRTP/1.1 Resource Template - Large w/ 4x mem",
+    "occi.compute.cores": 4,
+    "occi.compute.speed": 1.0,
+    "occi.compute.memory": 16.0,
+    "occi.compute.ephemeral_storage.size": 40.0,
+    "occi.compute.architecture": "x64"
+  }
+]
