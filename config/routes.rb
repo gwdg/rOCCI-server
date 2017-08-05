@@ -2,40 +2,43 @@ Rails.application.routes.draw do
   ####################################################
   ## Occi::Core::Entity Routes (incl. Default Route)
   ####################################################
-  get '/',
-      to: 'multi_entity#list',
+  get '/', to: 'multi_entity#list',
       constraints: Ext::RoutingConstraints.build(%i[non_legacy])
-  get '/',
-      to: 'multi_entity#locations',
+  get '/', to: 'multi_entity#locations',
       constraints: Ext::RoutingConstraints.build(%i[legacy])
 
-  post '/',
-       to: 'multi_entity#execute_all',
-       constraints: Ext::RoutingConstraints.build(%i[action])
+  post '/', to: 'multi_entity#blackhole'
+
+  # put '/:entity/' is undefined in GFD-P-R.185
 
   delete '/', to: 'multi_entity#delete_all'
 
-  root 'multi_entity#locations'
+  get '/:entity/', to: 'multi_entity#list',
+      constraints: Ext::RoutingConstraints.build(%i[abstract non_legacy])
+  get '/:entity/', to: 'multi_entity#locations',
+      constraints: Ext::RoutingConstraints.build(%i[abstract legacy])
 
-  get '/mixin/:parent/:term/',
-      to: 'multi_entity#scoped_list',
+  post '/:entity/', to: 'multi_entity#blackhole',
+       constraints: Ext::RoutingConstraints.build(%i[abstract])
+
+  # put '/:entity/' is undefined in GFD-P-R.185
+
+  delete '/:entity/', to: 'multi_entity#delete_all',
+      constraints: Ext::RoutingConstraints.build(%i[abstract])
+
+  get '/mixin/:parent/:term/', to: 'multi_entity#scoped_list',
       constraints: Ext::RoutingConstraints.build(%i[non_legacy])
-  get '/mixin/:parent/:term/',
-      to: 'multi_entity#scoped_locations',
+  get '/mixin/:parent/:term/', to: 'multi_entity#scoped_locations',
       constraints: Ext::RoutingConstraints.build(%i[legacy])
 
-  post '/mixin/:parent/:term/',
-       to: 'multi_entity#scoped_execute_all',
+  post '/mixin/:parent/:term/', to: 'multi_entity#scoped_execute_all',
        constraints: Ext::RoutingConstraints.build(%i[action])
-  post '/mixin/:parent/:term/',
-       to: 'multi_entity#assign_mixin',
+  post '/mixin/:parent/:term/', to: 'multi_entity#assign_mixin',
        constraints: Ext::RoutingConstraints.build(%i[non_action])
 
-  put '/mixin/:parent/:term/',
-      to: 'multi_entity#update_mixin'
+  put '/mixin/:parent/:term/', to: 'multi_entity#update_mixin'
 
-  delete '/mixin/:parent/:term/',
-         to: 'multi_entity#scoped_delete_all'
+  delete '/mixin/:parent/:term/', to: 'multi_entity#scoped_delete_all'
 
   ####################################################
   ## Query Interface Routes
@@ -71,38 +74,28 @@ Rails.application.routes.draw do
   ##  - Occi::Infrastructure::StorageLink
   ##  - Occi::InfrastructureExt::SecurityGroupLink
   ####################################################
-  get '(/link)/:entity/:id',
-      to: 'entity#show',
-      constraints: Ext::RoutingConstraints.build(%i[entity_ne_link])
-  get '(/link)/:entity/',
-      to: 'entity#list',
-      constraints: Ext::RoutingConstraints.build(%i[entity_ne_link non_legacy])
-  get '(/link)/:entity/',
-      to: 'entity#locations',
-      constraints: Ext::RoutingConstraints.build(%i[entity_ne_link legacy])
+  get '/:entity/:id', to: 'entity#show',
+      constraints: Ext::RoutingConstraints.build(%i[concrete])
+  get '/:entity/', to: 'entity#list',
+      constraints: Ext::RoutingConstraints.build(%i[concrete non_legacy])
+  get '/:entity/', to: 'entity#locations',
+      constraints: Ext::RoutingConstraints.build(%i[concrete legacy])
 
-  post '(/link)/:entity/:id',
-       to: 'entity#execute',
-       constraints: Ext::RoutingConstraints.build(%i[entity_ne_link action])
-  post '(/link)/:entity/:id',
-       to: 'entity#partial_update',
-       constraints: Ext::RoutingConstraints.build(%i[entity_ne_link non_action])
-  post '(/link)/:entity/',
-       to: 'entity#execute_all',
-       constraints: Ext::RoutingConstraints.build(%i[entity_ne_link action])
-  post '(/link)/:entity/',
-       to: 'entity#create',
-       constraints: Ext::RoutingConstraints.build(%i[entity_ne_link non_action])
+  post '/:entity/:id', to: 'entity#execute',
+       constraints: Ext::RoutingConstraints.build(%i[concrete action])
+  post '/:entity/:id', to: 'entity#partial_update',
+       constraints: Ext::RoutingConstraints.build(%i[concrete non_action])
+  post '/:entity/', to: 'entity#execute_all',
+       constraints: Ext::RoutingConstraints.build(%i[concrete action])
+  post '/:entity/', to: 'entity#create',
+       constraints: Ext::RoutingConstraints.build(%i[concrete non_action])
 
-  put '(/link)/:entity/:id',
-      to: 'entity#update',
-      constraints: Ext::RoutingConstraints.build(%i[entity_ne_link])
-  # put '(/link)/:entity/' is undefined in GFD-P-R.185
+  put '/:entity/:id', to: 'entity#update',
+      constraints: Ext::RoutingConstraints.build(%i[concrete])
+  # put '/:entity/' is undefined in GFD-P-R.185
 
-  delete '(/link)/:entity/:id',
-         to: 'entity#delete',
-         constraints: Ext::RoutingConstraints.build(%i[entity_ne_link])
-  delete '(/link)/:entity/',
-         to: 'entity#delete_all',
-         constraints: Ext::RoutingConstraints.build(%i[entity_ne_link])
+  delete '/:entity/:id', to: 'entity#delete',
+      constraints: Ext::RoutingConstraints.build(%i[concrete])
+  delete '/:entity/', to: 'entity#delete_all',
+      constraints: Ext::RoutingConstraints.build(%i[concrete])
 end
