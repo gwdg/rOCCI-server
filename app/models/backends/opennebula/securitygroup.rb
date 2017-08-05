@@ -4,6 +4,7 @@ module Backends
       include Entitylike
       include AttributesTransferable
       include MixinsAttachable
+      include ErbRenderer
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -37,6 +38,18 @@ module Backends
       end
 
       # @see `Entitylike`
+      def create(instance)
+        valid_rules! instance['occi.securitygroup.rules']
+        sg_template = security_group_from(instance)
+
+        security_group = ::OpenNebula::SecurityGroup.new(::OpenNebula::SecurityGroup.build_xml, raw_client)
+        client(Errors::Backend::EntityCreateError) { security_group.allocate(sg_template) }
+        client(Errors::Backend::EntityStateError) { security_group.info }
+
+        security_group['ID']
+      end
+
+      # @see `Entitylike`
       def delete(identifier)
         sg = ::OpenNebula::SecurityGroup.new_with_id(identifier, raw_client)
         client(Errors::Backend::EntityStateError) { sg.delete }
@@ -57,10 +70,34 @@ module Backends
         sg
       end
 
+      # Converts an OCCI securitygroup instance to a valid ONe security group template.
+      #
+      # @param storage [Occi::InfrastructureExt::SecurityGroup] instance to transform
+      # @return [String] ONe template
+      def security_group_from(securitygroup)
+        template_path = File.join(template_directory, 'securitygroup.erb')
+        data = { instance: securitygroup, identity: active_identity }
+        erb_render template_path, data
+      end
+
       # :nodoc:
       def attach_mixins!(_security_group, sg)
         sg << server_model.find_regions.first
         server_model.find_availability_zones.each { |az| sg << az }
+      end
+
+      # :nodoc:
+      def valid_rules!(ary)
+        raise Errors::Backend::EntityStateError, 'Empty rule set is not acceptable' if ary.blank?
+        ary.each do |rule|
+          next if rule['protocol'].present? && rule['type'].present?
+          raise Errors::Backend::EntityStateError, "Rule #{rule.inspect} is missing required elements"
+        end
+      end
+
+      # :nodoc:
+      def whereami
+        File.expand_path(File.dirname(__FILE__))
       end
     end
   end

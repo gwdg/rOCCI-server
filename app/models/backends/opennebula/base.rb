@@ -3,6 +3,12 @@ module Backends
     class Base < ::Backends::Base
       API_VERSION = '3.0.0'.freeze
 
+      # Fallback cluster ID
+      FALLBACK_CLUSTER_ID = '0'.freeze
+
+      # Fallback connectivity value
+      FALLBACK_CONNECTIVITY = 'public'.freeze
+
       # Translation table for known ONe errors
       ERROR_MAP = {
         ::OpenNebula::Error::EAUTHENTICATION => Errors::Backend::AuthenticationError,
@@ -17,10 +23,17 @@ module Backends
         Errno::ECONNRESET, Errno::ECONNABORTED, Errno::EPIPE, IOError, EOFError
       ].freeze
 
+      # Flushes all internal caching structures. Data will be reloaded on demand.
+      def flush_cache!
+        @_pool_cache = {}
+        @_active_context = nil
+      end
+
       protected
 
       # @see `Backends::Base`
       def post_initialize(args)
+        flush_cache!
         @_client = ::OpenNebula::Client.new(
           client_secret(args), args.fetch(:endpoint),
           timeout: args.fetch(:timeout)
@@ -37,19 +50,22 @@ module Backends
       # Returns an initialized instance of the requested pool.
       #
       # @example
-      #    pool 'virtual_machine', :info_all # => #<OpenNebula::VirtualMachinePool>
+      #    pool :virtual_machine, :info_all # => #<OpenNebula::VirtualMachinePool>
       #
-      # @param name [String] name of the pool, in `snake_case`
+      # @param name [Symbol] name of the pool, in `snake_case`
       # @param content [Symbol] one of `:info`, `:info_all`, `:info_mine`, `:info_group`
+      # @param reload [TrueClass, FalseClass] force reload of the pool
       # @return [OpenNebula::Pool] initialized pool instance
-      def pool(name, content = :info)
-        raise '`name` is a mandatory argument for pool construction' if name.blank?
+      def pool(name, content = :info, reload = false)
+        raise '`name` and `content` are mandatory arguments for pool construction' unless name && content
+        pool_cache = @_pool_cache.fetch(name, {})
+        return pool_cache[content] if !reload && pool_cache.key?(content)
 
         klass = "#{name}_pool".classify
-        pool_instance = ::OpenNebula.const_get(klass).new(raw_client)
-        client(Errors::Backend::InternalError) { pool_instance.send(content) }
+        pool_cache[content] = ::OpenNebula.const_get(klass).new(raw_client)
+        client(Errors::Backend::InternalError) { pool_cache[content].send(content) }
 
-        pool_instance
+        pool_cache[content]
       end
 
       # Wrapper for calls to ONe's OCA.
@@ -86,6 +102,51 @@ module Backends
       def client_secret(args)
         creds = args.fetch(:credentials)
         "#{creds.fetch(:user_id)}:#{creds.fetch(:secret_key)}"
+      end
+
+      # :nodoc:
+      def default_cluster
+        active_group['TEMPLATE/DEFAULT_CLUSTER_ID'] || FALLBACK_CLUSTER_ID
+      end
+
+      # :nodoc:
+      def default_connectivity
+        active_group['TEMPLATE/DEFAULT_CONNECTIVITY'] || FALLBACK_CONNECTIVITY
+      end
+
+      # :nodoc:
+      def default_network_phydev
+        active_group['TEMPLATE/DEFAULT_NETWORK_PHYDEV'] \
+          || raise(Errors::Backend::AuthorizationError, 'Not allowed to create user-defined networks')
+      end
+
+      # :nodoc:
+      def active_context
+        return @_active_context if @_active_context
+
+        active_context = {
+          user: pool(:user).detect { |u| u['NAME'] == credentials.fetch(:user_id) }
+        }
+        groups = pool(:group).to_a
+        raise Errors::Backend::AuthorizationError, 'Only scoped access is allowed' if groups.many?
+        active_context[:group] = groups.first
+
+        @_active_context = active_context
+      end
+
+      # :nodoc:
+      def active_user
+        active_context[:user]
+      end
+
+      # :nodoc:
+      def active_group
+        active_context[:group]
+      end
+
+      # :nodoc:
+      def active_identity
+        active_user['TEMPLATE/IDENTITY'] || active_user['TEMPLATE/X509_DN'] || active_user['NAME']
       end
     end
   end
