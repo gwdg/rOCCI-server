@@ -38,6 +38,17 @@ module Backends
       end
 
       # @see `Entitylike`
+      def create(instance)
+        vm_template = virtual_machine_from(instance)
+
+        vm = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml, raw_client)
+        client(Errors::Backend::EntityCreateError) { vm.allocate(vm_template) }
+        client(Errors::Backend::EntityStateError) { vm.info }
+
+        vm['ID']
+      end
+
+      # @see `Entitylike`
       def delete(identifier)
         vm = ::OpenNebula::VirtualMachine.new_with_id(identifier, raw_client)
         client(Errors::Backend::EntityStateError) { vm.terminate(true) }
@@ -58,6 +69,31 @@ module Backends
         attach_links! compute
 
         compute
+      end
+
+      # Converts an OCCI compute instance to a valid ONe virtual machine template.
+      #
+      # @param storage [Occi::Infrastructure::Compute] instance to transform
+      # @return [String] ONe template
+      def virtual_machine_from(compute)
+        os_tpl = server_model.find_by_identifier!(Occi::Infrastructure::Constants::OS_TPL_MIXIN)
+        os_tpls = compute.select_mixins(os_tpl).map(&:term)
+        raise Errors::Backend::EntityStateError, 'Single os_tpl not specified' unless os_tpls.one?
+
+        template = ::OpenNebula::Template.new_with_id(os_tpls.first, raw_client)
+        client(Errors::Backend::EntityStateError) { template.info }
+
+        # TODO: set core attributes
+        # TODO: set context
+        # TODO: set resource_tpl (no PCI/GPU)
+        # TODO: set inline links (securitygrouplink on existing NICs)
+        # TODO: set availability_zone(s) in sched_reqs (append?)
+
+        # TODO: append additional attributes (custom, user identity)
+        # TODO: append GPU devices (PCI/GPU from resource_tpl)
+        # TODO: append inline links (networkinterface w/ securitygrouplink, storagelink)
+
+        template.template_str
       end
 
       # :nodoc:
@@ -88,12 +124,6 @@ module Backends
           end
         end
       end
-
-      # Converts a compute instance to a valid ONe virtual machine instance.
-      #
-      # @param compute [Occi::Infrastructure::Compute] instance to transform
-      # @return [OpenNebula::VirtualMachine] transformed instance
-      def virtual_machine_from(compute); end
     end
   end
 end

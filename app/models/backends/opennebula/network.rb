@@ -50,8 +50,12 @@ module Backends
       # @see `Entitylike`
       def create(instance)
         vnet_template = virtual_network_from(instance)
+        az = server_model.find_by_identifier!(Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN)
+        azs = instance.select_mixins(az).map(&:term)
+
         # TODO: multi-cluster networks
-        cid = default_cluster.to_i
+        raise Errors::Backend::EntityStateError, 'Single availability zone not specified' if azs.many?
+        cid = (azs.first || default_cluster).to_i
 
         vnet = ::OpenNebula::VirtualNetwork.new(::OpenNebula::VirtualNetwork.build_xml, raw_client)
         client(Errors::Backend::EntityCreateError) { vnet.allocate(vnet_template, cid) }
