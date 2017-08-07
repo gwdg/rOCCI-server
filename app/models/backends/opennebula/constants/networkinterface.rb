@@ -17,7 +17,7 @@ module Backends
 
         # Attribute mapping hash for Infra
         ATTRIBUTES_INFRA = {
-          'occi.networkinterface.interface' => ->(ary) { "/dev/eth#{ary.first['NIC_ID']}" },
+          'occi.networkinterface.interface' => ->(ary) { "eth#{ary.first['NIC_ID']}" },
           'occi.networkinterface.mac' => ->(ary) { ary.first['MAC'] },
           'occi.networkinterface.state' => ->(ary) { ary.last.lcm_state_str == 'RUNNING' ? 'active' : 'inactive' },
           'occi.networkinterface.address' => ->(ary) { IPAddr.new(ary.first['IP']) },

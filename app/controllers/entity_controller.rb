@@ -18,15 +18,22 @@ class EntityController < ApplicationController
   # GET /:entity/
   # (for new renderings)
   def list
-    entities = default_backend_proxy.list
-    return if entities.blank? || entities.only_categories?
+    coll = Occi::Core::Collection.new
+    coll.categories = server_model.categories
 
-    respond_with entities
+    coll.entities = default_backend_proxy.list.entities
+    return if coll.only_categories?
+    coll.valid!
+
+    respond_with coll
   end
 
   # GET /:entity/:id
   def show
-    respond_with default_backend_proxy.instance(params[:id])
+    entity = default_backend_proxy.instance(params[:id])
+    entity.valid!
+
+    respond_with entity
   end
 
   # POST /:entity/
@@ -76,7 +83,10 @@ class EntityController < ApplicationController
       return
     end
 
-    respond_with default_backend_proxy.partial_update(params[:id], mixins: coll)
+    entity = default_backend_proxy.partial_update(params[:id], mixins: coll)
+    entity.valid!
+
+    respond_with entity
   end
 
   # DELETE /:entity/:id

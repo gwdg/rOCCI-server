@@ -41,6 +41,7 @@ class MultiEntityController < ApplicationController
       collection.entities.merge bt_coll.entities
     end
     return if collection.only_categories?
+    collection.valid!
 
     respond_with collection
   end
