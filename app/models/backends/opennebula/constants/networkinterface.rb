@@ -20,8 +20,8 @@ module Backends
           'occi.networkinterface.interface' => ->(ary) { "/dev/eth#{ary.first['NIC_ID']}" },
           'occi.networkinterface.mac' => ->(ary) { ary.first['MAC'] },
           'occi.networkinterface.state' => ->(ary) { ary.last.lcm_state_str == 'RUNNING' ? 'active' : 'inactive' },
-          'occi.networkinterface.address' => ->(ary) { ary.first['IP'] },
-          'occi.networkinterface.allocation' => ->(_ary) { 'dynamic' },
+          'occi.networkinterface.address' => ->(ary) { IPAddr.new(ary.first['IP']) },
+          'occi.networkinterface.allocation' => ->(_ary) { nil },
           # 'occi.networkinterface.gateway' => ->(ary) { HOW? }
         }.freeze
 

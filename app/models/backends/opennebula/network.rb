@@ -33,7 +33,7 @@ module Backends
       def list(_filter = Set.new)
         coll = Occi::Core::Collection.new
         excluded = backend_proxy.ipreservation.identifiers
-        pool(:virtual_network, :info_mine).each do |vnet|
+        pool(:virtual_network, :info_all).each do |vnet|
           next if excluded.include?(vnet['ID']) # skip reservations
           coll << network_from(vnet)
         end
@@ -111,12 +111,14 @@ module Backends
 
       # :nodoc:
       def set_network_type!(virtual_network, network)
-        mxn = case virtual_network['TEMPLATE/NETWORK_TYPE']
-              when 'public', 'PUBLIC'
+        return unless virtual_network['TEMPLATE/NETWORK_TYPE'].present?
+
+        mxn = case virtual_network['TEMPLATE/NETWORK_TYPE'].downcase
+              when 'public'
                 Occi::InfrastructureExt::Constants::PUBLIC_NET_MIXIN
-              when 'private', 'PRIVATE'
+              when 'private'
                 Occi::InfrastructureExt::Constants::PRIVATE_NET_MIXIN
-              when 'nat', 'NAT'
+              when 'nat'
                 Occi::InfrastructureExt::Constants::NAT_NET_MIXIN
               end
 

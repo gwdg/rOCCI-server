@@ -20,7 +20,7 @@ module Backends
       # @see `Entitylike`
       def identifiers(_filter = Set.new)
         vnets = Set.new
-        pool(:virtual_network, :info_all).each do |vnet|
+        pool(:virtual_network, :info_mine).each do |vnet|
           next unless single_reservation?(vnet)
           vnets << vnet['ID']
         end
