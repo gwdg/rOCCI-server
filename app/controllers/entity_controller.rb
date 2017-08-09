@@ -1,6 +1,7 @@
 class EntityController < ApplicationController
   include ParserAccessible
   include LocationsTransformable
+  include EntityRestrictable
 
   before_action :entitylike!
   before_action :validate_provided_format!, only: %i[create execute execute_all update partial_update]
@@ -44,14 +45,17 @@ class EntityController < ApplicationController
       return
     end
 
-    ids = coll.map { |r| default_backend_proxy.create(r) }
+    ids = coll.map do |entity|
+      restrict! entity
+      default_backend_proxy.create entity
+    end
     respond_with locations_from(ids), status: :created
   end
 
   # POST /:entity/:id?action=ACTION
   def execute
     coll = request_action_instances
-    if coll.count != 1
+    unless coll.one?
       render_error :bad_request, 'Single action instance must be given'
       return
     end
@@ -62,7 +66,7 @@ class EntityController < ApplicationController
   # POST /:entity/?action=ACTION
   def execute_all
     coll = request_action_instances
-    if coll.count != 1
+    unless coll.one?
       render_error :bad_request, 'Single action instance must be given'
       return
     end

@@ -39,7 +39,6 @@ module Backends
 
       # @see `Entitylike`
       def create(instance)
-        valid_rules! instance['occi.securitygroup.rules']
         sg_template = security_group_from(instance)
 
         security_group = ::OpenNebula::SecurityGroup.new(::OpenNebula::SecurityGroup.build_xml, raw_client)
@@ -84,15 +83,6 @@ module Backends
       def attach_mixins!(_security_group, sg)
         sg << server_model.find_regions.first
         server_model.find_availability_zones.each { |az| sg << az }
-      end
-
-      # :nodoc:
-      def valid_rules!(ary)
-        raise Errors::Backend::EntityStateError, 'Empty rule set is not acceptable' if ary.blank?
-        ary.each do |rule|
-          next if rule['protocol'].present? && rule['type'].present?
-          raise Errors::Backend::EntityStateError, "Rule #{rule.inspect} is missing required elements"
-        end
       end
 
       # :nodoc:

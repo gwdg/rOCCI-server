@@ -1,6 +1,4 @@
 module LocationsTransformable
-  extend ActiveSupport::Concern
-
   # Converts given enumerable structure to an instance of `Occi::Core::Locations`
   # for later rendering or further processing.
   #

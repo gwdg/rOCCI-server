@@ -1,6 +1,4 @@
 module BackendAccessible
-  extend ActiveSupport::Concern
-
   # Returns and caches instance of the `BackendProxy` class.
   #
   # @param with_model [TrueClass, FalseClass] whether to include `server_model` reference

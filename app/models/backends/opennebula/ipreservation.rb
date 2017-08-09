@@ -46,11 +46,9 @@ module Backends
 
       # @see `Entitylike`
       def create(instance)
-        fltm = server_model.find_by_identifier!(Occi::InfrastructureExt::Constants::FLOATINGIPPOOL_MIXIN)
-        fltp = instance.select_mixins(fltm).map(&:term)
-        raise Errors::Backend::EntityStateError, 'Single floating IP pool not specified' unless fltp.one?
+        fltp = mixin_term(instance, Occi::InfrastructureExt::Constants::FLOATINGIPPOOL_MIXIN)
 
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(fltp.first, raw_client)
+        vnet = ::OpenNebula::VirtualNetwork.new_with_id(fltp, raw_client)
         res_name = instance['occi.core.title'] || ::SecureRandom.uuid
         res_id = client(Errors::Backend::EntityCreateError) { vnet.reserve(res_name, 1) }
 

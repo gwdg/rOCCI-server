@@ -6,6 +6,9 @@ module Backends
       include ResourceTplLocatable
       include MixinsAttachable
 
+      # Static user_data encoding
+      USERDATA_ENCODING = 'base64'.freeze
+
       class << self
         # @see `served_class` on `Entitylike`
         def served_class
@@ -76,16 +79,15 @@ module Backends
       # @param storage [Occi::Infrastructure::Compute] instance to transform
       # @return [String] ONe template
       def virtual_machine_from(compute)
-        os_tpl = server_model.find_by_identifier!(Occi::Infrastructure::Constants::OS_TPL_MIXIN)
-        os_tpls = compute.select_mixins(os_tpl).map(&:term)
-        raise Errors::Backend::EntityStateError, 'Single os_tpl not specified' unless os_tpls.one?
+        os_tpl = mixin_term(compute, Occi::Infrastructure::Constants::OS_TPL_MIXIN)
 
-        template = ::OpenNebula::Template.new_with_id(os_tpls.first, raw_client)
+        template = ::OpenNebula::Template.new_with_id(os_tpl, raw_client)
         client(Errors::Backend::EntityStateError) { template.info }
 
-        # TODO: set core attributes
-        # TODO: set context
-        # TODO: set resource_tpl (no PCI/GPU)
+        modify_basic! template, compute, os_tpl
+        set_context! template, compute
+        set_size! template, compute
+
         # TODO: set inline links (securitygrouplink on existing NICs)
         # TODO: set availability_zone(s) in sched_reqs (append?)
 
@@ -123,6 +125,28 @@ module Backends
             compute << backend_proxy.send(type).instance(id)
           end
         end
+      end
+
+      # :nodoc:
+      def modify_basic!(template, compute, os_tpl)
+        template.modify_element 'TEMPLATE/NAME', compute['occi.core.title'] || ::SecureRandom.uuid
+        template.modify_element 'TEMPLATE/DESCRIPTION', compute['occi.core.summary'] || ''
+        template.modify_element 'TEMPLATE/TEMPLATE_ID', os_tpl
+      end
+
+      # :nodoc:
+      def set_context!(template, compute)
+        template.modify_element 'TEMPLATE/CONTEXT/SSH_PUBLIC_KEY', compute['occi.credentials.ssh.publickey'] || ''
+        template.modify_element 'TEMPLATE/CONTEXT/USERDATA_ENCODING', USERDATA_ENCODING
+        template.modify_element 'TEMPLATE/CONTEXT/USER_DATA', compute['occi.compute.userdata'] || ''
+      end
+
+      # :nodoc:
+      def set_size!(template, compute)
+        template.modify_element 'TEMPLATE/VCPU', compute['occi.compute.cores']
+        template.modify_element 'TEMPLATE/CPU', (compute['occi.compute.speed'] * compute['occi.compute.cores'])
+        template.modify_element 'TEMPLATE/MEMORY', (compute['occi.compute.memory'] * 1024).to_i
+        template.modify_element 'TEMPLATE/DISK[1]/SIZE', (compute['occi.compute.ephemeral_storage.size'] * 1024).to_i
       end
     end
   end
