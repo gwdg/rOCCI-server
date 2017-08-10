@@ -5,6 +5,7 @@ module Backends
       include AttributesTransferable
       include ResourceTplLocatable
       include MixinsAttachable
+      include ErbRenderer
 
       # Static user_data encoding
       USERDATA_ENCODING = 'base64'.freeze
@@ -85,17 +86,12 @@ module Backends
         client(Errors::Backend::EntityStateError) { template.info }
 
         modify_basic! template, compute, os_tpl
-        set_context! template, compute
-        set_size! template, compute
+        %i[set_context! set_size! set_security_groups! set_cluster!].each { |mtd| send(mtd, template, compute) }
 
-        # TODO: set inline links (securitygrouplink on existing NICs)
-        # TODO: set availability_zone(s) in sched_reqs (append?)
+        template = template.template_str
+        %i[add_custom! add_gpu! add_nics! add_disks!].each { |mtd| send(mtd, template, compute) }
 
-        # TODO: append additional attributes (custom, user identity)
-        # TODO: append GPU devices (PCI/GPU from resource_tpl)
-        # TODO: append inline links (networkinterface w/ securitygrouplink, storagelink)
-
-        template.template_str
+        template
       end
 
       # :nodoc:
@@ -147,6 +143,76 @@ module Backends
         template.modify_element 'TEMPLATE/CPU', (compute['occi.compute.speed'] * compute['occi.compute.cores'])
         template.modify_element 'TEMPLATE/MEMORY', (compute['occi.compute.memory'] * 1024).to_i
         template.modify_element 'TEMPLATE/DISK[1]/SIZE', (compute['occi.compute.ephemeral_storage.size'] * 1024).to_i
+      end
+
+      # :nodoc:
+      def set_security_groups!(template, compute)
+        sgs = securitygrouplinks(compute).map { |l| link_target_id(l) }.join(',')
+
+        idx = 1
+        template.each('TEMPLATE/NIC') do |_nic|
+          template.modify_element "TEMPLATE/NIC[#{idx}]/SECURITY_GROUPS", sgs
+          idx += 1
+        end
+      end
+
+      # :nodoc:
+      def set_cluster!(template, compute)
+        az = mixin_term(compute, Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN)
+        return unless az
+
+        sched_reqs = template['TEMPLATE/SCHED_REQUIREMENTS'] || ''
+        sched_reqs << ' & ' if sched_reqs.present?
+        sched_reqs << "(CLUSTER_ID = #{az})"
+
+        template.modify_element 'TEMPLATE/SCHED_REQUIREMENTS', sched_reqs
+      end
+
+      # :nodoc:
+      def add_custom!(template_str, compute)
+        template_str << "\n USER_IDENTITY=\"#{active_identity}\""
+        template_str << "\n USER_X509_DN=\"#{active_identity}\""
+      end
+
+      # :nodoc:
+      def add_gpu!(template_str, compute)
+        return unless compute['eu.egi.fedcloud.compute.gpu.count']
+
+        gpu = {
+          vendor: compute['eu.egi.fedcloud.compute.gpu.vendor'],
+          klass: compute['eu.egi.fedcloud.compute.gpu.class'],
+          device: compute['eu.egi.fedcloud.compute.gpu.device']
+        }
+        data = { instances: [] }
+        compute['eu.egi.fedcloud.compute.gpu.count'].times { data[:instances] << gpu }
+
+        add_erb! template_str, data, 'compute_pci.erb'
+      end
+
+      # :nodoc:
+      def add_nics!(template_str, compute)
+        sg_ids = securitygrouplinks(compute).map { |sg| link_target_id(sg) }
+        data = { instances: networkinterfaces(compute), security_groups: sg_ids }
+        add_erb! template_str, data, 'compute_nic.erb'
+      end
+
+      # :nodoc:
+      def add_disks!(template_str, compute)
+        data = { instances: storagelinks(compute) }
+        add_erb! template_str, data, 'compute_disk.erb'
+      end
+
+      # :nodoc:
+      def add_erb!(template_str, data, template_file)
+        template_path = File.join(template_directory, template_file)
+
+        template_str << "\n"
+        template_str << erb_render(template_path, data)
+      end
+
+      # :nodoc:
+      def whereami
+        File.expand_path(File.dirname(__FILE__))
       end
     end
   end

@@ -8,7 +8,8 @@ module EntityRestrictable
         mxn = entity.select_mixins(Occi::Infrastructure::Mixins::ResourceTpl.new)
         return false if mxn.empty?
         defaults_unchanged? entity, mixin_attributes(mxn.first)
-      end
+      end,
+      ->(entity) { !many_mixins?(entity, Occi::InfrastructureExt::Mixins::AvailabilityZone.new) }
     ].freeze,
     Occi::InfrastructureExt::IPReservation => [
       ->(entity) { one_mixin? entity, Occi::InfrastructureExt::Mixins::Floatingippool.new }

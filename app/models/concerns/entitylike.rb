@@ -160,5 +160,28 @@ module Entitylike
     mixin_terms(*args).first
   end
 
-  private :category_by_identifier!, :mixin_terms, :mixin_term
+  # :nodoc:
+  def links_by_klass(entity, klass)
+    entity.links.select { |l| l.is_a?(klass) }
+  end
+
+  # :nodoc:
+  def storagelinks(entity)
+    links_by_klass entity, Occi::Infrastructure::Storagelink
+  end
+
+  # :nodoc:
+  def networkinterfaces(entity)
+    links_by_klass entity, Occi::Infrastructure::Networkinterface
+  end
+
+  # :nodoc:
+  def securitygrouplinks(entity)
+    links_by_klass entity, Occi::InfrastructureExt::SecurityGroupLink
+  end
+
+  # :nodoc:
+  def link_target_id(link)
+    link['occi.core.target'].path.split('/').last
+  end
 end
