@@ -1,18 +1,21 @@
 class MultiEntityController < ApplicationController
   include LocationsTransformable
 
+  # Allowed subtypes
+  ALLOWED_SUBTYPES = %w[entity resource link].freeze
+
   # Known mixin parents (being depended on)
-  MIXIN_PARENTS = %w[os_tpl resource_tpl availability_zone region].freeze
+  MIXIN_PARENTS = %w[os_tpl resource_tpl availability_zone region floatingippool].freeze
 
-  before_action :validate_provided_format!, only: %i[assign_mixin execute_all scoped_execute_all update_mixin]
-  before_action :parent_exists!, except: %i[locations list execute_all delete_all]
+  before_action :validate_provided_format!, only: %i[assign_mixin scoped_execute_all update_mixin]
+  before_action :parent_exists!, except: %i[locations list delete_all blackhole]
 
-  # GET /
+  # GET /(:entity/)
   # (for legacy renderings and uri-list)
   def locations
     locations = Occi::Core::Locations.new
 
-    all_entitylikes.each do |bt|
+    all(params[:entity]).each do |bt|
       bt_ids = backend_proxy_for(bt).identifiers
       locations_from(bt_ids, bt, locations)
     end
@@ -27,17 +30,18 @@ class MultiEntityController < ApplicationController
     render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
-  # GET /
+  # GET /(:entity/)
   # (for new renderings)
   def list
     collection = Occi::Core::Collection.new
     collection.categories = server_model.categories
 
-    all_entitylikes.each do |bt|
+    all(params[:entity]).each do |bt|
       bt_coll = backend_proxy_for(bt).list
       collection.entities.merge bt_coll.entities
     end
     return if collection.only_categories?
+    collection.valid!
 
     respond_with collection
   end
@@ -53,11 +57,6 @@ class MultiEntityController < ApplicationController
     render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
-  # POST /?action=ACTION
-  def execute_all
-    render_error :not_implemented, 'Requested functionality is not implemented'
-  end
-
   # POST /mixin/:parent/:term/?action=ACTION
   def scoped_execute_all
     render_error :not_implemented, 'Requested functionality is not implemented'
@@ -68,9 +67,9 @@ class MultiEntityController < ApplicationController
     render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
-  # DELETE /
+  # DELETE /(:entity/)
   def delete_all
-    all_entitylikes.each { |bt| backend_proxy_for(bt).delete_all }
+    all(params[:entity]).each { |bt| backend_proxy_for(bt).delete_all }
   end
 
   # DELETE /mixin/:parent/:term/
@@ -78,13 +77,21 @@ class MultiEntityController < ApplicationController
     render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
+  # POST /(:entity/)
+  def blackhole
+    render_error :not_implemented, 'Requested functionality is not implemented'
+  end
+
   protected
 
-  # Returns a list of known Entity-like backend subtypes.
+  # Returns a list of known backend subtypes.
   #
-  # @return [Enumerable] list of available Entity-like backend fragments/subtypes
-  def all_entitylikes
-    BackendProxy.backend_entity_subtypes
+  # @param type [String] type of backend subtype
+  # @return [Enumerable] list of available backend subtypes
+  def all(type)
+    type ||= ALLOWED_SUBTYPES.first
+    raise 'Attempting to access forbidden backend subtype' unless ALLOWED_SUBTYPES.include?(type)
+    BackendProxy.send("backend_#{type}_subtypes")
   end
 
   # Validates URL fragment (Rails parameter `:parent`) against a list of known

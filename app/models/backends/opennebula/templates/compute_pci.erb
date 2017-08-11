@@ -1,0 +1,13 @@
+<% data[:instances].each do |pci| %>
+<%
+pci_tpl = []
+pci_tpl << "VENDOR=\"#{pci[:vendor]}\"" if vendor.present?
+pci_tpl << "CLASS=\"#{pci[:klass]}\"" if klass.present?
+pci_tpl << "DEVICE=\"#{pci[:device]}\"" if device.present?
+%>
+<% if pci_tpl.present? %>
+PCI = [
+  <%= pci_tpl.join(",\n") %>
+]
+<% end %>
+<% end %>

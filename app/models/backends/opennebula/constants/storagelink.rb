@@ -15,7 +15,7 @@ module Backends
 
         # Attribute mapping hash for Infra
         ATTRIBUTES_INFRA = {
-          'occi.storagelink.deviceid' => ->(ary) { "/dev/#{ary.first['TARGET']}" },
+          'occi.storagelink.deviceid' => ->(ary) { "#{ary.first['TARGET']}" },
           # 'occi.storagelink.mountpoint' => ->(ary) { HOW? },
           'occi.storagelink.state' => ->(ary) { ary.last.lcm_state_str == 'RUNNING' ? 'active' : 'inactive' }
         }.freeze

@@ -1,6 +1,4 @@
 module ModelAccessible
-  extend ActiveSupport::Concern
-
   # Model flavors loaded when initializing server model
   MODEL_FLAVORS = %w[core infrastructure infrastructure_ext].freeze
 

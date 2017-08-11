@@ -144,5 +144,44 @@ module Entitylike
   def category_by_identifier!(identifier)
     server_model.find_by_identifier! identifier
   end
-  private :category_by_identifier!
+
+  # Returns a list of term of mixins dependent on the given mixin specified by `identifier`.
+  #
+  # @param entity [Occi::Core::Entity] entity to search
+  # @param identifier [String] parent mixin identifier
+  # @return [Array] terms of mixins
+  def mixin_terms(entity, identifier)
+    mxn = server_model.find_by_identifier!(identifier)
+    entity.select_mixins(mxn).map(&:term)
+  end
+
+  # @see `mixin_terms`
+  def mixin_term(*args)
+    mixin_terms(*args).first
+  end
+
+  # :nodoc:
+  def links_by_klass(entity, klass)
+    entity.links.select { |l| l.is_a?(klass) }
+  end
+
+  # :nodoc:
+  def storagelinks(entity)
+    links_by_klass entity, Occi::Infrastructure::Storagelink
+  end
+
+  # :nodoc:
+  def networkinterfaces(entity)
+    links_by_klass entity, Occi::Infrastructure::Networkinterface
+  end
+
+  # :nodoc:
+  def securitygrouplinks(entity)
+    links_by_klass entity, Occi::InfrastructureExt::SecurityGroupLink
+  end
+
+  # :nodoc:
+  def link_target_id(link)
+    link['occi.core.target'].path.split('/').last
+  end
 end

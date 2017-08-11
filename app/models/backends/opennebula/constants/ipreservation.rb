@@ -1,3 +1,5 @@
+require 'ipaddr'
+
 module Backends
   module Opennebula
     module Constants
@@ -13,8 +15,8 @@ module Backends
         ATTRIBUTES_INFRA = {
           'occi.ipreservation.state' => ->(_vnet) { 'active' },
           'occi.network.state' => ->(_vnet) { 'active' },
-          'occi.ipreservation.address' => ->(vnet) { vnet['AR_POOL/AR/IP'] },
-          'occi.ipreservation.used' => ->(vnet) { vnet['AR_POOL/AR/ALLOCATED'].present? }
+          'occi.ipreservation.address' => ->(vnet) { IPAddr.new(vnet['AR_POOL/AR/IP']) },
+          'occi.ipreservation.used' => ->(vnet) { vnet['USED_LEASES'] == '1' }
         }.freeze
 
         # All transferable attributes

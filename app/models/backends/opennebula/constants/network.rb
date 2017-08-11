@@ -1,3 +1,5 @@
+require 'ipaddr'
+
 module Backends
   module Opennebula
     module Constants
@@ -16,15 +18,18 @@ module Backends
         ATTRIBUTES_INFRA = {
           'occi.network.state' => ->(_vnet) { 'active' },
           'occi.network.vlan' => VLAN_LAMBDA,
-          'occi.network.label' => VLAN_LAMBDA,
+          'occi.network.label' => ->(vnet) { VLAN_LAMBDA.call(vnet).to_s },
           'occi.network.address' => lambda do |vnet|
-            vnet['AR_POOL/AR/IP'] ? vnet['TEMPLATE/CIDR_NETWORK_ADDRESS'] : nil
+            return unless vnet['TEMPLATE/NETWORK_ADDRESS'].present? && vnet['TEMPLATE/NETWORK_MASK'].present?
+            IPAddr.new "#{vnet['TEMPLATE/NETWORK_ADDRESS']}/#{vnet['TEMPLATE/NETWORK_MASK']}"
           end,
           'occi.network.allocation' => lambda do |vnet|
-            vnet['AR_POOL/AR/IP'] ? 'dynamic' : nil
+            return unless vnet['TEMPLATE/NETWORK_TYPE'].present?
+            %w[public nat].include?(vnet['TEMPLATE/NETWORK_TYPE'].downcase) ? 'dynamic' : 'static'
           end,
           'occi.network.gateway' => lambda do |vnet|
-            vnet['AR_POOL/AR/IP'] ? vnet['TEMPLATE/GATEWAY'] : nil
+            return unless vnet['TEMPLATE/GATEWAY'].present?
+            IPAddr.new vnet['TEMPLATE/GATEWAY']
           end
         }.freeze
 

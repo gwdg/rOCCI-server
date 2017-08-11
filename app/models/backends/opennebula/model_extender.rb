@@ -144,7 +144,7 @@ module Backends
       # :nodoc:
       def change_default_connectivity!(model)
         dcm = model.find_by_identifier!(Occi::InfrastructureExt::Constants::DEFAULT_CONNECT_MIXIN)
-        dcm['eu.egi.fedcloud.compute.default_connectivity'].default = options.fetch(:default_connectivity)
+        dcm['eu.egi.fedcloud.compute.default_connectivity'].default = default_connectivity
       end
 
       # :nodoc:

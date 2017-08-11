@@ -9,9 +9,8 @@ defaults: &defaults
   opennebula:
     endpoint: http://localhost:2633/RPC2
     timeout: 30
-    default_datastore: default
     schema_namespace: http://schemas.localhost/
-    default_connectivity: public
+    template_dir: ~
   aws_ec2:
     access_key_id: <%= ENV['ROCCI_SERVER_AWS_EC2_ACCESS_KEY_ID'] %>
     secret_access_key: <%= ENV['ROCCI_SERVER_AWS_EC2_SECRET_ACCESS_KEY'] %>

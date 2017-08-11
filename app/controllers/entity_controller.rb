@@ -1,13 +1,13 @@
 class EntityController < ApplicationController
   include ParserAccessible
   include LocationsTransformable
+  include EntityRestrictable
 
   before_action :entitylike!
-  before_action :matching_path!
   before_action :validate_provided_format!, only: %i[create execute execute_all update partial_update]
   before_action :instance_exists!, only: %i[show execute update partial_update delete]
 
-  # GET (/link)/:entity/
+  # GET /:entity/
   # (for legacy renderings and uri-list)
   def locations
     ids = default_backend_proxy.identifiers
@@ -16,21 +16,28 @@ class EntityController < ApplicationController
     respond_with locations_from(ids)
   end
 
-  # GET (/link)/:entity/
+  # GET /:entity/
   # (for new renderings)
   def list
-    entities = default_backend_proxy.list
-    return if entities.blank? || entities.only_categories?
+    coll = Occi::Core::Collection.new
+    coll.categories = server_model.categories
 
-    respond_with entities
+    coll.entities = default_backend_proxy.list.entities
+    return if coll.only_categories?
+    coll.valid!
+
+    respond_with coll
   end
 
-  # GET (/link)/:entity/:id
+  # GET /:entity/:id
   def show
-    respond_with default_backend_proxy.instance(params[:id])
+    entity = default_backend_proxy.instance(params[:id])
+    entity.valid!
+
+    respond_with entity
   end
 
-  # POST (/link)/:entity/
+  # POST /:entity/
   def create
     coll = resources_or_links.select { |rol| default_backend_proxy.serves?(rol.class) }
     if coll.empty?
@@ -38,14 +45,17 @@ class EntityController < ApplicationController
       return
     end
 
-    ids = coll.map { |r| default_backend_proxy.create(r) }
+    ids = coll.map do |entity|
+      restrict! entity
+      default_backend_proxy.create entity
+    end
     respond_with locations_from(ids), status: :created
   end
 
-  # POST (/link)/:entity/:id?action=ACTION
+  # POST /:entity/:id?action=ACTION
   def execute
     coll = request_action_instances
-    if coll.count != 1
+    unless coll.one?
       render_error :bad_request, 'Single action instance must be given'
       return
     end
@@ -53,10 +63,10 @@ class EntityController < ApplicationController
     default_backend_proxy.trigger params[:id], coll.first
   end
 
-  # POST (/link)/:entity/?action=ACTION
+  # POST /:entity/?action=ACTION
   def execute_all
     coll = request_action_instances
-    if coll.count != 1
+    unless coll.one?
       render_error :bad_request, 'Single action instance must be given'
       return
     end
@@ -64,12 +74,12 @@ class EntityController < ApplicationController
     default_backend_proxy.trigger_all coll.first
   end
 
-  # PUT (/link)/:entity/:id
+  # PUT /:entity/:id
   def update
     render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
-  # POST (/link)/:entity/:id
+  # POST /:entity/:id
   def partial_update
     coll = request_mixins
     if coll.empty?
@@ -77,15 +87,18 @@ class EntityController < ApplicationController
       return
     end
 
-    respond_with default_backend_proxy.partial_update(params[:id], mixins: coll)
+    entity = default_backend_proxy.partial_update(params[:id], mixins: coll)
+    entity.valid!
+
+    respond_with entity
   end
 
-  # DELETE (/link)/:entity/:id
+  # DELETE /:entity/:id
   def delete
     default_backend_proxy.delete params[:id]
   end
 
-  # DELETE (/link)/:entity/
+  # DELETE /:entity/
   delegate :delete_all, to: :default_backend_proxy
 
   protected
@@ -96,12 +109,6 @@ class EntityController < ApplicationController
   def entitylike!
     return if BackendProxy.entitylike?(params[:entity].to_sym)
     render_error :not_found, 'Requested entity type could not be found'
-  end
-
-  # Checks whether Entity-like instance is accessed via the corresponding
-  # path (relative URL). If not, this will render and return HTTP[404].
-  def matching_path!
-    link_path? || resource_path? || render_error(:not_found, 'Mismatched entity type and collection path')
   end
 
   # Checks whether `:id` specified in `params` is actually an
@@ -126,13 +133,12 @@ class EntityController < ApplicationController
     backend_proxy_for params[:entity]
   end
 
-  # :nodoc:
-  def resource_path?
-    resourceish?(params[:entity]) && !request.original_fullpath.start_with?(link_path_prefix)
-  end
-
-  # :nodoc:
-  def link_path?
-    linkish?(params[:entity]) && request.original_fullpath.start_with?(link_path_prefix)
+  # Checks whether the given entity belongs to Link-like entity subtypes.
+  #
+  # @param entity [String] entity name, from URL (i.e., term-like)
+  # @return [TrueClass] if certain linkiness is suggested
+  # @return [FalseClass] if NOT
+  def linkish?(entity)
+    BackendProxy.linklike?(entity.to_sym)
   end
 end

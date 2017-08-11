@@ -11,21 +11,19 @@ module Backends
           'occi.core.summary' => ->(sg) { sg['TEMPLATE/DESCRIPTION'] }
         }.freeze
 
-        # Network masks, SIZE => MASKS[LONG, SHORT]
+        # Network masks, SIZE => MASKS
         NETWORK_MASKS = {
-          '1'        => ['255.255.255.255', '32'],
-          '254'      => ['255.255.255.0', '24'],
-          '65534'    => ['255.255.0.0', '16'],
-          '16777214' => ['255.0.0.0', '8']
+          '1'        => '255.255.255.255',
+          '254'      => '255.255.255.0',
+          '65534'    => '255.255.0.0',
+          '16777214' => '255.0.0.0'
         }.freeze
 
         # Helper for IP conversion, only A, B, C networks are supported
         IP_CONVERT = lambda do |rule|
           return unless NETWORK_MASKS.key?(rule['SIZE'])
-          long_mask = NETWORK_MASKS[rule['SIZE']][0]
-          short_mask = NETWORK_MASKS[rule['SIZE']][1]
-          address = IPAddr.new(rule['IP']).mask(long_mask)
-          "#{address}/#{short_mask}"
+          address = IPAddr.new(rule['IP']).mask(NETWORK_MASKS[rule['SIZE']])
+          "#{address}/#{address.cidr_mask}"
         end
 
         # Attribute mapping hash for Infra

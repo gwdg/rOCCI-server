@@ -20,7 +20,7 @@ module Backends
       # @see `Entitylike`
       def identifiers(_filter = Set.new)
         vnets = Set.new
-        pool(:virtual_network, :info_all).each do |vnet|
+        pool(:virtual_network, :info_mine).each do |vnet|
           next unless single_reservation?(vnet)
           vnets << vnet['ID']
         end
@@ -42,6 +42,17 @@ module Backends
         vnet = ::OpenNebula::VirtualNetwork.new_with_id(identifier, raw_client)
         client(Errors::Backend::EntityStateError) { vnet.info }
         ipreservation_from(vnet)
+      end
+
+      # @see `Entitylike`
+      def create(instance)
+        fltp = mixin_term(instance, Occi::InfrastructureExt::Constants::FLOATINGIPPOOL_MIXIN)
+
+        vnet = ::OpenNebula::VirtualNetwork.new_with_id(fltp, raw_client)
+        res_name = instance['occi.core.title'] || ::SecureRandom.uuid
+        res_id = client(Errors::Backend::EntityCreateError) { vnet.reserve(res_name, 1) }
+
+        res_id.to_s
       end
 
       # @see `Entitylike`
