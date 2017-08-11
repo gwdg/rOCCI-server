@@ -33,13 +33,12 @@ class MultiEntityController < ApplicationController
   # GET /(:entity/)
   # (for new renderings)
   def list
-    collection = Occi::Core::Collection.new
-    collection.categories = server_model.categories
-
+    collection = empty_collection
     all(params[:entity]).each do |bt|
       bt_coll = backend_proxy_for(bt).list
       collection.entities.merge bt_coll.entities
     end
+
     return if collection.only_categories?
     collection.valid!
 

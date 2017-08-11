@@ -109,7 +109,7 @@ module Backends
 
       # :nodoc:
       def set_network_type!(virtual_network, network)
-        return unless virtual_network['TEMPLATE/NETWORK_TYPE'].present?
+        return if virtual_network['TEMPLATE/NETWORK_TYPE'].blank?
 
         mxn = case virtual_network['TEMPLATE/NETWORK_TYPE'].downcase
               when 'public'

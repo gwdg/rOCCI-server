@@ -13,7 +13,7 @@ module OpenNebula
       modify_element(xpath, '') unless self[xpath]
 
       delete_element "#{xpath}#{XPATH_SEPARATOR}#{key}"
-      add_element xpath, { key => value }
+      add_element xpath, key => value
     end
 
     private

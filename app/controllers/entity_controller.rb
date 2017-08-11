@@ -19,8 +19,7 @@ class EntityController < ApplicationController
   # GET /:entity/
   # (for new renderings)
   def list
-    coll = Occi::Core::Collection.new
-    coll.categories = server_model.categories
+    coll = empty_collection
 
     coll.entities = default_backend_proxy.list.entities
     return if coll.only_categories?

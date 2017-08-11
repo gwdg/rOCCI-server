@@ -1,7 +1,7 @@
 module Ext
   class RoutingConstraints
     LEGACY_FORMATS = %i[text headers uri_list].freeze
-    ABSTRACT_ENTITIES = /^\/(entity|resource|link)\/?$/
+    ABSTRACT_ENTITIES = %r{^/(entity|resource|link)/?$}
 
     RULE_MAP = {
       legacy: %i[legacy_format?],

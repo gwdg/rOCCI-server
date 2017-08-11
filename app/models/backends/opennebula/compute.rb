@@ -169,7 +169,7 @@ module Backends
       end
 
       # :nodoc:
-      def add_custom!(template_str, compute)
+      def add_custom!(template_str, _compute)
         template_str << "\n USER_IDENTITY=\"#{active_identity}\""
         template_str << "\n USER_X509_DN=\"#{active_identity}\""
       end

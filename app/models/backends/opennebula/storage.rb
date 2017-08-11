@@ -93,8 +93,7 @@ module Backends
 
       # :nodoc:
       def candidate_datastore(instance)
-        az = server_model.find_by_identifier!(Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN)
-        azs = instance.select_mixins(az).map(&:term)
+        azs = mixin_terms(instance, Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN)
         azs << default_cluster if azs.empty?
 
         azs.sort!

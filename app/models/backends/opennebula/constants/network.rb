@@ -24,11 +24,11 @@ module Backends
             IPAddr.new "#{vnet['TEMPLATE/NETWORK_ADDRESS']}/#{vnet['TEMPLATE/NETWORK_MASK']}"
           end,
           'occi.network.allocation' => lambda do |vnet|
-            return unless vnet['TEMPLATE/NETWORK_TYPE'].present?
+            return if vnet['TEMPLATE/NETWORK_TYPE'].blank?
             %w[public nat].include?(vnet['TEMPLATE/NETWORK_TYPE'].downcase) ? 'dynamic' : 'static'
           end,
           'occi.network.gateway' => lambda do |vnet|
-            return unless vnet['TEMPLATE/GATEWAY'].present?
+            return if vnet['TEMPLATE/GATEWAY'].blank?
             IPAddr.new vnet['TEMPLATE/GATEWAY']
           end
         }.freeze
