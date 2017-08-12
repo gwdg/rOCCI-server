@@ -15,6 +15,7 @@ module Backends
     end
 
     class << self
+      # @return [String] version of the backend
       def api_version
         self::API_VERSION
       end

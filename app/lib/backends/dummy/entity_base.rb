@@ -3,7 +3,7 @@ require 'backends/dummy/base'
 module Backends
   module Dummy
     class EntityBase < Base
-      include Entitylike
+      include Helpers::Entitylike
 
       # Dummies
       DUMMY_IDS = %w[

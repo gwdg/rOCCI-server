@@ -1,12 +1,8 @@
-module Backends; end
-Dir.glob(File.join(File.dirname(__FILE__), 'backends', '*.rb')) { |mod| require mod.chomp('.rb') }
-
 class BackendProxy
   # Available backends (supported platforms)
   BACKEND_TYPES = {
     dummy: Backends::Dummy,
-    opennebula: Backends::Opennebula,
-    aws_ec2: Backends::AwsEc2
+    opennebula: Backends::Opennebula
   }.freeze
 
   # Available backend fragments (supported types of resources)

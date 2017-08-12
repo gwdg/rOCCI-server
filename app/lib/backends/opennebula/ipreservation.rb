@@ -1,9 +1,11 @@
+require 'backends/opennebula/base'
+
 module Backends
   module Opennebula
     class Ipreservation < Base
-      include Entitylike
-      include AttributesTransferable
-      include MixinsAttachable
+      include Helpers::Entitylike
+      include Helpers::AttributesTransferable
+      include Helpers::MixinsAttachable
 
       class << self
         # @see `served_class` on `Entitylike`

@@ -1,11 +1,13 @@
+require 'backends/opennebula/base'
+
 module Backends
   module Opennebula
     class Compute < Base
-      include Entitylike
-      include AttributesTransferable
-      include ResourceTplLocatable
-      include MixinsAttachable
-      include ErbRenderer
+      include Helpers::Entitylike
+      include Helpers::AttributesTransferable
+      include Helpers::ResourceTplLocatable
+      include Helpers::MixinsAttachable
+      include Helpers::ErbRenderer
 
       # Static user_data encoding
       USERDATA_ENCODING = 'base64'.freeze

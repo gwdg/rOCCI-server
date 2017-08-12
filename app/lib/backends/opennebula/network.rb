@@ -1,10 +1,12 @@
+require 'backends/opennebula/base'
+
 module Backends
   module Opennebula
     class Network < Base
-      include Entitylike
-      include AttributesTransferable
-      include MixinsAttachable
-      include ErbRenderer
+      include Helpers::Entitylike
+      include Helpers::AttributesTransferable
+      include Helpers::MixinsAttachable
+      include Helpers::ErbRenderer
 
       class << self
         # @see `served_class` on `Entitylike`
