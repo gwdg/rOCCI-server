@@ -13,11 +13,6 @@ module Backends
       ].freeze
 
       # @see `Entitylike`
-      def identifiers(_filter = Set.new)
-        Set.new(DUMMY_IDS)
-      end
-
-      # @see `Entitylike`
       def list(_filter = Set.new)
         coll = Occi::Core::Collection.new
         DUMMY_IDS.each { |id| coll << instance(id) }
@@ -54,18 +49,8 @@ module Backends
       end
 
       # @see `Entitylike`
-      def trigger_all(_action_instance, _filter = Set.new)
-        Set.new
-      end
-
-      # @see `Entitylike`
       def delete(identifier)
         identifier
-      end
-
-      # @see `Entitylike`
-      def delete_all(_filter = Set.new)
-        Set.new
       end
     end
   end

@@ -14,6 +14,13 @@ module Backends
           Occi::InfrastructureExt::Constants::SECURITY_GROUP_KIND
         end
       end
+
+      # @see `Entitylike`
+      def instance(identifier)
+        instance = super
+        instance['occi.securitygroup.rules'] = [{ protocol: 'tcp', range: '10.0.0.0/24', type: 'inbound' }]
+        instance
+      end
     end
   end
 end

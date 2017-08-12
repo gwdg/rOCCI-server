@@ -14,6 +14,13 @@ module Backends
           Occi::InfrastructureExt::Constants::IPRESERVATION_KIND
         end
       end
+
+      # @see `Entitylike`
+      def instance(identifier)
+        instance = super
+        instance['occi.ipreservation.address'] = IPAddr.new('10.0.0.1')
+        instance
+      end
     end
   end
 end

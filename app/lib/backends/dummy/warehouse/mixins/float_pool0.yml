@@ -1,0 +1,9 @@
+---
+term: pool0
+schema: http://schemas.localhost/occi/infrastructure/network/floatingippool#
+title: Floating IP Pool - POOL 0
+location: /mixin/floatingippool/pool0
+applies:
+  - http://schemas.ogf.org/occi/infrastructure#ipreservation
+depends:
+  - http://schemas.openstack.org/network#floatingippool
