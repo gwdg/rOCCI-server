@@ -23,7 +23,7 @@ module Backends
       def identifiers(_filter = Set.new)
         sgls = Set.new
         pool(:virtual_machine, :info_mine).each do |vm|
-          sec_groups(vm).each do |sg|
+          Constants::Securitygrouplink::ID_EXTRACTOR.call(vm).each do |sg|
             sgls << Constants::Securitygrouplink::ATTRIBUTES_CORE['occi.core.id'].call([sg, vm])
           end
         end
@@ -34,7 +34,7 @@ module Backends
       def list(_filter = Set.new)
         coll = Occi::Core::Collection.new
         pool(:virtual_machine, :info_mine).each do |vm|
-          sec_groups(vm).each { |sg| coll << securitygrouplink_from(sg, vm) }
+          Constants::Securitygrouplink::ID_EXTRACTOR.call(vm).each { |sg| coll << securitygrouplink_from(sg, vm) }
         end
         coll
       end
@@ -46,11 +46,6 @@ module Backends
         client(Errors::Backend::EntityStateError) { vm.info }
 
         securitygrouplink_from(matched[:sg], vm)
-      end
-
-      # @see `Entitylike`
-      def delete(identifier)
-        # TODO: how?
       end
 
       private
@@ -83,16 +78,6 @@ module Backends
           sg_link, virtual_machine['HISTORY_RECORDS/HISTORY[last()]/CID'],
           :availability_zone
         )
-      end
-
-      # :nodoc:
-      def sec_groups(virtual_machine)
-        s = Set.new
-        virtual_machine.each_xpath('TEMPLATE/NIC/SECURITY_GROUPS') do |sgs|
-          next if sgs.blank?
-          sgs.split(',').each { |sg| s << sg }
-        end
-        s
       end
     end
   end

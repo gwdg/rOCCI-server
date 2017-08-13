@@ -6,6 +6,7 @@ module Backends
       include Helpers::Entitylike
       include Helpers::AttributesTransferable
       include Helpers::MixinsAttachable
+      include Helpers::ErbRenderer
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -53,6 +54,23 @@ module Backends
       end
 
       # @see `Entitylike`
+      def create(instance)
+        vm = ::OpenNebula::VirtualMachine.new_with_id(link_source_id(instance), raw_client)
+
+        client(Errors::Backend::EntityStateError) { vm.info }
+        client(Errors::Backend::EntityStateError) { vm.nic_attach nic_from(instance, vm) }
+
+        # TODO: wait for change
+        client(Errors::Backend::EntityStateError) { vm.info }
+        Constants::Networkinterface::ATTRIBUTES_CORE['occi.core.id'].call(
+          [
+            { 'NIC_ID' => vm['TEMPLATE/NIC[last()]/NIC_ID'] },
+            vm
+          ]
+        )
+      end
+
+      # @see `Entitylike`
       def delete(identifier)
         matched = Constants::Networkinterface::ID_PATTERN.match(identifier)
         vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
@@ -78,6 +96,20 @@ module Backends
         fix_target! nic, networkinterface
 
         networkinterface
+      end
+
+      # Converts an OCCI networkinterface instance to a valid ONe virtual machine template NIC.
+      #
+      # @param storage [Occi::Infrastructure::Networkinterface] instance to transform
+      # @param virtual_machine [OpenNebula::VirtualMachine] machine this interface will be attached to
+      # @return [String] ONe template fragment
+      def nic_from(networkinterface, virtual_machine)
+        template_path = File.join(template_directory, 'compute_nic.erb')
+        data = {
+          instances: [networkinterface],
+          security_groups: Constants::Securitygrouplink::ID_EXTRACTOR.call(virtual_machine)
+        }
+        erb_render template_path, data
       end
 
       # :nodoc:
@@ -109,6 +141,11 @@ module Backends
       # :nodoc:
       def ipreservation?(identifier)
         backend_proxy.ipreservation.identifiers.include?(identifier)
+      end
+
+      # :nodoc:
+      def whereami
+        File.expand_path(File.dirname(__FILE__))
       end
     end
   end

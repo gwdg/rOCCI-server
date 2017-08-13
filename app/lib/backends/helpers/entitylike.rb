@@ -184,7 +184,18 @@ module Backends
 
       # :nodoc:
       def link_target_id(link)
-        link['occi.core.target'].path.split('/').last
+        last_uri_segment link['occi.core.target']
+      end
+
+      # :nodoc:
+      def link_source_id(link)
+        last_uri_segment link['occi.core.source']
+      end
+
+      # :nodoc:
+      def last_uri_segment(uri)
+        raise 'Invalid URI' if uri.blank?
+        uri.path.split('/').last || raise('No entity ID found in URI')
       end
     end
   end

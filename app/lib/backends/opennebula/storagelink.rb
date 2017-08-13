@@ -6,6 +6,7 @@ module Backends
       include Helpers::Entitylike
       include Helpers::AttributesTransferable
       include Helpers::MixinsAttachable
+      include Helpers::ErbRenderer
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -53,6 +54,21 @@ module Backends
       end
 
       # @see `Entitylike`
+      def create(instance)
+        vm = ::OpenNebula::VirtualMachine.new_with_id(link_source_id(instance), raw_client)
+        client(Errors::Backend::EntityStateError) { vm.disk_attach disk_from(instance) }
+
+        # TODO: wait for change
+        client(Errors::Backend::EntityStateError) { vm.info }
+        Constants::Storagelink::ATTRIBUTES_CORE['occi.core.id'].call(
+          [
+            { 'DISK_ID' => vm['TEMPLATE/DISK[last()]/DISK_ID'] },
+            vm
+          ]
+        )
+      end
+
+      # @see `Entitylike`
       def delete(identifier)
         matched = Constants::Storagelink::ID_PATTERN.match(identifier)
         vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
@@ -79,6 +95,16 @@ module Backends
         )
 
         storagelink
+      end
+
+      # Converts an OCCI storagelink instance to a valid ONe virtual machine template DISK.
+      #
+      # @param storage [Occi::Infrastructure::Storagelink] instance to transform
+      # @return [String] ONe template fragment
+      def disk_from(storagelink)
+        template_path = File.join(template_directory, 'compute_disk.erb')
+        data = { instances: [storagelink] }
+        erb_render template_path, data
       end
 
       # :nodoc:
