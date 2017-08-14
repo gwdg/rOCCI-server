@@ -3,7 +3,7 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class ModelExtender < Base
-      include Helpers::Extenderlike
+      include Backends::Helpers::Extenderlike
 
       # Stuff to load into model
       EXTENSIONS = %i[regions availability_zones resource_tpls os_tpls floatingippools].freeze

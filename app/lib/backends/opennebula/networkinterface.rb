@@ -3,10 +3,11 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class Networkinterface < Base
-      include Helpers::Entitylike
-      include Helpers::AttributesTransferable
-      include Helpers::MixinsAttachable
-      include Helpers::ErbRenderer
+      include Backends::Helpers::Entitylike
+      include Backends::Helpers::AttributesTransferable
+      include Backends::Helpers::MixinsAttachable
+      include Backends::Helpers::ErbRenderer
+      include Backends::Opennebula::Helpers::Waiter
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -58,15 +59,18 @@ module Backends
         vm = ::OpenNebula::VirtualMachine.new_with_id(link_source_id(instance), raw_client)
 
         client(Errors::Backend::EntityStateError) { vm.info }
-        client(Errors::Backend::EntityStateError) { vm.nic_attach nic_from(instance, vm) }
+        nics = Backends::Opennebula::Helpers::Counter.xml_elements(vm, 'TEMPLATE/NIC')
 
-        # TODO: wait for change
-        client(Errors::Backend::EntityStateError) { vm.info }
+        client(Errors::Backend::EntityCreateError) { vm.nic_attach nic_from(instance, vm) }
+        wait_until(vm, 'RUNNING') do |nvm|
+          unless Backends::Opennebula::Helpers::Counter.xml_elements(nvm, 'TEMPLATE/NIC') > nics
+            logger.error "Attaching VNET to VM[#{vm['ID']}] failed: #{vm['USER_TEMPLATE/ERROR']}"
+            raise Errors::Backend::EntityCreateError, 'Could not attach network to compute'
+          end
+        end
+
         Constants::Networkinterface::ATTRIBUTES_CORE['occi.core.id'].call(
-          [
-            { 'NIC_ID' => vm['TEMPLATE/NIC[last()]/NIC_ID'] },
-            vm
-          ]
+          [{ 'NIC_ID' => vm['TEMPLATE/NIC[last()]/NIC_ID'] }, vm]
         )
       end
 
@@ -107,7 +111,7 @@ module Backends
         template_path = File.join(template_directory, 'compute_nic.erb')
         data = {
           instances: [networkinterface],
-          security_groups: Constants::Securitygrouplink::ID_EXTRACTOR.call(virtual_machine)
+          security_groups: Constants::Securitygrouplink::ID_EXTRACTOR.call(virtual_machine).to_a
         }
         erb_render template_path, data
       end

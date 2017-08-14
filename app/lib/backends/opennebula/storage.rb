@@ -3,10 +3,10 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class Storage < Base
-      include Helpers::Entitylike
-      include Helpers::AttributesTransferable
-      include Helpers::MixinsAttachable
-      include Helpers::ErbRenderer
+      include Backends::Helpers::Entitylike
+      include Backends::Helpers::AttributesTransferable
+      include Backends::Helpers::MixinsAttachable
+      include Backends::Helpers::ErbRenderer
 
       class << self
         # @see `served_class` on `Entitylike`

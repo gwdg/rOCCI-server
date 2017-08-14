@@ -4,6 +4,8 @@ DISK = [
 
   <% if storagelink['occi.storagelink.deviceid'].present? %>
   ,TARGET  = "<%= storagelink['occi.storagelink.deviceid'].gsub('/dev/', '') %>"
+  <% else %>
+  ,DEV_PREFIX = "vd"
   <% end %>
 ]
 <% end %>
