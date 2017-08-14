@@ -1,28 +1,11 @@
 module Ext
   class ApplicationResponder < ::ActionController::Responder
-    def to_headers
-      custom_merge_and_render :headers
+    def display_resource
+      display resource
     end
-
-    def to_text
-      custom_merge_and_render :text
-    end
-
-    def to_json
-      custom_merge_and_render :json
-    end
-
-    def to_uri_list
-      custom_merge_and_render :uri_list
-    end
-
-    private
-
-    def custom_merge_and_render(mime_type, options = {})
-      options.merge!(@options)
-      options[mime_type] = @resource
-
-      controller.render options
-    end
+    alias to_headers display_resource
+    alias to_text display_resource
+    alias to_json display_resource
+    alias to_uri_list display_resource
   end
 end
