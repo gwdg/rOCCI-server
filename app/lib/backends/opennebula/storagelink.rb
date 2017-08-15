@@ -56,7 +56,7 @@ module Backends
 
       # @see `Entitylike`
       def create(instance)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(link_source_id(instance), raw_client)
+        vm = ::OpenNebula::VirtualMachine.new_with_id(instance.source_id, raw_client)
 
         client(Errors::Backend::EntityStateError) { vm.info }
         disks = Backends::Opennebula::Helpers::Counter.xml_elements(vm, 'TEMPLATE/DISK')
