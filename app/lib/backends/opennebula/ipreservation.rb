@@ -48,7 +48,7 @@ module Backends
 
       # @see `Entitylike`
       def create(instance)
-        fltp = mixin_term(instance, Occi::InfrastructureExt::Constants::FLOATINGIPPOOL_MIXIN)
+        fltp = instance.dependent_term(find_by_identifier!(Occi::InfrastructureExt::Constants::FLOATINGIPPOOL_MIXIN))
 
         vnet = ::OpenNebula::VirtualNetwork.new_with_id(fltp, raw_client)
         res_name = instance['occi.core.title'] || ::SecureRandom.uuid

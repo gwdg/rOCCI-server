@@ -1,6 +1,6 @@
 <% data[:instances].each do |storagelink| %>
 DISK = [
-  IMAGE_ID = "<%= link_target_id(storagelink) %>"
+  IMAGE_ID = "<%= storagelink.target_id %>"
 
   <% if storagelink['occi.storagelink.deviceid'].present? %>
   ,TARGET  = "<%= storagelink['occi.storagelink.deviceid'].gsub('/dev/', '') %>"

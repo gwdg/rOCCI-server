@@ -96,7 +96,7 @@ module Backends
           [disk, virtual_machine], storagelink,
           Constants::Storagelink::TRANSFERABLE_ATTRIBUTES
         )
-        storagelink.target_kind = category_by_identifier!(
+        storagelink.target_kind = find_by_identifier!(
           Occi::Infrastructure::Constants::STORAGE_KIND
         )
 

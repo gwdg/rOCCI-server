@@ -7,6 +7,7 @@ module Backends
         delegate :serves?, to: :class
         delegate :server_model, to: :backend_proxy
         delegate :instance_builder, to: :server_model
+        delegate :find_by_identifier!, to: :server_model
       end
 
       class_methods do
@@ -135,67 +136,6 @@ module Backends
       # @return [Set] collection of identifiers of affected entities
       def delete_all(filter = Set.new)
         Set.new(identifiers(filter).map { |id| delete(id) })
-      end
-
-      # Looks up given category (by identifier) in the current server model. This
-      # method will raise an error if no such category is present. In case of multiple
-      # categories (which should NOT happen), only the first one will be returned.
-      #
-      # @param identifier [String] category identifier in the form of `schema#term`
-      # @return [Occi::Core::Category] located category
-      def category_by_identifier!(identifier)
-        server_model.find_by_identifier! identifier
-      end
-
-      # Returns a list of term of mixins dependent on the given mixin specified by `identifier`.
-      #
-      # @param entity [Occi::Core::Entity] entity to search
-      # @param identifier [String] parent mixin identifier
-      # @return [Array] terms of mixins
-      def mixin_terms(entity, identifier)
-        mxn = server_model.find_by_identifier!(identifier)
-        entity.select_mixins(mxn).map(&:term)
-      end
-
-      # @see `mixin_terms`
-      def mixin_term(*args)
-        mixin_terms(*args).first
-      end
-
-      # :nodoc:
-      def links_by_klass(entity, klass)
-        entity.links.select { |l| l.is_a?(klass) }
-      end
-
-      # :nodoc:
-      def storagelinks(entity)
-        links_by_klass entity, Occi::Infrastructure::Storagelink
-      end
-
-      # :nodoc:
-      def networkinterfaces(entity)
-        links_by_klass entity, Occi::Infrastructure::Networkinterface
-      end
-
-      # :nodoc:
-      def securitygrouplinks(entity)
-        links_by_klass entity, Occi::InfrastructureExt::SecurityGroupLink
-      end
-
-      # :nodoc:
-      def link_target_id(link)
-        last_uri_segment link['occi.core.target']
-      end
-
-      # :nodoc:
-      def link_source_id(link)
-        last_uri_segment link['occi.core.source']
-      end
-
-      # :nodoc:
-      def last_uri_segment(uri)
-        raise 'Invalid URI' if uri.blank?
-        uri.path.split('/').last || raise('No entity ID found in URI')
       end
     end
   end

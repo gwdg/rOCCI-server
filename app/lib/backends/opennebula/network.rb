@@ -54,7 +54,7 @@ module Backends
         vnet_template = virtual_network_from(instance)
 
         # TODO: multi-cluster networks
-        az = mixin_term(instance, Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN)
+        az = instance.dependent_term(find_by_identifier!(Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN))
         cid = (az || default_cluster).to_i
 
         vnet = ::OpenNebula::VirtualNetwork.new(::OpenNebula::VirtualNetwork.build_xml, raw_client)
@@ -100,7 +100,7 @@ module Backends
       # :nodoc:
       def attach_mixins!(virtual_network, network)
         if virtual_network['AR_POOL/AR/IP']
-          network << category_by_identifier!(Occi::Infrastructure::Constants::IPNETWORK_MIXIN)
+          network << find_by_identifier!(Occi::Infrastructure::Constants::IPNETWORK_MIXIN)
         end
         network << server_model.find_regions.first
 
@@ -122,7 +122,7 @@ module Backends
                 Occi::InfrastructureExt::Constants::NAT_NET_MIXIN
               end
 
-        network << category_by_identifier!(mxn) if mxn
+        network << find_by_identifier!(mxn) if mxn
       end
 
       # :nodoc:
