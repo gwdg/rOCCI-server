@@ -22,9 +22,9 @@ module Backends
               client(Errors::Backend::EntityStateError) { virtual_machine.info }
               break if virtual_machine.lcm_state_str == state
             end
-
-            yield virtual_machine
           end
+
+          yield virtual_machine
         end
       end
     end
