@@ -62,7 +62,7 @@ module Backends
         disks = Backends::Opennebula::Helpers::Counter.xml_elements(vm, 'TEMPLATE/DISK')
 
         client(Errors::Backend::EntityCreateError) { vm.disk_attach disk_from(instance) }
-        wait_until(vm, 'RUNNING') do |nvm|
+        wait_until(vm, 'RUNNING', Constants::Storagelink::ATTACH_TIMEOUT) do |nvm|
           unless Backends::Opennebula::Helpers::Counter.xml_elements(nvm, 'TEMPLATE/DISK') > disks
             logger.error "Attaching IMAGE to VM[#{vm['ID']}] failed: #{vm['USER_TEMPLATE/ERROR']}"
             raise Errors::Backend::EntityCreateError, 'Could not attach storage to compute'
