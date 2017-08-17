@@ -8,5 +8,3 @@ Mime::Type.register 'text/uri-list', :uri_list
 
 Mime::Type.unregister :json # we have to get rid of the old definition first
 Mime::Type.register 'application/json', :json, %w[text/x-json application/jsonrequest application/occi+json]
-
-# See `lib/routing_constraints` for definition of LEGACY_FORMATS
