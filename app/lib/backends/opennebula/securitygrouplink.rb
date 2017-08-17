@@ -42,9 +42,7 @@ module Backends
       # @see `Entitylike`
       def instance(identifier)
         matched = Constants::Securitygrouplink::ID_PATTERN.match(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
-        client(Errors::Backend::EntityStateError) { vm.info }
-
+        vm = pool_element(:virtual_machine, matched[:compute], :info)
         securitygrouplink_from(matched[:sg], vm)
       end
 

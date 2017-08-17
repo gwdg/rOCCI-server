@@ -34,26 +34,17 @@ module Backends
 
       # @see `Entitylike`
       def instance(identifier)
-        image = ::OpenNebula::Image.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { image.info }
-        storage_from(image)
+        storage_from pool_element(:image, identifier, :info)
       end
 
       # @see `Entitylike`
       def create(instance)
-        image_template = image_from(instance)
-        ds_id = candidate_datastore(instance)
-
-        image = ::OpenNebula::Image.new(::OpenNebula::Image.build_xml, raw_client)
-        client(Errors::Backend::EntityCreateError) { image.allocate(image_template, ds_id) }
-        client(Errors::Backend::EntityStateError) { image.info }
-
-        image['ID']
+        pool_element_allocate(:image, image_from(instance), candidate_datastore(instance))['ID']
       end
 
       # @see `Entitylike`
       def delete(identifier)
-        image = ::OpenNebula::Image.new_with_id(identifier, raw_client)
+        image = pool_element(:image, identifier)
         client(Errors::Backend::EntityStateError) { image.delete }
       end
 
@@ -87,8 +78,7 @@ module Backends
       def attach_mixins!(image, storage)
         storage << server_model.find_regions.first
 
-        ds = ::OpenNebula::Datastore.new_with_id(image['DATASTORE_ID'], raw_client)
-        client(Errors::Backend::EntityStateError) { ds.info }
+        ds = pool_element(:datastore, image['DATASTORE_ID'], :info)
         ds.each_xpath('CLUSTERS/ID') do |cid|
           attach_optional_mixin! storage, cid, :availability_zone
         end
@@ -107,7 +97,7 @@ module Backends
 
         azs.sort!
         cds = pool(:datastore).detect { |ds| ds.type_str == 'IMAGE' && (azs - clusters(ds)).empty? }
-        cds ? cds.id : raise(Errors::Backend::EntityStateError, 'Storage spanning requested zones cannot be created')
+        cds ? cds.id : raise(Errors::Backend::EntityCreateError, 'Storage spanning requested zones cannot be created')
       end
 
       # :nodoc:

@@ -38,26 +38,18 @@ module Backends
 
       # @see `Entitylike`
       def instance(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vm.info }
-        compute_from(vm)
+        compute_from pool_element(:virtual_machine, identifier, :info)
       end
 
       # @see `Entitylike`
       def create(instance)
-        vm_template = virtual_machine_from(instance)
-
-        vm = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml, raw_client)
-        client(Errors::Backend::EntityCreateError) { vm.allocate(vm_template) }
-        client(Errors::Backend::EntityStateError) { vm.info }
-
-        vm['ID']
+        pool_element_allocate(:virtual_machine, virtual_machine_from(instance))['ID']
       end
 
       # @see `Entitylike`
       def delete(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vm.terminate(true) }
+        vm = pool_element(:virtual_machine, identifier)
+        client(Errors::Backend::EntityActionError) { vm.terminate(true) }
       end
 
       private
@@ -83,9 +75,7 @@ module Backends
       # @return [String] ONe template
       def virtual_machine_from(compute)
         os_tpl = compute.os_tpl.term
-
-        template = ::OpenNebula::Template.new_with_id(os_tpl, raw_client)
-        client(Errors::Backend::EntityStateError) { template.info }
+        template = pool_element(:template, os_tpl, :info)
 
         modify_basic! template, compute, os_tpl
         %i[set_context! set_size! set_security_groups! set_cluster!].each { |mtd| send(mtd, template, compute) }

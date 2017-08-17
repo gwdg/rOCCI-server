@@ -44,9 +44,7 @@ module Backends
 
       # @see `Entitylike`
       def instance(identifier)
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vnet.info }
-        network_from(vnet)
+        network_from pool_element(:virtual_network, identifier, :info)
       end
 
       # @see `Entitylike`
@@ -55,18 +53,13 @@ module Backends
 
         # TODO: multi-cluster networks
         az = instance.availability_zone ? instance.availability_zone.term : default_cluster
-
-        vnet = ::OpenNebula::VirtualNetwork.new(::OpenNebula::VirtualNetwork.build_xml, raw_client)
-        client(Errors::Backend::EntityCreateError) { vnet.allocate(vnet_template, az.to_i) }
-        client(Errors::Backend::EntityStateError) { vnet.info }
-
-        vnet['ID']
+        pool_element_allocate(:virtual_network, vnet_template, az.to_i)['ID']
       end
 
       # @see `Entitylike`
       def delete(identifier)
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vnet.delete }
+        vnet = pool_element(:virtual_network, identifier)
+        client(Errors::Backend::EntityActionError) { vnet.delete }
       end
 
       private

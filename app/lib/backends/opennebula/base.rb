@@ -40,13 +40,6 @@ module Backends
         )
       end
 
-      # Accessor to internally stored client instance.
-      #
-      # @return [OpenNebula::Client] initialized OpenNebula client instance
-      def raw_client
-        @_client
-      end
-
       # Returns an initialized instance of the requested pool.
       #
       # @example
@@ -58,16 +51,59 @@ module Backends
       # @return [OpenNebula::Pool] initialized pool instance
       def pool(name, content = :info, reload = false)
         unless name && content
-          raise Errors::Backend::InternalError, '`name` and `content` are mandatory arguments for pool construction'
+          raise Errors::Backend::InternalError, '`name` and `content` are mandatory for pool construction'
         end
         pool_cache = @_pool_cache.fetch(name, {})
         return pool_cache[content] if !reload && pool_cache.key?(content)
 
-        klass = "#{name}_pool".classify
-        pool_cache[content] = ::OpenNebula.const_get(klass).new(raw_client)
-        client(Errors::Backend::InternalError) { pool_cache[content].send(content) }
+        pool_cache[content] = klass_from("#{name}_pool").new(@_client)
+        client(Errors::Backend::EntityRetrievalError) { pool_cache[content].send(content) }
 
         pool_cache[content]
+      end
+
+      # Returns an optionally initialized instance of a pool element.
+      #
+      # @example
+      #    pool_element :virtual_machine, '1', :info # => #<OpenNebula::VirtualMachine>
+      #
+      # @param name [Symbol] name of the element, in `snake_case`
+      # @param identifier [String] identifier of the desired element
+      # @param content [Symbol, NilClass] `:info` or nothing
+      # @return [OpenNebula::PoolElement] initialized pool element
+      def pool_element(name, identifier, content = nil)
+        unless name && identifier
+          raise Errors::Backend::InternalError, '`name` and `identifier` are mandatory for pool element construction'
+        end
+
+        element = klass_from(name).new_with_id(identifier, @_client)
+        client(Errors::Backend::EntityRetrievalError) { element.send(content) } if content
+        element
+      end
+
+      # Allocates a pool element with a given template.
+      #
+      # @param name [Symbol] name of the element, in `snake_case`
+      # @param template [String] element template
+      # @param args [Array] arguments to pass as additional arguments to `allocate`
+      # @return [OpenNebula::PoolElement] allocated element
+      def pool_element_allocate(name, template, *args)
+        unless name && template
+          raise Errors::Backend::InternalError, '`name` and `template` are mandatory for pool element construction'
+        end
+
+        klass = klass_from(name)
+        element = klass.new(klass.build_xml, @_client)
+
+        client(Errors::Backend::EntityCreateError) { element.allocate(template, *args) }
+        client(Errors::Backend::EntityRetrievalError) { element.info }
+
+        element
+      end
+
+      # :nodoc:
+      def klass_from(name)
+        ::OpenNebula.const_get(name.to_s.classify)
       end
 
       # Wrapper for calls to ONe's OCA.

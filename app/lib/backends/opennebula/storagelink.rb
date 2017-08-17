@@ -44,8 +44,7 @@ module Backends
       # @see `Entitylike`
       def instance(identifier)
         matched = Constants::Storagelink::ID_PATTERN.match(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
-        client(Errors::Backend::EntityStateError) { vm.info }
+        vm = pool_element(:virtual_machine, matched[:compute], :info)
 
         disk = nil
         vm.each("TEMPLATE/DISK[DISK_ID='#{matched[:disk]}']") { |vm_disk| disk = vm_disk }
@@ -56,9 +55,7 @@ module Backends
 
       # @see `Entitylike`
       def create(instance)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(instance.source_id, raw_client)
-
-        client(Errors::Backend::EntityStateError) { vm.info }
+        vm = pool_element(:virtual_machine, instance.source_id, :info)
         disks = Backends::Opennebula::Helpers::Counter.xml_elements(vm, 'TEMPLATE/DISK')
 
         client(Errors::Backend::EntityCreateError) { vm.disk_attach disk_from(instance) }
@@ -77,8 +74,8 @@ module Backends
       # @see `Entitylike`
       def delete(identifier)
         matched = Constants::Storagelink::ID_PATTERN.match(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
-        client(Errors::Backend::EntityStateError) { vm.disk_detach(matched[:disk].to_i) }
+        vm = pool_element(:virtual_machine, matched[:compute])
+        client(Errors::Backend::EntityActionError) { vm.disk_detach(matched[:disk].to_i) }
       end
 
       private

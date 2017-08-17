@@ -19,7 +19,7 @@ module Backends
           Timeout.timeout(timeout) do
             loop do
               sleep WAITER_STEP
-              client(Errors::Backend::EntityStateError) { virtual_machine.info }
+              client(Errors::Backend::EntityRetrievalError) { virtual_machine.info }
               break if virtual_machine.lcm_state_str == state
             end
           end

@@ -44,8 +44,7 @@ module Backends
       # @see `Entitylike`
       def instance(identifier)
         matched = Constants::Networkinterface::ID_PATTERN.match(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
-        client(Errors::Backend::EntityStateError) { vm.info }
+        vm = pool_element(:virtual_machine, matched[:compute], :info)
 
         nic = nil
         vm.each("TEMPLATE/NIC[NIC_ID='#{matched[:nic]}']") { |vm_nic| nic = vm_nic }
@@ -56,9 +55,7 @@ module Backends
 
       # @see `Entitylike`
       def create(instance)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(instance.source_id, raw_client)
-
-        client(Errors::Backend::EntityStateError) { vm.info }
+        vm = pool_element(:virtual_machine, instance.source_id, :info)
         nics = Backends::Opennebula::Helpers::Counter.xml_elements(vm, 'TEMPLATE/NIC')
 
         client(Errors::Backend::EntityCreateError) { vm.nic_attach nic_from(instance, vm) }
@@ -77,8 +74,8 @@ module Backends
       # @see `Entitylike`
       def delete(identifier)
         matched = Constants::Networkinterface::ID_PATTERN.match(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
-        client(Errors::Backend::EntityStateError) { vm.nic_detach(matched[:nic].to_i) }
+        vm = pool_element(:virtual_machine, matched[:compute])
+        client(Errors::Backend::EntityActionError) { vm.nic_detach(matched[:nic].to_i) }
       end
 
       private

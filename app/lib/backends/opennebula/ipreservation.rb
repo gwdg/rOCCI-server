@@ -41,24 +41,21 @@ module Backends
 
       # @see `Entitylike`
       def instance(identifier)
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vnet.info }
-        ipreservation_from(vnet)
+        ipreservation_from pool_element(:virtual_network, identifier, :info)
       end
 
       # @see `Entitylike`
       def create(instance)
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(instance.floatingippool.term, raw_client)
+        vnet = pool_element(:virtual_network, instance.floatingippool.term)
         res_name = instance['occi.core.title'] || ::SecureRandom.uuid
         res_id = client(Errors::Backend::EntityCreateError) { vnet.reserve(res_name, 1) }
-
         res_id.to_s
       end
 
       # @see `Entitylike`
       def delete(identifier)
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vnet.delete }
+        vnet = pool_element(:virtual_network, identifier)
+        client(Errors::Backend::EntityActionError) { vnet.delete }
       end
 
       private
