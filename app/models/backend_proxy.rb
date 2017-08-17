@@ -182,7 +182,6 @@ class BackendProxy
   def method_missing(m, *args, &block)
     m = m.to_sym
     if backend_subtypes.include?(m)
-      logger.debug "Creating a proxy for #{m} (#{type} backend)"
       @_cache[m] ||= initialize_proxy(m)
     else
       super
@@ -196,6 +195,7 @@ class BackendProxy
 
   # :nodoc:
   def initialize_proxy(subtype)
+    logger.debug "Creating a proxy for #{subtype} (#{type} backend)"
     bklass = klass_in_namespace(backend_namespace, subtype)
     check_version! api_version, bklass.api_version
     bklass.new default_backend_options.merge(options)
