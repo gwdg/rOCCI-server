@@ -57,7 +57,9 @@ module Backends
       # @param reload [TrueClass, FalseClass] force reload of the pool
       # @return [OpenNebula::Pool] initialized pool instance
       def pool(name, content = :info, reload = false)
-        raise '`name` and `content` are mandatory arguments for pool construction' unless name && content
+        unless name && content
+          raise Errors::Backend::InternalError, '`name` and `content` are mandatory arguments for pool construction'
+        end
         pool_cache = @_pool_cache.fetch(name, {})
         return pool_cache[content] if !reload && pool_cache.key?(content)
 
@@ -76,8 +78,10 @@ module Backends
       # @param e_klass [Class] error class to use for reporting failure
       # @return [Object] requested content, in case of success
       def client(e_klass)
-        raise 'Block is a mandatory argument for client calls' unless block_given?
-        raise "Error #{e_klass} cannot be used with this wrapper" if ERROR_CONNECT.include?(e_klass)
+        raise Errors::Backend::InternalError, 'Block is a mandatory argument for client calls' unless block_given?
+        if ERROR_CONNECT.include?(e_klass)
+          raise Errors::Backend::InternalError, "Error #{e_klass} cannot be used with this wrapper"
+        end
 
         retval = yield
         client_error!(retval, e_klass) if ::OpenNebula.is_error?(retval)

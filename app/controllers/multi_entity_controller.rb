@@ -89,7 +89,9 @@ class MultiEntityController < ApplicationController
   # @return [Enumerable] list of available backend subtypes
   def all(type)
     type ||= ALLOWED_SUBTYPES.first
-    raise 'Attempting to access forbidden backend subtype' unless ALLOWED_SUBTYPES.include?(type)
+    unless ALLOWED_SUBTYPES.include?(type)
+      raise Errors::BackendForbiddenError, 'Attempting to access forbidden backend subtype'
+    end
     BackendProxy.send("backend_#{type}_subtypes")
   end
 

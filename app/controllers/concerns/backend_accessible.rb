@@ -25,7 +25,9 @@ module BackendAccessible
   # @param subtype [String] backend subtype
   # @return [Entitylike, Extenderlike] subtype instance
   def backend_proxy_for(subtype)
-    raise "#{subtype.inspect} is not a supported backend subtype" unless backend_proxy.has?(subtype.to_sym)
+    unless backend_proxy.has?(subtype.to_sym)
+      raise Errors::BackendForbiddenError, "#{subtype} is not a supported backend subtype"
+    end
     with_model = (subtype != 'model_extender')
     backend_proxy(with_model).send subtype
   end

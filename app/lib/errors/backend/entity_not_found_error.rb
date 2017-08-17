@@ -1,5 +1,7 @@
+require 'errors/backend/entity_error'
+
 module Errors
   module Backend
-    class EntityNotFoundError < StandardError; end
+    class EntityNotFoundError < EntityError; end
   end
 end

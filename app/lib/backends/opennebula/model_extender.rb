@@ -50,7 +50,7 @@ module Backends
       # :nodoc:
       def replace!(model, type)
         skeleton = model.send("find_#{type}").first
-        raise 'Failed to get mixin skeleton from warehouse' unless skeleton
+        raise Errors::Backend::InternalError, 'Failed to get mixin skeleton from warehouse' unless skeleton
         model.remove skeleton
 
         send("add_#{type}!", model, skeleton)

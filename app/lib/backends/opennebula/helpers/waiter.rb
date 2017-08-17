@@ -14,7 +14,7 @@ module Backends
         # @param state [String] target state (LCM state)
         # @param timeout [Fixnum] wait for given number of seconds
         def wait_until(virtual_machine, state, timeout = 60)
-          raise 'Block is a mandatory argument' unless block_given?
+          raise Errors::Backend::InternalError, 'Block is a mandatory argument' unless block_given?
 
           Timeout.timeout(timeout) do
             loop do

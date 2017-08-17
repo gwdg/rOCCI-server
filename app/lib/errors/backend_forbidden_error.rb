@@ -1,5 +1,5 @@
 require 'errors/backend_error'
 
 module Errors
-  class BackendLoadError < BackendError; end
+  class BackendForbiddenError < BackendError; end
 end
