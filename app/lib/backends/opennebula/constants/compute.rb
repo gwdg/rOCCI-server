@@ -8,7 +8,8 @@ module Backends
           'PROLOG' => 'waiting',
           'BOOT' => 'waiting',
           'MIGRATE' => 'waiting',
-          'EPILOG' => 'waiting'
+          'EPILOG' => 'waiting',
+          'LCM_INIT' => 'waiting'
         }.freeze
 
         # Attribute mapping hash for Core
@@ -59,6 +60,7 @@ module Backends
 
         # Actions to enable when active
         ACTIVE_ACTIONS = %w[stop restart suspend save].freeze
+        INACTIVE_ACTIONS = %w[start].freeze
       end
     end
   end

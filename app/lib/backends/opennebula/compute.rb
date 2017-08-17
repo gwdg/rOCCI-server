@@ -82,7 +82,7 @@ module Backends
       # @param storage [Occi::Infrastructure::Compute] instance to transform
       # @return [String] ONe template
       def virtual_machine_from(compute)
-        os_tpl = compute.dependent_term(find_by_identifier!(Occi::Infrastructure::Constants::OS_TPL_MIXIN))
+        os_tpl = compute.os_tpl.term
 
         template = ::OpenNebula::Template.new_with_id(os_tpl, raw_client)
         client(Errors::Backend::EntityStateError) { template.info }
@@ -111,8 +111,16 @@ module Backends
 
       # :nodoc:
       def enable_actions!(compute)
-        return unless compute['occi.compute.state'] == 'active'
-        Constants::Compute::ACTIVE_ACTIONS.each { |a| compute.enable_action(a) }
+        actions = case compute['occi.compute.state']
+                  when 'active'
+                    Constants::Compute::ACTIVE_ACTIONS
+                  when 'inactive'
+                    Constants::Compute::INACTIVE_ACTIONS
+                  else
+                    []
+                  end
+
+        actions.each { |a| compute.enable_action(a) }
       end
 
       # :nodoc:
@@ -149,8 +157,7 @@ module Backends
 
       # :nodoc:
       def set_security_groups!(template, compute)
-        sgs = compute.links_by_kind_identifier(Occi::InfrastructureExt::Constants::SECURITY_GROUP_LINK_KIND)
-        sgs = sgs.map(&:target_id).join(',')
+        sgs = compute.securitygrouplinks.map(&:target_id).join(',')
 
         idx = 1
         template.each('TEMPLATE/NIC') do |_nic|
@@ -161,7 +168,7 @@ module Backends
 
       # :nodoc:
       def set_cluster!(template, compute)
-        az = compute.dependent_term(find_by_identifier!(Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN))
+        az = compute.availability_zone ? compute.availability_zone.term : nil
         return unless az
 
         sched_reqs = template['TEMPLATE/SCHED_REQUIREMENTS'] || ''
@@ -194,17 +201,16 @@ module Backends
 
       # :nodoc:
       def add_nics!(template_str, compute)
-        sgs = compute.links_by_kind_identifier(Occi::InfrastructureExt::Constants::SECURITY_GROUP_LINK_KIND)
         data = {
-          instances: compute.links_by_kind_identifier(Occi::Infrastructure::Constants::NETWORKINTERFACE_KIND),
-          security_groups: sgs.map(&:target_id)
+          instances: compute.networkinterfaces,
+          security_groups: compute.securitygrouplinks.map(&:target_id)
         }
         add_erb! template_str, data, 'compute_nic.erb'
       end
 
       # :nodoc:
       def add_disks!(template_str, compute)
-        data = { instances: compute.links_by_kind_identifier(Occi::Infrastructure::Constants::STORAGELINK_KIND) }
+        data = { instances: compute.storagelinks }
         add_erb! template_str, data, 'compute_disk.erb'
       end
 

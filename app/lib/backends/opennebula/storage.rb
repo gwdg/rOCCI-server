@@ -68,6 +68,7 @@ module Backends
 
         attach_mixins! image, storage
         transfer_attributes! image, storage, Constants::Storage::TRANSFERABLE_ATTRIBUTES
+        enable_actions!(storage)
 
         storage
       end
@@ -94,8 +95,14 @@ module Backends
       end
 
       # :nodoc:
+      def enable_actions!(storage)
+        return unless storage['occi.storage.state'] == 'online'
+        Constants::Storage::ONLINE_ACTIONS.each { |a| storage.enable_action(a) }
+      end
+
+      # :nodoc:
       def candidate_datastore(instance)
-        azs = instance.dependent_terms(find_by_identifier!(Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN))
+        azs = instance.availability_zones.map(&:term)
         azs << default_cluster if azs.empty?
 
         azs.sort!

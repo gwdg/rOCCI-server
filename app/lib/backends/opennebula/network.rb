@@ -54,11 +54,10 @@ module Backends
         vnet_template = virtual_network_from(instance)
 
         # TODO: multi-cluster networks
-        az = instance.dependent_term(find_by_identifier!(Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN))
-        cid = (az || default_cluster).to_i
+        az = instance.availability_zone ? instance.availability_zone.term : default_cluster
 
         vnet = ::OpenNebula::VirtualNetwork.new(::OpenNebula::VirtualNetwork.build_xml, raw_client)
-        client(Errors::Backend::EntityCreateError) { vnet.allocate(vnet_template, cid) }
+        client(Errors::Backend::EntityCreateError) { vnet.allocate(vnet_template, az.to_i) }
         client(Errors::Backend::EntityStateError) { vnet.info }
 
         vnet['ID']
