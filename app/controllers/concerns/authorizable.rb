@@ -78,12 +78,12 @@ module Authorizable
 
   # :nodoc:
   def request_token
-    request.env['rocci_server.request.tokenator.token']
+    request.env['rocci_server.request.tokenator.token'].strip
   end
 
   # :nodoc:
   def request_user
-    request.env['rocci_server.request.tokenator.user']
+    request.env['rocci_server.request.tokenator.user'].strip
   end
 
   # :nodoc:
