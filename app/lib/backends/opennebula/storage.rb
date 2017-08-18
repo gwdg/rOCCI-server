@@ -43,6 +43,17 @@ module Backends
       end
 
       # @see `Entitylike`
+      def trigger(identifier, action_instance)
+        name = action_instance.action.term
+        image = pool_element(:image, identifier)
+        client(Errors::Backend::EntityActionError) do
+          Constants::Storage::ONLINE_ACTIONS[name].call(image, action_instance)
+        end
+
+        Occi::Core::Collection.new
+      end
+
+      # @see `Entitylike`
       def delete(identifier)
         image = pool_element(:image, identifier)
         client(Errors::Backend::EntityStateError) { image.delete }
@@ -87,7 +98,7 @@ module Backends
       # :nodoc:
       def enable_actions!(storage)
         return unless storage['occi.storage.state'] == 'online'
-        Constants::Storage::ONLINE_ACTIONS.each { |a| storage.enable_action(a) }
+        Constants::Storage::ONLINE_ACTIONS.keys.each { |a| storage.enable_action(a) }
       end
 
       # :nodoc:

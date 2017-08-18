@@ -107,7 +107,7 @@ module Backends
       #
       # @param identifier [String] UUID of the requested entity
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
-      # @return [String] identifier of the affected entity
+      # @return [Occi::Core::Collection] result(s) of the action, in a collection
       def trigger(_identifier, _action_instance)
         raise Errors::Backend::NotImplementedError, 'Requested functionality is not implemented'
       end
@@ -117,9 +117,11 @@ module Backends
       #
       # @param action_instance [Occi::Core::ActionInstance] action to be triggered
       # @param filter [Set] collection of filtering rules
-      # @return [Set] collection of identifiers of affected entities
-      def trigger_all(_action_instance, _filter = Set.new)
-        Set.new(identifiers(filter).map { |id| trigger(id, action_instance) })
+      # @return [Occi::Core::Collection] result(s) of the action, in a collection
+      def trigger_all(action_instance, filter = Set.new)
+        collection = Occi::Core::Collection.new
+        identifiers(filter).each { |id| collection.categories.merge trigger(id, action_instance).categories }
+        collection
       end
 
       # Destroys an instance specified by `identifier`. An appropriate error should be raised in case of failure.
