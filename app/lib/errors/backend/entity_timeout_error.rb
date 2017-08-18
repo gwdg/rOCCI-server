@@ -2,6 +2,6 @@ require 'errors/backend/entity_error'
 
 module Errors
   module Backend
-    class EntityNotFoundError < EntityError; end
+    class EntityTimeoutError < EntityError; end
   end
 end

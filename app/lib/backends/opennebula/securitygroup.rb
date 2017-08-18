@@ -3,10 +3,10 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class Securitygroup < Base
-      include Helpers::Entitylike
-      include Helpers::AttributesTransferable
-      include Helpers::MixinsAttachable
-      include Helpers::ErbRenderer
+      include Backends::Helpers::Entitylike
+      include Backends::Helpers::AttributesTransferable
+      include Backends::Helpers::MixinsAttachable
+      include Backends::Helpers::ErbRenderer
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -34,26 +34,18 @@ module Backends
 
       # @see `Entitylike`
       def instance(identifier)
-        sg = ::OpenNebula::SecurityGroup.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { sg.info }
-        securitygroup_from(sg)
+        securitygroup_from pool_element(:security_group, identifier, :info)
       end
 
       # @see `Entitylike`
       def create(instance)
-        sg_template = security_group_from(instance)
-
-        security_group = ::OpenNebula::SecurityGroup.new(::OpenNebula::SecurityGroup.build_xml, raw_client)
-        client(Errors::Backend::EntityCreateError) { security_group.allocate(sg_template) }
-        client(Errors::Backend::EntityStateError) { security_group.info }
-
-        security_group['ID']
+        pool_element_allocate(:security_group, security_group_from(instance))['ID']
       end
 
       # @see `Entitylike`
       def delete(identifier)
-        sg = ::OpenNebula::SecurityGroup.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { sg.delete }
+        sg = pool_element(:security_group, identifier)
+        client(Errors::Backend::EntityActionError) { sg.delete }
       end
 
       private

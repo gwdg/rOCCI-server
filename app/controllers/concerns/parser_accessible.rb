@@ -6,9 +6,6 @@ module ParserAccessible
 
   included do
     delegate :supported_parsers, to: :class
-
-    rescue_from Errors::ParsingError, with: :handle_parsing_error
-    rescue_from Errors::ValidationError, with: :handle_validation_error
   end
 
   class_methods do
@@ -58,7 +55,9 @@ module ParserAccessible
   # @param enum [Enumerable] list of objects
   # @return [Enumerable] given list
   def validate_entities!(enum)
-    raise 'Validation cannot be performed on non-enumerable objects' unless enum.respond_to?(:each)
+    unless enum.respond_to?(:each)
+      raise Errors::InternalError, 'Validation cannot be performed on non-enumerable objects'
+    end
     enum.each(&:valid!)
     enum
   rescue ::Occi::Core::Errors::ValidationError => ex
@@ -82,7 +81,7 @@ module ParserAccessible
     return @_request_parser if @_request_parser
 
     klass = parser_class(stringy_media_type)
-    raise "Parser for #{stringy_media_type} is not available" unless klass
+    raise Errors::InternalError, "Parser for #{stringy_media_type} is not available" unless klass
 
     @_request_parser = klass.new(model: server_model, media_type: stringy_media_type)
   end
@@ -101,19 +100,5 @@ module ParserAccessible
   # @return [String] media type
   def stringy_media_type
     request.content_mime_type.to_s
-  end
-
-  # Handles parsing errors and responds with appropriate HTTP code and headers.
-  #
-  # @param exception [Exception] exception to convert into a response
-  def handle_parsing_error(exception)
-    render_error :bad_request, "Unparsable content: #{exception}"
-  end
-
-  # Handles validation errors and responds with appropriate HTTP code and headers.
-  #
-  # @param exception [Exception] exception to convert into a response
-  def handle_validation_error(exception)
-    render_error :bad_request, "Invalid content: #{exception}"
   end
 end

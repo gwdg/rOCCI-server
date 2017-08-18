@@ -3,9 +3,11 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class Networkinterface < Base
-      include Helpers::Entitylike
-      include Helpers::AttributesTransferable
-      include Helpers::MixinsAttachable
+      include Backends::Helpers::Entitylike
+      include Backends::Helpers::AttributesTransferable
+      include Backends::Helpers::MixinsAttachable
+      include Backends::Helpers::ErbRenderer
+      include Backends::Opennebula::Helpers::Waiter
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -42,8 +44,7 @@ module Backends
       # @see `Entitylike`
       def instance(identifier)
         matched = Constants::Networkinterface::ID_PATTERN.match(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
-        client(Errors::Backend::EntityStateError) { vm.info }
+        vm = pool_element(:virtual_machine, matched[:compute], :info)
 
         nic = nil
         vm.each("TEMPLATE/NIC[NIC_ID='#{matched[:nic]}']") { |vm_nic| nic = vm_nic }
@@ -53,10 +54,28 @@ module Backends
       end
 
       # @see `Entitylike`
+      def create(instance)
+        vm = pool_element(:virtual_machine, instance.source_id, :info)
+        nics = Backends::Opennebula::Helpers::Counter.xml_elements(vm, 'TEMPLATE/NIC')
+
+        client(Errors::Backend::EntityCreateError) { vm.nic_attach nic_from(instance, vm) }
+        wait_until(vm, 'RUNNING') do |nvm|
+          unless Backends::Opennebula::Helpers::Counter.xml_elements(nvm, 'TEMPLATE/NIC') > nics
+            logger.error "Attaching VNET to VM[#{vm['ID']}] failed: #{vm['USER_TEMPLATE/ERROR']}"
+            raise Errors::Backend::EntityCreateError, 'Could not attach network to compute'
+          end
+        end
+
+        Constants::Networkinterface::ATTRIBUTES_CORE['occi.core.id'].call(
+          [{ 'NIC_ID' => vm['TEMPLATE/NIC[last()]/NIC_ID'] }, vm]
+        )
+      end
+
+      # @see `Entitylike`
       def delete(identifier)
         matched = Constants::Networkinterface::ID_PATTERN.match(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
-        client(Errors::Backend::EntityStateError) { vm.nic_detach(matched[:nic].to_i) }
+        vm = pool_element(:virtual_machine, matched[:compute])
+        client(Errors::Backend::EntityActionError) { vm.nic_detach(matched[:nic].to_i) }
       end
 
       private
@@ -80,10 +99,24 @@ module Backends
         networkinterface
       end
 
+      # Converts an OCCI networkinterface instance to a valid ONe virtual machine template NIC.
+      #
+      # @param storage [Occi::Infrastructure::Networkinterface] instance to transform
+      # @param virtual_machine [OpenNebula::VirtualMachine] machine this interface will be attached to
+      # @return [String] ONe template fragment
+      def nic_from(networkinterface, virtual_machine)
+        template_path = File.join(template_directory, 'compute_nic.erb')
+        data = {
+          instances: [networkinterface],
+          security_groups: Constants::Securitygrouplink::ID_EXTRACTOR.call(virtual_machine).to_a
+        }
+        erb_render template_path, data
+      end
+
       # :nodoc:
       def attach_mixins!(nic, virtual_machine, networkinterface)
         if nic['IP']
-          networkinterface << category_by_identifier!(
+          networkinterface << find_by_identifier!(
             Occi::Infrastructure::Constants::IPNETWORKINTERFACE_MIXIN
           )
         end
@@ -103,12 +136,17 @@ module Backends
              else
                Occi::Infrastructure::Constants::NETWORK_KIND
              end
-        networkinterface.target_kind = category_by_identifier!(tk)
+        networkinterface.target_kind = find_by_identifier!(tk)
       end
 
       # :nodoc:
       def ipreservation?(identifier)
         backend_proxy.ipreservation.identifiers.include?(identifier)
+      end
+
+      # :nodoc:
+      def whereami
+        File.expand_path(File.dirname(__FILE__))
       end
     end
   end

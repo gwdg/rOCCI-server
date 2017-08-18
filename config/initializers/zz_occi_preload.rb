@@ -10,3 +10,6 @@ silence_warnings do
   Occi::Core::ActionInstance
   Occi::Core::Model
 end
+
+# Initialize ext helpers
+require 'occi/infrastructure_ext/monkey_island'

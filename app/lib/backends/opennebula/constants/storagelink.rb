@@ -5,6 +5,9 @@ module Backends
         # Pattern for matching IDs
         ID_PATTERN = /^compute_(?<compute>\d+)_disk_(?<disk>\d+)$/
 
+        # Attach timeout
+        ATTACH_TIMEOUT = 120
+
         # Attribute mapping hash for Core
         ATTRIBUTES_CORE = {
           'occi.core.id' => ->(ary) { "compute_#{ary.last['ID']}_disk_#{ary.first['DISK_ID']}" },

@@ -3,10 +3,10 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class Storage < Base
-      include Helpers::Entitylike
-      include Helpers::AttributesTransferable
-      include Helpers::MixinsAttachable
-      include Helpers::ErbRenderer
+      include Backends::Helpers::Entitylike
+      include Backends::Helpers::AttributesTransferable
+      include Backends::Helpers::MixinsAttachable
+      include Backends::Helpers::ErbRenderer
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -34,26 +34,17 @@ module Backends
 
       # @see `Entitylike`
       def instance(identifier)
-        image = ::OpenNebula::Image.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { image.info }
-        storage_from(image)
+        storage_from pool_element(:image, identifier, :info)
       end
 
       # @see `Entitylike`
       def create(instance)
-        image_template = image_from(instance)
-        ds_id = candidate_datastore(instance)
-
-        image = ::OpenNebula::Image.new(::OpenNebula::Image.build_xml, raw_client)
-        client(Errors::Backend::EntityCreateError) { image.allocate(image_template, ds_id) }
-        client(Errors::Backend::EntityStateError) { image.info }
-
-        image['ID']
+        pool_element_allocate(:image, image_from(instance), candidate_datastore(instance))['ID']
       end
 
       # @see `Entitylike`
       def delete(identifier)
-        image = ::OpenNebula::Image.new_with_id(identifier, raw_client)
+        image = pool_element(:image, identifier)
         client(Errors::Backend::EntityStateError) { image.delete }
       end
 
@@ -68,6 +59,7 @@ module Backends
 
         attach_mixins! image, storage
         transfer_attributes! image, storage, Constants::Storage::TRANSFERABLE_ATTRIBUTES
+        enable_actions!(storage)
 
         storage
       end
@@ -86,21 +78,26 @@ module Backends
       def attach_mixins!(image, storage)
         storage << server_model.find_regions.first
 
-        ds = ::OpenNebula::Datastore.new_with_id(image['DATASTORE_ID'], raw_client)
-        client(Errors::Backend::EntityStateError) { ds.info }
+        ds = pool_element(:datastore, image['DATASTORE_ID'], :info)
         ds.each_xpath('CLUSTERS/ID') do |cid|
           attach_optional_mixin! storage, cid, :availability_zone
         end
       end
 
       # :nodoc:
+      def enable_actions!(storage)
+        return unless storage['occi.storage.state'] == 'online'
+        Constants::Storage::ONLINE_ACTIONS.each { |a| storage.enable_action(a) }
+      end
+
+      # :nodoc:
       def candidate_datastore(instance)
-        azs = mixin_terms(instance, Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN)
+        azs = instance.availability_zones.map(&:term)
         azs << default_cluster if azs.empty?
 
         azs.sort!
         cds = pool(:datastore).detect { |ds| ds.type_str == 'IMAGE' && (azs - clusters(ds)).empty? }
-        cds ? cds.id : raise(Errors::Backend::EntityStateError, 'Storage spanning requested zones cannot be created')
+        cds ? cds.id : raise(Errors::Backend::EntityCreateError, 'Storage spanning requested zones cannot be created')
       end
 
       # :nodoc:

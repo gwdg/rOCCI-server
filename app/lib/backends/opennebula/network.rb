@@ -3,10 +3,10 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class Network < Base
-      include Helpers::Entitylike
-      include Helpers::AttributesTransferable
-      include Helpers::MixinsAttachable
-      include Helpers::ErbRenderer
+      include Backends::Helpers::Entitylike
+      include Backends::Helpers::AttributesTransferable
+      include Backends::Helpers::MixinsAttachable
+      include Backends::Helpers::ErbRenderer
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -44,9 +44,7 @@ module Backends
 
       # @see `Entitylike`
       def instance(identifier)
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vnet.info }
-        network_from(vnet)
+        network_from pool_element(:virtual_network, identifier, :info)
       end
 
       # @see `Entitylike`
@@ -54,20 +52,14 @@ module Backends
         vnet_template = virtual_network_from(instance)
 
         # TODO: multi-cluster networks
-        az = mixin_term(instance, Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN)
-        cid = (az || default_cluster).to_i
-
-        vnet = ::OpenNebula::VirtualNetwork.new(::OpenNebula::VirtualNetwork.build_xml, raw_client)
-        client(Errors::Backend::EntityCreateError) { vnet.allocate(vnet_template, cid) }
-        client(Errors::Backend::EntityStateError) { vnet.info }
-
-        vnet['ID']
+        az = instance.availability_zone ? instance.availability_zone.term : default_cluster
+        pool_element_allocate(:virtual_network, vnet_template, az.to_i)['ID']
       end
 
       # @see `Entitylike`
       def delete(identifier)
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vnet.delete }
+        vnet = pool_element(:virtual_network, identifier)
+        client(Errors::Backend::EntityActionError) { vnet.delete }
       end
 
       private
@@ -100,7 +92,7 @@ module Backends
       # :nodoc:
       def attach_mixins!(virtual_network, network)
         if virtual_network['AR_POOL/AR/IP']
-          network << category_by_identifier!(Occi::Infrastructure::Constants::IPNETWORK_MIXIN)
+          network << find_by_identifier!(Occi::Infrastructure::Constants::IPNETWORK_MIXIN)
         end
         network << server_model.find_regions.first
 
@@ -122,7 +114,7 @@ module Backends
                 Occi::InfrastructureExt::Constants::NAT_NET_MIXIN
               end
 
-        network << category_by_identifier!(mxn) if mxn
+        network << find_by_identifier!(mxn) if mxn
       end
 
       # :nodoc:

@@ -3,9 +3,9 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class Ipreservation < Base
-      include Helpers::Entitylike
-      include Helpers::AttributesTransferable
-      include Helpers::MixinsAttachable
+      include Backends::Helpers::Entitylike
+      include Backends::Helpers::AttributesTransferable
+      include Backends::Helpers::MixinsAttachable
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -41,26 +41,21 @@ module Backends
 
       # @see `Entitylike`
       def instance(identifier)
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vnet.info }
-        ipreservation_from(vnet)
+        ipreservation_from pool_element(:virtual_network, identifier, :info)
       end
 
       # @see `Entitylike`
       def create(instance)
-        fltp = mixin_term(instance, Occi::InfrastructureExt::Constants::FLOATINGIPPOOL_MIXIN)
-
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(fltp, raw_client)
+        vnet = pool_element(:virtual_network, instance.floatingippool.term)
         res_name = instance['occi.core.title'] || ::SecureRandom.uuid
         res_id = client(Errors::Backend::EntityCreateError) { vnet.reserve(res_name, 1) }
-
         res_id.to_s
       end
 
       # @see `Entitylike`
       def delete(identifier)
-        vnet = ::OpenNebula::VirtualNetwork.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vnet.delete }
+        vnet = pool_element(:virtual_network, identifier)
+        client(Errors::Backend::EntityActionError) { vnet.delete }
       end
 
       private

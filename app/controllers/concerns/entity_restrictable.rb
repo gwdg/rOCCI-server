@@ -2,21 +2,17 @@ module EntityRestrictable
   # Restrictions for entities
   RESTRICTIONS = {
     Occi::Infrastructure::Compute => [
-      ->(entity) { one_mixin? entity, Occi::Infrastructure::Mixins::OsTpl.new },
-      ->(entity) { one_mixin? entity, Occi::Infrastructure::Mixins::ResourceTpl.new },
-      lambda do |entity|
-        mxn = entity.select_mixins(Occi::Infrastructure::Mixins::ResourceTpl.new)
-        return false if mxn.empty?
-        defaults_unchanged? entity, mixin_attributes(mxn.first)
-      end,
-      ->(entity) { !many_mixins?(entity, Occi::InfrastructureExt::Mixins::AvailabilityZone.new) }
+      ->(entity) { [entity.os_tpl].one? },
+      ->(entity) { [entity.resource_tpl].one? },
+      ->(entity) { defaults_unchanged?(entity, mixin_attributes(entity.resource_tpl)) },
+      ->(entity) { !entity.availability_zones.many? }
     ].freeze,
     Occi::InfrastructureExt::IPReservation => [
-      ->(entity) { one_mixin? entity, Occi::InfrastructureExt::Mixins::Floatingippool.new }
+      ->(entity) { [entity.floatingippool].one? }
     ].freeze,
     Occi::Infrastructure::Network => [
       # TODO: multi-cluster networks
-      ->(entity) { !many_mixins?(entity, Occi::InfrastructureExt::Mixins::AvailabilityZone.new) }
+      ->(entity) { !entity.availability_zones.many? }
     ].freeze,
     Occi::InfrastructureExt::SecurityGroup => [
       ->(entity) { entity['occi.securitygroup.rules'].present? },
@@ -34,21 +30,6 @@ module EntityRestrictable
 
   class << self
     # :nodoc:
-    def no_mixin?(entity, mxn)
-      entity.select_mixins(mxn).empty?
-    end
-
-    # :nodoc:
-    def one_mixin?(entity, mxn)
-      entity.select_mixins(mxn).one?
-    end
-
-    # :nodoc:
-    def many_mixins?(entity, mxn)
-      entity.select_mixins(mxn).many?
-    end
-
-    # :nodoc:
     def defaults_unchanged?(entity, attributes)
       attributes.reduce(true) { |all, attrib| all && default_unchanged?(entity.attributes[attrib]) }
     end
@@ -65,7 +46,6 @@ module EntityRestrictable
 
     # :nodoc:
     def valid_sg_rules?(rules)
-      return false if rules.blank?
       rules.reduce(true) { |all, rule| all && rule['protocol'].present? && rule['type'].present? }
     end
   end

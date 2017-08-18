@@ -3,9 +3,9 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class Securitygrouplink < Base
-      include Helpers::Entitylike
-      include Helpers::AttributesTransferable
-      include Helpers::MixinsAttachable
+      include Backends::Helpers::Entitylike
+      include Backends::Helpers::AttributesTransferable
+      include Backends::Helpers::MixinsAttachable
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -23,7 +23,7 @@ module Backends
       def identifiers(_filter = Set.new)
         sgls = Set.new
         pool(:virtual_machine, :info_mine).each do |vm|
-          sec_groups(vm).each do |sg|
+          Constants::Securitygrouplink::ID_EXTRACTOR.call(vm).each do |sg|
             sgls << Constants::Securitygrouplink::ATTRIBUTES_CORE['occi.core.id'].call([sg, vm])
           end
         end
@@ -34,7 +34,7 @@ module Backends
       def list(_filter = Set.new)
         coll = Occi::Core::Collection.new
         pool(:virtual_machine, :info_mine).each do |vm|
-          sec_groups(vm).each { |sg| coll << securitygrouplink_from(sg, vm) }
+          Constants::Securitygrouplink::ID_EXTRACTOR.call(vm).each { |sg| coll << securitygrouplink_from(sg, vm) }
         end
         coll
       end
@@ -42,15 +42,8 @@ module Backends
       # @see `Entitylike`
       def instance(identifier)
         matched = Constants::Securitygrouplink::ID_PATTERN.match(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(matched[:compute], raw_client)
-        client(Errors::Backend::EntityStateError) { vm.info }
-
+        vm = pool_element(:virtual_machine, matched[:compute], :info)
         securitygrouplink_from(matched[:sg], vm)
-      end
-
-      # @see `Entitylike`
-      def delete(identifier)
-        # TODO: how?
       end
 
       private
@@ -68,7 +61,7 @@ module Backends
           [sg, virtual_machine], sg_link,
           Constants::Securitygrouplink::TRANSFERABLE_ATTRIBUTES
         )
-        sg_link.target_kind = category_by_identifier!(
+        sg_link.target_kind = find_by_identifier!(
           Occi::InfrastructureExt::Constants::SECURITY_GROUP_KIND
         )
 
@@ -83,16 +76,6 @@ module Backends
           sg_link, virtual_machine['HISTORY_RECORDS/HISTORY[last()]/CID'],
           :availability_zone
         )
-      end
-
-      # :nodoc:
-      def sec_groups(virtual_machine)
-        s = Set.new
-        virtual_machine.each_xpath('TEMPLATE/NIC/SECURITY_GROUPS') do |sgs|
-          next if sgs.blank?
-          sgs.split(',').each { |sg| s << sg }
-        end
-        s
       end
     end
   end

@@ -3,11 +3,11 @@ require 'backends/opennebula/base'
 module Backends
   module Opennebula
     class Compute < Base
-      include Helpers::Entitylike
-      include Helpers::AttributesTransferable
-      include Helpers::ResourceTplLocatable
-      include Helpers::MixinsAttachable
-      include Helpers::ErbRenderer
+      include Backends::Helpers::Entitylike
+      include Backends::Helpers::AttributesTransferable
+      include Backends::Helpers::ResourceTplLocatable
+      include Backends::Helpers::MixinsAttachable
+      include Backends::Helpers::ErbRenderer
 
       # Static user_data encoding
       USERDATA_ENCODING = 'base64'.freeze
@@ -38,26 +38,18 @@ module Backends
 
       # @see `Entitylike`
       def instance(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vm.info }
-        compute_from(vm)
+        compute_from pool_element(:virtual_machine, identifier, :info)
       end
 
       # @see `Entitylike`
       def create(instance)
-        vm_template = virtual_machine_from(instance)
-
-        vm = ::OpenNebula::VirtualMachine.new(::OpenNebula::VirtualMachine.build_xml, raw_client)
-        client(Errors::Backend::EntityCreateError) { vm.allocate(vm_template) }
-        client(Errors::Backend::EntityStateError) { vm.info }
-
-        vm['ID']
+        pool_element_allocate(:virtual_machine, virtual_machine_from(instance))['ID']
       end
 
       # @see `Entitylike`
       def delete(identifier)
-        vm = ::OpenNebula::VirtualMachine.new_with_id(identifier, raw_client)
-        client(Errors::Backend::EntityStateError) { vm.terminate(true) }
+        vm = pool_element(:virtual_machine, identifier)
+        client(Errors::Backend::EntityActionError) { vm.terminate(true) }
       end
 
       private
@@ -82,10 +74,8 @@ module Backends
       # @param storage [Occi::Infrastructure::Compute] instance to transform
       # @return [String] ONe template
       def virtual_machine_from(compute)
-        os_tpl = mixin_term(compute, Occi::Infrastructure::Constants::OS_TPL_MIXIN)
-
-        template = ::OpenNebula::Template.new_with_id(os_tpl, raw_client)
-        client(Errors::Backend::EntityStateError) { template.info }
+        os_tpl = compute.os_tpl.term
+        template = pool_element(:template, os_tpl, :info)
 
         modify_basic! template, compute, os_tpl
         %i[set_context! set_size! set_security_groups! set_cluster!].each { |mtd| send(mtd, template, compute) }
@@ -98,8 +88,8 @@ module Backends
 
       # :nodoc:
       def attach_mixins!(virtual_machine, compute)
-        compute << category_by_identifier!(Occi::Infrastructure::Constants::USER_DATA_MIXIN)
-        compute << category_by_identifier!(Occi::Infrastructure::Constants::SSH_KEY_MIXIN)
+        compute << find_by_identifier!(Occi::Infrastructure::Constants::USER_DATA_MIXIN)
+        compute << find_by_identifier!(Occi::Infrastructure::Constants::SSH_KEY_MIXIN)
         compute << server_model.find_regions.first
 
         attach_optional_mixin! compute, virtual_machine['HISTORY_RECORDS/HISTORY[last()]/CID'], :availability_zone
@@ -111,8 +101,16 @@ module Backends
 
       # :nodoc:
       def enable_actions!(compute)
-        return unless compute['occi.compute.state'] == 'active'
-        Constants::Compute::ACTIVE_ACTIONS.each { |a| compute.enable_action(a) }
+        actions = case compute['occi.compute.state']
+                  when 'active'
+                    Constants::Compute::ACTIVE_ACTIONS
+                  when 'inactive'
+                    Constants::Compute::INACTIVE_ACTIONS
+                  else
+                    []
+                  end
+
+        actions.each { |a| compute.enable_action(a) }
       end
 
       # :nodoc:
@@ -149,7 +147,7 @@ module Backends
 
       # :nodoc:
       def set_security_groups!(template, compute)
-        sgs = securitygrouplinks(compute).map { |l| link_target_id(l) }.join(',')
+        sgs = compute.securitygrouplinks.map(&:target_id).join(',')
 
         idx = 1
         template.each('TEMPLATE/NIC') do |_nic|
@@ -160,7 +158,7 @@ module Backends
 
       # :nodoc:
       def set_cluster!(template, compute)
-        az = mixin_term(compute, Occi::InfrastructureExt::Constants::AVAILABILITY_ZONE_MIXIN)
+        az = compute.availability_zone ? compute.availability_zone.term : nil
         return unless az
 
         sched_reqs = template['TEMPLATE/SCHED_REQUIREMENTS'] || ''
@@ -193,14 +191,16 @@ module Backends
 
       # :nodoc:
       def add_nics!(template_str, compute)
-        sg_ids = securitygrouplinks(compute).map { |sg| link_target_id(sg) }
-        data = { instances: networkinterfaces(compute), security_groups: sg_ids }
+        data = {
+          instances: compute.networkinterfaces,
+          security_groups: compute.securitygrouplinks.map(&:target_id)
+        }
         add_erb! template_str, data, 'compute_nic.erb'
       end
 
       # :nodoc:
       def add_disks!(template_str, compute)
-        data = { instances: storagelinks(compute) }
+        data = { instances: compute.storagelinks }
         add_erb! template_str, data, 'compute_disk.erb'
       end
 

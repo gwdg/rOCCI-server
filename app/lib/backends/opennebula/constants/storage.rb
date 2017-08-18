@@ -25,6 +25,9 @@ module Backends
 
         # All transferable attributes
         TRANSFERABLE_ATTRIBUTES = [ATTRIBUTES_CORE, ATTRIBUTES_INFRA].freeze
+
+        # Actions to enable when online
+        ONLINE_ACTIONS = %w[backup].freeze
       end
     end
   end

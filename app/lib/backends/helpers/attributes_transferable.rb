@@ -10,8 +10,10 @@ module Backends
       # @param target [Occi::Core::Entity] receiving instance
       # @param mappers [Enumerable] list of `Hash-like` mappers, values in maps MUST be callable
       def transfer_attributes!(source, target, mappers)
-        raise '`mappers` must be enumerable' unless mappers.is_a? Enumerable
-        raise '`target` must be Entity-like' unless target.respond_to?(:[]=) && target.respond_to?(:attributes)
+        raise Errors::Backend::InternalError, '`mappers` must be enumerable' unless mappers.is_a? Enumerable
+        unless target.respond_to?(:[]=) && target.respond_to?(:attributes)
+          raise Errors::Backend::InternalError, '`target` must be Entity-like'
+        end
 
         mappers.each do |mapper|
           mapper.each_pair do |k, v|

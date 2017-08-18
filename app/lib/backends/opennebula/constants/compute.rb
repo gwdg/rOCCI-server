@@ -8,7 +8,8 @@ module Backends
           'PROLOG' => 'waiting',
           'BOOT' => 'waiting',
           'MIGRATE' => 'waiting',
-          'EPILOG' => 'waiting'
+          'EPILOG' => 'waiting',
+          'LCM_INIT' => 'waiting'
         }.freeze
 
         # Attribute mapping hash for Core
@@ -50,9 +51,7 @@ module Backends
             (vm['TEMPLATE/DISK[1]/SIZE'].to_f / 1024) <= val.to_f
           end,
           'eu.egi.fedcloud.compute.gpu.count' => lambda do |vm, val|
-            count = 0
-            vm.each_xpath('TEMPLATE/PCI') { count += 1 }
-            count == val.to_i
+            Backends::Opennebula::Helpers::Counter.xml_elements(vm, 'TEMPLATE/PCI') == val.to_i
           end,
           'eu.egi.fedcloud.compute.gpu.vendor' => ->(vm, val) { vm['TEMPLATE/PCI[1]/VENDOR'] == val },
           'eu.egi.fedcloud.compute.gpu.class' => ->(vm, val) { vm['TEMPLATE/PCI[1]/CLASS'] == val },
@@ -61,6 +60,7 @@ module Backends
 
         # Actions to enable when active
         ACTIVE_ACTIONS = %w[stop restart suspend save].freeze
+        INACTIVE_ACTIONS = %w[start].freeze
       end
     end
   end

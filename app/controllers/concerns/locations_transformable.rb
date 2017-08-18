@@ -8,7 +8,7 @@ module LocationsTransformable
   # @return [Occi::Core::Locations] converted structure
   def locations_from(identifiers, source = nil, target = nil)
     source ||= params[:entity]
-    raise 'Cannot create locations without valid source' if source.blank?
+    raise Errors::InternalError, 'Cannot create locations without valid source' if source.blank?
     target ||= Occi::Core::Locations.new
 
     identifiers.each { |id| target << absolute_url("/#{source}/#{id}") }
