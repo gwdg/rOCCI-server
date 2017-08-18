@@ -14,7 +14,7 @@ module Backends
         ::OpenNebula::Error::EAUTHENTICATION => Errors::Backend::AuthenticationError,
         ::OpenNebula::Error::EAUTHORIZATION => Errors::Backend::AuthorizationError,
         ::OpenNebula::Error::ENO_EXISTS => Errors::Backend::EntityNotFoundError,
-        ::OpenNebula::Error::EACTION => Errors::Backend::EntityStateError
+        ::OpenNebula::Error::EACTION => Errors::Backend::EntityActionError
       }.freeze
 
       # Connection errors

@@ -16,7 +16,7 @@ module Backends
         def wait_until(virtual_machine, state, timeout = 60)
           raise Errors::Backend::InternalError, 'Block is a mandatory argument' unless block_given?
 
-          Timeout.timeout(timeout) do
+          Timeout.timeout(timeout, Errors::Backend::EntityTimeoutErrror) do
             loop do
               sleep WAITER_STEP
               client(Errors::Backend::EntityRetrievalError) { virtual_machine.info }

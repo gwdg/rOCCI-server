@@ -8,7 +8,13 @@ module Errorable
     Errors::Backend::ConnectionError => { with: :connection_error },
     Errors::Backend::AuthenticationError => { with: :authorization_error },
     Errors::Backend::AuthorizationError => { with: :authorization_error },
-    Errors::Backend::NotImplementedError => { with: :not_implemented_error }
+    Errors::Backend::NotImplementedError => { with: :not_implemented_error },
+    Errors::Backend::EntityNotFoundError => { with: :not_found_error },
+    Errors::Backend::EntityActionError => { with: :action_error },
+    Errors::Backend::EntityCreateError => { with: :create_error },
+    Errors::Backend::EntityRetrievalError => { with: :retrieval_error },
+    Errors::Backend::EntityStateError => { with: :state_error },
+    Errors::Backend::EntityTimeoutError => { with: :timeout_error }
   }.freeze
 
   included do
@@ -24,53 +30,77 @@ module Errorable
     respond_with Ext::RenderableError.new(code, message), status: code
   end
 
-  # Handles authorization errors and responds with appropriate HTTP code and headers.
-  #
   # @param exception [Exception] exception to convert into a response
   def authorization_error(exception)
     log_message! exception
     response.headers[self.class.redirect_header_key] = self.class.redirect_header_uri
-    render_error :unauthorized, 'Not Authorized'
+    render_error :unauthorized, 'Not authorized to access requested content'
   end
 
-  # Handles parsing errors and responds with appropriate HTTP code and headers.
-  #
   # @param exception [Exception] exception to convert into a response
   def parsing_error(exception)
     log_message! exception
     render_error :bad_request, "Unparsable content: #{exception}"
   end
 
-  # Handles validation errors and responds with appropriate HTTP code and headers.
-  #
   # @param exception [Exception] exception to convert into a response
   def validation_error(exception)
     log_message! exception
-    render_error :bad_request, "Invalid content: #{exception}"
+    render_error :conflict, "Invalid content: #{exception}"
   end
 
-  # Handles connection errors and responds with appropriate HTTP code and headers.
-  #
   # @param exception [Exception] exception to convert into a response
   def connection_error(exception)
     log_message! exception, :fatal
     render_error :service_unavailable, 'Cloud platform is temporarily unavailable'
   end
 
-  # Handles functionality that is not implemented and responds with appropriate HTTP code and headers.
-  #
   # @param exception [Exception] exception to convert into a response
   def not_implemented_error(exception)
     log_message! exception, :info
     render_error :not_implemented, 'Requested functionality is not implemented'
   end
 
-  # Handles functionality that is not allowed and responds with appropriate HTTP code and headers.
-  #
   # @param exception [Exception] exception to convert into a response
   def forbidden_error(exception)
     log_message! exception
     render_error :forbidden, 'Requested functionality is not allowed'
+  end
+
+  # @param exception [Exception] exception to convert into a response
+  def not_found_error(exception)
+    log_message! exception
+    render_error :not_found, 'Requested entity was not found'
+  end
+
+  # @param exception [Exception] exception to convert into a response
+  def action_error(exception)
+    log_message! exception
+    render_error :conflict, "Failed to perform requested change: #{message}"
+  end
+
+  # @param exception [Exception] exception to convert into a response
+  def state_error(exception)
+    log_message! exception
+    render_error :conflict, "State conflict: #{exception}"
+  end
+
+  # @param exception [Exception] exception to convert into a response
+  def create_error(exception)
+    log_message! exception
+    render_error :bad_request, "Failed to create requested entity: #{exception}"
+  end
+
+  # @param exception [Exception] exception to convert into a response
+  def retrieval_error(exception)
+    log_message! exception, :fatal
+    render_error :internal_server_error, 'Failed to retrieve requested entities'
+  end
+
+  # @param exception [Exception] exception to convert into a response
+  def timeout_error(exception)
+    log_message! exception
+    render_error :gateway_timeout, 'Failed to perform requested change in a timely manner'
   end
 
   # :nodoc:
