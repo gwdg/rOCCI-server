@@ -59,8 +59,23 @@ module Backends
         }.freeze
 
         # Actions to enable when active
-        ACTIVE_ACTIONS = %w[stop restart suspend save].freeze
-        INACTIVE_ACTIONS = %w[start].freeze
+        ACTIVE_ACTIONS = {
+          'stop' => ->(vm, _ai) { vm.poweroff(true) },
+          'restart' => ->(vm, _ai) { vm.reboot(true) },
+          'suspend' => ->(vm, _ai) { vm.suspend }
+        }.freeze
+
+        # Actions to enable when inactive
+        INACTIVE_ACTIONS = {
+          'start' => ->(vm, _ai) { vm.resume },
+          'save' => lambda do |vm, ai|
+            template_name = ai['name'].present? ? ai['name'] : "saved-compute-#{vm['ID']}-#{Time.now.utc.to_i}"
+            vm.save_as_template(template_name, true)
+          end
+        }.freeze
+
+        # All actions
+        ACTIONS = ACTIVE_ACTIONS.merge(INACTIVE_ACTIONS).freeze
       end
     end
   end

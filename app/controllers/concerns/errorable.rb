@@ -76,7 +76,7 @@ module Errorable
   # @param exception [Exception] exception to convert into a response
   def action_error(exception)
     log_message! exception
-    render_error :conflict, "Failed to perform requested change: #{message}"
+    render_error :conflict, "Failed to perform requested change: #{exception}"
   end
 
   # @param exception [Exception] exception to convert into a response

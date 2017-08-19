@@ -59,7 +59,8 @@ class EntityController < ApplicationController
       return
     end
 
-    default_backend_proxy.trigger params[:id], coll.first
+    ret_coll = default_backend_proxy.trigger(params[:id], coll.first)
+    respond_with ret_coll unless ret_coll.empty?
   end
 
   # POST /:entity/?action=ACTION
@@ -70,7 +71,8 @@ class EntityController < ApplicationController
       return
     end
 
-    default_backend_proxy.trigger_all coll.first
+    ret_coll = default_backend_proxy.trigger_all(coll.first)
+    respond_with ret_coll unless ret_coll.empty?
   end
 
   # PUT /:entity/:id

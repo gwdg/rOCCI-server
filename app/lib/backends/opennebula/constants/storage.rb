@@ -27,7 +27,9 @@ module Backends
         TRANSFERABLE_ATTRIBUTES = [ATTRIBUTES_CORE, ATTRIBUTES_INFRA].freeze
 
         # Actions to enable when online
-        ONLINE_ACTIONS = %w[backup].freeze
+        ONLINE_ACTIONS = {
+          'backup' => ->(image, _ai) { image.clone "storage-#{image['ID']}-#{Time.now.utc.to_i}" }
+        }.freeze
       end
     end
   end

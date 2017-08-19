@@ -47,6 +47,18 @@ module Backends
       end
 
       # @see `Entitylike`
+      def trigger(identifier, action_instance)
+        name = action_instance.action.term
+        vm = pool_element(:virtual_machine, identifier)
+        client(Errors::Backend::EntityActionError) do
+          Constants::Compute::ACTIONS[name].call(vm, action_instance)
+        end
+
+        # TODO: return os_tpl mixin for `save`
+        Occi::Core::Collection.new
+      end
+
+      # @see `Entitylike`
       def delete(identifier)
         vm = pool_element(:virtual_machine, identifier)
         client(Errors::Backend::EntityActionError) { vm.terminate(true) }
@@ -103,9 +115,9 @@ module Backends
       def enable_actions!(compute)
         actions = case compute['occi.compute.state']
                   when 'active'
-                    Constants::Compute::ACTIVE_ACTIONS
+                    Constants::Compute::ACTIVE_ACTIONS.keys
                   when 'inactive'
-                    Constants::Compute::INACTIVE_ACTIONS
+                    Constants::Compute::INACTIVE_ACTIONS.keys
                   else
                     []
                   end

@@ -44,8 +44,8 @@ module Backends
       end
 
       # @see `Entitylike`
-      def trigger(identifier, _action_instance)
-        identifier
+      def trigger(_identifier, _action_instance)
+        Occi::Core::Collection.new
       end
 
       # @see `Entitylike`
