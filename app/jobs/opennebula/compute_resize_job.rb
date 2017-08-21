@@ -2,14 +2,23 @@ module Opennebula
   class ComputeResizeJob < ApplicationJob
     queue_as :opennebula
 
-    # Default waiting step
-    DEFAULT_STEP = 5
-
     # Default timeout in seconds
     DEFAULT_TIMEOUT = 900
 
     rescue_from(Errors::JobError) do |ex|
       logger.error "Delayed job failed: #{ex}"
+    end
+
+    rescue_from(Errors::Backend::EntityTimeoutErrror) do |_ex|
+      logger.error "Timed out while waiting for job completion [#{DEFAULT_TIMEOUT}s]"
+    end
+
+    rescue_from(Errors::Backend::EntityRetrievalError) do |ex|
+      logger.error "Failed to get instance state when waiting: #{ex}"
+    end
+
+    rescue_from(Errors::Backend::RemoteError) do |ex|
+      logger.fatal "Failed during transition: #{ex}"
     end
 
     # @param secret [String] credentials for ONe
@@ -18,18 +27,9 @@ module Opennebula
     # @param size [Hash] sizing attributes
     def perform(secret, endpoint, identifier, size)
       vm = ::OpenNebula::VirtualMachine.new_with_id(identifier, ::OpenNebula::Client.new(secret, endpoint))
-      Timeout.timeout(DEFAULT_TIMEOUT) { wait_for_undeployed!(vm) }
+      ::Backends::Opennebula::Helpers::Waiter.wait_until(vm, 'UNDEPLOYED', DEFAULT_TIMEOUT, :state_str)
       handle { vm.resize(size_template(size), true) }
       handle { vm.resume }
-    end
-
-    # :nodoc:
-    def wait_for_undeployed!(vm)
-      begin
-        handle { vm.info }
-        raise Errors::JobError, "Failed to undeploy VM #{vm['ID']}" if vm.lcm_state_str.include?('FAILURE')
-        sleep DEFAULT_STEP
-      end until vm.state_str == 'UNDEPLOYED'
     end
 
     # :nodoc:

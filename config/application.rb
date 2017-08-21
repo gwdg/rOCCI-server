@@ -36,7 +36,8 @@ module ROCCIServer
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    config.active_job.queue_name_prefix  = "rOCCI-server.#{Rails.env}"
+    #
+    config.active_job.queue_name_prefix = "rOCCI-server.#{Rails.env}"
     config.active_job.queue_name_delimiter = '.'
 
     # Pull version information

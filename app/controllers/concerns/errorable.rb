@@ -14,7 +14,8 @@ module Errorable
     Errors::Backend::EntityCreateError => { with: :create_error },
     Errors::Backend::EntityRetrievalError => { with: :retrieval_error },
     Errors::Backend::EntityStateError => { with: :state_error },
-    Errors::Backend::EntityTimeoutError => { with: :timeout_error }
+    Errors::Backend::EntityTimeoutError => { with: :timeout_error },
+    Errors::Backend::RemoteError => { with: :remote_error }
   }.freeze
 
   included do
@@ -101,6 +102,12 @@ module Errorable
   def timeout_error(exception)
     log_message! exception
     render_error :gateway_timeout, 'Failed to perform requested change in a timely manner'
+  end
+
+  # @param exception [Exception] exception to convert into a response
+  def remote_error(exception)
+    log_message! exception
+    render_error :internal_server_error, 'Underlying cloud platform failed to complete request'
   end
 
   # :nodoc:
