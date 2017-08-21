@@ -47,6 +47,24 @@ module Backends
       end
 
       # @see `Entitylike`
+      def partial_update(identifier, fragments)
+        res_tpl = fragments[:mixins].detect do |m|
+          m.respond_to?(:depends?) && m.depends?(Occi::Infrastructure::Mixins::ResourceTpl.new)
+        end
+        raise Errors::Backend::EntityActionError, 'Resource template not provided' unless res_tpl
+
+        vm = pool_element(:virtual_machine, identifier, :info)
+        client(Errors::Backend::EntityActionError) { vm.undeploy(true) } unless vm.state_str == 'UNDEPLOYED'
+
+        ::Opennebula::ComputeResizeJob.perform_later(
+          client_secret(options), options.fetch(:endpoint),
+          identifier, serializable_attributes(res_tpl.attributes)
+        )
+
+        instance identifier
+      end
+
+      # @see `Entitylike`
       def trigger(identifier, action_instance)
         name = action_instance.action.term
         vm = pool_element(:virtual_machine, identifier)
@@ -222,6 +240,11 @@ module Backends
 
         template_str << "\n"
         template_str << erb_render(template_path, data)
+      end
+
+      # :nodoc:
+      def serializable_attributes(attributes)
+        Hash[attributes.map { |k, v| [k, v.default] }]
       end
 
       # :nodoc:
