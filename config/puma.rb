@@ -17,7 +17,8 @@ ssl_bind ENV.fetch('HOST') { '127.0.0.1' },
 
 # Specifies the `environment` that Puma will run in.
 #
-environment ENV.fetch('RAILS_ENV') { 'development' }
+env = ENV.fetch('RAILS_ENV') { 'development' }
+environment env
 
 # Specifies the number of `workers` to boot in clustered mode.
 # Workers are forked webserver processes. If using threads and workers together
@@ -25,7 +26,8 @@ environment ENV.fetch('RAILS_ENV') { 'development' }
 # Workers do not work on JRuby or Windows (both of which do not support
 # processes).
 #
-workers ENV.fetch('WEB_CONCURRENCY') { 1 }
+default_concurrency = env == 'production' ? Concurrent.processor_count * 2 : 1
+workers ENV.fetch('WEB_CONCURRENCY') { default_concurrency }
 
 # Use the `preload_app!` method when specifying a `workers` number.
 # This directive tells Puma to first boot the application and load code
