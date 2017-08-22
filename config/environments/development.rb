@@ -51,7 +51,7 @@ Rails.application.configure do
   config.active_job.queue_adapter = ActiveJob::QueueAdapters::AsyncAdapter.new(min_threads: 1, max_threads: 1)
 
   #
-  config.cache_store = :dalli_store, ENV['MEMCACHE_SERVERS'] || config.rocci_server['memcache'],
+  config.cache_store = :dalli_store, config.rocci_server['memcache'],
                        { namespace: 'rOCCI-server.development', expires_in: 1.minute, compress: true }
 
   # Raises error for missing translations
