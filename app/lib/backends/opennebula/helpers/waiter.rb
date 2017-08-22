@@ -18,7 +18,7 @@ module Backends
         # @param timeout [Fixnum] wait for given number of seconds
         # @param type [Symbol] type of the state
         def wait_until(virtual_machine, state, timeout = 60, type = :lcm_state_str)
-          Timeout.timeout(timeout, Errors::Backend::EntityTimeoutErrror) do
+          Timeout.timeout(timeout, Errors::Backend::EntityTimeoutError) do
             loop do
               sleep WAITER_STEP
               client(Errors::Backend::EntityRetrievalError) { virtual_machine.info }
