@@ -11,6 +11,7 @@ gem 'rack-attack', '~> 5.0'
 gem 'rack-cors', '~> 1.0'
 gem 'rails', '~> 5.1'
 gem 'responders', '~> 2.4'
+gem 'dalli', '~> 2.7'
 
 gem 'occi-core', '= 5.0.0.beta.18', require: 'occi/infrastructure-ext' # '~> 5.0.0'
 
