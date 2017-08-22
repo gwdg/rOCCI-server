@@ -7,7 +7,9 @@ module Backends
       include Backends::Helpers::AttributesTransferable
       include Backends::Helpers::MixinsAttachable
       include Backends::Helpers::ErbRenderer
-      include Backends::Opennebula::Helpers::Waiter
+
+      # :nodoc:
+      HELPER_NS = Backends::Opennebula::Helpers
 
       class << self
         # @see `served_class` on `Entitylike`
@@ -59,10 +61,10 @@ module Backends
         disks = Backends::Opennebula::Helpers::Counter.xml_elements(vm, 'TEMPLATE/DISK')
 
         client(Errors::Backend::EntityCreateError) { vm.disk_attach disk_from(instance) }
-        wait_until(vm, 'RUNNING', Constants::Storagelink::ATTACH_TIMEOUT) do |nvm|
-          unless Backends::Opennebula::Helpers::Counter.xml_elements(nvm, 'TEMPLATE/DISK') > disks
+        HELPER_NS::Waiter.wait_until(vm, 'RUNNING', Constants::Storagelink::ATTACH_TIMEOUT) do |nvm|
+          unless HELPER_NS::Counter.xml_elements(nvm, 'TEMPLATE/DISK') > disks
             logger.error "Attaching IMAGE to VM[#{vm['ID']}] failed: #{vm['USER_TEMPLATE/ERROR']}"
-            raise Errors::Backend::EntityCreateError, 'Could not attach storage to compute'
+            raise Errors::Backend::RemoteError, 'Could not attach storage to compute'
           end
         end
 
