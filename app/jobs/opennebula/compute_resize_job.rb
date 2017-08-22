@@ -9,7 +9,7 @@ module Opennebula
       logger.error "Delayed job failed: #{ex}"
     end
 
-    rescue_from(Errors::Backend::EntityTimeoutErrror) do |_ex|
+    rescue_from(Errors::Backend::EntityTimeoutError) do |_ex|
       logger.error "Timed out while waiting for job completion [#{DEFAULT_TIMEOUT}s]"
     end
 
