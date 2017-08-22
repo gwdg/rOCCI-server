@@ -1,9 +1,0 @@
----
-:volume_id: vol-b86c67bf
-:size: 1
-:snapshot_id: ''
-:availability_zone: eu-west-1a
-:state: creating
-:create_time: 2015-01-06 10:49:36.335000000 Z
-:volume_type: standard
-:encrypted: false

@@ -1,2 +1,0 @@
-user_blacklist: <%= ENV['ROCCI_SERVER_USER_BLACKLIST_HOOK_USER_BLACKLIST'] || '' %>
-filtered_strategies: <%= ENV['ROCCI_SERVER_USER_BLACKLIST_HOOK_FILTERED_STRATEGIES'] || '' %>

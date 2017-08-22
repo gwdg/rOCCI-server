@@ -1,0 +1,7 @@
+---
+type: !ruby/class String
+required: true
+mutable: false
+default: ~
+description: Device identifier of the requested GPU device.
+pattern: ~

@@ -1,0 +1,25 @@
+---
+term: appl0
+schema: http://schemas.localhost/occi/infrastructure/os_tpl#
+title: Appliance Template - Appliance 0
+attributes:
+  - eu.egi.fedcloud.appliance.appdb.id
+  - eu.egi.fedcloud.appliance.appdb.description
+  - eu.egi.fedcloud.appliance.appdb.operating_system
+  - eu.egi.fedcloud.appliance.appdb.version
+  - eu.egi.fedcloud.appliance.appdb.mpuri
+  - eu.egi.fedcloud.appliance.appdb.base_mpuri
+  - eu.egi.fedcloud.appliance.appdb.image_list.id
+attribute_defaults:
+  eu.egi.fedcloud.appliance.appdb.id: 2f55ff2a-abe3-52b3-ad56-aded22a63fae
+  eu.egi.fedcloud.appliance.appdb.description: 'This is an appliance'
+  eu.egi.fedcloud.appliance.appdb.operating_system: 'Ubuntu 16.04 LTS'
+  eu.egi.fedcloud.appliance.appdb.version: 2017.06.17
+  eu.egi.fedcloud.appliance.appdb.mpuri: https://appdb.egi.eu/store/vo/image/2f55ff2a-abe3-52b3-ad56-aded22a63fae:177/
+  eu.egi.fedcloud.appliance.appdb.base_mpuri: https://appdb.egi.eu/store/vo/image/2f55ff2a-abe3-52b3-ad56-aded22a63fae/
+  eu.egi.fedcloud.appliance.appdb.image_list.id: 2f55ff2a-abe3-52b3-ad56-aded22a63fae
+location: /mixin/os_tpl/appl0
+applies:
+  - http://schemas.ogf.org/occi/infrastructure#compute
+depends:
+  - http://schemas.ogf.org/occi/infrastructure#os_tpl

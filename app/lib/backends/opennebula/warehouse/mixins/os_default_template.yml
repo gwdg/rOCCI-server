@@ -1,0 +1,17 @@
+---
+term: default_template
+schema: http://schemas.localhost/occi/infrastructure/os_tpl#
+title: Appliance Template - DEFAULT
+attributes:
+  - eu.egi.fedcloud.appliance.appdb.id
+  - eu.egi.fedcloud.appliance.appdb.description
+  - eu.egi.fedcloud.appliance.appdb.operating_system
+  - eu.egi.fedcloud.appliance.appdb.version
+  - eu.egi.fedcloud.appliance.appdb.mpuri
+  - eu.egi.fedcloud.appliance.appdb.base_mpuri
+  - eu.egi.fedcloud.appliance.appdb.image_list.id
+location: /mixin/os_tpl/default_template
+applies:
+  - http://schemas.ogf.org/occi/infrastructure#compute
+depends:
+  - http://schemas.ogf.org/occi/infrastructure#os_tpl

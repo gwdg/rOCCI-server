@@ -1,124 +1,101 @@
-ROCCIServer::Application.routes.draw do
+Rails.application.routes.draw do
   ####################################################
-  ## Support for CORS (HTTP OPTIONS method)
+  ## Occi::Core::Entity Routes (incl. Default Route)
   ####################################################
-  match '/', to: 'cors#index', via: :options
-  match '/*dummy', to: 'cors#index', via: :options
+  get '/', to: 'multi_entity#list',
+           constraints: Ext::RoutingConstraints.build(%i[non_legacy])
+  get '/', to: 'multi_entity#locations',
+           constraints: Ext::RoutingConstraints.build(%i[legacy])
+
+  post '/', to: 'multi_entity#blackhole'
+
+  # put '/:entity/' is undefined in GFD-P-R.185
+
+  delete '/', to: 'multi_entity#delete_all'
+
+  get '/:entity/', to: 'multi_entity#list',
+                   constraints: Ext::RoutingConstraints.build(%i[abstract non_legacy])
+  get '/:entity/', to: 'multi_entity#locations',
+                   constraints: Ext::RoutingConstraints.build(%i[abstract legacy])
+
+  post '/:entity/', to: 'multi_entity#blackhole',
+                    constraints: Ext::RoutingConstraints.build(%i[abstract])
+
+  # put '/:entity/' is undefined in GFD-P-R.185
+
+  delete '/:entity/', to: 'multi_entity#delete_all',
+                      constraints: Ext::RoutingConstraints.build(%i[abstract])
+
+  get '/mixin/:parent/:term/', to: 'multi_entity#scoped_list',
+                               constraints: Ext::RoutingConstraints.build(%i[non_legacy])
+  get '/mixin/:parent/:term/', to: 'multi_entity#scoped_locations',
+                               constraints: Ext::RoutingConstraints.build(%i[legacy])
+
+  post '/mixin/:parent/:term/', to: 'multi_entity#scoped_execute_all',
+                                constraints: Ext::RoutingConstraints.build(%i[action])
+  post '/mixin/:parent/:term/', to: 'multi_entity#assign_mixin',
+                                constraints: Ext::RoutingConstraints.build(%i[non_action])
+
+  put '/mixin/:parent/:term/', to: 'multi_entity#update_mixin'
+
+  delete '/mixin/:parent/:term/', to: 'multi_entity#scoped_delete_all'
 
   ####################################################
-  ## Discovery interface
+  ## Query Interface Routes
   ####################################################
-  get '/-/', to: 'occi_model#show', as: 'occi_model'
-  get '/.well-known/org/ogf/occi/-/', to: 'occi_model#show'
+  get '/-/', to: 'server_model#show'
+  get '/.well-known/org/ogf/occi/-/', to: 'server_model#show'
 
-  post '/-/', to: 'occi_model#create', as: 'add_mixin'
-  post '/.well-known/org/ogf/occi/-/', to: 'occi_model#create'
+  ####################################################
+  ## Custom Mixin Routes
+  ####################################################
+
+  post '/-/', to: 'mixin#create'
+  post '/.well-known/org/ogf/occi/-/', to: 'mixin#create'
 
   # put '/-/' is undefined in GFD-P-R.185
   # put '/.well-known/org/ogf/occi/-/' is undefined in GFD-P-R.185
 
-  delete '/-/', to: 'occi_model#delete', as: 'delete_mixin'
-  delete '/.well-known/org/ogf/occi/-/', to: 'occi_model#delete'
+  delete '/-/', to: 'mixin#delete'
+  delete '/.well-known/org/ogf/occi/-/', to: 'mixin#delete'
 
   ####################################################
-  ## Occi::Infrastructure::Compute
+  ## Occi::Core::Resource Routes
+  ##  - Occi::Infrastructure::Compute
+  ##  - Occi::Infrastructure::Network
+  ##  - Occi::Infrastructure::Storage
+  ##  - Occi::InfrastructureExt::SecurityGroup
+  ##  - Occi::InfrastructureExt::IPReservation
+  ##
+  ## and
+  ##
+  ## Occi::Core::Link Routes
+  ##  - Occi::Infrastructure::NetworkInterface
+  ##  - Occi::Infrastructure::StorageLink
+  ##  - Occi::InfrastructureExt::SecurityGroupLink
   ####################################################
-  get '/compute/:id', to: 'compute#show', as: 'compute'
-  get '/compute/', to: 'compute#index', as: 'computes'
+  get '/:entity/:id', to: 'entity#show',
+                      constraints: Ext::RoutingConstraints.build(%i[concrete])
+  get '/:entity/', to: 'entity#list',
+                   constraints: Ext::RoutingConstraints.build(%i[concrete non_legacy])
+  get '/:entity/', to: 'entity#locations',
+                   constraints: Ext::RoutingConstraints.build(%i[concrete legacy])
 
-  post '/compute/:id', to: 'compute#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/compute/:id', to: 'compute#partial_update', as: 'partial_update_compute'
-  post '/compute/', to: 'compute#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/compute/', to: 'compute#create', as: 'new_compute'
+  post '/:entity/:id', to: 'entity#execute',
+                       constraints: Ext::RoutingConstraints.build(%i[concrete action])
+  post '/:entity/:id', to: 'entity#partial_update',
+                       constraints: Ext::RoutingConstraints.build(%i[concrete non_action])
+  post '/:entity/', to: 'entity#execute_all',
+                    constraints: Ext::RoutingConstraints.build(%i[concrete action])
+  post '/:entity/', to: 'entity#create',
+                    constraints: Ext::RoutingConstraints.build(%i[concrete non_action])
 
-  put '/compute/:id', to: 'compute#update', as: 'update_compute'
-  # put '/compute/' is undefined in GFD-P-R.185
+  put '/:entity/:id', to: 'entity#update',
+                      constraints: Ext::RoutingConstraints.build(%i[concrete])
+  # put '/:entity/' is undefined in GFD-P-R.185
 
-  delete '/compute/:id', to: 'compute#delete', as: 'delete_compute'
-  delete '/compute/', to: 'compute#delete', as: 'delete_computes'
-
-  ####################################################
-  ## Occi::Infrastructure::Network
-  ####################################################
-  get '/network/:id', to: 'network#show', as: 'network'
-  get '/network/', to: 'network#index', as: 'networks'
-
-  post '/network/:id', to: 'network#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/network/:id', to: 'network#partial_update', as: 'partial_update_network'
-  post '/network/', to: 'network#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/network/', to: 'network#create', as: 'new_network'
-
-  put '/network/:id', to: 'network#update', as: 'update_network'
-  # put '/network/' is undefined in GFD-P-R.185
-
-  delete '/network/:id', to: 'network#delete', as: 'delete_network'
-  delete '/network/', to: 'network#delete', as: 'delete_networks'
-
-  ####################################################
-  ## Occi::Infrastructure::Storage
-  ####################################################
-  get '/storage/:id', to: 'storage#show', as: 'storage'
-  get '/storage/', to: 'storage#index', as: 'storages'
-
-  post '/storage/:id', to: 'storage#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/storage/:id', to: 'storage#partial_update', as: 'partial_update_storage'
-  post '/storage/', to: 'storage#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/storage/', to: 'storage#create', as: 'new_storage'
-
-  put '/storage/:id', to: 'storage#update', as: 'update_storage'
-  # put '/storage/' is undefined in GFD-P-R.185
-
-  delete '/storage/:id', to: 'storage#delete', as: 'delete_storage'
-  delete '/storage/', to: 'storage#delete', as: 'delete_storages'
-
-  ####################################################
-  ## Occi::Infrastructure::NetworkInterface
-  ####################################################
-  get '/link/networkinterface/:id', to: 'networkinterface#show', as: 'networkinterface'
-  get '/link/networkinterface/', to: 'networkinterface#index', as: 'networkinterfaces'
-
-  post '/link/networkinterface/', to: 'networkinterface#create', as: 'new_networkinterface'
-
-  delete '/link/networkinterface/:id', to: 'networkinterface#delete', as: 'delete_networkinterface'
-
-  ####################################################
-  ## Occi::Infrastructure::StorageLink
-  ####################################################
-  get '/link/storagelink/:id', to: 'storagelink#show', as: 'storagelink'
-  get '/link/storagelink/', to: 'storagelink#index', as: 'storagelinks'
-
-  post '/link/storagelink/', to: 'storagelink#create', as: 'new_storagelink'
-
-  delete '/link/storagelink/:id', to: 'storagelink#delete', as: 'delete_storagelink'
-
-  ####################################################
-  ## Occi::Infrastructure::OsTpl
-  ####################################################
-  get '/mixin/os_tpl(/:term)', to: 'os_tpl#index', as: 'os_tpl'
-
-  post '/mixin/os_tpl(/:term)', to: 'os_tpl#trigger', constraints: { query_string: /^action=\S+$/ }
-
-  ####################################################
-  ## Occi::Infrastructure::ResourceTpl
-  ####################################################
-  get '/mixin/resource_tpl(/:term)', to: 'resource_tpl#index', as: 'resource_tpl'
-
-  post '/mixin/resource_tpl(/:term)', to: 'resource_tpl#trigger', constraints: { query_string: /^action=\S+$/ }
-
-  ####################################################
-  ## Occi::Core::Mixin (user-defined mixins)
-  ####################################################
-  get '/mixin/*term/', to: 'mixin#index', as: 'mixin'
-
-  post '/mixin/*term/', to: 'mixin#trigger', constraints: { query_string: /^action=\S+$/ }
-  post '/mixin/*term/', to: 'mixin#assign', as: 'assign_mixin'
-
-  put '/mixin/*term/', to: 'mixin#update', as: 'update_mixin'
-
-  delete '/mixin/*term/', to: 'mixin#delete', as: 'unassign_mixin'
-
-  ####################################################
-  ## Default route
-  ####################################################
-  root 'occi_model#index'
+  delete '/:entity/:id', to: 'entity#delete',
+                         constraints: Ext::RoutingConstraints.build(%i[concrete])
+  delete '/:entity/', to: 'entity#delete_all',
+                      constraints: Ext::RoutingConstraints.build(%i[concrete])
 end

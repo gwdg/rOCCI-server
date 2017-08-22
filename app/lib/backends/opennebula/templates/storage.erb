@@ -1,0 +1,14 @@
+NAME = "<%= data[:instance]['occi.core.title'] || ::SecureRandom.uuid %>"
+DESCRIPTION = "<%= data[:instance]['occi.core.summary'] || "STORAGE created on #{::DateTime.now.readable_inspect}" %>"
+
+TYPE = "DATABLOCK"
+SIZE = "<%= data[:instance]['occi.storage.size'] ? (data[:instance]['occi.storage.size'] * 1024).to_i : 1024 %>"
+
+PERSISTENT = "YES"
+DEV_PREFIX = "vd"
+DRIVER = "qcow2"
+
+<% if data[:identity].present? %>
+USER_IDENTITY = "<%= data[:identity] %>"
+USER_X509_DN  = "<%= data[:identity] %>"
+<% end %>

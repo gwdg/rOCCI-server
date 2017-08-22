@@ -1,0 +1,27 @@
+---
+term: large
+schema: http://schemas.localhost/occi/infrastructure/resource_tpl#
+title: Resource Template - Large
+attributes:
+  - occi.compute.architecture
+  - occi.compute.cores
+  - occi.compute.memory
+  - occi.compute.speed
+  - occi.compute.ephemeral_storage.size
+  - eu.egi.fedcloud.compute.gpu.count
+  - eu.egi.fedcloud.compute.gpu.vendor
+  - eu.egi.fedcloud.compute.gpu.class
+  - eu.egi.fedcloud.compute.gpu.device
+attribute_defaults:
+  occi.compute.cores: 4
+  occi.compute.memory: 16.0
+  occi.compute.ephemeral_storage.size: 80.0
+  eu.egi.fedcloud.compute.gpu.count: 2
+  eu.egi.fedcloud.compute.gpu.vendor: 10de
+  eu.egi.fedcloud.compute.gpu.class: '0302'
+  eu.egi.fedcloud.compute.gpu.device: '1024'
+location: /mixin/resource_tpl/large
+applies:
+  - http://schemas.ogf.org/occi/infrastructure#compute
+depends:
+  - http://schemas.ogf.org/occi/infrastructure#resource_tpl

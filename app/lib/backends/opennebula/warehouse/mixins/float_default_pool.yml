@@ -1,0 +1,9 @@
+---
+term: default_pool
+schema: http://schemas.localhost/occi/infrastructure/network/floatingippool#
+title: Floating IP Pool - DEFAULT
+location: /mixin/floatingippool/default_pool
+applies:
+  - http://schemas.ogf.org/occi/infrastructure#ipreservation
+depends:
+  - http://schemas.openstack.org/network#floatingippool

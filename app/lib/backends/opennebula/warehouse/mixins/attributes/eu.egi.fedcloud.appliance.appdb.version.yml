@@ -1,0 +1,7 @@
+---
+type: !ruby/class String
+required: true
+mutable: false
+default: ~
+description: Appliance version provided by AppDB.
+pattern: ~

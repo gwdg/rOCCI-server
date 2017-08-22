@@ -1,0 +1,7 @@
+---
+type: !ruby/class Float
+required: true
+mutable: false
+default: ~
+description: Amount of compute memory in GBs.
+pattern: ~

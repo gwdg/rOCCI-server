@@ -1,0 +1,18 @@
+NAME = "<%= data[:instance]['occi.core.title'] || ::SecureRandom.uuid %>"
+DESCRIPTION = "<%= data[:instance]['occi.core.summary'] || "SG created on #{::DateTime.now.readable_inspect}" %>"
+
+<% for rule in data[:instance]['occi.securitygroup.rules'] %>
+RULE = [
+  PROTOCOL = "<%= rule['protocol'].upcase %>",
+  RULE_TYPE = "<%= rule['type'].upcase %>"
+  <% if %>
+  , RANGE = "<%= rule['port'] %>"
+  <% end %>
+  <%# TODO: IP & SIZE from rule['range'] %>
+]
+<% end %>
+
+<% if data[:identity].present? %>
+USER_IDENTITY = "<%= data[:identity] %>"
+USER_X509_DN  = "<%= data[:identity] %>"
+<% end %>

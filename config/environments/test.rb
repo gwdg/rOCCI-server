@@ -1,4 +1,4 @@
-ROCCIServer::Application.configure do
+Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   # The test environment is used exclusively to run your application's
@@ -12,9 +12,11 @@ ROCCIServer::Application.configure do
   # preloads Rails for running tests, you may have to set it to true.
   config.eager_load = false
 
-  # Configure static asset server for tests with Cache-Control for performance.
-  config.serve_static_files  = false
-  config.static_cache_control = 'public, max-age=3600'
+  # Configure public file server for tests with Cache-Control for performance.
+  config.public_file_server.enabled = true
+  config.public_file_server.headers = {
+    'Cache-Control' => "public, max-age=#{1.hour.seconds.to_i}"
+  }
 
   # Show full error reports and disable caching.
   config.consider_all_requests_local       = true
@@ -25,28 +27,27 @@ ROCCIServer::Application.configure do
 
   # Disable request forgery protection in test environment.
   config.action_controller.allow_forgery_protection = false
-
-  # Set to :debug to see everything in the log.
-  config.log_level = :debug
+  # config.action_mailer.perform_caching = false
 
   # Tell Action Mailer not to deliver emails to the real world.
   # The :test delivery method accumulates sent emails in the
   # ActionMailer::Base.deliveries array.
   # config.action_mailer.delivery_method = :test
 
+  # Use the lowest log level to ensure availability of diagnostic information
+  # when problems arise.
+  config.log_level = config.rocci_server['log_level'].to_sym
+
+  config.logstasher.enabled = true
+  config.logstasher.suppress_app_log = false
+  config.logstasher.source = "#{config.rocci_server['hostname']}_#{config.rocci_server['port']}"
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
-  # LogStasher
-  # Enable the logstasher logs for the current environment
-  config.logstasher.enabled = false
+  #
+  config.active_job.queue_adapter = :inline
 
-  # This line is optional if you do not want to suppress app logs in your <environment>.log
-  config.logstasher.suppress_app_log = false
-
-  # This line is optional, it allows you to set a custom value for the @source field of the log event
-  config.logstasher.source = 'localhost'
-
-  # Set path to configuration files
-  config.rocci_server_etc_dir = Rails.root.join('etc')
+  # Raises error for missing translations
+  # config.action_view.raise_on_missing_translations = true
 end

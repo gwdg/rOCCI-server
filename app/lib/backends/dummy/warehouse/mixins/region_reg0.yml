@@ -1,0 +1,13 @@
+---
+term: reg0
+schema: http://schemas.localhost/occi/infrastructure/region#
+title: Region - REG 0
+location: /mixin/region/reg0
+applies:
+  - http://schemas.ogf.org/occi/infrastructure#compute
+  - http://schemas.ogf.org/occi/infrastructure#storage
+  - http://schemas.ogf.org/occi/infrastructure#network
+  - http://schemas.ogf.org/occi/infrastructure#securitygroup
+  - http://schemas.ogf.org/occi/infrastructure#ipreservation
+depends:
+  - http://schemas.ogf.org/occi/infrastructure#region

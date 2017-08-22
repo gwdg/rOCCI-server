@@ -1,4 +1,4 @@
-ROCCIServer::Application.configure do
+Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   # In the development environment your application's code is reloaded on
@@ -9,40 +9,51 @@ ROCCIServer::Application.configure do
   # Do not eager load code on boot.
   config.eager_load = false
 
-  # Show full error reports and disable caching.
-  config.consider_all_requests_local       = true
-  config.action_controller.perform_caching = false
+  # Show full error reports.
+  config.consider_all_requests_local = true
+
+  # Enable/disable caching. By default caching is disabled.
+  if Rails.root.join('tmp', 'caching-dev.txt').exist?
+    config.action_controller.perform_caching = true
+
+    config.cache_store = :memory_store
+    config.public_file_server.headers = {
+      'Cache-Control' => "public, max-age=#{2.days.seconds.to_i}"
+    }
+  else
+    config.action_controller.perform_caching = false
+
+    config.cache_store = :null_store
+  end
 
   # Don't care if the mailer can't send.
   # config.action_mailer.raise_delivery_errors = false
+  # config.action_mailer.perform_caching = false
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
-  # Raise an error on page load if there are pending migrations
+  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
+  config.force_ssl = true
+
+  # Use the lowest log level to ensure availability of diagnostic information
+  # when problems arise.
+  config.log_level = config.rocci_server['log_level'].to_sym
+
+  config.logstasher.enabled = true
+  config.logstasher.suppress_app_log = false
+  config.logstasher.source = "#{config.rocci_server['hostname']}_#{config.rocci_server['port']}"
+
+  # Raise an error on page load if there are pending migrations.
   # config.active_record.migration_error = :page_load
 
-  # Set to :debug to see everything in the log.
-  config.log_level = :debug
+  #
+  config.active_job.queue_adapter = ActiveJob::QueueAdapters::AsyncAdapter.new(min_threads: 1, max_threads: 1)
 
-  # Debug mode disables concatenation and preprocessing of assets.
-  # This option may cause significant delays in view rendering with a large
-  # number of complex assets.
-  config.assets.debug = true
+  # Raises error for missing translations
+  # config.action_view.raise_on_missing_translations = true
 
-  # DM compatibility
-  config.reload_classes_only_on_change = false
-
-  # LogStasher
-  # Enable the logstasher logs for the current environment
-  config.logstasher.enabled = true
-
-  # This line is optional if you do not want to suppress app logs in your <environment>.log
-  config.logstasher.suppress_app_log = false
-
-  # This line is optional, it allows you to set a custom value for the @source field of the log event
-  config.logstasher.source = 'localhost'
-
-  # Set path to configuration files
-  config.rocci_server_etc_dir = Rails.root.join('etc')
+  # Use an evented file watcher to asynchronously detect changes in source code,
+  # routes, locales, etc. This feature depends on the listen gem.
+  config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 end

@@ -2,8 +2,9 @@
 
 # Add new mime types for use in respond_to blocks:
 # Mime::Type.register "text/richtext", :rtf
-# Mime::Type.register_alias "text/html", :iphone
-Mime::Type.register 'text/occi', :occi_header
-Mime::Type.register 'application/occi+json', :occi_json
-Mime::Type.register 'application/occi+xml', :occi_xml
+Mime::Type.register 'text/plain', :text, [], %w[txt]
+Mime::Type.register 'text/occi', :headers
 Mime::Type.register 'text/uri-list', :uri_list
+
+Mime::Type.unregister :json # we have to get rid of the old definition first
+Mime::Type.register 'application/json', :json, %w[text/x-json application/jsonrequest application/occi+json]

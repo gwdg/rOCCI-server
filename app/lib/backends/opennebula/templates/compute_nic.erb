@@ -1,0 +1,16 @@
+<% sec_groups = data[:security_groups].join(',') %>
+<% data[:instances].each do |networkinterface| %>
+NIC = [
+  NETWORK_ID = "<%= networkinterface.target_id %>"
+
+  <% if networkinterface['occi.networkinterface.address'].present? %>
+  ,IP = "<%= networkinterface['occi.networkinterface.address'] %>"
+  <% end %>
+  <% if networkinterface['occi.networkinterface.mac'].present? %>
+  ,MAC = "<%= networkinterface['occi.networkinterface.mac'] %>"
+  <% end %>
+  <% if sec_groups.present? %>
+  ,SECURITY_GROUPS = "<%= sec_groups %>"
+  <% end %>
+]
+<% end %>

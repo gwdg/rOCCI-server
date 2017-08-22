@@ -1,2 +1,0 @@
-model_extensions_dir: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'dummy', 'model') %>
-fixtures_dir: <%= File.join(Rails.application.config.rocci_server_etc_dir, 'backends', 'dummy', 'fixtures') %>

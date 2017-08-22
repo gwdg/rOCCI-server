@@ -1,30 +1,24 @@
 language: ruby
 
 rvm:
-  - 2.0.0
-  - 2.1
-  - 2.2
-  - 2.3
+  - 2.2.7
+  - 2.3.4
+  - 2.4.1
   - ruby-head
 
 matrix:
   allow_failures:
     - rvm: ruby-head
-    - rvm: 2.3
   fast_finish: true
 
 branches:
   only:
     - master
-    - 1.0.x
-    - 1.1.x
+    - next
 
-services:
-    - memcached
-
-script: bundle exec rake spec
-
-install: 'gem install bundler -v ">= 1.7.12" && bundle install --retry=10 --without stuff_breaking_travis_ci'
+before_install: 'gem install bundler -v ">= 1.15"'
+install: 'bundle install --jobs=3 --retry=3'
+script: bundle exec rake acceptance
 
 env:
   - ON_TRAVIS_CI=yes

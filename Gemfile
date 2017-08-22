@@ -1,108 +1,29 @@
 source 'https://rubygems.org'
 
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 4.2.8'
-gem 'rails-api', '~> 0.4.1'
-gem 'responders', '~> 2.1.0'
-
-# Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-#gem 'jbuilder', '~> 2.1.0'
-
-# Stuff for working with CORS in Rack
-gem 'rack-cors', :require => 'rack/cors'
-
-group :doc do
-  # bundle exec rake doc:rails generates the API under doc/api.
-  gem 'sdoc', :require => false
+git_source(:github) do |repo_name|
+  repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?('/')
+  "https://github.com/#{repo_name}.git"
 end
 
-# Use ActiveModel has_secure_password
-# gem 'bcrypt-ruby', '~> 3.0.0'
+gem 'logstasher', '~> 1.2'
+gem 'puma', '~> 3.7'
+gem 'rack-attack', '~> 5.0.1'
+gem 'rack-cors', '~> 0.4'
+gem 'rails', '~> 5.1.1'
+gem 'responders', '~> 2.4.0'
 
-# Use Capistrano for deployment
-gem 'capistrano', :group => :development
-gem 'rvm-capistrano', :group => :development, :require => false
+gem 'occi-core', '= 5.0.0.beta.18', require: 'occi/infrastructure-ext' # '~> 5.0.0'
 
-# Use debugger
-gem 'debugger', :group => :development, :platforms => :ruby if RUBY_VERSION == '1.9.3'
-gem 'byebug', :group => :development, :platforms => :ruby if RUBY_VERSION.split('.').first == '2'
-gem 'web-console', '~> 2.0', :group => :development
-
-# Use whenever for scheduled jobs
-gem 'whenever', :require => false
-
-# Use passenger for deployment (standalone or in Apache2)
-gem 'passenger', '>= 5.0.22'
-gem 'rake', '>= 10.3.2'
-
-# Use simplecov for coverage reports
-gem 'simplecov', :group => [:development, :test]
-
-# Use RSpec for unit tests
-gem 'rspec-rails', '>= 3.2.0', :group => [:development, :test]
-gem 'fuubar', '>= 2.0.0', :group => [:development, :test]
-
-# Use Pry for debugging
-gem 'pry-rails', :group => [:development, :test]
-gem 'pry-rescue', :group => [:development, :test]
-gem 'pry-stack_explorer', :group => [:development, :test]
-
-# Use guard to speed-up devel process
-#gem 'guard-bundler', :group => :development
-#gem 'guard-test', :group => :development
-#gem 'guard-rails', :group => :development
-
-# Use notification libs to integrate guard with pop-ups
-#gem 'rb-inotify', :require => false, :group => :development
-#gem 'libnotify', :group => :development
-#gem 'ruby_dep', '~> 1.3.1', :require => false, :group => :development
-
-# Use YARD for documentation
-gem 'yard', :group => :development
-gem 'redcarpet', :group => :development
-
-# Use bond+hirb to extend irb
-#
-# Add the following to your ~/.irbrc:
-#
-# require 'bond'
-# require 'hirb'
-#
-# Bond.start
-# Hirb.enable
-#
-# Or type it in the current irb session.
-gem 'bond', :group => :development
-gem 'hirb', :group => :development
-
-# Caching stuff
-gem 'dalli'
-gem 'kgio', :group => :stuff_breaking_travis_ci
-
-# AuthN middleware
-gem 'warden', '~> 1.2.4'
-
-# Sensible logging with LogStash support
-gem 'logstasher', '>= 0.6.2', '< 0.7'
-
-# Use Hashie::Mash to simplify hash-related stuff
-gem 'hashie'
-
-# Use IceNine to deep-freeze objects
-gem 'ice_nine'
-
-# Use occi-core for OCCI stuff
-gem 'occi-core', '~> 4.3.5'
-
-# Keep old nokogiri maintain support for Ruby < 2.1
-gem 'nokogiri', '~> 1.6.8'
-
-# Install gems for each auth. strategy from Rails.root/lib/authentication_strategies/bundles
-Dir.glob(File.join(File.dirname(__FILE__), 'lib', 'authentication_strategies', 'bundles', "Gemfile.*")) do |gemfile|
-    eval(IO.read(gemfile), binding)
+group :development, :test do
+  gem 'byebug'
+  gem 'listen', '>= 3.0.5', '< 3.2'
+  gem 'rails_best_practices'
+  gem 'rubocop', require: false
+  gem 'yard'
 end
 
-# Install gems for each backend from Rails.root/lib/backends/bundles
-Dir.glob(File.join(File.dirname(__FILE__), 'lib', 'backends', 'bundles', "Gemfile.*")) do |gemfile|
-    eval(IO.read(gemfile), binding)
+# Include external bundles
+Dir.glob(File.join(File.dirname(__FILE__), 'Gemfile.*')) do |gemfile|
+  next if gemfile.end_with?('.lock')
+  eval(IO.read(gemfile), binding)
 end

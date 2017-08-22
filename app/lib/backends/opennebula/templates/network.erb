@@ -1,0 +1,34 @@
+NAME = "<%= data[:instance]['occi.core.title'] || ::SecureRandom.uuid %>"
+DESCRIPTION = "<%= data[:instance]['occi.core.summary'] || "NETWORK created on #{::DateTime.now.readable_inspect}" %>"
+
+VN_MAD  = "vxlan"
+VLAN    = "YES"
+PHYDEV  = "<%= data[:configuration].fetch(:phydev) %>"
+
+<% if data[:instance]['occi.network.vlan'].present? %>
+VLAN_ID = "<%= data[:instance]['occi.network.vlan'] %>"
+<% else %>
+AUTOMATIC_VLAN_ID = "YES"
+<% end %>
+
+<% if data[:instance]['occi.network.address'].present? %>
+  <% network_range = data[:instance]['occi.network.address'].to_range %>
+
+AR=[
+    TYPE = "IP4",
+    IP   = "<%= network_range.to_a[1] %>",
+    SIZE = "<%= network_range.count - 2 %>"
+]
+
+NETWORK_ADDRESS = "<%= data[:instance]['occi.network.address'] %>"
+NETWORK_MASK    = "<%= IPAddr.new('255.255.255.255').mask(data[:instance]['occi.network.address'].cidr_mask) %>"
+<% end %>
+
+<% if data[:instance]['occi.network.gateway'].present? %>
+GATEWAY = "<%= data[:instance]['occi.network.gateway'] %>"
+<% end %>
+
+<% if data[:identity].present? %>
+USER_IDENTITY = "<%= data[:identity] %>"
+USER_X509_DN  = "<%= data[:identity] %>"
+<% end %>

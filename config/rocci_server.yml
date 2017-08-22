@@ -1,0 +1,27 @@
+defaults: &defaults
+  log_level: debug
+  hostname: localhost
+  port: 3000
+  keystone_uri: https://localhost:5000/
+  backend: dummy
+  dummy:
+    no_options: true
+  opennebula:
+    endpoint: http://localhost:2633/RPC2
+    timeout: 30
+    schema_namespace: http://schemas.localhost/
+    template_dir: ~
+  encryption:
+    token_cipher: <%= ENV['ROCCI_SERVER_ENCRYPTION_TOKEN_CIPHER'] %>
+    token_key: <%= ENV['ROCCI_SERVER_ENCRYPTION_TOKEN_KEY'] %>
+    token_iv: <%= ENV['ROCCI_SERVER_ENCRYPTION_TOKEN_IV'] %>
+
+production:
+  <<: *defaults
+  log_level: warn
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults

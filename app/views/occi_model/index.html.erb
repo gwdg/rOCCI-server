@@ -1,7 +1,0 @@
-<%= render template: "shared/header" %>
-
-<h1>Entity Sub-Types</h1>
-<% @local_resource_types = @entities.entities.to_a.collect { |r| r.kind }.uniq %>
-<%= render template: "shared/resource_types_table" %>
-
-<%= render template: "shared/footer" %>
