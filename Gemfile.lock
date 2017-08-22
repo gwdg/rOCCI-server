@@ -92,7 +92,7 @@ GEM
       ast (~> 2.2)
     powerpack (0.1.1)
     public_suffix (2.0.5)
-    puma (3.9.1)
+    puma (3.10.0)
     rack (2.0.3)
     rack-attack (5.0.1)
       rack
@@ -163,7 +163,7 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
-    thor (0.19.4)
+    thor (0.20.0)
     thread_safe (0.3.6)
     trollop (2.1.2)
     tzinfo (1.2.3)
@@ -196,4 +196,4 @@ DEPENDENCIES
   yard
 
 BUNDLED WITH
-   1.15.3
+   1.15.4
