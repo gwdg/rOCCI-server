@@ -3,6 +3,7 @@ defaults: &defaults
   hostname: localhost
   port: 3000
   keystone_uri: https://localhost:5000/
+  memcache: localhost:11211
   backend: dummy
   dummy:
     no_options: true
