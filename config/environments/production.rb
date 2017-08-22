@@ -64,8 +64,8 @@ Rails.application.configure do
     idletime: 600.seconds
 
   #
-  config.cache_store = :dalli_store, ENV["MEMCACHE_SERVERS"] || config.rocci_server['memcache'],
-    { :namespace => 'rOCCI-server.production', :expires_in => 1.day, :compress => true }
+  config.cache_store = :dalli_store, ENV['MEMCACHE_SERVERS'] || config.rocci_server['memcache'],
+                       { namespace: 'rOCCI-server.production', expires_in: 1.day, compress: true }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
