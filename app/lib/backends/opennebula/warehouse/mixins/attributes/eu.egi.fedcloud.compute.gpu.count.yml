@@ -1,7 +1,0 @@
----
-type: !ruby/class Integer
-required: true
-mutable: false
-default: ~
-description: Number of GPU devices.
-pattern: ~
